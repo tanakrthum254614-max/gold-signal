@@ -30,20 +30,20 @@
   const round = (v) => Math.round(v * 100) / 100;
   const expiry = (id) => Date.parse(`${id}T00:00:00+07:00`) + DAY + (6 * 60 + 45) * 60e3;
 
-  // "Enter now" rule: trade at the current price in the direction the medium- and long-term trends
-  // agree on; stop 0.5 × daily ATR, target 0.75 × daily ATR. No trade when the trends disagree.
-  const RULE = { minTrend: 2, sl: 0.5, tp: 0.75 };
+  // "Enter now" short-trade rule: only 5-star days (medium- and long-term trends both strongly the
+  // same way), trade at the current price with a fixed $15 target and $15 stop. Otherwise no trade.
+  const RULE = { minTrend: 4, slUsd: 15, tpUsd: 15 };
   const STRENGTH = { strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 };
-  function makeMarket({ bias, price, atr, createdAt, extra = {} }) {
+  function makeMarket({ bias, price, createdAt, extra = {} }) {
     const id = thaiDate(createdAt);
     const trend = (STRENGTH[bias.mid] || 0) + (STRENGTH[bias.long] || 0);
     const base = { id, createdAt, expiresAt: expiry(id), rule: 'market-trend', trendScore: trend, priceAtSignal: round(price), ...extra };
-    if (Math.abs(trend) < RULE.minTrend || !atr) return { ...base, status: 'skip' };
+    if (Math.abs(trend) < RULE.minTrend) return { ...base, status: 'skip' };
     const buy = trend > 0, d = buy ? 1 : -1;
     return {
       ...base, market: true, side: buy ? 'BUY' : 'SELL',
-      entry: round(price), sl: round(price - d * atr * RULE.sl), tp: round(price + d * atr * RULE.tp),
-      stars: Math.min(5, 1 + Math.abs(trend)), status: 'active', entryAt: createdAt,
+      entry: round(price), sl: round(price - d * RULE.slUsd), tp: round(price + d * RULE.tpUsd),
+      stars: 5, status: 'active', entryAt: createdAt,
     };
   }
 

@@ -48,7 +48,8 @@ function whyLines(a) {
   const lines = [];
   if (a.votes) lines.push(`investing.com วิเคราะห์ ${a.votes.total} ช่วงเวลา: บอก “ลง” ${a.votes.down} · “ขึ้น” ${a.votes.up}`);
   lines.push(`แนวโน้ม ระยะสั้น ${TREND_TH[a.bias.short]} · ระยะกลาง ${TREND_TH[a.bias.mid]} · ระยะยาว ${TREND_TH[a.bias.long]}`);
-  if (a.atr) lines.push(`ทองแกว่งเฉลี่ยวันละ ~$${money(a.atr)} → ตัดขาดทุน ${SIG.RULE.sl}× · เป้าหมาย ${SIG.RULE.tp}× ของระยะนี้`);
+  lines.push(`เทรดสั้น: เป้าหมาย ${SIG.RULE.tpUsd} · ตัดขาดทุน ${SIG.RULE.slUsd} · ให้สัญญาณเฉพาะวันที่มั่นใจ 5 ดาว`);
+  if (a.atr) lines.push(`ทองแกว่งเฉลี่ยวันละ ~${money(a.atr)}`);
   return lines;
 }
 
@@ -85,8 +86,8 @@ function flexMessage(a, sig, prev, sum, bt) {
   const buy = sig.side === 'BUY';
   const color = buy ? C.up : C.down;
   const signalRows = sig.status === 'skip' ? [
-    txt('⏸ วันนี้ไม่มีสัญญาณ', { size: 'xxl', weight: 'bold', color: C.wait, margin: 'lg' }),
-    txt(`แนวโน้มระยะกลางกับระยะยาวไม่ไปทางเดียวกัน — ไม่เทรดดีกว่า รอสัญญาณใหม่ ${thaiTime(sig.expiresAt + 15 * 60e3)}`, { size: 'xs', color: C.muted }),
+    txt('⏸ วันนี้ไม่มีสัญญาณ 5 ดาว', { size: 'xl', weight: 'bold', color: C.wait, margin: 'lg' }),
+    txt(`ตลาดยังไม่ชัดพอ — ไม่เทรดดีกว่า รอสัญญาณใหม่ ${thaiTime(sig.expiresAt + 15 * 60e3)}`, { size: 'xs', color: C.muted }),
   ] : [
     txt(`${buy ? '🟢 ซื้อตอนนี้' : '🔴 ขายตอนนี้'} (${buy ? 'BUY' : 'SELL'})`, { size: 'xxl', weight: 'bold', color, margin: 'lg' }),
     txt(`ความมั่นใจ ${'★'.repeat(sig.stars)}${'☆'.repeat(5 - sig.stars)}`, { size: 'xs', color: C.muted }),
@@ -149,7 +150,7 @@ function flexMessage(a, sig, prev, sum, bt) {
   let sig = store.signals.find((s) => s.id === todayId);
   if (!sig) {
     // Market signals are filled at once: the morning message itself is the entry alert
-    sig = SIG.makeMarket({ bias: a.bias, price: a.price, atr: a.atr, createdAt: now,
+    sig = SIG.makeMarket({ bias: a.bias, price: a.price, createdAt: now,
       extra: { why: whyLines(a), source: a.source, alerts: { entry: now } } });
     store.signals.push(sig);
   }

@@ -1,7 +1,7 @@
 // Replays the daily-signal system over past weekdays and writes backtest.json.
 // investing.com's technical summaries have no history, so the trend bias here comes from our own
 // indicator engine on Binance PAXG candles; entry/stop/target and scoring are the live rules
-// (SIG.makeMarket: enter at 07:00 Thai in the agreed trend direction, ATR-based stop and target).
+// (SIG.makeMarket: 5-star days only, enter at 07:00 Thai, fixed $ stop and target).
 // Usage: node scripts/backtest.js [days=120]
 const fs = require('fs');
 const path = require('path');
@@ -47,8 +47,7 @@ const key = (cs) => TA.analyze(cs).label.key.replace('-', '_');
     const hh = upto(h1, 3600e3), h44 = upto(h4, 4 * 3600e3), dd = upto(d1, 864e5);
     if (hh.length < 60 || dd.length < 60) continue;
     const price = hh[hh.length - 1].close;
-    const atr = TA.computeAll(dd).atr[dd.length - 1];
-    const sig = SIG.makeMarket({ bias: { short: key(hh), mid: key(h44), long: key(dd) }, price, atr, createdAt: t });
+    const sig = SIG.makeMarket({ bias: { short: key(hh), mid: key(h44), long: key(dd) }, price, createdAt: t });
     signals.push(SIG.evaluate(sig, m15, now));
   }
 

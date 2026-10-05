@@ -420,8 +420,8 @@ function renderSignalHome() {
   if (s.status === 'skip') {
     $('sigCard').className = 'card sig skip';
     $('sgStars').textContent = '';
-    $('sgSide').innerHTML = '⏸ วันนี้ไม่มีสัญญาณ';
-    $('sgStatus').textContent = `แนวโน้มระยะกลางกับระยะยาวไม่ไปทางเดียวกัน — ไม่เทรดดีกว่า · สัญญาณถัดไป ${thaiTime(nextSignalTime())}`;
+    $('sgSide').innerHTML = '⏸ วันนี้ไม่มีสัญญาณ 5 ดาว';
+    $('sgStatus').textContent = `ตลาดยังไม่ชัดพอ — ไม่เทรดดีกว่า · สัญญาณถัดไป ${thaiTime(nextSignalTime())}`;
     $('sgHow').innerHTML = '<li>วันที่ตลาดไม่ชัด การ “ไม่เทรด” ก็คือการรักษาเงินทุน</li><li>รอสัญญาณใหม่เช้าวันทำการถัดไป 07:00</li>';
     $('sgWhy').innerHTML = (s.why || []).map((l) => `<li>${l}</li>`).join('');
     renderMiniRecord();
