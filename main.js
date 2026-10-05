@@ -27,7 +27,7 @@ const ACTION_TH = {
 const state = {
   tf: '1h', bars: [], daily: [], tech: null, techAt: null, source: null,
   locked: null, lastPrice: null, chartKey: '', pivotKey: '', busy: false, zoneKey: '', signals: [], m15: [], backtest: null, intra: null, bt30: null, intraCandles: null, news: [], thb: null,
-  tick: [], tickAt: 0, tickSrc: null, livePrice: null, livePrev: null,
+  tick: [], tickAt: 0, tickSrc: null, livePrice: null, livePrev: null, s15: null, bt15: null,
 };
 // Simple-mode history ranges map onto chart timeframes (160 bars each)
 const RANGES = [
@@ -171,11 +171,12 @@ const areaS = simpleChart.addAreaSeries({
 });
 let zoneLines = [];
 function drawSignalLines(s) {
-  const key = `${s.id}|${s.entry}`;
+  const key = `${s.id}|${s.entry}|${!!s.advisory}`;
   if (key === state.zoneKey) return;
   state.zoneKey = key;
   zoneLines.forEach((l) => areaS.removePriceLine(l));
   zoneLines = [];
+  if (s.advisory) return; // overview days are not trades: no entry / stop / target lines
   const line = (price, color, title, style, width = 2) =>
     zoneLines.push(areaS.createPriceLine({ price, color, lineWidth: width, lineStyle: style, title }));
   line(s.entry, s.side === 'BUY' ? '#0f9f6e' : '#e0424f', s.side === 'BUY' ? '🎯 ซื้อ' : '🎯 ขาย', LC.LineStyle.Solid);
@@ -295,6 +296,7 @@ function render() {
   renderMarket(price);
   renderSignalHome();
   renderIntra();
+  markChart15();
   document.title = `${f2(price)} · ${ACTION_TH[plan.action][0]} | Gold Signal`;
 }
 
@@ -375,11 +377,12 @@ const thaiDay = (id) => new Date(`${id}T12:00:00+07:00`).toLocaleDateString('th-
 
 async function refreshSignals() {
   try {
-    const [sig, bt, intra, bt30, quota] = await Promise.all([
+    const [sig, bt, intra, bt30, quota, bt15] = await Promise.all([
       getJson('signals.json'), state.backtest ? null : getJson('backtest.json').catch(() => null),
       getJson('intraday.json').catch(() => null), state.bt30 ? null : getJson('backtest-30m.json').catch(() => null),
-      getJson('quota.json').catch(() => null),
+      getJson('quota.json').catch(() => null), state.bt15 ? null : getJson('backtest-15m.json').catch(() => null),
     ]);
+    if (bt15) state.bt15 = bt15;
     renderQuota(quota);
     state.signals = sig.signals || [];
     if (bt) state.backtest = bt;
@@ -406,8 +409,12 @@ async function refreshM15() {
   try {
     const j = await investing(`/${PAIR_ID}/historical/chart/?interval=PT15M&pointscount=160`, 2);
     state.m15 = j.data.map((b) => ({ time: b[0], open: b[1], high: b[2], low: b[3], close: b[4] }));
-  } catch (e) { /* keep last */ }
+  } catch (e) {
+    // investing.com unreachable: Binance PAXG (shifted to spot), times in ms like investing's
+    try { state.m15 = msBars(await backupBars('15m', 160)); } catch (e2) { /* keep last */ }
+  }
   renderSignalHome();
+  refresh15();
 }
 
 // Recorded signals are final once scored by the morning job; until then score them live
@@ -659,6 +666,7 @@ async function refreshTick() {
     renderLive();
     renderIntra();
     renderSignalHome();
+    renderS15();
   } catch (e) {
     $('lvAgo').textContent = 'ดึงราคาสดไม่สำเร็จ กำลังลองใหม่…';
   }
@@ -735,6 +743,16 @@ function renderLiveStatus() {
 }
 
 // ---------- 30-minute signals ----------
+const msBars = (bars) => bars.map((b) => ({ ...b, time: b.time * 1000 }));
+function group5h(bars) {
+  const out = [];
+  bars.forEach((b) => {
+    const t = Math.floor(b.time / (5 * 3600e3)) * 5 * 3600e3, last = out[out.length - 1];
+    if (last && last.time === t) { last.high = Math.max(last.high, b.high); last.low = Math.min(last.low, b.low); last.close = b.close; }
+    else out.push({ ...b, time: t });
+  });
+  return out;
+}
 const toBars = (rows) => rows.map((x) => ({ time: x[0], open: x[1], high: x[2], low: x[3], close: x[4] }));
 const hhmm = (ms) => new Date(ms).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
 const signedScore = (s) => `${s > 0 ? '+' : ''}${s}`;
@@ -746,8 +764,16 @@ async function refreshIntraCandles() {
       investing(`/${PAIR_ID}/historical/chart/?interval=${iv}&pointscount=160`, 2)));
     state.intraCandles = { m30: toBars(a.data), h1: toBars(b.data), h5: toBars(c.data) };
     patchIntraCandles();
-  } catch (e) { /* keep last */ }
+  } catch (e) {
+    // Backup: Binance 30m + 1h, and 5-hour candles built from 1-hour ones (as in the backtest)
+    try {
+      const [m30, h1] = await Promise.all([backupBars('30m', 200), backupBars('1h', 1000)]);
+      state.intraCandles = { m30: msBars(m30), h1: msBars(h1).slice(-200), h5: group5h(msBars(h1)) };
+      patchIntraCandles();
+    } catch (e2) { /* keep last */ }
+  }
   renderIntra();
+  refresh15();
 }
 
 // Move the still-forming 30m / 1h / 5h candles to the live price, so the trend score follows every tick
@@ -964,6 +990,172 @@ function renderIntra() {
     : '<p class="muted small">ยังไม่มีไม้ — ระบบจะเข้าเมื่อทั้ง 3 ช่วงเวลาชี้ขึ้นชัดเจน (คะแนน +5)</p>');
 }
 
+// ---------- 15-minute signal (website only, nothing sent to LINE) ----------
+// Re-checked every time a 15-minute candle closes (INTRA.decide15 on closed candles only), replayed over
+// the candles on screen with the backtest's rules: one trade at a time, next trade 15 minutes after an exit.
+const M15 = 15 * 60e3;
+const s15Cache = new Map(); // decision time → decision (past decisions never change)
+
+function run15(now = Date.now()) {
+  const C = state.intraCandles, m15 = state.m15;
+  if (!C || m15.length < 80) return null;
+  const candles = { m15, h1: C.h1, h5: C.h5 };
+  const last = Math.floor(now / M15) * M15; // the latest 15-minute close
+  const decs = [], trades = [];
+  let busyUntil = 0;
+  for (let t = m15[60].time + M15; t <= last; t += M15) {
+    let dec = s15Cache.get(t);
+    if (dec === undefined) {
+      dec = INTRA.decide15(candles, t, state.news);
+      if (t < last) s15Cache.set(t, dec); // the newest one may still change as data arrives
+    }
+    decs.push({ t, dec });
+    if (!dec || !dec.dir || t < busyUntil) continue;
+    const bar = m15.find((b) => b.time === t - M15);
+    if (!bar) continue;
+    const r = SIG.evaluate(INTRA.makeTrade(dec, bar.close, t), m15.filter((b) => b.time >= t - M15), now);
+    trades.push(r);
+    busyUntil = SIG.isFinal(r) ? (r.exitAt || r.expiresAt) + M15 : Infinity;
+  }
+  state.s15 = { decs, trades, at: last, current: decs.length ? decs[decs.length - 1].dec : null };
+  return state.s15;
+}
+
+// Candle chart in the card: 15-minute candles, a background band where entering is allowed / news, markers
+let s15Chart = null;
+function s15ChartParts() {
+  if (s15Chart) return s15Chart;
+  const chart = LC.createChart($('s15Chart'), { ...chartBase(true), handleScroll: false, handleScale: false });
+  const zone = chart.addHistogramSeries({ priceScaleId: 'zone', priceLineVisible: false, lastValueVisible: false, base: 0 });
+  chart.priceScale('zone').applyOptions({ scaleMargins: { top: 0, bottom: 0 }, visible: false });
+  const candles15 = chart.addCandlestickSeries({
+    upColor: '#0f9f6e', downColor: '#e0424f', borderVisible: false, wickUpColor: '#0f9f6e', wickDownColor: '#e0424f',
+  });
+  fitWhenSized($('s15Chart'), () => chart.timeScale().fitContent());
+  s15Chart = { chart, zone, candles15, lines: [] };
+  applyChartTheme();
+  return s15Chart;
+}
+
+// Markers for a list of trades on a series whose times are seconds + TZ
+function s15Markers(trades, from = 0) {
+  const sec = (ms) => Math.floor(ms / 1000) + TZ;
+  const out = [];
+  trades.forEach((r) => {
+    if (r.createdAt - M15 < from) return;
+    out.push({ time: sec(r.createdAt - M15), position: 'belowBar', color: '#0f9f6e', shape: 'arrowUp', text: 'ซื้อ' });
+    if (SIG.isFinal(r) && r.exitAt) {
+      const win = r.pnl > 0;
+      out.push({ time: sec(Math.floor(r.exitAt / M15) * M15), position: win ? 'aboveBar' : 'belowBar', color: win ? '#0f9f6e' : '#e0424f',
+        shape: 'circle', text: r.closedBy === 'sl' ? 'SL' : r.closedBy === 'be' ? 'ทุน' : r.hit ? `TP${r.hit}` : 'ปิด' });
+    }
+  });
+  return out.sort((a, b) => a.time - b.time);
+}
+
+function drawS15Chart(s) {
+  const P = s15ChartParts();
+  const sec = (ms) => Math.floor(ms / 1000) + TZ;
+  const bars = state.m15.slice(-96); // last 24 hours
+  P.candles15.setData(bars.map((b) => ({ time: sec(b.time), open: b.open, high: b.high, low: b.low, close: b.close })));
+  // Background: the decision made when each candle closed applies to the next candle
+  const byT = new Map(s.decs.map((d) => [d.t, d.dec]));
+  P.zone.setData(bars.map((b) => {
+    const d = byT.get(b.time);
+    const color = !d || d.stale ? 'rgba(0,0,0,0)' : d.news ? 'rgba(240,180,41,.22)' : d.dir > 0 ? 'rgba(15,159,110,.16)' : 'rgba(0,0,0,0)';
+    return { time: sec(b.time), value: 1, color };
+  }));
+  P.candles15.setMarkers(s15Markers(s.trades, bars[0].time));
+  P.lines.forEach((l) => P.candles15.removePriceLine(l));
+  P.lines = [];
+  const open = s.trades.find((r) => r.status === 'active');
+  if (open) {
+    const line = (price, color, title, style) => P.lines.push(P.candles15.createPriceLine({ price, color, title, lineStyle: style, lineWidth: 1 }));
+    line(open.entry, '#d99a10', 'เข้า', LC.LineStyle.Solid);
+    line(open.hit ? open.entry : open.sl, '#e0424f', open.hit ? 'SL→ทุน' : 'SL', LC.LineStyle.Dashed);
+    open.tps.forEach((tp, k) => line(tp, '#0f9f6e', `TP${k + 1}`, LC.LineStyle.Dashed));
+  }
+  P.chart.timeScale().fitContent();
+}
+
+// Light update (every tick): countdown, call, live profit; the chart only when a candle closed
+function renderS15() {
+  const now = Date.now();
+  const s = state.s15;
+  const next = Math.floor(now / M15) * M15 + M15;
+  const left = Math.max(0, next - now);
+  $('s15Next').textContent = `แท่งปิด ${hhmm(next)} น. (อีก ${Math.floor(left / 60e3)}:${String(Math.floor((left % 60e3) / 1000)).padStart(2, '0')})`;
+  if (!s) return;
+  const dec = s.current;
+  const open = s.trades.find((r) => r.status === 'active');
+  const price = nowPrice();
+  let call, cls;
+  if (open) {
+    call = `📌 ถือไม้ซื้ออยู่ — เข้า ${hhmm(open.createdAt)} น. ที่ ${f2(open.entry)}`; cls = 'hold';
+  } else if (!dec) {
+    call = 'กำลังคำนวณ…'; cls = 'wait';
+  } else if (dec.stale) {
+    call = '🌙 ตลาดปิด — ไม่เข้า'; cls = 'wait';
+  } else if (dec.dir > 0) {
+    call = '⏸ เพิ่งปิดไม้ — รอแท่งถัดไป'; cls = 'wait';
+  } else if (dec.news) {
+    call = '⏸ ไม่เข้า — ช่วงข่าวแรง'; cls = 'wait';
+  } else {
+    call = `⏸ ไม่เข้า — คะแนน ${signedScore(dec.score)} (ต้อง +${INTRA.RULE15.threshold})`; cls = 'wait';
+  }
+  $('s15Card').className = `card s15 ${cls}`;
+  $('s15Call').textContent = call;
+  $('s15Why').textContent = dec ? INTRA.reasons(dec).join(' · ') : '';
+
+  const calib = state.bt15 && state.bt15.calibration;
+  const side = (dir) => {
+    const o = dec ? INTRA.odds(dec.score, calib, dir > 0 ? 'buy' : 'sell') : null;
+    if (dir < 0) return `<div class="no"><b>🔴 ฝั่งขาย: ไม่เข้า</b>สถิติย้อนหลังฝั่งขายแพ้มากกว่าชนะ${o ? ` (จบกำไร ${o.winRate}%)` : ''}</div>`;
+    const ok = dec && dec.dir > 0;
+    return `<div class="${ok ? 'ok' : 'no'}"><b>🟢 ฝั่งซื้อ: ${ok ? 'เข้าได้' : 'ยังไม่เข้า'}</b>${ok ? 'คะแนนถึง +5 แล้ว' : `เข้าเมื่อคะแนน +${INTRA.RULE15.threshold} (ตอนนี้ ${dec ? signedScore(dec.score) : '—'})`}${o ? ` · จบกำไร ${o.winRate}%` : ''}</div>`;
+  };
+  if (open) {
+    const hit = open.hit || 0;
+    const pnl = price != null ? SIG.round((open.realized || 0) + ((open.tps.length - hit) / open.tps.length) * (price - open.entry)) : open.pnl;
+    $('s15Trade').innerHTML = `<div class="sig-tps n3 mini">
+        <div class="n sl"><label>🛑 SL${hit ? ' → ทุน' : ''}</label><b class="mono">${f2(hit ? open.entry : open.sl)}</b></div>
+        ${open.tps.map((tp, k) => `<div class="n tp${hit > k ? ' done' : ''}"><label>TP${k + 1}${hit > k ? ' ✓' : ''}</label><b class="mono">${f2(tp)}</b></div>`).join('')}
+      </div>
+      <p class="sig-pnl ${pnl >= 0 ? 'up' : 'down'}">กำไร/ขาดทุนตอนนี้ ${money(pnl)} ต่อ 1 ออนซ์ · ปิดเองไม่เกิน ${hhmm(open.expiresAt)} น.</p>${lotHtml(INTRA.RULE.slUsd)}`;
+  } else {
+    $('s15Trade').innerHTML = `<div class="s15-sides">${side(1)}${side(-1)}</div>`;
+  }
+
+  if (s.at !== renderS15.drawn) { renderS15.drawn = s.at; drawS15Chart(s); }
+
+  const todayId = SIG.thaiDate(now);
+  const today = s.trades.filter((r) => r.id.startsWith(todayId));
+  $('s15Today').innerHTML = today.length
+    ? `<div class="in-chips">${today.map((r) => `<span class="chip-r ${r.status}">${hhmm(r.createdAt)} ซื้อ ${r.status === 'active' ? '…' : money(r.pnl)}</span>`).join('')}</div>`
+    : `<p class="muted small" style="margin:0">วันนี้ยังไม่มีจุดเข้า${s.trades.length ? '' : ` · ในกราฟ ${Math.round((s.decs.length * 15) / 60)} ชม. ที่ผ่านมาก็ยังไม่มีจังหวะที่ผ่านเกณฑ์ (เฉลี่ย ~${state.bt15 ? state.bt15.perDay : 1.4} ไม้/วัน บางวันไม่มีเลย — การไม่เข้าตอนตลาดไม่ชัดก็คือการรักษาเงิน)`}</p>`;
+  const bt = state.bt15;
+  if (bt) {
+    const b = SIG.summary(bt.trades, userSpread());
+    $('s15Stats').innerHTML = `📊 ทดสอบย้อนหลัง 1 ปี (กติกาเดียวกัน): ${b.traded} ไม้ (~${bt.perDay}/วัน) · ชนะ ${b.winRate}% · <b>${money(b.pnl)}</b>/ออนซ์ หลังหักสเปรด $${b.spread}/ไม้ — ไม่มีระบบไหนแม่นทุกครั้ง ตั้ง SL ทุกไม้`;
+  }
+}
+
+function refresh15() {
+  run15();
+  renderS15();
+  markChart15();
+}
+
+// Chart tab: show the same entry / exit markers when the 15-minute view is open
+function markChart15() {
+  const s = state.s15;
+  const on = state.tf === '15m' && s && state.bars.length;
+  const from = on ? state.bars[0].time * 1000 : 0;
+  const marks = on ? s15Markers(s.trades, from) : [];
+  candles.setMarkers(marks);
+  areaS.setMarkers(marks);
+}
+
 function renderIntraStats() {
   const trades = intraTrades();
   const sum = SIG.summary(trades, userSpread());
@@ -1030,7 +1222,9 @@ async function refreshNews() {
     state.news = [...byTime.entries()].sort((a, b) => a[0] - b[0])
       .map(([time, ts]) => ({ time, title: [...new Set(ts)].join(' · ').slice(0, 120) }));
   } catch (e) { /* calendar is optional */ }
+  s15Cache.clear(); // news blackouts change past decisions
   renderIntra();
+  refresh15();
 }
 
 // Today's high-impact news as a timeline (passed / happening now / coming)
@@ -1141,7 +1335,7 @@ function applyChartTheme() {
     rightPriceScale: { borderColor: c.border }, timeScale: { borderColor: c.border },
     crosshair: { vertLine: { color: c.cross, labelBackgroundColor: c.label }, horzLine: { color: c.cross, labelBackgroundColor: c.label } },
   };
-  [mainChart, rsiChart, macdChart, ...Object.values(eqCharts).map((e) => e.chart)].forEach((ch) => ch.applyOptions(opts));
+  [mainChart, rsiChart, macdChart, ...Object.values(eqCharts).map((e) => e.chart), ...(s15Chart ? [s15Chart.chart] : [])].forEach((ch) => ch.applyOptions(opts));
   simpleChart.applyOptions({ ...opts, grid: { vertLines: { visible: false }, horzLines: { color: c.grid } } });
 }
 UI.on('theme', applyChartTheme);

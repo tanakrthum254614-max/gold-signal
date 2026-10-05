@@ -10,9 +10,9 @@
   <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610052024">
-  <link rel="stylesheet" href="live.css?v=202610052024">
-  <link rel="stylesheet" href="theme.css?v=202610052024" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610052045">
+  <link rel="stylesheet" href="live.css?v=202610052045">
+  <link rel="stylesheet" href="theme.css?v=202610052045" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -126,6 +126,21 @@
         </div>
 
         <div id="inTrade"></div>
+
+        <!-- 15-minute signal: website only (no LINE) -->
+        <div class="card s15" id="s15Card">
+          <div class="sig-top"><span class="muted">⏱️ สัญญาณ 15 นาที · <b>ดูบนเว็บเท่านั้น</b> (ไม่ส่ง LINE)</span><span class="muted small mono" id="s15Next"></span></div>
+          <div class="s15-call" id="s15Call">กำลังคำนวณ…</div>
+          <p class="s15-why muted" id="s15Why"></p>
+          <div id="s15Trade"></div>
+          <div id="s15Chart" class="s15-chart"></div>
+          <ul class="s15-legend">
+            <li><i class="up">▲</i>จุดเข้าซื้อ</li><li><i class="tp">●</i>ถึง TP</li><li><i class="sl">●</i>โดน SL</li>
+            <li><i class="zone ok"></i>ช่วงที่เข้าได้</li><li><i class="zone news"></i>ช่วงข่าว งดเข้า</li><li><i class="zone"></i>ไม่เข้า</li>
+          </ul>
+          <div id="s15Today"></div>
+          <p class="muted small s15-stats" id="s15Stats"></p>
+        </div>
 
         <!-- Odds for each side, as donuts -->
         <h3 class="sec-title">🎯 ถ้าเข้าตอนนี้ — โอกาสแต่ละจุด <span class="lv-tag">สด</span></h3>
@@ -382,6 +397,14 @@
         </section>
 
         <section class="card">
+          <h3>⏱️ สัญญาณ 15 นาที (ดูบนเว็บเท่านั้น)</h3>
+          <p>ทุกครั้งที่แท่ง 15 นาทีปิด ระบบเช็กแนวโน้ม <b>15 นาที · 1 ชม. · 5 ชม.</b> ถ้าทั้ง 3 ชี้ขึ้นชัด (คะแนน <b>+5</b>) จะขึ้น <b>▲ ซื้อ</b> บนกราฟ พร้อม SL $15 และ TP $15 / $20 / $30
+            · <b>พื้นเขียว</b> = ช่วงที่เข้าได้ · <b>พื้นเหลือง</b> = ช่วงข่าวแรง งดเข้า · <b>พื้นว่าง</b> = ไม่เข้า
+            <br>ฝั่งขายบอก "ไม่เข้า" เสมอ เพราะทดสอบย้อนหลังแล้วแพ้มากกว่าชนะ · <b>ไม่ส่ง LINE</b> ดูได้ที่หน้าสัญญาณและหน้ากราฟ (ช่วง 2 วัน)
+            <br><span class="muted small">ทดสอบ 1 ปี: ~1.4 ไม้/วัน ชนะ 52% กำไรหลังสเปรดน้อยกว่าระบบ 30 นาที — บางวันไม่มีจุดเข้าเลย</span></p>
+        </section>
+
+        <section class="card">
           <h3>ระบบช่วยกันพอร์ต 🛡️</h3>
           <ul class="why">
             <li><b>📈 สัญญาณ 30 นาทีเข้าเฉพาะฝั่งซื้อ</b> — สถิติ 2 ปี ฝั่งซื้อชนะ ~56–58% ส่วนฝั่งขายแค่ ~50% (เหมือนโยนเหรียญ) วันที่แนวโน้มลงระบบจะบอกให้รอ</li>
@@ -482,22 +505,22 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610052024</p>
+        <p class="muted small center">เวอร์ชัน 202610052045</p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610052024"></script>
-  <script src="auth.js?v=202610052024"></script>
-  <script src="indicators.js?v=202610052024"></script>
-  <script src="investing.js?v=202610052024"></script>
-  <script src="explain.js?v=202610052024"></script>
-  <script src="dailyplan.js?v=202610052024"></script>
-  <script src="signals.js?v=202610052024"></script>
-  <script src="intraday.js?v=202610052024"></script>
-  <script src="ui.js?v=202610052024"></script>
-  <script src="main.js?v=202610052024"></script>
+  <script src="config.js?v=202610052045"></script>
+  <script src="auth.js?v=202610052045"></script>
+  <script src="indicators.js?v=202610052045"></script>
+  <script src="investing.js?v=202610052045"></script>
+  <script src="explain.js?v=202610052045"></script>
+  <script src="dailyplan.js?v=202610052045"></script>
+  <script src="signals.js?v=202610052045"></script>
+  <script src="intraday.js?v=202610052045"></script>
+  <script src="ui.js?v=202610052045"></script>
+  <script src="main.js?v=202610052045"></script>
 </body>
 </html>

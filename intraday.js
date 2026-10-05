@@ -42,37 +42,56 @@
     return (news || []).find((n) => Math.abs(n.time - now) <= w) || null;
   }
 
-  // candles: { m30, h1, h5 } arrays of { time (ms), open, high, low, close }; news: upcoming releases
+  // Timeframes voting in each system: [candle key, candle length, minimum closed candles, Thai label].
+  // The first one is the fast frame (used to spot a closed market / stale prices).
+  const FRAMES = [['m30', 30 * 60e3, 60, '30 นาที'], ['h1', 3600e3, 60, '1 ชม.'], ['h5', 5 * 3600e3, 40, '5 ชม.']];
+
+  // candles: { <frame key>: [{ time (ms), open, high, low, close }] }; news: upcoming releases
   // live: also use the candles still forming (for the website's real-time view). Official decisions
-  // (LINE, recorded trades, backtest) use closed candles only.
-  function decide(candles, now = Date.now(), news = null, live = false) {
+  // (LINE, recorded trades, backtest) use closed candles only. rule: { threshold, sides }.
+  function decideWith(frames, rule, candles, now = Date.now(), news = null, live = false) {
     const pick = (bars, dur) => (live ? bars.filter((b) => b.time <= now).slice(-200) : closed(bars, dur, now));
-    const c30 = pick(candles.m30, 30 * 60e3), c1 = pick(candles.h1, 3600e3), c5 = pick(candles.h5, 5 * 3600e3);
-    if (c30.length < 60 || c1.length < 60 || c5.length < 40) return null;
-    const keys = { m30: trendKey(c30), h1: trendKey(c1), h5: trendKey(c5) };
-    const score = STRENGTH[keys.m30] + STRENGTH[keys.h1] + STRENGTH[keys.h5];
-    // Direction to lean every half hour, even when the score is too weak for an official trade
-    const lean = Math.sign(score) || Math.sign(STRENGTH[keys.h1]) || Math.sign(STRENGTH[keys.h5]) || Math.sign(STRENGTH[keys.m30]);
+    const cs = frames.map(([k, dur]) => pick(candles[k] || [], dur));
+    if (cs.some((c, i) => c.length < frames[i][2])) return null;
+    const keys = Object.fromEntries(frames.map(([k], i) => [k, trendKey(cs[i])]));
+    const v = frames.map(([k]) => STRENGTH[keys[k]]);
+    const score = v.reduce((a, b) => a + b, 0);
+    // Direction to lean even when the score is too weak for a trade: middle, then slow, then fast frame
+    const lean = Math.sign(score) || Math.sign(v[1]) || Math.sign(v[2]) || Math.sign(v[0]);
     const open = marketOpen(now);
     const lastHour = open && thai(now).h === HOURS.lastEntry; // 02:00–03:00: too close to the close
-    const stale = !open || now - c30[c30.length - 1].time > 2 * 3600e3; // market closed / no prices
+    const fast = cs[0];
+    const stale = !open || now - fast[fast.length - 1].time > 2 * 3600e3; // market closed / no prices
     const event = newsNear(news, now);
-    const sideOk = RULE.sides !== 'buy' || score > 0;
+    const sideOk = rule.sides !== 'buy' || score > 0;
     return {
-      slot: slotOf(now), score, keys, lean,
-      dir: Math.abs(score) >= RULE.threshold && sideOk && !lastHour && !stale && !event ? Math.sign(score) : 0,
-      lastHour, stale, open, news: event, sellSkipped: Math.abs(score) >= RULE.threshold && !sideOk,
+      slot: slotOf(now), score, keys, lean, rule,
+      frames: frames.map(([k, , , label]) => ({ key: k, label, trend: keys[k] })),
+      dir: Math.abs(score) >= rule.threshold && sideOk && !lastHour && !stale && !event ? Math.sign(score) : 0,
+      lastHour, stale, open, news: event, sellSkipped: Math.abs(score) >= rule.threshold && !sideOk,
     };
   }
+  // The 30-minute system (LINE + recorded trades)
+  const decide = (candles, now, news, live) => decideWith(FRAMES, RULE, candles, now, news, live);
+
+  // The 15-minute system: website only (no LINE, nothing recorded) — re-checked whenever a 15-minute
+  // candle closes; same scoring with a faster first frame. Calibrated by `SYSTEM=15 node scripts/backtest-30m.js`.
+  const FRAMES15 = [['m15', 15 * 60e3, 60, '15 นาที'], ['h1', 3600e3, 60, '1 ชม.'], ['h5', 5 * 3600e3, 40, '5 ชม.']];
+  // Buy only at +5: over 1 year (after a $0.4 spread) this was the only setting that made money —
+  // both sides −$131, buy +3 −$460, +4 −$198, +5 +$97 (~1.4 trades a day), +6 +$37.
+  const RULE15 = { ...RULE, threshold: 5, sides: 'buy' };
+  const SLOT15 = 15 * 60e3;
+  const decide15 = (candles, now, news, live) => decideWith(FRAMES15, RULE15, candles, now, news, live);
 
   // Plain-Thai reasons for a decision
   function reasons(dec) {
-    const lines = [`แนวโน้ม 30 นาที ${TREND_TH[dec.keys.m30]} · 1 ชม. ${TREND_TH[dec.keys.h1]} · 5 ชม. ${TREND_TH[dec.keys.h5]} (คะแนน ${dec.score > 0 ? '+' : ''}${dec.score} จาก ±6)`];
+    const rule = dec.rule || RULE;
+    const lines = [`แนวโน้ม ${dec.frames.map((f) => `${f.label} ${TREND_TH[f.trend]}`).join(' · ')} (คะแนน ${dec.score > 0 ? '+' : ''}${dec.score} จาก ±6)`];
     if (dec.stale) lines.push('ตลาดปิดอยู่ (เปิด 07:00–03:00 น.) — ไม่เปิดไม้ใหม่');
     else if (dec.lastHour) lines.push('ใกล้ปิดตลาด 03:00 น. — ไม่เปิดไม้ใหม่ในชั่วโมงสุดท้าย');
     else if (dec.news) lines.push(`📰 ช่วงข่าวแรง: ${dec.news.title} — ไม่เปิดไม้ใหม่ ±${RULE.newsMin} นาทีรอบข่าว`);
     else if (dec.sellSkipped) lines.push('แนวโน้มลงชัด แต่ระบบเข้าเฉพาะฝั่งซื้อ (สถิติ 2 ปี ฝั่งขายชนะแค่ ~50%) — แนะนำรอ');
-    else if (!dec.dir) lines.push(`ต้องได้คะแนน +${RULE.threshold} ขึ้นไปถึงจะเข้าซื้อ (ทั้ง 3 ช่วงเวลาต้องชี้ขึ้นชัดเจน)`);
+    else if (!dec.dir) lines.push(`ต้องได้คะแนน ${rule.sides === 'buy' ? '+' : '±'}${rule.threshold} ขึ้นไปถึงจะเข้า (ทั้ง 3 ช่วงเวลาต้องชี้ทางเดียวกันชัดเจน)`);
     return lines;
   }
 
@@ -137,7 +156,7 @@
   }
   const paused = (store, now) => !!(store && store.pause && now < store.pause.until);
 
-  const INTRA = { RULE, weekStart, nextWeek, pauseCheck, paused, SLOT, HOURS, slotOf, closed, marketOpen, nextClose, newsNear, decide, reasons, odds, verdict, levels, makeTrade, TREND_TH };
+  const INTRA = { RULE, FRAMES, decideWith, FRAMES15, RULE15, SLOT15, decide15, weekStart, nextWeek, pauseCheck, paused, SLOT, HOURS, slotOf, closed, marketOpen, nextClose, newsNear, decide, reasons, odds, verdict, levels, makeTrade, TREND_TH };
   if (typeof module !== 'undefined' && module.exports) module.exports = INTRA;
   else root.INTRA = INTRA;
 })(typeof window !== 'undefined' ? window : globalThis);

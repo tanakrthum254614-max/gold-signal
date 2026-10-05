@@ -176,3 +176,25 @@
 .adv-note { margin: 8px 0 12px; padding: 10px 12px; border-radius: 12px; font-size: 14px; line-height: 1.55;
   background: rgba(242,169,59,.12); border: 1px solid rgba(242,169,59,.4); color: var(--text); }
 .sig.advisory .sig-side { font-size: 34px; }
+
+/* ================= 15-minute signal (website only) ================= */
+.s15 { margin-bottom: 14px; position: relative; overflow: hidden; }
+.s15.buy { border-color: rgba(15,159,110,.45); }
+.s15.hold { border-color: rgba(47,111,237,.45); }
+.s15-call { font-size: 26px; font-weight: 700; line-height: 1.25; margin: 8px 0 2px; }
+.s15.buy .s15-call { color: var(--up); } .s15.hold .s15-call { color: #2f6fed; } .s15.wait .s15-call { color: var(--wait); }
+.s15-why { margin: 0 0 8px; font-size: 14px; }
+.s15-chart { height: 280px; margin: 10px -6px 4px; }
+.s15-legend { list-style: none; padding: 0; margin: 6px 0 10px; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); }
+.s15-legend li { display: flex; align-items: center; gap: 5px; }
+.s15-legend i { font-style: normal; font-weight: 700; }
+.s15-legend i.up, .s15-legend i.tp { color: var(--up); } .s15-legend i.sl { color: var(--down); }
+.s15-legend i.zone { width: 14px; height: 10px; border-radius: 3px; border: 1px solid var(--line); background: transparent; }
+.s15-legend i.zone.ok { background: rgba(15,159,110,.22); border-color: transparent; }
+.s15-legend i.zone.news { background: rgba(240,180,41,.3); border-color: transparent; }
+.s15-sides { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0 4px; }
+.s15-sides div { background: var(--panel-2); border-radius: 12px; padding: 8px 10px; font-size: 13px; }
+.s15-sides b { display: block; font-size: 15px; }
+.s15-sides .ok b { color: var(--up); } .s15-sides .no b { color: var(--muted); }
+.s15-stats { margin: 8px 0 0; }
+@media (max-width: 520px) { .s15-call { font-size: 22px; } .s15-chart { height: 240px; } }

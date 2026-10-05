@@ -51,6 +51,7 @@ jobs:
           if [ "$(TZ=Asia/Bangkok date +%u)" = "1" ] || [ ! -f backtest.json ]; then
             node scripts/backtest.js 365
             node scripts/backtest-30m.js 365
+            SYSTEM=15 node scripts/backtest-30m.js 365
           fi
       - name: Score signals, record today's, send to LINE
         env:
@@ -64,7 +65,7 @@ jobs:
         run: |
           git config user.name "tanakrthum254614-max"
           git config user.email "$(gh api users/tanakrthum254614-max --jq '"\(.id)+\(.login)@users.noreply.github.com"')"
-          git add signals.json backtest.json backtest-30m.json $(ls quota.json 2>/dev/null)
+          git add signals.json backtest.json backtest-30m.json backtest-15m.json $(ls quota.json 2>/dev/null)
           git diff --cached --quiet || git commit -m "Signal update $(TZ=Asia/Bangkok date +%F)"
           ok=0; for i in 1 2 3; do git pull --rebase -q && git push && { ok=1; break; }; sleep 5; done; [ "$ok" = 1 ]
         env:

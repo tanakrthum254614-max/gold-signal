@@ -2,6 +2,8 @@
 // Candles from Binance PAXG; 5-hour candles are built from 1-hour ones. One trade open at a time.
 // The win-rate-by-score table (shown as "% chance" in the half-hourly updates) uses CAL_DAYS of data.
 // Usage: node scripts/backtest-30m.js [days=365] [calibrationDays=730]
+// SYSTEM=15: the website-only 15-minute system instead (15m/1h/5h trends, checked every 15 minutes,
+// trades followed on 5-minute candles) → backtest-15m.json
 const fs = require('fs');
 const path = require('path');
 const SIG = require('../signals.js');
@@ -10,6 +12,12 @@ const INTRA = require('../intraday.js');
 const DAYS = +(process.argv[2] || 365);
 const CAL_DAYS = Math.max(DAYS, +(process.argv[3] || 730));
 const API = 'https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT';
+const SYS = process.env.SYSTEM === '15'
+  ? { name: '15m', slot: INTRA.SLOT15, frames: INTRA.FRAMES15, rule: INTRA.RULE15, fast: '15m', follow: '5m', file: 'backtest-15m.json' }
+  : { name: '30m', slot: INTRA.SLOT, frames: INTRA.FRAMES, rule: INTRA.RULE, fast: '30m', follow: '15m', file: 'backtest-30m.json' };
+// Experiments: TH=<threshold> SIDES=buy|both override the rule (e.g. SYSTEM=15 TH=4 SIDES=buy)
+if (process.env.TH || process.env.SIDES) SYS.rule = { ...SYS.rule, ...(process.env.TH ? { threshold: +process.env.TH } : {}), ...(process.env.SIDES ? { sides: process.env.SIDES } : {}) };
+if (process.env.OUT) SYS.file = process.env.OUT;
 
 async function klines(interval, start, end) {
   const out = [];
@@ -49,25 +57,28 @@ function before(bars, t, n = 260) {
   const now = Date.now();
   const start = now - CAL_DAYS * 864e5;
   const tradeFrom = now - DAYS * 864e5;
-  const [m15, m30, h1] = await Promise.all([
-    klines('15m', start, now), klines('30m', start - 260 * 30 * 60e3, now), klines('1h', start - 1400 * 3600e3, now),
+  // m15 = candles the trades are followed on (15m, or 5m for the 15-minute system); fast = first frame
+  const fastMs = SYS.frames[0][1];
+  const [m15, fast, h1] = await Promise.all([
+    klines(SYS.follow, start, now), klines(SYS.fast, start - 260 * fastMs, now), klines('1h', start - 1400 * 3600e3, now),
   ]);
   const h5 = group(h1, 5 * 3600e3);
-  console.log(`bars: 15m=${m15.length} 30m=${m30.length} 1h=${h1.length} 5h=${h5.length}`);
+  const fastKey = SYS.frames[0][0];
+  console.log(`${SYS.name} system · bars: follow(${SYS.follow})=${m15.length} ${SYS.fast}=${fast.length} 1h=${h1.length} 5h=${h5.length}`);
 
   const trades = [];
   // side → score → how often a hypothetical buy / sell at that half hour hit TP1 before the stop
   const calib = { buy: {}, sell: {} };
   let busyUntil = 0, decisions = 0;
-  for (let t = INTRA.slotOf(start) + INTRA.SLOT; t < now - 864e5; t += INTRA.SLOT) {
+  for (let t = Math.floor(start / SYS.slot) * SYS.slot + SYS.slot; t < now - 864e5; t += SYS.slot) {
     const wd = new Date(t).getUTCDay();
     if (wd === 0 || wd === 6) continue;
-    const dec = INTRA.decide({ m30: before(m30, t), h1: before(h1, t), h5: before(h5, t) }, t);
+    const dec = INTRA.decideWith(SYS.frames, SYS.rule, { [fastKey]: before(fast, t), h1: before(h1, t), h5: before(h5, t) }, t);
     if (!dec || dec.stale) continue;
     const price = before(m15, t, 1)[0];
     if (!price) continue;
     // Calibration: every half hour, a hypothetical buy AND a hypothetical sell
-    const ahead = before(m15, t + 864e5, 200).filter((x) => x.time >= t);
+    const ahead = before(m15, t + 864e5, SYS.follow === '5m' ? 600 : 200).filter((x) => x.time >= t);
     for (const [side, dir] of [['buy', 1], ['sell', -1]]) {
       const r = SIG.evaluate(INTRA.makeTrade({ ...dec, dir }, price.close, t), ahead, now);
       if (r.status !== 'win' && r.status !== 'loss') continue;
@@ -79,7 +90,7 @@ function before(bars, t, n = 260) {
     decisions++;
     if (!dec.dir) continue;
     const trade = INTRA.makeTrade(dec, price.close, t);
-    const r = SIG.evaluate(trade, before(m15, trade.expiresAt + 1, 200).filter((b) => b.time >= t), now);
+    const r = SIG.evaluate(trade, before(m15, trade.expiresAt + 1, SYS.follow === '5m' ? 600 : 200).filter((b) => b.time >= t), now);
     trades.push(r);
     busyUntil = (r.exitAt || trade.expiresAt) + 15 * 60e3;
   }
@@ -93,8 +104,8 @@ function before(bars, t, n = 260) {
       split: c.hit.map((h) => SIG.round((h / c.n) * 100)),
     }]));
   const calibration = { buy: table(calib.buy), sell: table(calib.sell) };
-  const out = { generatedAt: now, days: DAYS, calibrationDays: CAL_DAYS, rule: INTRA.RULE, source: 'Binance PAXG/USDT (จำลอง)', perDay: +(trades.length / days).toFixed(1), summary: s, calibration, trades };
-  fs.writeFileSync(path.join(__dirname, '..', 'backtest-30m.json'), JSON.stringify(out));
+  const out = { generatedAt: now, days: DAYS, calibrationDays: CAL_DAYS, system: SYS.name, rule: SYS.rule, source: 'Binance PAXG/USDT (จำลอง)', perDay: +(trades.length / days).toFixed(1), summary: s, calibration, trades };
+  fs.writeFileSync(path.join(__dirname, '..', SYS.file), JSON.stringify(out));
   for (let k = -6; k <= 6; k++) {
     const b = calibration.buy[k], s2 = calibration.sell[k];
     if (b || s2) console.log(`  score ${String(k).padStart(2)}: buy win=${b ? b.winRate : '-'}% sell win=${s2 ? s2.winRate : '-'}% (n=${b ? b.n : 0})`);
