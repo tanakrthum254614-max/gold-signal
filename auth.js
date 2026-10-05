@@ -4,9 +4,11 @@
 
   // Progress ring (r = 72) + a counting percentage + a list of finished steps
   const RING = 2 * Math.PI * 72;
-  let shown = 0, target = 0, raf = 0, lastText = '';
+  // Shown for at least MIN_MS, and the ring fills slowly, so every step can be read
+  const MIN_MS = 4000;
+  let shown = 0, target = 0, raf = 0, lastText = '', startAt = Date.now();
   function count() {
-    shown += Math.max(0.6, (target - shown) * 0.12);
+    shown += Math.max(0.25, (target - shown) * 0.035);
     if (shown >= target) shown = target;
     $('splashPct').textContent = `${Math.round(shown)}%`;
     $('splashFill').style.strokeDashoffset = RING * (1 - shown / 100);
@@ -27,11 +29,17 @@
         if (!raf) raf = requestAnimationFrame(count);
       }
     },
-    show() { shown = target = 0; $('splash').classList.remove('gone', 'done'); },
+    show() { shown = target = 0; startAt = Date.now(); $('splash').classList.remove('gone', 'done'); },
     hide() {
-      this.step('พร้อมแล้ว!', 100);
-      $('splash').classList.add('done');
-      setTimeout(() => $('splash').classList.add('gone'), 650);
+      setTimeout(() => {
+        this.step('พร้อมแล้ว!', 100);
+        const finish = () => {
+          if (shown < 100) return setTimeout(finish, 80);
+          $('splash').classList.add('done');
+          setTimeout(() => $('splash').classList.add('gone'), 900);
+        };
+        finish();
+      }, Math.max(0, startAt + MIN_MS - Date.now()));
     },
   };
   $('splashFill').style.strokeDasharray = RING;
@@ -40,17 +48,17 @@
 
   const THEME = {
     variables: {
-      colorPrimary: '#e8b64c', colorPrimaryForeground: '#1a1205', colorTextOnPrimaryBackground: '#1a1205',
-      colorBackground: '#151a23', colorForeground: '#e6e9ef', colorText: '#e6e9ef',
-      colorMutedForeground: '#8a93a3', colorTextSecondary: '#8a93a3', colorNeutral: '#e6e9ef',
-      colorInput: '#1b212c', colorInputBackground: '#1b212c', colorInputForeground: '#e6e9ef', colorInputText: '#e6e9ef',
+      colorPrimary: '#1c2433', colorPrimaryForeground: '#ffffff', colorTextOnPrimaryBackground: '#ffffff',
+      colorBackground: '#ffffff', colorForeground: '#1c2433', colorText: '#1c2433',
+      colorMutedForeground: '#697386', colorTextSecondary: '#697386', colorNeutral: '#1c2433',
+      colorInput: '#f2f5f9', colorInputBackground: '#f2f5f9', colorInputForeground: '#1c2433', colorInputText: '#1c2433',
       fontFamily: '"IBM Plex Sans Thai", system-ui, sans-serif', borderRadius: '10px', fontSize: '16px',
     },
     // Google only: hide the email form so the sign-in screen is a single button
     elements: {
       dividerRow: { display: 'none' }, form: { display: 'none' }, footerAction: { display: 'none' },
       socialButtonsBlockButton: { padding: '14px', fontSize: '16px' },
-      cardBox: { boxShadow: 'none', border: '1px solid #262e3b' },
+      cardBox: { boxShadow: '0 8px 24px rgba(20,30,50,.08)', border: '1px solid #e2e7ef', borderRadius: '20px' },
     },
   };
   const THAI_OVERRIDES = {

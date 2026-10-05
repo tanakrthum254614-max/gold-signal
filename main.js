@@ -130,11 +130,11 @@ async function refreshDaily() {
 const LC = LightweightCharts;
 const chartBase = (showTime, logo = false) => ({
   autoSize: true,
-  layout: { attributionLogo: logo, background: { color: 'transparent' }, textColor: '#8a93a3', fontFamily: 'JetBrains Mono, monospace', fontSize: 11 },
-  grid: { vertLines: { color: '#1b212c' }, horzLines: { color: '#1b212c' } },
-  rightPriceScale: { borderColor: '#262e3b', minimumWidth: 78 },
-  timeScale: { borderColor: '#262e3b', timeVisible: true, secondsVisible: false, visible: showTime, rightOffset: 6 },
-  crosshair: { mode: LC.CrosshairMode.Normal },
+  layout: { attributionLogo: logo, background: { color: 'transparent' }, textColor: '#5b6475', fontFamily: 'JetBrains Mono, monospace', fontSize: 12 },
+  grid: { vertLines: { color: '#f0f2f6' }, horzLines: { color: '#eceff4' } },
+  rightPriceScale: { borderColor: '#e2e7ef', minimumWidth: 78 },
+  timeScale: { borderColor: '#e2e7ef', timeVisible: true, secondsVisible: false, visible: showTime, rightOffset: 6 },
+  crosshair: { mode: LC.CrosshairMode.Normal, vertLine: { color: '#9aa4b5', labelBackgroundColor: '#1c2433' }, horzLine: { color: '#9aa4b5', labelBackgroundColor: '#1c2433' } },
 });
 
 const mainChart = LC.createChart($('mainChart'), chartBase(false, true));
@@ -142,32 +142,32 @@ const rsiChart = LC.createChart($('rsiChart'), chartBase(false));
 const macdChart = LC.createChart($('macdChart'), chartBase(true));
 
 const candles = mainChart.addCandlestickSeries({
-  upColor: '#22c58b', downColor: '#f0506e', borderVisible: false,
-  wickUpColor: '#22c58b', wickDownColor: '#f0506e',
+  upColor: '#0f9f6e', downColor: '#e0424f', borderVisible: false,
+  wickUpColor: '#0f9f6e', wickDownColor: '#e0424f',
 });
 const lineOpts = (color, extra = {}) => ({ color, lineWidth: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false, ...extra });
-const ema20S = mainChart.addLineSeries(lineOpts('#4ea1ff', { lineWidth: 1.5 }));
-const ema50S = mainChart.addLineSeries(lineOpts('#c77dff', { lineWidth: 1.5 }));
-const bbU = mainChart.addLineSeries(lineOpts('#6b7686', { lineWidth: 1, lineStyle: LC.LineStyle.Dashed }));
-const bbL = mainChart.addLineSeries(lineOpts('#6b7686', { lineWidth: 1, lineStyle: LC.LineStyle.Dashed }));
+const ema20S = mainChart.addLineSeries(lineOpts('#2f6fed', { lineWidth: 1.5 }));
+const ema50S = mainChart.addLineSeries(lineOpts('#9b51e0', { lineWidth: 1.5 }));
+const bbU = mainChart.addLineSeries(lineOpts('#a3acba', { lineWidth: 1, lineStyle: LC.LineStyle.Dashed }));
+const bbL = mainChart.addLineSeries(lineOpts('#a3acba', { lineWidth: 1, lineStyle: LC.LineStyle.Dashed }));
 
-const rsiS = rsiChart.addLineSeries(lineOpts('#e8b64c', { lastValueVisible: true }));
-rsiS.createPriceLine({ price: 70, color: '#f0506e', lineWidth: 1, lineStyle: LC.LineStyle.Dashed, axisLabelVisible: false });
-rsiS.createPriceLine({ price: 30, color: '#22c58b', lineWidth: 1, lineStyle: LC.LineStyle.Dashed, axisLabelVisible: false });
+const rsiS = rsiChart.addLineSeries(lineOpts('#d99a10', { lastValueVisible: true }));
+rsiS.createPriceLine({ price: 70, color: '#e0424f', lineWidth: 1, lineStyle: LC.LineStyle.Dashed, axisLabelVisible: false });
+rsiS.createPriceLine({ price: 30, color: '#0f9f6e', lineWidth: 1, lineStyle: LC.LineStyle.Dashed, axisLabelVisible: false });
 
 const histS = macdChart.addHistogramSeries({ priceLineVisible: false, lastValueVisible: false });
-const macdS = macdChart.addLineSeries(lineOpts('#4ea1ff', { lineWidth: 1.5 }));
+const macdS = macdChart.addLineSeries(lineOpts('#2f6fed', { lineWidth: 1.5 }));
 const sigS = macdChart.addLineSeries(lineOpts('#f2a93b', { lineWidth: 1.5 }));
 
 // Simple chart: a plain price line with the latest signal's entry / stop / target
 const simpleChart = LC.createChart($('simpleChart'), {
   ...chartBase(true),
   handleScroll: false, handleScale: false,
-  grid: { vertLines: { visible: false }, horzLines: { color: '#1b212c' } },
+  grid: { vertLines: { visible: false }, horzLines: { color: '#eceff4' } },
 });
 const areaS = simpleChart.addAreaSeries({
-  lineColor: '#e8b64c', topColor: 'rgba(232,182,76,.35)', bottomColor: 'rgba(232,182,76,0)', lineWidth: 2,
-  priceLineVisible: false,
+  lineColor: '#e6a100', topColor: 'rgba(240,180,41,.32)', bottomColor: 'rgba(240,180,41,.02)', lineWidth: 3,
+  priceLineVisible: true, priceLineColor: '#e6a100', crosshairMarkerRadius: 5,
 });
 let zoneLines = [];
 function drawSignalLines(s) {
@@ -178,9 +178,9 @@ function drawSignalLines(s) {
   zoneLines = [];
   const line = (price, color, title, style, width = 2) =>
     zoneLines.push(areaS.createPriceLine({ price, color, lineWidth: width, lineStyle: style, title }));
-  line(s.entry, s.side === 'BUY' ? '#22c58b' : '#f0506e', s.side === 'BUY' ? '🎯 ซื้อ' : '🎯 ขาย', LC.LineStyle.Solid);
-  line(s.sl, '#f0506e', '🛑 ตัดขาดทุน', LC.LineStyle.Dotted, 1);
-  (s.tps || [s.tp]).forEach((tp, k, all) => line(tp, '#e8b64c', all.length > 1 ? `💰 TP${k + 1}` : '💰 เป้าหมาย', LC.LineStyle.Dashed, 1));
+  line(s.entry, s.side === 'BUY' ? '#0f9f6e' : '#e0424f', s.side === 'BUY' ? '🎯 ซื้อ' : '🎯 ขาย', LC.LineStyle.Solid);
+  line(s.sl, '#e0424f', '🛑 ตัดขาดทุน', LC.LineStyle.Dotted, 1);
+  (s.tps || [s.tp]).forEach((tp, k, all) => line(tp, '#d99a10', all.length > 1 ? `💰 TP${k + 1}` : '💰 เป้าหมาย', LC.LineStyle.Dashed, 1));
 }
 
 // Keep the three panes scrolled/zoomed together
@@ -203,10 +203,10 @@ function setLines(store, defs) {
 function drawPlanLines(plan) {
   if (plan.action === 'WAIT' || plan.entry == null) return setLines(planLines, []);
   setLines(planLines, [
-    { price: plan.entry, color: '#e8b64c', title: 'จุดเข้า', lineStyle: LC.LineStyle.Solid },
-    { price: plan.sl, color: '#f0506e', title: 'ตัดขาดทุน', lineStyle: LC.LineStyle.Dashed },
-    { price: plan.tp1, color: '#22c58b', title: 'เป้า 1', lineStyle: LC.LineStyle.Dashed },
-    { price: plan.tp2, color: '#22c58b', title: 'เป้า 2', lineStyle: LC.LineStyle.Dashed },
+    { price: plan.entry, color: '#d99a10', title: 'จุดเข้า', lineStyle: LC.LineStyle.Solid },
+    { price: plan.sl, color: '#e0424f', title: 'ตัดขาดทุน', lineStyle: LC.LineStyle.Dashed },
+    { price: plan.tp1, color: '#0f9f6e', title: 'เป้า 1', lineStyle: LC.LineStyle.Dashed },
+    { price: plan.tp2, color: '#0f9f6e', title: 'เป้า 2', lineStyle: LC.LineStyle.Dashed },
   ]);
 }
 
@@ -216,7 +216,7 @@ function drawPivotLines(pv) {
   state.pivotKey = key;
   setLines(pivotLines, pv.map((p) => ({
     price: p.price, title: p.name, lineStyle: LC.LineStyle.Dotted, axisLabelVisible: false,
-    color: p.name === 'P' ? 'rgba(232,182,76,.7)' : p.name[0] === 'R' ? 'rgba(240,80,110,.45)' : 'rgba(34,197,139,.45)',
+    color: p.name === 'P' ? 'rgba(217,154,16,.8)' : p.name[0] === 'R' ? 'rgba(224,66,79,.45)' : 'rgba(15,159,110,.45)',
   })));
 }
 
@@ -232,7 +232,7 @@ function render() {
     const h = ind.macd.hist[i];
     if (h == null) return { time: t[i] };
     const rising = i > 0 && ind.macd.hist[i - 1] != null && h > ind.macd.hist[i - 1];
-    return { time: t[i], value: h, color: h >= 0 ? (rising ? '#22c58b' : '#1d7a59') : (rising ? '#9b3a4c' : '#f0506e') };
+    return { time: t[i], value: h, color: h >= 0 ? (rising ? '#0f9f6e' : '#7fcfb2') : (rising ? '#f0a0a7' : '#e0424f') };
   };
   const lines = [[ema20S, ind.ema20], [ema50S, ind.ema50], [bbU, ind.bb.upper], [bbL, ind.bb.lower],
     [rsiS, ind.rsi], [macdS, ind.macd.line], [sigS, ind.macd.signal]];
@@ -542,9 +542,9 @@ function equityChart(id) {
   if (eqCharts[id]) return eqCharts[id];
   const chart = LC.createChart($(id), { ...chartBase(true), handleScroll: false, handleScale: false });
   const series = chart.addBaselineSeries({
-    baseValue: { type: 'price', price: 0 }, lineWidth: 2, priceLineVisible: false,
-    topLineColor: '#22c58b', topFillColor1: 'rgba(34,197,139,.25)', topFillColor2: 'rgba(34,197,139,0)',
-    bottomLineColor: '#f0506e', bottomFillColor1: 'rgba(240,80,110,0)', bottomFillColor2: 'rgba(240,80,110,.25)',
+    baseValue: { type: 'price', price: 0 }, lineWidth: 3, priceLineVisible: false,
+    topLineColor: '#0f9f6e', topFillColor1: 'rgba(15,159,110,.25)', topFillColor2: 'rgba(15,159,110,0)',
+    bottomLineColor: '#e0424f', bottomFillColor1: 'rgba(224,66,79,0)', bottomFillColor2: 'rgba(224,66,79,.25)',
   });
   fitWhenSized($(id), () => chart.timeScale().fitContent());
   return (eqCharts[id] = { chart, series });
@@ -757,8 +757,8 @@ function buildGauge() {
 // ----- Donuts: what happened historically to trades opened at this score -----
 const RING_R = 46, RING_C = 2 * Math.PI * RING_R;
 const DN_PARTS = [
-  ['s0', '#f0506e', 'ไม่ถึง TP1'], ['s1', '#7fdcb5', 'ถึง TP1 แล้วกลับ'],
-  ['s2', '#22c58b', 'ถึง TP2'], ['s3', '#e8b64c', 'ถึง TP3 ครบ'],
+  ['s0', '#f07b84', 'ไม่ถึง TP1'], ['s1', '#8fdcbc', 'ถึง TP1 แล้วกลับ'],
+  ['s2', '#1fb47f', 'ถึง TP2'], ['s3', '#f0b429', 'ถึง TP3 ครบ'],
 ];
 function buildDonut(el, dir) {
   el.innerHTML = `

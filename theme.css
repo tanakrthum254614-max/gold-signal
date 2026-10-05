@@ -1,0 +1,172 @@
+/* Light theme: bright, soft and easy to read. Loaded last — overrides the dark colours in style.css / live.css. */
+:root {
+  --bg: #f3f5f9;
+  --panel: #ffffff;
+  --panel-2: #f2f5f9;
+  --line: #e2e7ef;
+  --text: #1c2433;
+  --muted: #697386;
+  --gold: #b9800c;          /* gold text: dark enough to read on white */
+  --gold-bright: #f0b429;   /* gold fills */
+  --gold-soft: rgba(240, 180, 41, .16);
+  --up: #0f9f6e;
+  --up-soft: rgba(15, 159, 110, .11);
+  --down: #e0424f;
+  --down-soft: rgba(224, 66, 79, .10);
+  --wait: #d27d06;
+  --blue: #2f6fed;
+  --ema20: #2f6fed;
+  --ema50: #9b51e0;
+  --radius: 20px;
+  --shadow: 0 1px 2px rgba(20, 30, 50, .04), 0 8px 24px rgba(20, 30, 50, .07);
+  --shadow-lg: 0 2px 4px rgba(20, 30, 50, .05), 0 16px 40px rgba(20, 30, 50, .10);
+}
+
+body { background: var(--bg); color: var(--text); font-size: 16px; -webkit-font-smoothing: antialiased; }
+body::before { /* soft warm glow at the top of the page */
+  content: ""; position: fixed; inset: 0 0 auto 0; height: 340px; z-index: -1; pointer-events: none;
+  background: radial-gradient(80% 100% at 50% 0%, rgba(240, 180, 41, .14), transparent 70%);
+}
+::selection { background: var(--gold-soft); }
+
+/* ---------- Cards ---------- */
+.card, .quote { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+.card { padding: 18px; }
+.card h3 { font-size: 17px; font-weight: 700; }
+.hint, .muted { color: var(--muted); }
+.sec-title { color: var(--text); font-size: 18px; font-weight: 700; margin: 22px 2px 12px; }
+.tab > .card + .card, .tab > section + section { margin-top: 16px; }
+
+/* Coloured status cards: white card + a coloured top stripe instead of dark gradients */
+.sig, .intra, .dn, .lt, .signal, .tplan, .mine, .hero { position: relative; overflow: hidden; border-width: 1px; }
+.sig::before, .intra::before, .dn::before, .lt::before, .signal::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--line);
+}
+.sig.buy, .intra.buy, .lt.buy, .signal.BUY { border-color: rgba(15,159,110,.35); background: linear-gradient(180deg, rgba(15,159,110,.07), #fff 40%); }
+.sig.sell, .intra.sell, .lt.sell, .signal.SELL { border-color: rgba(224,66,79,.35); background: linear-gradient(180deg, rgba(224,66,79,.06), #fff 40%); }
+.sig.buy::before, .intra.buy::before, .lt.buy::before, .signal.BUY::before, .dn.good::before { background: var(--up); }
+.sig.sell::before, .intra.sell::before, .lt.sell::before, .signal.SELL::before, .dn.bad::before { background: var(--down); }
+.intra.wait::before, .sig.skip::before, .signal.WAIT::before, .dn.ok::before { background: var(--gold-bright); }
+.intra.wait { border-color: var(--line); background: #fff; }
+.sig.skip, .signal.WAIT { border-color: rgba(240,180,41,.45); background: linear-gradient(180deg, rgba(240,180,41,.08), #fff 40%); }
+
+/* ---------- App bar + tabs ---------- */
+.appbar { background: rgba(255, 255, 255, .85); backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--line); }
+.appbar .brand b { font-size: 18px; letter-spacing: -.2px; }
+.hdr-price { color: var(--text); background: var(--gold-soft); padding: 4px 10px; border-radius: 99px; }
+.conn { background: #fff; border-color: var(--line); }
+.tabbar { background: rgba(255, 255, 255, .94); border-top: 1px solid var(--line); box-shadow: 0 -6px 20px rgba(20,30,50,.06); }
+.tabbar a { color: var(--muted); font-weight: 500; }
+.tabbar a span { filter: grayscale(1) opacity(.55); }
+.tabbar a.on { color: var(--text); font-weight: 700; }
+.tabbar a.on span { filter: none; }
+@media (max-width: 899px) {
+  .tabbar a { position: relative; }
+  .tabbar a.on::after { content: ""; position: absolute; top: 0; left: 30%; right: 30%; height: 3px; border-radius: 0 0 3px 3px; background: var(--gold-bright); }
+}
+@media (min-width: 900px) {
+  .tabbar { background: rgba(255, 255, 255, .85); backdrop-filter: blur(14px); box-shadow: none; border-bottom: 1px solid var(--line); }
+  .tabbar a { border-radius: 99px; }
+  .tabbar a.on { background: var(--text); color: #fff; }
+}
+
+/* ---------- Buttons, inputs, chips ---------- */
+.btn { background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 1px 2px rgba(20,30,50,.05); font-weight: 600; }
+.btn:hover { border-color: var(--gold-bright); }
+.seg { background: #e9edf3; border: 0; border-radius: 14px; }
+.seg button.on { background: #fff; color: var(--text); box-shadow: 0 1px 3px rgba(20,30,50,.12); }
+.tfs button { background: #fff; border-color: var(--line); color: var(--muted); border-radius: 99px; }
+.tfs button.on { background: var(--text); color: #fff; border-color: var(--text); }
+.settings input, .settings select { background: #fff; border-color: var(--line); }
+.settings input:focus, .settings select:focus { outline: 2px solid var(--gold-bright); }
+.tag.neutral, .tag.s0 { background: #eef1f6; color: var(--muted); }
+.chip-r { background: #eef1f6; }
+.chip-r.active { color: var(--blue); }
+.st-active .sig-status { color: var(--blue); }
+.lot { background: rgba(240,180,41,.12); }
+.toast { background: var(--text); color: #fff; box-shadow: var(--shadow-lg); }
+
+/* ---------- Numbers: bigger and clearer ---------- */
+.sig-nums .n, .sig-tps .n, .tile, .plan div, .lv-stats div, .dn-lv div, .watch-item, .tp-side { background: var(--panel-2); border-radius: 14px; }
+.sig-nums .entry b, .steps b.mono, .tp-row.entry b { color: var(--gold); }
+.tile b { font-size: 24px; }
+.stars { color: var(--gold-bright); }
+
+/* ---------- Daily signal track ---------- */
+.track-loss { background: linear-gradient(90deg, var(--down), rgba(224,66,79,.25)); }
+.track-win { background: linear-gradient(90deg, rgba(15,159,110,.25), var(--up)); }
+.track-ticks i { background: rgba(28,36,51,.35); }
+.track-ticks i.done { background: var(--up); }
+.track-now span { background: var(--text); color: #fff; }
+.score-bar { background: linear-gradient(90deg, var(--down), #e2e7ef 45%, #e2e7ef 55%, var(--up)); }
+.score-bar b { background: var(--text); }
+
+/* ---------- Live price hero ---------- */
+.lv { border-color: rgba(240,180,41,.45); background: linear-gradient(135deg, #fffaf0 0%, #fff 55%); box-shadow: var(--shadow-lg); }
+.lv::before { content: ""; position: absolute; right: -60px; top: -60px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(240,180,41,.18), transparent 70%); }
+.lv-price { color: var(--text); font-size: 50px; }
+.lv-line { stroke: var(--gold-bright); stroke-width: 2.5; }
+.lv-dot { fill: var(--gold-bright); filter: drop-shadow(0 0 4px rgba(240,180,41,.8)); }
+.lv-pill { background: #eef1f6; }
+.lv-stats div { background: #fff; border: 1px solid var(--line); }
+@media (max-width: 520px) { .lv-price { font-size: 40px; } }
+
+/* ---------- Gauge ---------- */
+.g-track { stroke: #edf0f5; }
+.g-tick { stroke: var(--text); opacity: .7; }
+.g-tick.minor { stroke: #a3acba; }
+.g-lbl { fill: var(--muted); font-size: 12px; font-weight: 600; }
+.g-needle line { stroke: var(--text); filter: none; }
+.g-needle circle { fill: var(--text); stroke: #fff; }
+.g-score b { font-size: 34px; }
+.intra-call { font-size: 26px; }
+
+/* ---------- Donuts ---------- */
+.dn { box-shadow: var(--shadow); }
+.dn.good { border-color: rgba(15,159,110,.45); box-shadow: 0 10px 30px rgba(15,159,110,.13); }
+.dn.ok { border-color: rgba(240,180,41,.6); }
+.dn-bg { stroke: #edf0f5; }
+.dn-seg.s0 { stroke: #f07b84; } .dn-seg.s1 { stroke: #8fdcbc; } .dn-seg.s2 { stroke: #1fb47f; } .dn-seg.s3 { stroke: #f0b429; }
+.dn-center b { font-size: 32px; color: var(--text); }
+.dn-legend span { color: var(--text); }
+.dn-verdict { background: #eef1f6; }
+.dn-lv div { background: var(--panel-2); }
+
+/* ---------- Open trade / news ---------- */
+.lt-bar { background: linear-gradient(90deg, rgba(224,66,79,.35) 0, rgba(224,66,79,.35) var(--entry), rgba(15,159,110,.35) var(--entry), rgba(15,159,110,.35) 100%); }
+.lt-bar .mk { background: var(--text); opacity: .45; }
+.lt-bar .now { background: var(--gold-bright); border-color: #fff; box-shadow: 0 2px 8px rgba(240,180,41,.6); }
+.lt-bar .now span { color: var(--text); }
+.tl li::before { background: #fff; }
+
+/* ---------- Charts ---------- */
+.chart-simple { height: 400px; }
+.chart-eq { height: 240px; }
+.legend { font-size: 13px; }
+@media (max-width: 520px) { .chart-simple { height: 320px; } }
+
+/* ---------- Loading screen (light) ---------- */
+.splash { background: radial-gradient(circle at 50% 38%, #fff6df 0%, #f3f5f9 62%); }
+.splash .muted { color: var(--muted); }
+.sp-glow { background: radial-gradient(circle, rgba(240,180,41,.28), transparent 65%); }
+.sp-track { stroke: #e6eaf1; }
+.sp-orbit { stroke: rgba(240,180,41,.55); }
+.sp-pct { color: var(--gold); font-size: 26px; }
+.splash-text { color: var(--text); font-weight: 600; }
+.sp-particles i { background: #f0b429; box-shadow: 0 0 8px rgba(240,180,41,.7); }
+.sp-particles i:nth-child(odd) { background: #ffd56b; }
+.sp-title { background-image: linear-gradient(90deg, #a8720a, #f0b429, #a8720a); }
+
+/* ---------- Sign-in page ---------- */
+.login-intro h2 { color: var(--text); }
+.onboard { background: rgba(243,245,249,.97); }
+
+/* ---------- Tables ---------- */
+th { color: var(--muted); }
+.mtf tr.sel { background: rgba(240,180,41,.12); }
+.lv::before { pointer-events: none; z-index: 0; }
+.lv > * { position: relative; z-index: 1; }
+.splash { transition: opacity .8s ease, visibility .8s, transform .8s ease; }
+.tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tile b { font-size: 22px; }
+@media (max-width: 600px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tile b { font-size: 20px; } }
