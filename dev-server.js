@@ -1,4 +1,4 @@
-// Local static server: node server.js  ->  http://localhost:3000
+// Local static server: node dev-server.js  ->  http://localhost:3000
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
