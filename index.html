@@ -52,6 +52,72 @@
       </div>
     </header>
 
+    <div class="mode-switch" id="modeSwitch">
+      <button data-mode="simple">😊 โหมดง่าย</button>
+      <button data-mode="pro">📊 โหมดละเอียด (สำหรับนักเทรด)</button>
+    </div>
+
+    <!-- Simple mode: no jargon -->
+    <div id="simpleView">
+      <section class="card s-hero" id="sHero">
+        <div class="s-light" id="sLight">🟡</div>
+        <div class="s-hero-text">
+          <p class="s-eyebrow">ตอนนี้ราคาทองคำ…</p>
+          <h2 id="sTrend">กำลังวิเคราะห์…</h2>
+          <ul id="sWhy"></ul>
+        </div>
+      </section>
+
+      <section class="s-grid">
+        <div class="card s-price">
+          <label>ราคาทองตอนนี้</label>
+          <div><span class="s-usd mono" id="sUsd">—</span> <span class="muted">ดอลลาร์ / ออนซ์</span></div>
+          <div class="s-thb" id="sThbRow">≈ <b class="mono" id="sThb">—</b> บาท <span class="muted">ต่อทองคำแท่ง 1 บาท</span></div>
+          <p class="s-today" id="sToday"></p>
+          <p class="hint">ราคาบาทเป็นการประมาณจากราคาโลก อาจต่างจากราคาประกาศของสมาคมค้าทองคำเล็กน้อย</p>
+        </div>
+        <div class="card s-gauge">
+          <label>ทองจะขึ้นหรือลง?</label>
+          <div class="gauge"><div class="gauge-marker" id="gMarker"></div></div>
+          <div class="gauge-labels"><span>ลงแรง</span><span>ลง</span><span>ทรงตัว</span><span>ขึ้น</span><span>ขึ้นแรง</span></div>
+          <p>ความมั่นใจ: <b id="sSure">—</b></p>
+        </div>
+      </section>
+
+      <h3 class="s-q">คุณเป็นแบบไหน? ดูคำแนะนำของคุณ 👇</h3>
+      <section class="s-personas">
+        <div class="card persona" id="pBuy"><div class="p-icon">🛒</div><h4>อยากซื้อทองเก็บ</h4><div class="p-answer"></div><p></p></div>
+        <div class="card persona" id="pHold"><div class="p-icon">💰</div><h4>มีทองอยู่แล้ว</h4><div class="p-answer"></div><p></p></div>
+        <div class="card persona" id="pTrade"><div class="p-icon">⚡</div><h4>เทรดทำกำไรระยะสั้น</h4><div class="p-answer"></div><p></p></div>
+      </section>
+
+      <section class="card s-chart">
+        <div class="s-chart-head">
+          <h3>ราคาทองย้อนหลัง</h3>
+          <nav class="tfs" id="sRange"></nav>
+        </div>
+        <div id="simpleChart" class="chart-simple"></div>
+        <p class="hint">🟢 เส้นเขียว = ราคาที่น่าซื้อ (ราคามักเด้งขึ้นแถวนี้) · 🔴 เส้นแดง = ราคาที่น่าขาย (ราคามักถูกกดลงแถวนี้)</p>
+      </section>
+
+      <details class="card glossary">
+        <summary>📖 คำศัพท์ที่ควรรู้ (กดเพื่อเปิดดู)</summary>
+        <dl>
+          <dt>ออนซ์</dt><dd>หน่วยน้ำหนักทองสากล 1 ออนซ์ ≈ 31.1 กรัม (ทองไทย 1 บาท ≈ 15.2 กรัม) ราคาทองโลกบอกเป็นดอลลาร์ต่อออนซ์</dd>
+          <dt>XAU/USD</dt><dd>ชื่อเรียกราคาทองคำโลก เทียบกับเงินดอลลาร์สหรัฐ</dd>
+          <dt>ขาขึ้น / ขาลง</dt><dd>ช่วงที่ราคามีแนวโน้มสูงขึ้นเรื่อย ๆ / ต่ำลงเรื่อย ๆ</dd>
+          <dt>แนวรับ</dt><dd>ระดับราคาที่ลงมาแล้วมักเด้งขึ้น เหมือน “พื้น”</dd>
+          <dt>แนวต้าน</dt><dd>ระดับราคาที่ขึ้นไปแล้วมักถูกกดลง เหมือน “เพดาน”</dd>
+          <dt>ตัดขาดทุน (Stop Loss)</dt><dd>ราคาที่ตั้งใจไว้ว่าถ้าผิดทางถึงจุดนี้จะยอมขายออก เพื่อไม่ให้ขาดทุนมากขึ้น</dd>
+          <dt>ทำกำไร (Take Profit)</dt><dd>ราคาเป้าหมายที่จะขายเพื่อเก็บกำไร</dd>
+          <dt>Short (ขายก่อน)</dt><dd>การเทรดที่ได้กำไรเมื่อราคาลง ใช้ได้เฉพาะบัญชีเทรด (เช่น โกลด์ฟิวเจอร์ส) ไม่ใช่ทองแท่งจริง</dd>
+          <dt>ทยอยซื้อ</dt><dd>แบ่งเงินซื้อทีละส่วนในหลายวัน แทนการซื้อทีเดียว ช่วยลดความเสี่ยงซื้อได้ราคาแพง</dd>
+        </dl>
+      </details>
+    </div>
+
+    <!-- Detailed mode -->
+    <div id="proView" hidden>
     <section class="quote">
       <div class="quote-main">
         <span class="sym">ทองคำ (XAU/USD)</span>
@@ -159,6 +225,8 @@
       </section>
     </section>
 
+    </div>
+
     <footer>
       <p><strong>ข้อมูล:</strong> ราคาและสถิติทางเทคนิคดึงจาก
         <a href="https://th.investing.com/currencies/xau-usd" target="_blank" rel="noopener">investing.com XAU/USD</a> อัปเดตอัตโนมัติ
@@ -172,6 +240,7 @@
   <script src="indicators.js"></script>
   <script src="investing.js"></script>
   <script src="explain.js"></script>
+  <script src="simple.js"></script>
   <script src="main.js"></script>
 </body>
 </html>

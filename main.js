@@ -26,8 +26,13 @@ const ACTION_TH = {
 
 const state = {
   tf: '1h', bars: [], daily: [], tech: null, techAt: null, source: null,
-  locked: null, lastPrice: null, chartKey: '', pivotKey: '', busy: false,
+  locked: null, lastPrice: null, chartKey: '', pivotKey: '', busy: false, thb: null, zoneKey: '',
 };
+// Simple-mode history ranges map onto chart timeframes (160 bars each)
+const RANGES = [
+  { tf: '15m', label: '2 วัน' }, { tf: '1h', label: '1 สัปดาห์' },
+  { tf: '5h', label: '1 เดือน' }, { tf: '1d', label: '6 เดือน' },
+];
 
 const $ = (id) => document.getElementById(id);
 const f2 = (v) => (v == null || isNaN(v) ? '—' : Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
@@ -99,6 +104,13 @@ async function refreshTech() {
   render();
 }
 
+async function refreshThb() {
+  try {
+    const j = await getJson('https://open.er-api.com/v6/latest/USD');
+    if (j.rates && j.rates.THB) state.thb = j.rates.THB;
+  } catch (e) { /* baht estimate is optional */ }
+}
+
 async function refreshDaily() {
   try {
     const j = await investingChart('P1D');
@@ -140,6 +152,27 @@ rsiS.createPriceLine({ price: 30, color: '#22c58b', lineWidth: 1, lineStyle: LC.
 const histS = macdChart.addHistogramSeries({ priceLineVisible: false, lastValueVisible: false });
 const macdS = macdChart.addLineSeries(lineOpts('#4ea1ff', { lineWidth: 1.5 }));
 const sigS = macdChart.addLineSeries(lineOpts('#f2a93b', { lineWidth: 1.5 }));
+
+// Simple-mode chart: a plain price line with "good to buy / good to sell" levels
+const simpleChart = LC.createChart($('simpleChart'), {
+  ...chartBase(true),
+  handleScroll: false, handleScale: false,
+  grid: { vertLines: { visible: false }, horzLines: { color: '#1b212c' } },
+});
+const areaS = simpleChart.addAreaSeries({
+  lineColor: '#e8b64c', topColor: 'rgba(232,182,76,.35)', bottomColor: 'rgba(232,182,76,0)', lineWidth: 2,
+  priceLineVisible: false,
+});
+let zoneLines = [];
+function drawZones(buy, sell) {
+  const key = `${buy && buy.price}|${sell && sell.price}`;
+  if (key === state.zoneKey) return;
+  state.zoneKey = key;
+  zoneLines.forEach((l) => areaS.removePriceLine(l));
+  zoneLines = [];
+  if (buy) zoneLines.push(areaS.createPriceLine({ price: buy.price, color: '#22c58b', lineWidth: 2, lineStyle: LC.LineStyle.Dashed, title: 'น่าซื้อแถวนี้' }));
+  if (sell) zoneLines.push(areaS.createPriceLine({ price: sell.price, color: '#f0506e', lineWidth: 2, lineStyle: LC.LineStyle.Dashed, title: 'น่าขายแถวนี้' }));
+}
 
 // Keep the three panes scrolled/zoomed together
 const charts = [mainChart, rsiChart, macdChart];
@@ -203,12 +236,15 @@ function render() {
     candles.setData(cs.map((c, i) => ({ time: t[i], open: c.open, high: c.high, low: c.low, close: c.close })));
     lines.forEach(([s, arr]) => s.setData(arr.map((_, i) => pt(arr, i))));
     histS.setData(cs.map((_, i) => histPt(i)));
+    areaS.setData(cs.map((c, i) => ({ time: t[i], value: c.close })));
+    simpleChart.timeScale().fitContent();
     if (tfChanged) mainChart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 120), to: n + 6 });
   } else {
     const i = n - 1, c = cs[i];
     candles.update({ time: t[i], open: c.open, high: c.high, low: c.low, close: c.close });
     lines.forEach(([s, arr]) => s.update(pt(arr, i)));
     histS.update(histPt(i));
+    areaS.update({ time: t[i], value: c.close });
   }
 
   const price = cs[n - 1].close;
@@ -248,6 +284,7 @@ function render() {
 
   renderSignal(plan, htfKey);
   renderBrief(plan, price);
+  renderSimple(plan, price);
   document.title = `${f2(price)} · ${ACTION_TH[plan.action][0]} | Gold Signal`;
 }
 
@@ -323,6 +360,34 @@ function renderBrief(plan, price) {
     `<div class="horizon"><label>${h.name} (${h.hint})</label>${tag(h.key, h.th)}</div>`).join('') : '';
 }
 
+function renderSimple(plan, price) {
+  const horizon = state.tech ? EXPLAIN.horizons(state.tech, INV) : null;
+  if (!horizon) return;
+  const s = SIMPLE.analyze({
+    tech: state.tech, plan, price, daily: state.daily, thb: state.thb, horizons: horizon, INV, tfLabel: TF_LABEL[state.tf],
+  });
+  $('sHero').className = `card s-hero ${s.mood}`;
+  $('sLight').textContent = s.light;
+  $('sTrend').textContent = s.trend;
+  $('sWhy').innerHTML = s.why.map((w) => `<li>${w}</li>`).join('');
+  $('sUsd').textContent = f2(price);
+  $('sThbRow').hidden = !s.thaiPrice;
+  if (s.thaiPrice) $('sThb').textContent = (Math.round(s.thaiPrice / 50) * 50).toLocaleString('en-US');
+  if (s.today) {
+    $('sToday').textContent = s.today.text + (s.today.thbText ? ` (${s.today.thbText})` : '');
+    $('sToday').className = `s-today ${s.today.chg >= 0 ? 'up' : 'down'}`;
+  }
+  $('gMarker').style.left = `${Math.max(2, Math.min(98, s.gauge))}%`;
+  $('sSure').textContent = s.sure;
+  for (const [id, p] of [['pBuy', s.personas.buy], ['pHold', s.personas.hold], ['pTrade', s.personas.trade]]) {
+    const el = $(id);
+    el.className = `card persona ${p.tone}`;
+    el.querySelector('.p-answer').textContent = p.answer;
+    el.querySelector('p').textContent = p.text;
+  }
+  drawZones(plan.buyZone, plan.sellZone);
+}
+
 function renderLevels(lv, price) {
   $('pvTf').textContent = TF_LABEL[state.tf];
   const items = lv.slice().sort((a, b) => b.price - a.price);
@@ -373,16 +438,33 @@ function setConn(cls, text) {
 }
 
 // ---------- Init ----------
-$('tfs').innerHTML = TFS.map((t) => `<button data-tf="${t.key}" class="${t.key === state.tf ? 'on' : ''}">${t.label}</button>`).join('');
-$('tfs').addEventListener('click', (e) => {
-  const tf = e.target.dataset && e.target.dataset.tf;
+$('tfs').innerHTML = TFS.map((t) => `<button data-tf="${t.key}">${t.label}</button>`).join('');
+$('sRange').innerHTML = RANGES.map((r) => `<button data-tf="${r.tf}">${r.label}</button>`).join('');
+function markTf() {
+  document.querySelectorAll('#tfs button, #sRange button').forEach((b) => b.classList.toggle('on', b.dataset.tf === state.tf));
+}
+function setTf(tf) {
   if (!tf || tf === state.tf) return;
   state.tf = tf;
   state.locked = null;
-  document.querySelectorAll('#tfs button').forEach((b) => b.classList.toggle('on', b.dataset.tf === tf));
+  markTf();
   renderTechTables();
   refreshPrice();
-});
+}
+['tfs', 'sRange'].forEach((id) => $(id).addEventListener('click', (e) => setTf(e.target.dataset && e.target.dataset.tf)));
+markTf();
+
+// Simple / detailed mode (remembered per browser)
+function setMode(mode) {
+  $('simpleView').hidden = mode !== 'simple';
+  $('proView').hidden = mode !== 'pro';
+  document.querySelectorAll('#modeSwitch button').forEach((b) => b.classList.toggle('on', b.dataset.mode === mode));
+  try { localStorage.setItem('gs-mode', mode); } catch (e) { /* storage unavailable */ }
+}
+$('modeSwitch').addEventListener('click', (e) => { if (e.target.dataset.mode) setMode(e.target.dataset.mode); });
+let savedMode = 'simple';
+try { savedMode = localStorage.getItem('gs-mode') || 'simple'; } catch (e) { /* storage unavailable */ }
+setMode(savedMode);
 
 // Poll only while the tab is visible; catch up immediately when it becomes visible again
 function every(ms, fn) {
@@ -394,11 +476,12 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { re
   await AUTH.ready;
   renderTechTables();
   SPLASH.step('กำลังดึงราคาทองจาก investing.com…', 45);
-  const pending = [refreshDaily(), refreshTech().then(() => SPLASH.step('กำลังวิเคราะห์สถิติทุกกรอบเวลา…', 75)), refreshPrice()];
+  const pending = [refreshThb(), refreshDaily(), refreshTech().then(() => SPLASH.step('กำลังวิเคราะห์สถิติทุกกรอบเวลา…', 75)), refreshPrice()];
   await Promise.all(pending);
   render();
   SPLASH.hide();
   every(POLL_PRICE, refreshPrice);
   every(POLL_TECH, refreshTech);
   every(POLL_DAILY, refreshDaily);
+  every(60 * 60e3, refreshThb);
 })();
