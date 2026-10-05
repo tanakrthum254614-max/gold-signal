@@ -45,8 +45,10 @@
 
     // Daily support/resistance are the meaningful levels for people buying or holding gold
     const dayPv = tech && tech['1d'] ? INV.pivots(tech['1d']) : [];
-    const sup = dayPv.filter((p) => p.price < price).sort((a, b) => b.price - a.price)[0];
-    const res = dayPv.filter((p) => p.price > price).sort((a, b) => a.price - b.price)[0];
+    // Skip levels hugging the current price (< 0.2%), they aren't useful to watch
+    const gap = price * 0.002;
+    const sup = dayPv.filter((p) => p.price < price - gap).sort((a, b) => b.price - a.price)[0];
+    const res = dayPv.filter((p) => p.price > price + gap).sort((a, b) => a.price - b.price)[0];
     const at = (p) => (p ? `${money(p.price)} ดอลลาร์` : 'ราคาที่ต่ำกว่านี้');
 
     let buy;
@@ -75,6 +77,7 @@
       trend, light, mood, sure, why, today,
       gauge: ((score + 2) / 4) * 100,
       thaiPrice: toThaiGold(price, thb),
+      sup, res,
       personas: { buy, hold, trade },
     };
   }

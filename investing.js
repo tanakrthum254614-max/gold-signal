@@ -41,7 +41,8 @@
   const actionTh = (a) => ACTION_TH[a] || a;
   const actionDir = (a) => (a === 'Buy' || a === 'Oversold' ? 1 : a === 'Sell' || a === 'Overbought' ? -1 : 0);
   const money = (v) => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const pivotName = (n) => `${PIVOT_TH[n] || n} (${n})`;
+  // Name a level by where it sits relative to the current price: below = support, above = resistance
+  const levelLabel = (p, price) => (p.name === 'P' ? 'จุดกึ่งกลาง (P)' : `${p.price < price ? 'แนวรับ' : 'แนวต้าน'} (${p.name})`);
 
   // Plain-Thai reading of one indicator value
   function meaning(key, value, action) {
@@ -113,7 +114,7 @@
   }
 
   function pivots(t) {
-    return PIVOT_KEYS.map(([k, name]) => ({ name, label: pivotName(name), price: parseFloat(t.pivotPoints[k]) }))
+    return PIVOT_KEYS.map(([k, name]) => ({ name, price: parseFloat(t.pivotPoints[k]) }))
       .filter((x) => !isNaN(x.price));
   }
 
@@ -133,7 +134,7 @@
     const ind = t.indicators, ov = overview(t);
     const atr = parseFloat(ind.atr && ind.atr.value) || null;
     const rsi = parseFloat(ind.rsi && ind.rsi.value);
-    const pv = pivots(t);
+    const pv = pivots(t).map((p) => ({ ...p, label: levelLabel(p, price) }));
     const reasons = [], warn = [];
     const totalInd = ov.ind.buy + ov.ind.sell + ov.ind.neutral;
 
@@ -189,7 +190,7 @@
     return plan;
   }
 
-  const INV = { norm, dirOf, summaryTh, trendTh, actionTh, actionDir, meaning, indicators, movingAverages, pivots, overview, decide, PIVOT_TH };
+  const INV = { levelLabel, norm, dirOf, summaryTh, trendTh, actionTh, actionDir, meaning, indicators, movingAverages, pivots, overview, decide, PIVOT_TH };
   if (typeof module !== 'undefined' && module.exports) module.exports = INV;
   else root.INV = INV;
 })(typeof window !== 'undefined' ? window : globalThis);

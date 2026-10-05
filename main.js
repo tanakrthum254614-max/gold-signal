@@ -283,8 +283,7 @@ function render() {
   }
 
   renderSignal(plan, htfKey);
-  renderBrief(plan, price);
-  renderSimple(plan, price);
+  renderHome(plan, price);
   document.title = `${f2(price)} · ${ACTION_TH[plan.action][0]} | Gold Signal`;
 }
 
@@ -349,49 +348,51 @@ function renderSignal(plan, htfKey) {
   $('warns').innerHTML = plan.warn.map((r) => `<li>${r}</li>`).join('');
 }
 
-function renderBrief(plan, price) {
+function renderHome(plan, price) {
   const horizon = state.tech ? EXPLAIN.horizons(state.tech, INV) : null;
-  const b = EXPLAIN.brief({ plan, price, daily: state.daily, tfLabel: TF_LABEL[state.tf], horizon });
-  $('briefIcon').textContent = b.icon;
-  $('briefTitle').textContent = b.title;
-  $('briefBasis').textContent = b.basis;
-  $('briefLines').innerHTML = b.lines.map((l) => `<li>${l}</li>`).join('');
-  $('horizons').innerHTML = horizon ? horizon.map((h) =>
-    `<div class="horizon"><label>${h.name} (${h.hint})</label>${tag(h.key, h.th)}</div>`).join('') : '';
-}
-
-function renderSimple(plan, price) {
-  const horizon = state.tech ? EXPLAIN.horizons(state.tech, INV) : null;
+  $('hUsd').textContent = f2(price);
+  $('hUpdated').textContent = new Date().toLocaleTimeString('th-TH');
   if (!horizon) return;
   const s = SIMPLE.analyze({
     tech: state.tech, plan, price, daily: state.daily, thb: state.thb, horizons: horizon, INV, tfLabel: TF_LABEL[state.tf],
   });
-  $('sHero').className = `card s-hero ${s.mood}`;
-  $('sLight').textContent = s.light;
-  $('sTrend').textContent = s.trend;
-  $('sWhy').innerHTML = s.why.map((w) => `<li>${w}</li>`).join('');
-  $('sUsd').textContent = f2(price);
-  $('sThbRow').hidden = !s.thaiPrice;
-  if (s.thaiPrice) $('sThb').textContent = (Math.round(s.thaiPrice / 50) * 50).toLocaleString('en-US');
+  const thb = (usd) => (state.thb ? `≈ ${(Math.round(SIMPLE.toThaiGold(usd, state.thb) / 50) * 50).toLocaleString('en-US')} บาท/บาททองคำ` : '');
+
+  $('hero').className = `card hero ${s.mood}`;
+  $('hLight').textContent = s.light;
+  $('hTrend').textContent = s.trend;
+  $('hThb').textContent = s.thaiPrice ? (Math.round(s.thaiPrice / 50) * 50).toLocaleString('en-US') : '—';
   if (s.today) {
-    $('sToday').textContent = s.today.text + (s.today.thbText ? ` (${s.today.thbText})` : '');
-    $('sToday').className = `s-today ${s.today.chg >= 0 ? 'up' : 'down'}`;
+    $('hToday').textContent = s.today.text + (s.today.thbText ? ` (${s.today.thbText})` : '');
+    $('hToday').className = `today ${s.today.chg >= 0 ? 'up' : 'down'}`;
   }
+
+  const key = UI.persona() || 'buy';
+  const mine = s.personas[key];
+  $('mine').className = `card mine ${mine.tone}`;
+  $('myIcon').textContent = UI.PERSONAS[key].icon;
+  $('myName').textContent = UI.PERSONAS[key].name;
+  $('myAnswer').textContent = mine.answer;
+  $('myText').textContent = mine.text;
+  $('otherAdvice').innerHTML = Object.keys(UI.PERSONAS).filter((k) => k !== key).map((k) => {
+    const p = s.personas[k];
+    return `<div class="other ${p.tone}"><b>${UI.PERSONAS[k].icon} ${UI.PERSONAS[k].name}: <span>${p.answer}</span></b><p>${p.text}</p></div>`;
+  }).join('');
+
   $('gMarker').style.left = `${Math.max(2, Math.min(98, s.gauge))}%`;
   $('sSure').textContent = s.sure;
-  for (const [id, p] of [['pBuy', s.personas.buy], ['pHold', s.personas.hold], ['pTrade', s.personas.trade]]) {
-    const el = $(id);
-    el.className = `card persona ${p.tone}`;
-    el.querySelector('.p-answer').textContent = p.answer;
-    el.querySelector('p').textContent = p.text;
-  }
-  drawZones(plan.buyZone, plan.sellZone);
+  $('hWhy').innerHTML = s.why.map((w) => `<li>${w}</li>`).join('');
+  $('wBuy').textContent = s.sup ? f2(s.sup.price) : '—';
+  $('wBuyThb').textContent = s.sup ? thb(s.sup.price) : '';
+  $('wSell').textContent = s.res ? f2(s.res.price) : '—';
+  $('wSellThb').textContent = s.res ? thb(s.res.price) : '';
+  drawZones(s.sup, s.res);
 }
 
 function renderLevels(lv, price) {
   $('pvTf').textContent = TF_LABEL[state.tf];
   const items = lv.slice().sort((a, b) => b.price - a.price);
-  const rows = items.map((x) => `<li class="${x.price > price ? 'res' : 'sup'}"><span>${x.label || x.name}</span><span class="mono">${f2(x.price)}</span></li>`);
+  const rows = items.map((x) => `<li class="${x.price > price ? 'res' : 'sup'}"><span>${INV.levelLabel(x, price)}</span><span class="mono">${f2(x.price)}</span></li>`);
   const nowIdx = items.findIndex((x) => x.price < price);
   rows.splice(nowIdx < 0 ? rows.length : nowIdx, 0, `<li class="now"><span>ราคาปัจจุบัน</span><span class="mono">${f2(price)}</span></li>`);
   $('levels').innerHTML = rows.join('');
@@ -454,17 +455,28 @@ function setTf(tf) {
 ['tfs', 'sRange'].forEach((id) => $(id).addEventListener('click', (e) => setTf(e.target.dataset && e.target.dataset.tf)));
 markTf();
 
-// Simple / detailed mode (remembered per browser)
-function setMode(mode) {
-  $('simpleView').hidden = mode !== 'simple';
-  $('proView').hidden = mode !== 'pro';
-  document.querySelectorAll('#modeSwitch button').forEach((b) => b.classList.toggle('on', b.dataset.mode === mode));
-  try { localStorage.setItem('gs-mode', mode); } catch (e) { /* storage unavailable */ }
+
+
+function fitWhenSized(el, fit) {
+  let lastW = 0;
+  new ResizeObserver(([e]) => {
+    const w = Math.round(e.contentRect.width);
+    if (w > 0 && w !== lastW) { lastW = w; requestAnimationFrame(fit); }
+  }).observe(el);
 }
-$('modeSwitch').addEventListener('click', (e) => { if (e.target.dataset.mode) setMode(e.target.dataset.mode); });
-let savedMode = 'simple';
-try { savedMode = localStorage.getItem('gs-mode') || 'simple'; } catch (e) { /* storage unavailable */ }
-setMode(savedMode);
+fitWhenSized($('simpleChart'), () => simpleChart.timeScale().fitContent());
+fitWhenSized($('mainChart'), () => {
+  const n = state.bars.length;
+  if (n) mainChart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 120), to: n + 6 });
+});
+
+// Re-render when the user changes their type; refit charts when the chart tab becomes visible
+UI.on('persona', render);
+UI.on('tab:chart', () => setTimeout(() => {
+  simpleChart.timeScale().fitContent();
+  const n = state.bars.length;
+  if (n) mainChart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 120), to: n + 6 });
+}, 50));
 
 // Poll only while the tab is visible; catch up immediately when it becomes visible again
 function every(ms, fn) {
@@ -479,6 +491,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { re
   const pending = [refreshThb(), refreshDaily(), refreshTech().then(() => SPLASH.step('กำลังวิเคราะห์สถิติทุกกรอบเวลา…', 75)), refreshPrice()];
   await Promise.all(pending);
   render();
+  UI.start();
   SPLASH.hide();
   every(POLL_PRICE, refreshPrice);
   every(POLL_TECH, refreshTech);

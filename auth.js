@@ -20,13 +20,19 @@
       colorBackground: '#151a23', colorForeground: '#e6e9ef', colorText: '#e6e9ef',
       colorMutedForeground: '#8a93a3', colorTextSecondary: '#8a93a3', colorNeutral: '#e6e9ef',
       colorInput: '#1b212c', colorInputBackground: '#1b212c', colorInputForeground: '#e6e9ef', colorInputText: '#e6e9ef',
-      fontFamily: '"IBM Plex Sans Thai", system-ui, sans-serif', borderRadius: '10px',
+      fontFamily: '"IBM Plex Sans Thai", system-ui, sans-serif', borderRadius: '10px', fontSize: '16px',
+    },
+    // Google only: hide the email form so the sign-in screen is a single button
+    elements: {
+      dividerRow: { display: 'none' }, form: { display: 'none' }, footerAction: { display: 'none' },
+      socialButtonsBlockButton: { padding: '14px', fontSize: '16px' },
+      cardBox: { boxShadow: 'none', border: '1px solid #262e3b' },
     },
   };
   const THAI_OVERRIDES = {
     signIn: { start: {
-      title: 'เข้าสู่ระบบ Gold Signal', subtitle: 'ใช้บัญชี Google ของคุณเพื่อเข้าใช้งาน',
-      titleCombined: 'เข้าสู่ระบบ Gold Signal', subtitleCombined: 'ใช้บัญชี Google ของคุณเพื่อเข้าใช้งาน',
+      title: 'เข้าใช้งานด้วย Google', subtitle: 'กดปุ่มเดียว ไม่ต้องสมัครสมาชิก',
+      titleCombined: 'เข้าใช้งานด้วย Google', subtitleCombined: 'กดปุ่มเดียว ไม่ต้องสมัครสมาชิก',
     } },
     signUp: { start: { title: 'สมัครใช้งาน Gold Signal', subtitle: 'สมัครฟรีด้วยบัญชี Google' } },
   };
@@ -51,13 +57,9 @@
     });
   }
 
-  function showApp(user) {
+  function showApp() {
     $('login').hidden = true;
     $('app').hidden = false;
-    if (!user) return;
-    $('userBox').hidden = false;
-    $('userName').textContent = user.firstName || user.fullName || (user.primaryEmailAddress && user.primaryEmailAddress.emailAddress) || '';
-    window.Clerk.mountUserButton($('userBtn'));
   }
 
   let resolveReady;
