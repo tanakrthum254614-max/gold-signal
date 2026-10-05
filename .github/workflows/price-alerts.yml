@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       send:
-        description: "Send alerts to LINE"
+        description: "Send alerts to LINE / Telegram"
         type: boolean
         default: false
 
@@ -28,8 +28,21 @@ jobs:
       SEND: ${{ github.event_name == 'schedule' || inputs.send }}
       RECORD: "true"
       STATE_DIR: state
+      SPREAD_USD: ${{ vars.SPREAD_USD || '0.4' }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+      SITE_URL: https://gold-signal-ten.vercel.app
     steps:
       - uses: actions/checkout@v4
+      # What was already announced (hourly update, news warnings, failure notices) — restored first so
+      # the failure notice can throttle itself even when an early step fails
+      - name: Restore notify state
+        uses: actions/cache/restore@v4
+        with:
+          path: state
+          key: notify-${{ github.run_id }}
+          restore-keys: notify-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -38,28 +51,12 @@ jobs:
         with:
           node-version: "22"
       - run: pip install -r requirements.txt
-      - name: Fetch 15m / 30m / 1h / 5h candles
+      - name: Fetch 15m / 30m / 1h / 5h candles + news calendar
         run: python scripts/fetch_data.py data.json --m15-only
-      # Remembers which half hour was last announced, without a commit every 30 minutes
-      - name: Restore notify state
-        uses: actions/cache/restore@v4
-        with:
-          path: state
-          key: notify-${{ github.run_id }}
-          restore-keys: notify-
-      - name: Check signals, half-hourly update, alerts
-        env:
-          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
-          SITE_URL: https://gold-signal-ten.vercel.app
+      - name: Check signals, hourly update, news warnings, alerts
         run: |
           node scripts/alerts.js data.json
           node scripts/intraday-run.js data.json
-      - name: Save notify state
-        if: always() && hashFiles('state/notify.json') != ''
-        uses: actions/cache/save@v4
-        with:
-          path: state
-          key: notify-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Save results
         # Commit as the repo owner's GitHub identity: Vercel (Hobby) only deploys commits from linked accounts
         run: |
@@ -71,3 +68,15 @@ jobs:
           git pull --rebase -q && git push
         env:
           GH_TOKEN: ${{ github.token }}
+      - name: Tell the owner if this failed
+        if: failure()
+        run: node scripts/notify-failure.js "เช็กราคา / สัญญาณ 30 นาที (ทุก 5 นาที)"
+        env:
+          SEND: "true"
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Save notify state
+        if: always() && hashFiles('state/*.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: state
+          key: notify-${{ github.run_id }}-${{ github.run_attempt }}

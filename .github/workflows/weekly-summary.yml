@@ -1,0 +1,62 @@
+name: Weekly summary
+
+on:
+  # 00:30 UTC Saturday = 07:30 Thai time, after the market closes (03:00 Saturday Thai time)
+  schedule:
+    - cron: "30 0 * * 6"
+  workflow_dispatch:
+    inputs:
+      send:
+        description: "Send to LINE / Telegram"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: signals-file
+  cancel-in-progress: false
+
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SEND: ${{ github.event_name == 'schedule' || inputs.send }}
+      RECORD: "true"
+      STATE_DIR: state
+      SPREAD_USD: ${{ vars.SPREAD_USD || '0.4' }}
+      LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      SITE_URL: https://gold-signal-ten.vercel.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: pip install -r requirements.txt
+      - name: Fetch candles
+        run: python scripts/fetch_data.py data.json --m15-only
+      - name: Weekly report
+        run: node scripts/weekly.js data.json
+      - name: Save results
+        run: |
+          git add signals.json
+          git diff --cached --quiet && exit 0
+          git config user.name "tanakrthum254614-max"
+          git config user.email "$(gh api users/tanakrthum254614-max --jq '"\(.id)+\(.login)@users.noreply.github.com"')"
+          git commit -m "Weekly summary $(TZ=Asia/Bangkok date +%F)"
+          git pull --rebase -q && git push
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Tell the owner if this failed
+        if: failure()
+        run: node scripts/notify-failure.js "สรุปผลรายสัปดาห์"
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

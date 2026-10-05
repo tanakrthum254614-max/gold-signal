@@ -5,7 +5,9 @@
   const TA = root.TA || (typeof require === 'function' ? require('./indicators.js') : null);
   const SIG = root.SIG || (typeof require === 'function' ? require('./signals.js') : null);
 
-  const RULE = { threshold: 5, slUsd: 15, tpUsd: [15, 20, 30], maxHoldMs: 24 * 3600e3 };
+  // sides 'buy': only buy trades — over 2 years buys at +5/+6 won ~56–58% vs ~50% for sells.
+  // newsMin: no new trades this many minutes either side of a high-impact USD news release.
+  const RULE = { threshold: 5, slUsd: 15, tpUsd: [15, 20, 30], maxHoldMs: 24 * 3600e3, sides: 'buy', newsMin: 30 };
   const SLOT = 30 * 60e3;
   const STRENGTH = { strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 };
   const TREND_TH = { strong_buy: 'ขาขึ้นแรง', buy: 'ขาขึ้น', neutral: 'ไซด์เวย์', sell: 'ขาลง', strong_sell: 'ขาลงแรง' };
@@ -31,8 +33,14 @@
   const closed = (bars, durMs, now) => bars.filter((b) => b.time + durMs <= now).slice(-200);
   const trendKey = (bars) => TA.analyze(bars).label.key.replace('-', '_');
 
-  // candles: { m30, h1, h5 } arrays of { time (ms), open, high, low, close }
-  function decide(candles, now = Date.now()) {
+  // High-impact news within RULE.newsMin minutes of `now` (news: [{ time (ms), title }])
+  function newsNear(news, now) {
+    const w = RULE.newsMin * 60e3;
+    return (news || []).find((n) => Math.abs(n.time - now) <= w) || null;
+  }
+
+  // candles: { m30, h1, h5 } arrays of { time (ms), open, high, low, close }; news: upcoming releases
+  function decide(candles, now = Date.now(), news = null) {
     const c30 = closed(candles.m30, 30 * 60e3, now), c1 = closed(candles.h1, 3600e3, now), c5 = closed(candles.h5, 5 * 3600e3, now);
     if (c30.length < 60 || c1.length < 60 || c5.length < 40) return null;
     const keys = { m30: trendKey(c30), h1: trendKey(c1), h5: trendKey(c5) };
@@ -42,10 +50,12 @@
     const open = marketOpen(now);
     const lastHour = open && thai(now).h === HOURS.lastEntry; // 02:00–03:00: too close to the close
     const stale = !open || now - c30[c30.length - 1].time > 2 * 3600e3; // market closed / no prices
+    const event = newsNear(news, now);
+    const sideOk = RULE.sides !== 'buy' || score > 0;
     return {
       slot: slotOf(now), score, keys, lean,
-      dir: Math.abs(score) >= RULE.threshold && !lastHour && !stale ? Math.sign(score) : 0,
-      lastHour, stale, open,
+      dir: Math.abs(score) >= RULE.threshold && sideOk && !lastHour && !stale && !event ? Math.sign(score) : 0,
+      lastHour, stale, open, news: event, sellSkipped: Math.abs(score) >= RULE.threshold && !sideOk,
     };
   }
 
@@ -54,7 +64,9 @@
     const lines = [`แนวโน้ม 30 นาที ${TREND_TH[dec.keys.m30]} · 1 ชม. ${TREND_TH[dec.keys.h1]} · 5 ชม. ${TREND_TH[dec.keys.h5]} (คะแนน ${dec.score > 0 ? '+' : ''}${dec.score} จาก ±6)`];
     if (dec.stale) lines.push('ตลาดปิดอยู่ (เปิด 07:00–03:00 น.) — ไม่เปิดไม้ใหม่');
     else if (dec.lastHour) lines.push('ใกล้ปิดตลาด 03:00 น. — ไม่เปิดไม้ใหม่ในชั่วโมงสุดท้าย');
-    else if (!dec.dir) lines.push(`ต้องได้คะแนน ±${RULE.threshold} ขึ้นไปถึงจะเข้า (ทั้ง 3 ช่วงเวลาต้องชี้ทางเดียวกันชัดเจน)`);
+    else if (dec.news) lines.push(`📰 ช่วงข่าวแรง: ${dec.news.title} — ไม่เปิดไม้ใหม่ ±${RULE.newsMin} นาทีรอบข่าว`);
+    else if (dec.sellSkipped) lines.push('แนวโน้มลงชัด แต่ระบบเข้าเฉพาะฝั่งซื้อ (สถิติ 2 ปี ฝั่งขายชนะแค่ ~50%) — แนะนำรอ');
+    else if (!dec.dir) lines.push(`ต้องได้คะแนน +${RULE.threshold} ขึ้นไปถึงจะเข้าซื้อ (ทั้ง 3 ช่วงเวลาต้องชี้ขึ้นชัดเจน)`);
     return lines;
   }
 
@@ -85,7 +97,7 @@
     };
   }
 
-  const INTRA = { RULE, SLOT, HOURS, slotOf, closed, marketOpen, nextClose, decide, reasons, odds, levels, makeTrade, TREND_TH };
+  const INTRA = { RULE, SLOT, HOURS, slotOf, closed, marketOpen, nextClose, newsNear, decide, reasons, odds, levels, makeTrade, TREND_TH };
   if (typeof module !== 'undefined' && module.exports) module.exports = INTRA;
   else root.INTRA = INTRA;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -61,6 +61,46 @@
   if (lineUrl) { $('lineAdd').href = lineUrl; $('lineAdd').hidden = false; $('lineSoon').hidden = true; }
   $('signOut').addEventListener('click', () => window.Clerk && Clerk.signOut());
 
+  // ---------- Trading settings (capital / risk / spread) — saved on the account + this browser ----------
+  const DEFAULTS = { capital: 0, currency: 'USD', risk: 1, spread: 0.4 };
+  function settings() {
+    const u = window.AUTH && AUTH.user;
+    const fromAccount = u && u.unsafeMetadata && u.unsafeMetadata.goldSettings;
+    let local = null;
+    try { local = JSON.parse(store.get('gs-settings') || 'null'); } catch (e) { /* ignore */ }
+    return { ...DEFAULTS, ...(local || {}), ...(fromAccount || {}) };
+  }
+  function fillSettings() {
+    const s = settings();
+    $('setCap').value = s.capital || '';
+    $('setCur').value = s.currency;
+    $('setRisk').value = String(s.risk);
+    $('setSpread').value = s.spread;
+    previewSettings();
+  }
+  function readForm() {
+    return {
+      capital: Math.max(0, +$('setCap').value || 0), currency: $('setCur').value,
+      risk: +$('setRisk').value || 1, spread: Math.max(0, +$('setSpread').value || 0),
+    };
+  }
+  function previewSettings() {
+    const s = readForm();
+    const lot = window.lotFor ? window.lotFor(15, s) : null;
+    $('setPreview').textContent = lot ? `ตัวอย่าง: SL $15 → ${lot.text}` : 'ใส่ทุนเพื่อให้ระบบคำนวณขนาดไม้ให้';
+  }
+  ['setCap', 'setCur', 'setRisk', 'setSpread'].forEach((id) => $(id).addEventListener('input', previewSettings));
+  $('setSave').addEventListener('click', async () => {
+    const s = readForm();
+    store.set('gs-settings', JSON.stringify(s));
+    const u = window.AUTH && AUTH.user;
+    if (u && u.update) {
+      try { await u.update({ unsafeMetadata: { ...(u.unsafeMetadata || {}), goldSettings: s } }); } catch (e) { /* kept locally */ }
+    }
+    toast('บันทึกการตั้งค่าแล้ว');
+    emit('settings');
+  });
+
   function toast(text) {
     const t = $('toast');
     t.textContent = text;
@@ -72,12 +112,13 @@
   // Called by main.js once the user is signed in and the first data has loaded
   function start() {
     fillAccount();
+    fillSettings();
     setChartMode(store.get('gs-chart') || 'simple');
     showTab(currentTab());
   }
 
   window.UI = {
-    start, toast,
+    start, toast, settings,
     on(name, fn) { listeners.push([name, fn]); },
   };
 })();

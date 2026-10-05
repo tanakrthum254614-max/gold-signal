@@ -37,6 +37,15 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 - ชั่วโมงที่ประกาศไปแล้วเก็บใน `state/notify.json` ผ่าน **Actions cache** (ไม่ commit ทุกชั่วโมง → Vercel ไม่ deploy ถี่)
 - ข้อสังเกตจากตาราง (2 ปี): ฝั่ง **ซื้อ** คะแนน +4…+6 ชนะ 57–59% · ฝั่ง **ขาย** −4…−6 แค่ ~49–50% (ทองเป็นขาขึ้นเกือบทั้งช่วง)
 
+### ระบบเสริม (เพิ่ม 5 ต.ค. 2569)
+- **30 นาทีเข้าเฉพาะฝั่งซื้อ** (`INTRA.RULE.sides = 'buy'`) — backtest 2 ปี: ซื้ออย่างเดียว 630 ไม้ +$893 หลังสเปรด vs สองฝั่ง 1,267 ไม้ +$791 · 1 ปีล่าสุด +$164 vs +$239 (ต่อไม้ดีกว่าเกือบเท่าตัว)
+- **หลบข่าวแรง**: ปฏิทิน investing.com `endpoints.investing.com/pd-instruments/v1/calendars/economic/events/occurrences?domain_id=1&country_ids=5&importances=high` (CORS เปิด, ดึงได้ทั้งเว็บและ Actions) → ไม่เปิดไม้ ±30 นาที (`RULE.newsMin`) · เตือนล่วงหน้า ~30 นาที · รายการข่าวในข้อความเช้า · backtest **ไม่มี**ตัวกรองข่าว (ไม่มีปฏิทินย้อนหลัง)
+- **ขนาดไม้**: 0.01 lot = 1 ออนซ์ → lot = ทุน×%เสี่ยง ÷ (SL×100) ปัดลง 0.01 · ตั้งค่า (ทุน USD/THB, %เสี่ยง, สเปรด) ในแท็บบัญชี เก็บใน Clerk `unsafeMetadata.goldSettings` + localStorage
+- **สเปรด**: `SIG.summary(list, spread)` หักต่อไม้ · ฝั่งเซิร์ฟเวอร์ใช้ `SPREAD_USD` จาก repo variable `vars.SPREAD_USD` (ค่าเริ่ม 0.4) · เว็บใช้ค่าที่ผู้ใช้ตั้ง
+- **ช่องทางส่ง** (`scripts/notify.js`): สำคัญ (เข้า/TP/SL/สัญญาณเช้า/สรุป) → LINE (+สำเนา Telegram) · ประจำ (อัปเดตรายชั่วโมง/เตือนข่าว) → Telegram ถ้าตั้ง `TELEGRAM_BOT_TOKEN`+`TELEGRAM_CHAT_ID` ไม่งั้น LINE · ส่งพลาดแค่ log ไม่ล้ม
+- **สรุปรายสัปดาห์**: `weekly-summary.yml` เสาร์ 00:30 UTC (07:30 ไทย) → `scripts/weekly.js` (ปิดสัญญาณรายวันวันศุกร์ที่หมดอายุด้วย)
+- **แจ้งเมื่อระบบพัง**: ทุก workflow มีขั้น `if: failure()` → `scripts/notify-failure.js` (ไม่เกิน 1 ครั้ง/3 ชม./งาน ผ่าน state cache) · ใช้ข้อมูลสำรอง Binance > 30 นาที → แจ้ง 1 ครั้ง/6 ชม.
+
 ### กติกาการนับผล (ใช้ร่วมกันใน `signals.js` → `evaluateTargets`)
 - ปิด **⅓ ที่แต่ละ TP** · ถึง TP1 แล้ว **เลื่อน SL ไปที่ทุน**
 - **ชนะ** = ถึง TP1 ก่อน SL · **แพ้** = โดน SL ก่อน TP1 · แท่ง 15 นาทีเดียวโดนทั้ง SL และ TP → นับว่าโดน SL ก่อน (อนุรักษ์นิยม)
@@ -128,6 +137,7 @@ gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=fal
 - **Vercel Hobby บล็อก deploy ถ้า commit author ไม่ใช่บัญชีที่เชื่อมไว้** → workflow commit ด้วยตัวตน `tanakrthum254614-max` (noreply email) ห้ามใช้ github-actions[bot]
 - **Vercel MCP connector ไม่มีสิทธิ์ scope thander1** → ใช้ Vercel CLI
 - **Line endings**: repo ตั้ง `core.autocrlf false` ไว้แล้ว ถ้าไฟล์กลายเป็น CRLF สคริปต์แก้ไฟล์แบบหลายบรรทัดจะหาข้อความไม่เจอ
+- **`String.replace(a, b)` ใน Node: `$$` ใน b จะกลายเป็น `$` ตัวเดียว** (และ `$&`, `$'` มีความหมายพิเศษ) — นี่คือต้นเหตุที่ `$` หายจากข้อความไทยหลายครั้ง · แทรกโค้ดด้วย `slice()` ต่อ string หรือ `replace(a, () => b)` แทน
 - **วันจันทร์ `backtest.json` มักชนกัน** (งานเช้าสร้างใหม่) → แก้ด้วยการรัน `node scripts/backtest*.js 365` ใหม่แล้ว `git add`
 - **แก้โค้ดผ่าน node/heredoc ระวัง `$` และ `\n`** ใน template string หายหรือกลายเป็นขึ้นบรรทัดจริง — ตรวจ `grep '~\${\|(+\${'` หลังแก้
 - **โควตา LINE ฟรี 300 ข้อความ/เดือน นับต่อคน** — อัปเดตทุก 1 ชั่วโมง ≈ 24/วัน + เหตุการณ์ไม้ ≈ **600+/คน/เดือน** → แพ็กเกจฟรีหมดภายในประมาณ 2 สัปดาห์ ต้องอัปเกรด LINE OA

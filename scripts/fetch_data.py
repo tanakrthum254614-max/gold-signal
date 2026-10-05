@@ -8,6 +8,7 @@ data-api.binance.vision host) shifted onto the gold-api.com spot price.
 Usage: python scripts/fetch_data.py data.json [--m15-only]
   --m15-only  only the short-term candles (for the 5-minute price-alert / 30-minute signal check)
 """
+import calendar
 import json
 import sys
 import time
@@ -90,6 +91,25 @@ def m15_binance(session):
     return {"source": "binance", "m15": shift(m15), "m30": shift(m30), "h1": shift(h1[-200:]), "h5": shift(h5[-160:])}
 
 
+CALENDAR = ("https://endpoints.investing.com/pd-instruments/v1/calendars/economic/events/occurrences"
+            "?domain_id=1&limit=60&country_ids=5&importances=high")
+
+
+def news(session):
+    """Upcoming high-impact US releases from investing.com's economic calendar, one entry per time."""
+    try:
+        cal = get_json(session, CALENDAR)
+    except Exception as e:  # noqa: BLE001 - news is optional
+        print(f"calendar unavailable ({e})", file=sys.stderr)
+        return []
+    names = {e["event_id"]: e.get("short_name") or e.get("long_name") for e in cal.get("events", [])}
+    by_time = {}
+    for o in cal.get("occurrences", []):
+        t = calendar.timegm(time.strptime(o["occurrence_time"][:19], "%Y-%m-%dT%H:%M:%S")) * 1000
+        by_time.setdefault(t, []).append(names.get(o["event_id"], "US data"))
+    return [{"time": t, "title": " · ".join(dict.fromkeys(ts))[:120]} for t, ts in sorted(by_time.items())]
+
+
 def main(out_path, m15_only=False):
     session = requests.Session(impersonate="chrome")
     primary, backup = (m15_investing, m15_binance) if m15_only else (from_investing, from_binance)
@@ -98,6 +118,7 @@ def main(out_path, m15_only=False):
     except Exception as e:  # noqa: BLE001 - any failure means "use the backup source"
         print(f"investing.com unavailable ({e}); using Binance backup", file=sys.stderr)
         data = backup(session)
+    data["news"] = news(session)
     data["fetchedAt"] = int(time.time() * 1000)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False)

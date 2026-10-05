@@ -129,17 +129,19 @@
   const FINAL = ['win', 'loss', 'expired', 'skip'];
   const isFinal = (s) => FINAL.includes(s.status);
 
-  function summary(signals) {
+  // spread: $ per trade deducted from profit (the broker's spread on XAU/USD), 0 = gross figures
+  function summary(signals, spread = 0) {
     const done = signals.filter((s) => isFinal(s) && s.status !== 'skip');
     const traded = done.filter((s) => s.status !== 'expired');
     const wins = traded.filter((s) => s.status === 'win').length;
     const losses = traded.length - wins;
-    const pnl = round(traded.reduce((a, s) => a + (s.pnl || 0), 0));
+    const gross = round(traded.reduce((a, s) => a + (s.pnl || 0), 0));
+    const pnl = round(gross - spread * traded.length);
     return {
       total: done.length, traded: traded.length, wins, losses,
       expired: done.length - traded.length,
       winRate: traded.length ? Math.round((wins / traded.length) * 100) : null,
-      pnl, avg: traded.length ? round(pnl / traded.length) : null,
+      pnl, gross, spread, avg: traded.length ? round(pnl / traded.length) : null,
       bestWin: traded.reduce((m, s) => Math.max(m, s.pnl || 0), 0),
       worstLoss: traded.reduce((m, s) => Math.min(m, s.pnl || 0), 0),
       last: done.slice(-10),

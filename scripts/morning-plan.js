@@ -8,9 +8,12 @@ const INV = require('../investing.js');
 const EXPLAIN = require('../explain.js');
 const { money } = require('../dailyplan.js');
 const SIG = require('../signals.js');
-const { broadcast } = require('./line.js');
+const INTRA = require('../intraday.js');
+const { sendFlex } = require('./notify.js');
+const { lotLine } = require('./trade-events.js');
 
 const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
+const SPREAD = +(process.env.SPREAD_USD || 0.4);
 const SIGNALS_FILE = process.env.SIGNALS_FILE || path.join(__dirname, '..', 'signals.json');
 const BACKTEST_FILE = path.join(__dirname, '..', 'backtest.json');
 const signed = (v) => `${v >= 0 ? '+' : '−'}$${money(Math.abs(v))}`;
@@ -84,7 +87,29 @@ const row = (label, value, color) => ({
 const sep = () => ({ type: 'separator', margin: 'lg' });
 const title = (text) => txt(text, { weight: 'bold', size: 'sm', margin: 'lg' });
 
-function flexMessage(a, sig, prev, sum, bt) {
+// High-impact US news between now and the 03:00 close, in Thai time
+const newsLines = (news) => (news.length
+  ? news.map((n) => `${new Date(n.time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' })} น. ${n.title}`)
+  : ['วันนี้ไม่มีข่าวแรงสหรัฐ']);
+const statsLine = (sum) => (sum.traded
+  ? `ชนะ ${sum.wins} · แพ้ ${sum.losses} (ชนะ ${sum.winRate}%) · กำไรสะสม ${signed(sum.pnl)}/ออนซ์ (หักสเปรด $${sum.spread}/ไม้)`
+  : 'เพิ่งเริ่มบันทึก — ยังไม่มีผลที่ปิดแล้ว');
+
+// Plain-text version (Telegram copy)
+function plainMessage(sig, prev, sum, news) {
+  const buy = sig.side === 'BUY';
+  const lines = [`🎯 สัญญาณทองคำวันนี้ (XAU/USD) · ${thaiDay()}`];
+  if (prev) lines.push(`ผลครั้งก่อน (${prev.id}): ${resultText(prev)}`);
+  if (sig.status === 'skip') lines.push('⏸ วันนี้ไม่มีสัญญาณ');
+  else {
+    lines.push(`${buy ? '🟢 ซื้อตอนนี้' : '🔴 ขายตอนนี้'} ~${money(sig.entry)} · ${'★'.repeat(sig.stars)}`,
+      `🛑 SL ${money(sig.sl)} · 💰 TP ${(sig.tps || [sig.tp]).map(money).join(' / ')}`, lotLine(SIG.RULE.slUsd));
+  }
+  lines.push('📰 ข่าวแรงวันนี้:', ...newsLines(news).map((l) => `• ${l}`), `📊 ${statsLine(sum)}`, SITE_URL);
+  return lines.join('\n');
+}
+
+function flexMessage(a, sig, prev, sum, bt, news) {
   const buy = sig.side === 'BUY';
   const color = buy ? C.up : C.down;
   const signalRows = sig.status === 'skip' ? [
@@ -100,7 +125,9 @@ function flexMessage(a, sig, prev, sum, bt) {
     txt(sig.tps
       ? `เปิดออเดอร์ ${buy ? 'Buy' : 'Sell'} ทันที (Market) · ตั้ง SL ${money(sig.sl)} · ปิด ⅓ ที่ TP แต่ละจุด · ถึง TP1 แล้วเลื่อน SL ไปที่ทุน — ถ้าถึง ${thaiTime(sig.expiresAt)} ยังไม่ปิด ให้ปิดเอง`
       : `เปิดออเดอร์ ${buy ? 'Buy' : 'Sell'} ทันที (Market) · ตั้ง SL ${money(sig.sl)} · TP ${money(sig.tp)} — ถ้าถึง ${thaiTime(sig.expiresAt)} ยังไม่ปิด ให้ปิดเอง`, { size: 'xs', color: C.blue, margin: 'md' }),
+    txt(lotLine(SIG.RULE.slUsd), { size: 'xs', color: C.muted }),
   ];
+  const btNet = bt ? bt.summary.pnl - (SPREAD * bt.summary.traded) : 0;
   const body = [
     ...(prev ? [txt(`ผลสัญญาณครั้งก่อน (${prev.id}): ${resultText(prev)}`, { size: 'xs' })] : []),
     sep(),
@@ -109,11 +136,13 @@ function flexMessage(a, sig, prev, sum, bt) {
     title('ทำไม'),
     ...sig.why.map((l) => txt(`• ${l}`, { size: 'xs' })),
     sep(),
+    title('📰 ข่าวแรงวันนี้ (เวลาไทย)'),
+    ...newsLines(news).map((l) => txt(`• ${l}`, { size: 'xs', color: news.length ? C.wait : C.muted })),
+    ...(news.length ? [txt('ช่วง ±30 นาทีรอบข่าว ราคาวิ่งแรง — ระวัง SL โดนกวาด', { size: 'xxs', color: C.muted })] : []),
+    sep(),
     title('📊 ผลงานสัญญาณจริง'),
-    txt(sum.traded
-      ? `ชนะ ${sum.wins} · แพ้ ${sum.losses} (ชนะ ${sum.winRate}%) · กำไรสะสม ${signed(sum.pnl)}/ออนซ์`
-      : 'เพิ่งเริ่มบันทึก — ยังไม่มีผลที่ปิดแล้ว', { size: 'xs' }),
-    ...(bt ? [txt(`ทดสอบย้อนหลัง ${bt.days} วัน (จำลอง): ชนะ ${bt.summary.winRate}% · ${signed(bt.summary.pnl)}/ออนซ์`, { size: 'xxs', color: C.muted })] : []),
+    txt(statsLine(sum), { size: 'xs' }),
+    ...(bt ? [txt(`ทดสอบย้อนหลัง ${bt.days} วัน (จำลอง): ชนะ ${bt.summary.winRate}% · ${signed(btNet)}/ออนซ์ หลังหักสเปรด`, { size: 'xxs', color: C.muted })] : []),
     txt(`ข้อมูล: ${a.source} · ไม่ใช่คำแนะนำการลงทุน`, { size: 'xxs', color: C.muted, margin: 'lg' }),
   ];
   return {
@@ -160,7 +189,7 @@ function flexMessage(a, sig, prev, sum, bt) {
     store.signals.push(sig);
   }
   const prev = store.signals.filter((s) => s.id !== todayId && SIG.isFinal(s)).slice(-1)[0];
-  const sum = SIG.summary(store.signals);
+  const sum = SIG.summary(store.signals, SPREAD);
   store.updatedAt = now;
   store.summary = sum;
 
@@ -172,11 +201,8 @@ function flexMessage(a, sig, prev, sum, bt) {
     fs.writeFileSync(SIGNALS_FILE, `${JSON.stringify(store, null, 1)}\n`);
     console.log('✓ signals.json updated');
   }
-  const flex = flexMessage(a, sig, prev, sum, bt);
-  if (process.env.SEND === 'true') {
-    await broadcast(flex);
-    console.log('✓ sent to LINE');
-  } else {
-    console.log(`(dry run — flex message ${JSON.stringify(flex).length} bytes, not sent)`);
-  }
+  const close = INTRA.nextClose(now);
+  const news = (data.news || []).filter((n) => n.time >= now && n.time <= close);
+  console.log(`news today: ${news.length}`);
+  await sendFlex(flexMessage(a, sig, prev, sum, bt, news), plainMessage(sig, prev, sum, news));
 })().catch((e) => { console.error(e); process.exit(1); });

@@ -6,10 +6,11 @@ const fs = require('fs');
 const path = require('path');
 const SIG = require('../signals.js');
 const { money } = require('../dailyplan.js');
-const { broadcast } = require('./line.js');
+const { send } = require('./notify.js');
 const { signed, at, sumLine, targetEvents } = require('./trade-events.js');
 
 const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
+const SPREAD = +(process.env.SPREAD_USD || 0.4);
 const SIGNALS_FILE = process.env.SIGNALS_FILE || path.join(__dirname, '..', 'signals.json');
 
 function entryText(s, price) {
@@ -59,11 +60,11 @@ function exitText(s, sum) {
   if (s.tps) {
     const lines = targetEvents(s, sent, now);
     if (lines.length) {
-      if (SIG.isFinal(s)) lines.push(sumLine(SIG.summary([...others, s])), `ดูสถิติ: ${SITE_URL}/#stats`);
+      if (SIG.isFinal(s)) lines.push(sumLine(SIG.summary([...others, s], SPREAD)), `ดูสถิติ: ${SITE_URL}/#stats`);
       messages.push({ type: 'text', text: lines.join('\n') });
     }
   } else if ((s.closedBy === 'tp' || s.closedBy === 'sl') && !sent.exit) {
-    messages.push({ type: 'text', text: exitText(s, SIG.summary([...others, s])) });
+    messages.push({ type: 'text', text: exitText(s, SIG.summary([...others, s], SPREAD)) });
     sent.exit = now;
   }
   console.log(`${s.id} ${s.side} status=${s.status} price=${price} new alerts=${messages.length}`);
@@ -74,15 +75,10 @@ function exitText(s, sum) {
   // Only TP/SL outcomes are final here; end-of-day closes are left to the morning job
   const keep = s.status === 'active' || ['tp', 'sl', 'be'].includes(s.closedBy) ? s : store.signals[i];
   store.signals[i] = { ...keep, alerts: sent };
-  store.summary = SIG.summary(store.signals);
+  store.summary = SIG.summary(store.signals, SPREAD);
   store.updatedAt = now;
 
-  if (messages.length && process.env.SEND === 'true') {
-    await broadcast(...messages);
-    console.log('✓ sent to LINE');
-  } else if (messages.length) {
-    messages.forEach((m) => console.log(`(dry run)\n${m.text}`));
-  }
+  await send(messages.map((m) => `📅 สัญญาณรายวัน ${s.id}\n${m.text}`));
   if (process.env.RECORD === 'true') {
     fs.writeFileSync(SIGNALS_FILE, `${JSON.stringify(store, null, 1)}\n`);
     console.log('✓ signals.json updated');

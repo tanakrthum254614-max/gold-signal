@@ -3,7 +3,7 @@ const { money } = require('../dailyplan.js');
 
 const signed = (v) => `${v >= 0 ? '+' : '−'}$${money(Math.abs(v))}`;
 const at = (ms) => new Date(ms).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
-const sumLine = (sum) => `ผลงานสะสม: ชนะ ${sum.wins} · แพ้ ${sum.losses}${sum.winRate != null ? ` (ชนะ ${sum.winRate}%)` : ''} · ${signed(sum.pnl)}/ออนซ์`;
+const sumLine = (sum) => `ผลงานสะสม: ชนะ ${sum.wins} · แพ้ ${sum.losses}${sum.winRate != null ? ` (ชนะ ${sum.winRate}%)` : ''} · ${signed(sum.pnl)}/ออนซ์${sum.spread ? ` (หักสเปรด $${sum.spread}/ไม้แล้ว)` : ''}`;
 
 // New events on a three-target trade (TP1/TP2/TP3, breakeven exit, stop-loss, time-out close).
 // `sent` remembers what was already announced and is updated in place.
@@ -27,4 +27,7 @@ function targetEvents(s, sent, now) {
   return lines;
 }
 
-module.exports = { signed, at, sumLine, targetEvents };
+// Position size: 0.01 lot = 1 oz, so a $sl stop risks $sl per 0.01 lot
+const lotLine = (sl) => `📏 ขนาดไม้: 0.01 lot เสี่ยง ~$${sl} — ทุกทุน $${(sl * 100).toLocaleString('en-US')} ที่ยอมเสีย 1% = 0.01 lot (ตั้งทุนในเว็บให้คำนวณให้)`;
+
+module.exports = { signed, at, sumLine, targetEvents, lotLine };

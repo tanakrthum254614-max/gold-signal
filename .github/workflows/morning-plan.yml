@@ -31,6 +31,10 @@ jobs:
     env:
       SEND: ${{ github.event_name == 'schedule' || inputs.send }}
       RECORD: ${{ github.event_name == 'schedule' || inputs.record }}
+      SPREAD_USD: ${{ vars.SPREAD_USD || '0.4' }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -52,7 +56,6 @@ jobs:
           fi
       - name: Score signals, record today's, send to LINE
         env:
-          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           SITE_URL: https://gold-signal-ten.vercel.app
         run: node scripts/morning-plan.js data.json
       - name: Save results
@@ -66,3 +69,9 @@ jobs:
           git pull --rebase -q && git push
         env:
           GH_TOKEN: ${{ github.token }}
+      - name: Tell the owner if this failed
+        if: failure()
+        run: node scripts/notify-failure.js "สัญญาณรายวัน 07:05"
+        env:
+          SEND: "true"
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

@@ -10,7 +10,7 @@
   <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610051639">
+  <link rel="stylesheet" href="style.css?v=202610051657">
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -70,6 +70,7 @@
           <p class="intra-why muted" id="inWhy"></p>
           <div class="intra-parts" id="inParts"></div>
           <div id="inTrade"></div>
+          <div id="inNews"></div>
           <div id="inToday"></div>
         </div>
 
@@ -97,6 +98,7 @@
               <div class="track-ends"><span id="trLeft">ตัดขาดทุน</span><span id="trRight">เป้าหมาย</span></div>
             </div>
             <p class="sig-pnl" id="sgPnl"></p>
+            <div id="sgLot"></div>
 
             <details class="fold" open>
               <summary>วิธีใช้สัญญาณนี้ (3 ขั้น)</summary>
@@ -313,6 +315,18 @@
         </section>
 
         <section class="card">
+          <h3>ระบบช่วยกันพอร์ต 🛡️</h3>
+          <ul class="why">
+            <li><b>📈 สัญญาณ 30 นาทีเข้าเฉพาะฝั่งซื้อ</b> — สถิติ 2 ปี ฝั่งซื้อชนะ ~56–58% ส่วนฝั่งขายแค่ ~50% (เหมือนโยนเหรียญ) วันที่แนวโน้มลงระบบจะบอกให้รอ</li>
+            <li><b>📰 หลบข่าวแรงสหรัฐ</b> (Non-Farm, CPI, Fed ฯลฯ จาก investing.com) — ไม่เปิดไม้ใหม่ ±30 นาทีรอบข่าว และเตือนล่วงหน้า 30 นาที</li>
+            <li><b>📏 คำนวณขนาดไม้ให้</b> — ใส่ทุนและ % ที่ยอมเสียในแท็บ <a href="#account">บัญชี</a> ทุกสัญญาณจะบอกว่าควรเข้ากี่ lot (0.01 lot = ทอง 1 ออนซ์)</li>
+            <li><b>💸 หักสเปรดของโบรกคุณ</b> — สถิติทุกหน้าคิดกำไรหลังหักสเปรดแล้ว ตั้งค่าได้ในแท็บบัญชี</li>
+            <li><b>📊 สรุปผลทุกเสาร์ 07:30</b> — สัปดาห์นี้กี่ไม้ ชนะ/แพ้ กำไรสุทธิ เทียบสัปดาห์ก่อน</li>
+            <li><b>🔧 แจ้งเตือนเมื่อระบบมีปัญหา</b> — ถ้าดึงข้อมูลไม่ได้หรืองานอัตโนมัติล้ม จะส่งข้อความบอก</li>
+          </ul>
+        </section>
+
+        <section class="card">
           <h3>ใช้สัญญาณใน 3 ขั้น</h3>
           <ol class="steps">
             <li><b>เปิดออเดอร์ทันที (Market)</b> ตามสัญญาณ ซื้อ หรือ ขาย เมื่อได้รับสัญญาณตอน 07:00</li>
@@ -355,6 +369,24 @@
         </section>
 
         <section class="card">
+          <h3>ตั้งค่าการเทรดของฉัน ⚙️</h3>
+          <p class="muted small">ใช้คำนวณขนาดไม้ (lot) ในทุกสัญญาณ และหักสเปรดในหน้าสถิติ — บันทึกไว้กับบัญชีของคุณ</p>
+          <div class="settings">
+            <label>ทุนในบัญชีเทรด
+              <span class="row"><input id="setCap" type="number" min="0" step="100" placeholder="เช่น 1000"><select id="setCur"><option value="USD">ดอลลาร์ (USD)</option><option value="THB">บาท (THB)</option></select></span>
+            </label>
+            <label>ยอมเสียต่อไม้ (% ของทุน)
+              <select id="setRisk"><option value="0.5">0.5%</option><option value="1">1% (แนะนำ)</option><option value="1.5">1.5%</option><option value="2">2%</option></select>
+            </label>
+            <label>สเปรด XAUUSD ของโบรก (ดอลลาร์)
+              <input id="setSpread" type="number" min="0" step="0.05" placeholder="0.40">
+            </label>
+          </div>
+          <p class="set-preview" id="setPreview"></p>
+          <button class="btn" id="setSave">บันทึก</button>
+        </section>
+
+        <section class="card">
           <h3>รับสัญญาณทุกเช้าทาง LINE 📩</h3>
           <p class="muted">ทุกวันจันทร์–ศุกร์ 07:00 น. ส่งสัญญาณใหม่ + ผลสัญญาณเมื่อวาน และ <b>แจ้งเตือนทันที</b> เมื่อราคาถึงจุดเข้า 🔔 · ถึงเป้าหมาย ✅ · โดนตัดขาดทุน ❌ (เช็กทุก 5 นาที)</p>
           <a class="btn line" id="lineAdd" target="_blank" rel="noopener" hidden>เพิ่มเพื่อน LINE เพื่อรับสัญญาณ</a>
@@ -372,22 +404,22 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610051639</p>
+        <p class="muted small center">เวอร์ชัน 202610051657</p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610051639"></script>
-  <script src="auth.js?v=202610051639"></script>
-  <script src="indicators.js?v=202610051639"></script>
-  <script src="investing.js?v=202610051639"></script>
-  <script src="explain.js?v=202610051639"></script>
-  <script src="dailyplan.js?v=202610051639"></script>
-  <script src="signals.js?v=202610051639"></script>
-  <script src="intraday.js?v=202610051639"></script>
-  <script src="ui.js?v=202610051639"></script>
-  <script src="main.js?v=202610051639"></script>
+  <script src="config.js?v=202610051657"></script>
+  <script src="auth.js?v=202610051657"></script>
+  <script src="indicators.js?v=202610051657"></script>
+  <script src="investing.js?v=202610051657"></script>
+  <script src="explain.js?v=202610051657"></script>
+  <script src="dailyplan.js?v=202610051657"></script>
+  <script src="signals.js?v=202610051657"></script>
+  <script src="intraday.js?v=202610051657"></script>
+  <script src="ui.js?v=202610051657"></script>
+  <script src="main.js?v=202610051657"></script>
 </body>
 </html>
