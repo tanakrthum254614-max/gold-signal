@@ -101,6 +101,23 @@
     emit('settings');
   });
 
+  // ---------- Light / dark theme (light = theme.css on; dark = the original look) ----------
+  const theme = () => (store.get('gs-theme') === 'dark' ? 'dark' : 'light');
+  function applyTheme(t, save) {
+    if (save) store.set('gs-theme', t);
+    $('themeLight').disabled = t === 'dark';
+    document.querySelector('meta[name=theme-color]').content = t === 'dark' ? '#0d1016' : '#f3f5f9';
+    $('themeBtn').textContent = t === 'dark' ? '☀️' : '🌙';
+    document.querySelectorAll('#themeSeg button').forEach((b) => b.classList.toggle('on', b.dataset.theme === t));
+    emit('theme');
+  }
+  $('themeBtn').addEventListener('click', () => {
+    applyTheme(theme() === 'dark' ? 'light' : 'dark', true);
+    toast(theme() === 'dark' ? '🌙 เปลี่ยนเป็นโหมดมืดแล้ว' : '☀️ เปลี่ยนเป็นโหมดสว่างแล้ว');
+  });
+  $('themeSeg').addEventListener('click', (e) => e.target.dataset.theme && applyTheme(e.target.dataset.theme, true));
+  applyTheme(theme());
+
   function toast(text) {
     const t = $('toast');
     t.textContent = text;
@@ -118,7 +135,7 @@
   }
 
   window.UI = {
-    start, toast, settings,
+    start, toast, settings, theme,
     on(name, fn) { listeners.push([name, fn]); },
   };
 })();

@@ -547,7 +547,9 @@ function equityChart(id) {
     bottomLineColor: '#e0424f', bottomFillColor1: 'rgba(224,66,79,0)', bottomFillColor2: 'rgba(224,66,79,.25)',
   });
   fitWhenSized($(id), () => chart.timeScale().fitContent());
-  return (eqCharts[id] = { chart, series });
+  eqCharts[id] = { chart, series };
+  applyChartTheme();
+  return eqCharts[id];
 }
 function plotEquity(id, signals) {
   let total = 0;
@@ -1096,6 +1098,24 @@ fitWhenSized($('mainChart'), () => {
   const n = state.bars.length;
   if (n) mainChart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 120), to: n + 6 });
 });
+
+// Chart colours follow the light / dark theme
+function applyChartTheme() {
+  const dark = UI.theme() === 'dark';
+  const c = dark
+    ? { text: '#8a93a3', grid: '#1b212c', border: '#262e3b', cross: '#6b7686', label: '#2a3140' }
+    : { text: '#5b6475', grid: '#eceff4', border: '#e2e7ef', cross: '#9aa4b5', label: '#1c2433' };
+  const opts = {
+    layout: { textColor: c.text },
+    grid: { vertLines: { color: c.grid }, horzLines: { color: c.grid } },
+    rightPriceScale: { borderColor: c.border }, timeScale: { borderColor: c.border },
+    crosshair: { vertLine: { color: c.cross, labelBackgroundColor: c.label }, horzLine: { color: c.cross, labelBackgroundColor: c.label } },
+  };
+  [mainChart, rsiChart, macdChart, ...Object.values(eqCharts).map((e) => e.chart)].forEach((ch) => ch.applyOptions(opts));
+  simpleChart.applyOptions({ ...opts, grid: { vertLines: { visible: false }, horzLines: { color: c.grid } } });
+}
+UI.on('theme', applyChartTheme);
+applyChartTheme();
 
 // Refit charts when their tab becomes visible
 UI.on('tab:stats', () => setTimeout(renderStats, 50));

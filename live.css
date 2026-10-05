@@ -166,3 +166,8 @@
 .tl li.past { color: var(--muted); } .tl li.past::before { background: var(--muted); }
 .tl li.now { color: var(--down); font-weight: 700; } .tl li.now::before { border-color: var(--down); background: var(--down); animation: pulse 1.4s infinite; }
 .tl li .mono { color: var(--gold); margin-right: 6px; }
+
+/* Light / dark switch in the app bar */
+.theme-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); font-size: 17px; line-height: 1;
+  cursor: pointer; display: grid; place-items: center; padding: 0; transition: transform .3s; }
+.theme-btn:hover { transform: rotate(-20deg) scale(1.08); }

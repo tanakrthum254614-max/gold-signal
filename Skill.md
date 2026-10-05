@@ -59,7 +59,7 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 ```
 index.html      หน้าเว็บ (แท็บ: สัญญาณ / สถิติ / กราฟ / วิธีใช้ / บัญชี) — asset ทุกตัวมี ?v=<เวอร์ชัน>
 style.css       โครง CSS เดิม (เดิมเป็นธีมมืด)
-theme.css       ธีมสว่าง (โหลดเป็นไฟล์สุดท้าย ทับสีของ style.css/live.css) — การ์ดขาว เงานุ่ม แถบสีด้านบนบอกสถานะ · สีกราฟอยู่ใน main.js (chartBase / series)
+theme.css       ธีมสว่าง (ค่าเริ่มต้น · <link id=themeLight> โหลดเป็นไฟล์สุดท้าย ทับสีของ style.css/live.css) · โหมดมืด = ปิดไฟล์นี้ (ปุ่ม 🌙 บนแถบบน / แท็บบัญชี, localStorage gs-theme, ui.js applyTheme → main.js applyChartTheme) — การ์ดขาว เงานุ่ม แถบสีด้านบนบอกสถานะ · สีกราฟอยู่ใน main.js (chartBase / series)
 live.css        หน้าโหลดแบบอนิเมชั่น (วงแหวน % + อนุภาค + รายการขั้น), ราคาสด, เกจแนวโน้ม, โดนัท, การเคลื่อนไหวของแท็บ
 config.js       Clerk publishable key + ลิงก์เพิ่มเพื่อน LINE (ของสาธารณะ ไม่มีความลับ)
 auth.js         หน้าโหลด (SPLASH.step(text, pct) ขยับวงแหวน + นับ % + เก็บขั้นที่ผ่านแล้ว) + ล็อกอิน Google ผ่าน Clerk (clerk-js@6 + @clerk/ui@1 + ภาษาไทย thTH)
