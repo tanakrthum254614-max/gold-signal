@@ -1,10 +1,12 @@
 name: Morning gold signal
 
 on:
-  # 00:05 UTC Mon–Fri = 07:05 Thai time, just after the market opens (07:00–03:00 Thai time).
-  # GitHub cron can start a few minutes late. Never runs on Saturday/Sunday.
+  # 5 minutes after the market opens: 07:05 Thai (00:05 UTC) in the US summer, 08:05 Thai (01:05 UTC)
+  # in the US winter — GitHub cron is UTC only, so both are scheduled and scripts/market-gate.js lets
+  # the right one through (once the market is open, once a day). Never runs on Saturday/Sunday.
   schedule:
     - cron: "5 0 * * 1-5"
+    - cron: "5 1 * * 1-5"
   workflow_dispatch:
     inputs:
       send:
@@ -35,18 +37,26 @@ jobs:
       LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+      - name: Market open and no signal yet today?
+        run: node scripts/market-gate.js
+        env:
+          EVENT: ${{ github.event_name }}
       - uses: actions/setup-python@v5
+        if: env.GO == 'true'
         with:
           python-version: "3.12"
           cache: pip
       - uses: actions/setup-node@v4
+        if: env.GO == 'true'
         with:
           node-version: "22"
       - run: pip install -r requirements.txt
+        if: env.GO == 'true'
       - name: Fetch gold data
+        if: env.GO == 'true'
         run: python scripts/fetch_data.py data.json
       - name: Refresh 1-year backtest (Mondays)
-        if: env.RECORD == 'true'
+        if: env.GO == 'true' && env.RECORD == 'true'
         run: |
           if [ "$(TZ=Asia/Bangkok date +%u)" = "1" ] || [ ! -f backtest.json ]; then
             node scripts/backtest.js 365
@@ -54,13 +64,15 @@ jobs:
             SYSTEM=15 node scripts/backtest-30m.js 365
           fi
       - name: Score signals, record today's, send to LINE
+        if: env.GO == 'true'
         env:
           SITE_URL: https://gold-signal-ten.vercel.app
         run: node scripts/morning-plan.js data.json
       - name: Check LINE quota (warn at 80%)
+        if: env.GO == 'true'
         run: node scripts/line-quota.js
       - name: Save results
-        if: env.RECORD == 'true'
+        if: env.GO == 'true' && env.RECORD == 'true'
         # Commit as the repo owner's GitHub identity: Vercel (Hobby) only deploys commits from linked accounts
         run: |
           git config user.name "tanakrthum254614-max"
@@ -72,7 +84,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - name: Tell the owner if this failed
         if: failure()
-        run: node scripts/notify-failure.js "สัญญาณรายวัน 07:05"
+        run: node scripts/notify-failure.js "สัญญาณรายวันตอนเช้า"
         env:
           SEND: "true"
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

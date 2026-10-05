@@ -14,8 +14,11 @@ git config user.email "$(gh api users/tanakrthum254614-max --jq '"\(.id)+\(.logi
 check() {
   python scripts/fetch_data.py data.json --m15-only || return 1
   local rc=0
-  # 00:00–00:30 UTC = 07:00–07:30 Thai: the morning job owns signals.json (no daily signal is open then)
-  if [ "$(date -u +%H)" != "00" ] || [ "$(date -u +%M)" -ge 30 ]; then node scripts/alerts.js data.json || rc=1; fi
+  # First 30 minutes after the open (07:00–07:30 Thai, 08:00–08:30 in the US winter): the morning job
+  # owns signals.json (no daily signal is open then)
+  if node -e 'const S = require("./signals.js"), n = Date.now(), o = Date.parse(S.thaiDate(n) + "T07:00:00+07:00") + S.marketShift(n); process.exit(n >= o && n < o + 30 * 60e3 ? 1 : 0)'; then
+    node scripts/alerts.js data.json || rc=1
+  fi
   node scripts/intraday-run.js data.json || rc=1
   node scripts/flush.js   # everything from this check as one LINE request
   # Save results — as the repo owner: Vercel (Hobby) only deploys commits from linked accounts

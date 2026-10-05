@@ -3,12 +3,12 @@
 // only, never within ±30 minutes of high-impact US news). Results live in intraday.json. Same opening
 // rule as scripts/backtest-30m.js: one trade at a time, a new trade only in a half hour that starts
 // at least 15 minutes after the previous one closed.
-// Also, while the market is open (07:00–03:00 Thai time):
+// Also, while the market is open (07:00–03:00 Thai time, 08:00–04:00 in the US winter):
 // - checked every half hour, but SENT only when a side turns ✅ (good to enter) or stops being ✅ — about
 //   2 messages a day instead of ~40, so the free LINE plan lasts the month. Each update has a buy and a
 //   sell verdict with levels and historical odds (calibration table in backtest-30m.json)
 // - safety brake (INTRA.pauseCheck): after 5 losses in a row or −$60/oz this week, no new trades (and no
-//   ✅ updates) until next Monday 07:00; recorded as `pause` in intraday.json so the website shows it
+//   ✅ updates) until next Monday's open; recorded as `pause` in intraday.json so the website shows it
 // - ~30 minutes before each high-impact US release, a warning
 // What was already announced is kept in STATE_DIR (restored/saved by the workflow's Actions cache).
 // Usage: node scripts/intraday-run.js data.json

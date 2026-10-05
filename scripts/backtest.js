@@ -40,9 +40,9 @@ const key = (cs) => TA.analyze(cs).label.key.replace('-', '_');
   console.log(`bars: 15m=${m15.length} 1h=${h1.length} 4h=${h4.length} 1d=${d1.length}`);
 
   const signals = [];
-  for (let t = Math.ceil(start / 864e5) * 864e5; t < now - 24 * 3600e3; t += 864e5) {
-    const wd = new Date(t).getUTCDay();
-    if (wd === 0 || wd === 6) continue; // weekdays only, signal at 00:00 UTC = 07:00 Thai
+  for (let day = Math.ceil(start / 864e5) * 864e5; day < now - 24 * 3600e3; day += 864e5) {
+    const t = day + SIG.marketShift(day), wd = new Date(day).getUTCDay();
+    if (wd === 0 || wd === 6) continue; // weekdays only, signal at the open: 07:00 Thai (08:00 in the US winter)
     const upto = (bars, ms) => bars.filter((b) => b.time + ms <= t).slice(-300);
     const hh = upto(h1, 3600e3), h44 = upto(h4, 4 * 3600e3), dd = upto(d1, 864e5);
     if (hh.length < 60 || dd.length < 60) continue;

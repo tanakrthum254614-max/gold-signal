@@ -27,8 +27,21 @@
     };
   }
   const round = (v) => Math.round(v * 100) / 100;
-  // Closed at 02:45 Thai time the next night, before the market shuts at 03:00 (open 07:00–03:00)
-  const expiry = (id) => Date.parse(`${id}T02:45:00+07:00`) + DAY;
+  // Gold trades on New York time, so its hours move in Thai time with US daylight saving
+  // (2nd Sunday of March 02:00 → 1st Sunday of November 02:00, New York): open 07:00–03:00 Thai in
+  // the US summer and an hour later, 08:00–04:00, in the US winter. Times in the code are written in
+  // summer hours and shifted with marketShift().
+  const nthSunday = (y, month, n) => { const d = new Date(Date.UTC(y, month, 1)).getUTCDay(); return Date.UTC(y, month, 1 + ((7 - d) % 7) + 7 * (n - 1)); };
+  function usDst(ms) {
+    const y = new Date(ms).getUTCFullYear();
+    return ms >= nthSunday(y, 2, 2) + 7 * 3600e3 && ms < nthSunday(y, 10, 1) + 6 * 3600e3;
+  }
+  const marketShift = (ms) => (usDst(ms) ? 0 : 3600e3);
+  // A summer-hours Thai clock time ("07:00") as it is at `ms` ("08:00" in the US winter)
+  const mt = (ms, hhmm) => `${String((+hhmm.slice(0, 2) + marketShift(ms) / 3600e3) % 24).padStart(2, '0')}${hhmm.slice(2)}`;
+
+  // Closed at 02:45 Thai time the next night (03:45 in the US winter), before the market shuts
+  const expiry = (id) => { const t = Date.parse(`${id}T02:45:00+07:00`) + DAY; return t + marketShift(t); };
 
   // "Enter now" short-trade rule: a signal every weekday in the direction of the short + medium +
   // long-term trend (ties go to the medium term), at the current price with a $15 stop and three
@@ -158,7 +171,7 @@
     pending: '⏳ รอราคาถึงจุดเข้า', active: '🟦 เข้าแล้ว กำลังวิ่ง', win: '✅ ชนะ', loss: '❌ แพ้', expired: '⏹ ราคาไม่ถึงจุดเข้า', skip: '⏸ ไม่มีสัญญาณ (ตลาดไม่ชัด)',
   };
 
-  const SIG = { thaiDate, make, makeMarket, RULE, evaluate, summary, isFinal, STATUS_TH, round };
+  const SIG = { thaiDate, usDst, marketShift, mt, make, makeMarket, RULE, evaluate, summary, isFinal, STATUS_TH, round };
   if (typeof module !== 'undefined' && module.exports) module.exports = SIG;
   else root.SIG = SIG;
 })(typeof window !== 'undefined' ? window : globalThis);

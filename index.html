@@ -12,9 +12,9 @@
   <link rel="apple-touch-icon" href="logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610060006">
-  <link rel="stylesheet" href="live.css?v=202610060006">
-  <link rel="stylesheet" href="theme.css?v=202610060006" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610060023">
+  <link rel="stylesheet" href="live.css?v=202610060023">
+  <link rel="stylesheet" href="theme.css?v=202610060023" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -188,7 +188,7 @@
           <div id="inToday"></div>
         </div>
 
-        <h3 class="sec-title">🧭 ภาพรวมรายวัน (07:00) <span class="tag neutral">ข้อมูลประกอบ</span></h3>
+        <h3 class="sec-title">🧭 ภาพรวมรายวัน (ตลาดเปิด) <span class="tag neutral">ข้อมูลประกอบ</span></h3>
         <div class="home-cols">
           <div class="card sig" id="sigCard">
             <div class="sig-top">
@@ -265,7 +265,7 @@
           <div id="inBtChart" class="chart-eq"></div>
         </section>
 
-        <h3 class="sec-title">🧭 สูตรรายวัน (07:00) — ข้อมูลประกอบ</h3>
+        <h3 class="sec-title">🧭 สูตรรายวัน (ตลาดเปิด) — ข้อมูลประกอบ</h3>
         <section class="card">
           <h3>📅 สูตรรายวัน — ติดตามผล <span class="tag neutral">ไม่ได้แนะนำให้เข้า</span></h3>
           <p class="hint" id="liveSince">บันทึกทุกสัญญาณที่ส่งจริง ไม่ตัดทิ้ง ไม่แก้ย้อนหลัง</p>
@@ -280,7 +280,7 @@
 
         <section class="card bt">
           <h3>ทดสอบย้อนหลัง 1 ปี <span class="tag neutral">จำลอง</span></h3>
-          <p class="hint">ใช้กติกาเดียวกันกับสัญญาณจริง (ทุกวันทำการ · เข้าตอน 07:00 · SL $15 · ปิด ⅓ ที่ TP $15 / $20 / $30 · ถึง TP1 แล้วเลื่อน SL ไปที่ทุน) ย้อนหลังทุกวันทำการ 1 ปี (ข้อมูลราคาจาก Binance PAXG และทิศทางจากเครื่องมือของเราเอง เพราะ investing.com ไม่เก็บผลวิเคราะห์ย้อนหลัง) กำไรหักสเปรดตามที่ตั้งไว้ในแท็บบัญชีแล้ว (ยังไม่รวมค่าคอมมิชชันของโบรก)</p>
+          <p class="hint">ใช้กติกาเดียวกันกับสัญญาณจริง (ทุกวันทำการ · เข้าตอนตลาดเปิด · SL $15 · ปิด ⅓ ที่ TP $15 / $20 / $30 · ถึง TP1 แล้วเลื่อน SL ไปที่ทุน) ย้อนหลังทุกวันทำการ 1 ปี (ข้อมูลราคาจาก Binance PAXG และทิศทางจากเครื่องมือของเราเอง เพราะ investing.com ไม่เก็บผลวิเคราะห์ย้อนหลัง) กำไรหักสเปรดตามที่ตั้งไว้ในแท็บบัญชีแล้ว (ยังไม่รวมค่าคอมมิชชันของโบรก)</p>
           <div class="tiles" id="btTiles"></div>
           <p class="bt-note" id="btNote"></p>
           <div id="btChart" class="chart-eq"></div>
@@ -419,7 +419,7 @@
         <section class="card">
           <h3>สัญญาณคืออะไร?</h3>
           <p><b>สัญญาณหลักคือ ⏱️ สัญญาณ 30 นาที</b> (การ์ดถัดไป) — บอกจุดเข้า SL และ TP $15 / $20 / $30 พร้อมแจ้ง LINE
-            <br>ทุกเช้าวันจันทร์–ศุกร์ 07:05 ระบบส่ง <b>🧭 ภาพรวมรายวัน</b>: แนวโน้มวันนี้เอียงขึ้นหรือลง ข่าวแรง และสถานะระบบ 30 นาที —
+            <br>ทุกเช้าวันจันทร์–ศุกร์ 07:05 (ต้น พ.ย.–กลาง มี.ค. 08:05) ระบบส่ง <b>🧭 ภาพรวมรายวัน</b>: แนวโน้มวันนี้เอียงขึ้นหรือลง ข่าวแรง และสถานะระบบ 30 นาที —
             <b>เป็นข้อมูลประกอบ ไม่ใช่สัญญาณให้เข้าไม้</b> เพราะสูตรรายวันทดสอบย้อนหลัง 1 ปีแล้วขาดทุนหลังหักสเปรด (ระบบยังบันทึกผลสมมติไว้ให้ดูในแท็บสถิติ)</p>
         </section>
 
@@ -445,7 +445,8 @@
             <li><b>📏 คำนวณขนาดไม้ให้</b> — ใส่ทุนและ % ที่ยอมเสียในแท็บ <a href="#account">บัญชี</a> ทุกสัญญาณจะบอกว่าควรเข้ากี่ lot (0.01 lot = ทอง 1 ออนซ์)</li>
             <li><b>💸 หักสเปรดของโบรกคุณ</b> — สถิติทุกหน้าคิดกำไรหลังหักสเปรดแล้ว ตั้งค่าได้ในแท็บบัญชี</li>
             <li><b>📊 สรุปผลทุกเสาร์ 07:30</b> — สัปดาห์นี้กี่ไม้ ชนะ/แพ้ กำไรสุทธิ เทียบสัปดาห์ก่อน</li>
-            <li><b>🛑 เบรกฉุกเฉิน</b> — ถ้าแพ้ติดกัน 5 ไม้ หรือขาดทุนเกิน $60/ออนซ์ ในสัปดาห์เดียว ระบบ 30 นาทีจะหยุดเปิดไม้ใหม่จนถึงจันทร์หน้า 07:00 และแจ้งทาง LINE</li>
+            <li><b>🛑 เบรกฉุกเฉิน</b> — ถ้าแพ้ติดกัน 5 ไม้ หรือขาดทุนเกิน $60/ออนซ์ ในสัปดาห์เดียว ระบบ 30 นาทีจะหยุดเปิดไม้ใหม่จนถึงตลาดเปิดวันจันทร์หน้า และแจ้งทาง LINE</li>
+            <li><b>🕐 เวลาตลาด</b> — ทองคำซื้อขายตามเวลานิวยอร์ก: กลาง มี.ค.–ต้น พ.ย. เปิด <b>07:00–03:00 น.</b> · ต้น พ.ย.–กลาง มี.ค. เลื่อนเป็น <b>08:00–04:00 น.</b> ระบบเลื่อนเวลาทั้งหมด (เปิดไม้ ปิดไม้ ข้อความเช้า) ให้เอง</li>
             <li><b>🔧 แจ้งเตือนเมื่อระบบมีปัญหา</b> — ถ้าดึงข้อมูลไม่ได้หรืองานอัตโนมัติล้ม จะส่งข้อความบอก</li>
           </ul>
         </section>
@@ -453,9 +454,9 @@
         <section class="card">
           <h3>ใช้สัญญาณใน 3 ขั้น</h3>
           <ol class="steps">
-            <li><b>เปิดออเดอร์ทันที (Market)</b> ตามสัญญาณ ซื้อ หรือ ขาย เมื่อได้รับสัญญาณตอน 07:00</li>
+            <li><b>เปิดออเดอร์ทันที (Market)</b> ตามสัญญาณ ซื้อ หรือ ขาย เมื่อได้รับสัญญาณตอนตลาดเปิด</li>
             <li><b>ตั้งตัดขาดทุน (Stop Loss)</b> ทุกครั้ง — กันขาดทุนบานปลายถ้าผิดทาง</li>
-            <li><b>แบ่งปิด 3 ส่วน</b> ที่ TP1 · TP2 · TP3 — พอถึง TP1 ให้<b>เลื่อน SL ไปที่ราคาเข้า</b> (ไม้นั้นจะไม่ขาดทุนแล้ว) ถ้าถึง 02:45 น. (ก่อนตลาดปิด 03:00) ยังไม่ปิด ให้ปิดเอง</li>
+            <li><b>แบ่งปิด 3 ส่วน</b> ที่ TP1 · TP2 · TP3 — พอถึง TP1 ให้<b>เลื่อน SL ไปที่ราคาเข้า</b> (ไม้นั้นจะไม่ขาดทุนแล้ว) ถ้าถึง 02:45 น. (ต้น พ.ย.–กลาง มี.ค. 03:45 น.) ก่อนตลาดปิด ยังไม่ปิด ให้ปิดเอง</li>
           </ol>
         </section>
 
@@ -522,7 +523,7 @@
 
         <section class="card">
           <h3>รับสัญญาณทาง LINE 📩</h3>
-          <p class="muted">ทุกเช้าวันทำการ 07:05 ส่งภาพรวมรายวัน · ระหว่างวันส่ง <b>สัญญาณ 30 นาที</b> เมื่อเข้าไม้ ✅ ถึง TP ❌ โดน SL และเมื่อมีจังหวะ ✅ หรือหมดจังหวะ · เตือนก่อนข่าวแรง</p>
+          <p class="muted">ทุกเช้าวันทำการ 07:05 (ต้น พ.ย.–กลาง มี.ค. 08:05) ส่งภาพรวมรายวัน · ระหว่างวันส่ง <b>สัญญาณ 30 นาที</b> เมื่อเข้าไม้ ✅ ถึง TP ❌ โดน SL และเมื่อมีจังหวะ ✅ หรือหมดจังหวะ · เตือนก่อนข่าวแรง</p>
           <p class="muted small" id="lineQuota"></p>
           <a class="btn line" id="lineAdd" target="_blank" rel="noopener" hidden>เพิ่มเพื่อน LINE เพื่อรับสัญญาณ</a>
           <p class="muted small" id="lineSoon">กำลังเตรียมบัญชี LINE — เร็ว ๆ นี้</p>
@@ -539,22 +540,22 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610060006 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610060023 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610060006"></script>
-  <script src="auth.js?v=202610060006"></script>
-  <script src="indicators.js?v=202610060006"></script>
-  <script src="investing.js?v=202610060006"></script>
-  <script src="explain.js?v=202610060006"></script>
-  <script src="dailyplan.js?v=202610060006"></script>
-  <script src="signals.js?v=202610060006"></script>
-  <script src="intraday.js?v=202610060006"></script>
-  <script src="ui.js?v=202610060006"></script>
-  <script src="main.js?v=202610060006"></script>
+  <script src="config.js?v=202610060023"></script>
+  <script src="auth.js?v=202610060023"></script>
+  <script src="indicators.js?v=202610060023"></script>
+  <script src="investing.js?v=202610060023"></script>
+  <script src="explain.js?v=202610060023"></script>
+  <script src="dailyplan.js?v=202610060023"></script>
+  <script src="signals.js?v=202610060023"></script>
+  <script src="intraday.js?v=202610060023"></script>
+  <script src="ui.js?v=202610060023"></script>
+  <script src="main.js?v=202610060023"></script>
 </body>
 </html>

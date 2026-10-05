@@ -427,7 +427,8 @@ const liveSignals = () => state.signals.map(live);
 function nextSignalTime(now = Date.now()) {
   for (let d = 0; d < 8; d++) {
     const id = SIG.thaiDate(now + d * 864e5);
-    const t = Date.parse(`${id}T07:00:00+07:00`);
+    let t = Date.parse(`${id}T07:00:00+07:00`);
+    t += SIG.marketShift(t); // 08:00 in the US winter
     const wd = new Date(`${id}T12:00:00+07:00`).getUTCDay();
     if (t > now && wd !== 0 && wd !== 6) return t;
   }
@@ -455,7 +456,7 @@ function renderSignalHome() {
     $('sgStars').textContent = '';
     $('sgSide').innerHTML = '⏸ วันนี้ไม่มีสัญญาณ';
     $('sgStatus').textContent = `ตลาดยังไม่ชัดพอ — ไม่เทรดดีกว่า · สัญญาณถัดไป ${thaiTime(nextSignalTime())}`;
-    $('sgHow').innerHTML = '<li>วันที่ตลาดไม่ชัด การ “ไม่เทรด” ก็คือการรักษาเงินทุน</li><li>รอสัญญาณใหม่เช้าวันทำการถัดไป 07:00</li>';
+    $('sgHow').innerHTML = `<li>วันที่ตลาดไม่ชัด การ “ไม่เทรด” ก็คือการรักษาเงินทุน</li><li>รอสัญญาณใหม่เช้าวันทำการถัดไป ${SIG.mt(Date.now(), '07:00')}</li>`;
     $('sgWhy').innerHTML = (s.why || []).map((l) => `<li>${l}</li>`).join('');
     renderMiniRecord();
     return;
@@ -850,7 +851,7 @@ function renderLiveStatus() {
   if (!state.tickAt) return;
   if (!open || quiet) {
     pill.className = 'lv-pill closed';
-    $('lvMarketText').textContent = open ? 'ราคาไม่ขยับ · ตลาดอาจหยุด' : 'ตลาดปิด · เปิด 07:00 น.';
+    $('lvMarketText').textContent = open ? 'ราคาไม่ขยับ · ตลาดอาจหยุด' : `ตลาดปิด · เปิด ${hhmm(INTRA.nextOpen(now))} น.`;
   } else if (state.tickSrc === 'backup' && !streamFresh()) {
     pill.className = 'lv-pill backup';
     $('lvMarketText').textContent = 'สด · แหล่งสำรอง';
@@ -1455,7 +1456,7 @@ function newsTimelineHtml(now) {
   const close = INTRA.nextClose(now);
   const list = (state.news || []).filter((n) => n.time >= now - 3 * 3600e3 && n.time <= close);
   const head = `<h4>📰 ข่าวแรงสหรัฐ <span class="muted small">(งดเปิดไม้ใหม่ ±${INTRA.RULE.newsMin} นาทีรอบข่าว)</span></h4>`;
-  if (!list.length) return `${head}<p class="muted small">ไม่มีข่าวแรงจนถึงตลาดปิด 03:00 น.</p>`;
+  if (!list.length) return `${head}<p class="muted small">ไม่มีข่าวแรงจนถึงตลาดปิด ${SIG.mt(now, '03:00')} น.</p>`;
   return `${head}<ul class="tl">${list.map((n) => {
     const cls = Math.abs(n.time - now) <= w ? 'now' : n.time < now ? 'past' : '';
     const mins = Math.round((n.time - now) / 60e3);

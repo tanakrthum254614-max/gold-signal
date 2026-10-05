@@ -89,7 +89,7 @@ const row = (label, value, color) => ({
 const sep = () => ({ type: 'separator', margin: 'lg' });
 const title = (text) => txt(text, { weight: 'bold', size: 'sm', margin: 'lg' });
 
-// High-impact US news between now and the 03:00 close, in Thai time
+// High-impact US news between now and the close (03:00 Thai, 04:00 in the US winter), in Thai time
 const newsLines = (news) => (news.length
   ? news.map((n) => `${new Date(n.time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' })} น. ${n.title}`)
   : ['วันนี้ไม่มีข่าวแรงสหรัฐ']);

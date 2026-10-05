@@ -16,12 +16,13 @@ const bars = (rows) => (rows || []).map((b) => ({ time: b[0], open: b[1], high: 
 const day = (ms) => new Date(ms).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' });
 const DAY = 864e5;
 
-// Monday 07:00 Thai time of the week containing `now`
+// The Monday market open (07:00 Thai, 08:00 in the US winter) of the week containing `now`
 function weekStart(now) {
   const th = new Date(now + 7 * 3600e3);
   const back = (th.getUTCDay() + 6) % 7; // days since Monday
   const monday = new Date(now + 7 * 3600e3 - back * DAY).toISOString().slice(0, 10);
-  return Date.parse(`${monday}T07:00:00+07:00`);
+  const t = Date.parse(`${monday}T07:00:00+07:00`);
+  return t + SIG.marketShift(t);
 }
 
 function section(name, trades) {

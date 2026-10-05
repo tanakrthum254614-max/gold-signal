@@ -14,12 +14,15 @@
   const SLOT = 30 * 60e3;
   const STRENGTH = { strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 };
   const TREND_TH = { strong_buy: 'ขาขึ้นแรง', buy: 'ขาขึ้น', neutral: 'ไซด์เวย์', sell: 'ขาลง', strong_sell: 'ขาลงแรง' };
-  // Trading hours (Thai time): open 07:00 – 03:00 next day, Monday 07:00 to Saturday 03:00.
-  // No new trades in the last hour (02:00–03:00); every trade is closed by 02:45.
+  // Trading hours in Thai time during the US summer: open 07:00 – 03:00 next day, Monday 07:00 to
+  // Saturday 03:00. No new trades in the last hour (02:00–03:00); every trade is closed by 02:45.
+  // In the US winter all of these are an hour later (SIG.marketShift) — the market runs on New York time.
   const HOURS = { open: 7, close: 3, lastEntry: 2, closeAt: { h: 2, m: 45 } };
   const thai = (ms) => { const d = new Date(ms + 7 * 3600e3); return { wd: d.getUTCDay(), h: d.getUTCHours(), m: d.getUTCMinutes() }; };
+  // Thai clock in summer hours: what the clock would read if the market kept its US-summer hours
+  const mkt = (ms) => thai(ms - SIG.marketShift(ms));
   function marketOpen(now) {
-    const { wd, h } = thai(now);
+    const { wd, h } = mkt(now);
     return (h >= HOURS.open && wd >= 1 && wd <= 5) || (h < HOURS.close && wd >= 2 && wd <= 6);
   }
   // When the market next opens (ms), or `now` if it is open — scans forward in half hours
@@ -29,13 +32,14 @@
     for (let i = 0; i < 7 * 48 && !marketOpen(t); i++) t += SLOT;
     return t;
   }
-  // The next 02:45 Thai time after `now` — when open trades are closed before the market shuts
+  // The next 02:45 Thai time (03:45 in the US winter) after `now` — when open trades are closed
   function nextClose(now) {
-    const { h, m } = thai(now);
-    const day = new Date(now + 7 * 3600e3).toISOString().slice(0, 10);
+    const shift = SIG.marketShift(now), at = now - shift;
+    const { h, m } = thai(at);
+    const day = new Date(at + 7 * 3600e3).toISOString().slice(0, 10);
     const today = Date.parse(`${day}T0${HOURS.closeAt.h}:${HOURS.closeAt.m}:00+07:00`);
     const before = h < HOURS.closeAt.h || (h === HOURS.closeAt.h && m < HOURS.closeAt.m);
-    return before ? today : today + 24 * 3600e3;
+    return (before ? today : today + 24 * 3600e3) + shift;
   }
 
   const slotOf = (ms) => Math.floor(ms / SLOT) * SLOT;
@@ -66,7 +70,7 @@
     // Direction to lean even when the score is too weak for a trade: middle, then slow, then fast frame
     const lean = Math.sign(score) || Math.sign(v[1]) || Math.sign(v[2]) || Math.sign(v[0]);
     const open = marketOpen(now);
-    const lastHour = open && thai(now).h === HOURS.lastEntry; // 02:00–03:00: too close to the close
+    const lastHour = open && mkt(now).h === HOURS.lastEntry; // 02:00–03:00 (03:00–04:00 in winter): too close to the close
     const fast = cs[0];
     const stale = !open || now - fast[fast.length - 1].time > 2 * 3600e3; // market closed / no prices
     const event = newsNear(news, now);
@@ -94,9 +98,9 @@
   function reasons(dec) {
     const rule = dec.rule || RULE;
     const lines = [`แนวโน้ม ${dec.frames.map((f) => `${f.label} ${TREND_TH[f.trend]}`).join(' · ')} (คะแนน ${dec.score > 0 ? '+' : ''}${dec.score} จาก ±6)`];
-    if (dec.stale && !dec.open) lines.push('ตลาดปิดอยู่ (เปิด 07:00–03:00 น.) — ไม่เปิดไม้ใหม่');
+    if (dec.stale && !dec.open) lines.push(`ตลาดปิดอยู่ (เปิด ${SIG.mt(dec.slot, '07:00')}–${SIG.mt(dec.slot, '03:00')} น.) — ไม่เปิดไม้ใหม่`);
     else if (dec.stale) lines.push('ข้อมูลกราฟล่าช้า — ไม่เปิดไม้ใหม่จนกว่าข้อมูลจะกลับมา');
-    else if (dec.lastHour) lines.push('ใกล้ปิดตลาด 03:00 น. — ไม่เปิดไม้ใหม่ในชั่วโมงสุดท้าย');
+    else if (dec.lastHour) lines.push(`ใกล้ปิดตลาด ${SIG.mt(dec.slot, '03:00')} น. — ไม่เปิดไม้ใหม่ในชั่วโมงสุดท้าย`);
     else if (dec.news) lines.push(`📰 ช่วงข่าวแรง: ${dec.news.title} — ไม่เปิดไม้ใหม่ ±${RULE.newsMin} นาทีรอบข่าว`);
     else if (dec.sellSkipped) lines.push('แนวโน้มลงชัด แต่ระบบเข้าเฉพาะฝั่งซื้อ (สถิติ 2 ปี ฝั่งขายชนะแค่ ~50%) — แนะนำรอ');
     else if (!dec.dir) lines.push(`ต้องได้คะแนน ${rule.sides === 'buy' ? '+' : '±'}${rule.threshold} ขึ้นไปถึงจะเข้า (ทั้ง 3 ช่วงเวลาต้องชี้ทางเดียวกันชัดเจน)`);
@@ -131,7 +135,7 @@
   function makeTrade(dec, price, now = Date.now()) {
     const buy = dec.dir > 0, d = buy ? 1 : -1;
     const r = (v) => SIG.round(v);
-    // Closed by 02:45 Thai time at the latest, before the market shuts at 03:00
+    // Closed by 02:45 Thai time at the latest (03:45 in the US winter), before the market shuts
     const expiresAt = Math.min(now + RULE.maxHoldMs, nextClose(now));
     return {
       id: `${SIG.thaiDate(now)}-${new Date(now + 7 * 3600e3).toISOString().slice(11, 16).replace(':', '')}`,
@@ -142,14 +146,15 @@
     };
   }
 
-  // Monday 07:00 Thai time of the week containing `now`, and of the following week
+  // The Monday market open (07:00 Thai, 08:00 in the US winter) of the week containing `now`, and of the following week
   function weekStart(now) {
     const th = new Date(now + 7 * 3600e3);
     const monday = new Date(now + 7 * 3600e3 - ((th.getUTCDay() + 6) % 7) * 864e5).toISOString().slice(0, 10);
-    const t = Date.parse(`${monday}T07:00:00+07:00`);
-    return t > now ? t - 7 * 864e5 : t; // Monday before 07:00 still belongs to last week
+    const t = openAt(Date.parse(`${monday}T07:00:00+07:00`));
+    return t > now ? openAt(t - SIG.marketShift(t) - 7 * 864e5) : t; // Monday before the open still belongs to last week
   }
-  const nextWeek = (now) => weekStart(now) + 7 * 864e5;
+  const openAt = (summer) => summer + SIG.marketShift(summer); // a summer-hours open moved to that week's hours
+  const nextWeek = (now) => { const w = weekStart(now); return openAt(w - SIG.marketShift(w) + 7 * 864e5); };
 
   // Should the system stop opening trades? trades: recorded trades; since: ignore trades before this
   // (the end of the previous pause). Returns { reason } or null.
