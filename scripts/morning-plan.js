@@ -48,8 +48,8 @@ function whyLines(a) {
   const lines = [];
   if (a.votes) lines.push(`investing.com วิเคราะห์ ${a.votes.total} ช่วงเวลา: บอก “ลง” ${a.votes.down} · “ขึ้น” ${a.votes.up}`);
   lines.push(`แนวโน้ม ระยะสั้น ${TREND_TH[a.bias.short]} · ระยะกลาง ${TREND_TH[a.bias.mid]} · ระยะยาว ${TREND_TH[a.bias.long]}`);
-  lines.push(`เทรดสั้น: เป้าหมาย ${SIG.RULE.tpUsd} · ตัดขาดทุน ${SIG.RULE.slUsd} · ให้สัญญาณเฉพาะวันที่มั่นใจ 5 ดาว`);
-  if (a.atr) lines.push(`ทองแกว่งเฉลี่ยวันละ ~${money(a.atr)}`);
+  lines.push(`เทรดสั้น: TP ${SIG.RULE.tpUsd.map((u) => `$${u}`).join(' / ')} · SL $${SIG.RULE.slUsd} · ให้สัญญาณเฉพาะวันที่มั่นใจ 5 ดาว`);
+  if (a.atr) lines.push(`ทองแกว่งเฉลี่ยวันละ ~$${money(a.atr)}`);
   return lines;
 }
 
@@ -68,7 +68,9 @@ const thaiTime = (ms) => new Date(ms).toLocaleString('th-TH', { weekday: 'short'
 function resultText(s) {
   if (s.status === 'skip') return '⏸ ไม่มีสัญญาณ (ตลาดไม่ชัด)';
   if (s.status === 'expired') return '⏹ ราคาไม่ถึงจุดเข้า (ไม่ได้เทรด)';
-  const how = s.closedBy === 'tp' ? 'ถึงเป้า' : s.closedBy === 'sl' ? 'โดนตัดขาดทุน' : 'ปิดสิ้นวัน';
+  const how = s.tps
+    ? (s.hit ? `ถึง TP${s.hit}` : s.closedBy === 'sl' ? 'โดนตัดขาดทุน' : 'ปิดสิ้นวัน')
+    : s.closedBy === 'tp' ? 'ถึงเป้า' : s.closedBy === 'sl' ? 'โดนตัดขาดทุน' : 'ปิดสิ้นวัน';
   return `${s.status === 'win' ? '✅ ชนะ' : '❌ แพ้'} ${signed(s.pnl)}/ออนซ์ (${how})`;
 }
 
@@ -93,8 +95,11 @@ function flexMessage(a, sig, prev, sum, bt) {
     txt(`ความมั่นใจ ${'★'.repeat(sig.stars)}${'☆'.repeat(5 - sig.stars)}`, { size: 'xs', color: C.muted }),
     row('🎯 เข้าที่ราคา', money(sig.entry), C.text),
     row('🛑 ตัดขาดทุน (SL)', money(sig.sl), C.down),
-    row('💰 เป้าหมาย (TP)', money(sig.tp), C.up),
-    txt(`เปิดออเดอร์ ${buy ? 'Buy' : 'Sell'} ทันที (Market) · ตั้ง SL ${money(sig.sl)} · TP ${money(sig.tp)} — ถ้าถึง ${thaiTime(sig.expiresAt)} ยังไม่ปิด ให้ปิดเอง`, { size: 'xs', color: C.blue, margin: 'md' }),
+    ...(sig.tps || [sig.tp]).map((tp, k, all) =>
+      row(`💰 ${all.length > 1 ? `TP${k + 1}` : 'เป้าหมาย (TP)'}`, `${money(tp)}  (+$${money(Math.abs(tp - sig.entry))})`, C.up)),
+    txt(sig.tps
+      ? `เปิดออเดอร์ ${buy ? 'Buy' : 'Sell'} ทันที (Market) · ตั้ง SL ${money(sig.sl)} · ปิด ⅓ ที่ TP แต่ละจุด · ถึง TP1 แล้วเลื่อน SL ไปที่ทุน — ถ้าถึง ${thaiTime(sig.expiresAt)} ยังไม่ปิด ให้ปิดเอง`
+      : `เปิดออเดอร์ ${buy ? 'Buy' : 'Sell'} ทันที (Market) · ตั้ง SL ${money(sig.sl)} · TP ${money(sig.tp)} — ถ้าถึง ${thaiTime(sig.expiresAt)} ยังไม่ปิด ให้ปิดเอง`, { size: 'xs', color: C.blue, margin: 'md' }),
   ];
   const body = [
     ...(prev ? [txt(`ผลสัญญาณครั้งก่อน (${prev.id}): ${resultText(prev)}`, { size: 'xs' })] : []),
@@ -113,7 +118,7 @@ function flexMessage(a, sig, prev, sum, bt) {
   ];
   return {
     type: 'flex',
-    altText: sig.status === 'skip' ? '⏸ สัญญาณทองวันนี้: ไม่มีสัญญาณ (ตลาดไม่ชัด)' : `🎯 สัญญาณทอง: ${SIDE_TH[sig.side]} ตอนนี้ที่ ${money(sig.entry)} · SL ${money(sig.sl)} · TP ${money(sig.tp)}`,
+    altText: sig.status === 'skip' ? '⏸ สัญญาณทองวันนี้: ไม่มีสัญญาณ (ตลาดไม่ชัด)' : `🎯 สัญญาณทอง: ${SIDE_TH[sig.side]} ตอนนี้ที่ ${money(sig.entry)} · SL ${money(sig.sl)} · TP ${(sig.tps || [sig.tp]).map(money).join(' / ')}`,
     contents: {
       type: 'bubble', size: 'mega',
       header: {

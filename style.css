@@ -500,3 +500,19 @@ h3 .tag { margin-left: 6px; vertical-align: 1px; }
 .sig.skip { border-color: var(--wait); background: linear-gradient(160deg, rgba(242,169,59,.12), var(--panel) 45%); }
 .sig.skip .sig-side { color: var(--wait); font-size: 34px; }
 .sig.skip .sig-nums, .sig.skip .track, .sig.skip .sig-pnl { display: none; }
+
+/* Three targets */
+.sig-nums { grid-template-columns: repeat(2, 1fr); }
+.sig-tps { display: grid; gap: 8px; margin-top: 8px; grid-template-columns: repeat(3, 1fr); }
+.sig-tps.n1 { grid-template-columns: 1fr; }
+.sig-tps .n { background: var(--panel-2); border-radius: 12px; padding: 8px 10px; text-align: center; border: 1px solid transparent; }
+.sig-tps label { display: block; font-size: 13px; color: var(--muted); }
+.sig-tps b { font-size: 19px; color: var(--up); }
+.sig-tps small { display: block; font-size: 12px; color: var(--muted); }
+.sig-tps .n.done { border-color: var(--up); background: var(--up-soft); }
+.sig-tps .n.done label { color: var(--up); font-weight: 700; }
+.track-ticks i { position: absolute; top: -3px; width: 2px; height: 16px; margin-left: -1px; background: rgba(255,255,255,.55); }
+.track-ticks i.done { background: #fff; }
+.track-ticks i span { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--muted); font-style: normal; white-space: nowrap; }
+@media (max-width: 520px) { .sig-tps b { font-size: 16px; } }
+.track-ticks i span { display: none; }

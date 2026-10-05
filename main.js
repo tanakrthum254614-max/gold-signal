@@ -179,7 +179,7 @@ function drawSignalLines(s) {
     zoneLines.push(areaS.createPriceLine({ price, color, lineWidth: width, lineStyle: style, title }));
   line(s.entry, s.side === 'BUY' ? '#22c58b' : '#f0506e', s.side === 'BUY' ? '🎯 ซื้อ' : '🎯 ขาย', LC.LineStyle.Solid);
   line(s.sl, '#f0506e', '🛑 ตัดขาดทุน', LC.LineStyle.Dotted, 1);
-  line(s.tp, '#e8b64c', '💰 เป้าหมาย', LC.LineStyle.Dashed, 1);
+  (s.tps || [s.tp]).forEach((tp, k, all) => line(tp, '#e8b64c', all.length > 1 ? `💰 TP${k + 1}` : '💰 เป้าหมาย', LC.LineStyle.Dashed, 1));
 }
 
 // Keep the three panes scrolled/zoomed together
@@ -432,25 +432,39 @@ function renderSignalHome() {
   $('sgSide').innerHTML = `${buy ? '🟢 ซื้อ' : '🔴 ขาย'}${s.market && !final ? 'ตอนนี้' : ''} <small>${buy ? 'BUY' : 'SELL'}</small>`;
   $('sgEntry').textContent = f2(s.entry);
   $('sgSl').textContent = f2(s.sl);
-  $('sgTp').textContent = f2(s.tp);
+
+  // Targets: one (older signals) or three (TP1/TP2/TP3); a tick when reached
+  const tps = s.tps || [s.tp];
+  const hit = s.hit || (s.closedBy === 'tp' ? tps.length : 0);
+  const multi = tps.length > 1;
+  $('sgTps').className = `sig-tps n${tps.length}`;
+  $('sgTps').innerHTML = tps.map((tp, k) => `<div class="n tp${hit > k ? ' done' : ''}">
+      <label>💰 ${multi ? `TP${k + 1}` : 'เป้าหมาย'}${hit > k ? ' ✓' : ''}</label><b class="mono">${f2(tp)}</b>
+      <small>+$${f2(Math.abs(tp - s.entry))}</small></div>`).join('');
 
   const away = price != null ? Math.abs(price - s.entry) : null;
   const status = {
     pending: `${SIG.STATUS_TH.pending} — ต้อง${buy ? 'ลง' : 'ขึ้น'}อีก $${f2(away)} · หมดอายุ ${thaiTime(s.expiresAt)}`,
-    active: s.market
-      ? `🟦 เข้าแล้วที่ ${f2(s.entry)} (${thaiTime(s.createdAt)}) · ปิดเองถ้าถึง ${thaiTime(s.expiresAt)}`
-      : `${SIG.STATUS_TH.active} — เข้าที่ ${f2(s.entry)} แล้ว`,
-    win: `${SIG.STATUS_TH.win} — ราคาถึงเป้าหมาย${s.closedBy === 'eod' ? ' (ปิดสิ้นวันมีกำไร)' : ''}`,
+    active: hit
+      ? `✅ ถึง TP${hit} แล้ว · SL เลื่อนไปที่ทุน ${f2(s.entry)} — ไม้นี้ไม่ขาดทุนแล้ว`
+      : s.market
+        ? `🟦 เข้าแล้วที่ ${f2(s.entry)} (${thaiTime(s.createdAt)}) · ปิดเองถ้าถึง ${thaiTime(s.expiresAt)}`
+        : `${SIG.STATUS_TH.active} — เข้าที่ ${f2(s.entry)} แล้ว`,
+    win: s.closedBy === 'tp' ? (multi ? '🏆 ชนะ — ครบทั้ง 3 เป้า' : `${SIG.STATUS_TH.win} — ราคาถึงเป้าหมาย`)
+      : s.closedBy === 'be' ? `${SIG.STATUS_TH.win} — ถึง TP${hit} แล้วราคากลับมาที่ทุน`
+        : `${SIG.STATUS_TH.win} — ปิดสิ้นวันมีกำไร${hit ? ` (ถึง TP${hit})` : ''}`,
     loss: `${SIG.STATUS_TH.loss} — ${s.closedBy === 'eod' ? 'ปิดสิ้นวันขาดทุน' : 'โดนตัดขาดทุน'}`,
     expired: `${SIG.STATUS_TH.expired} — วันนั้นไม่ได้เทรด`,
   }[s.status];
   $('sgStatus').textContent = status + (final ? ` · สัญญาณถัดไป ${thaiTime(nextSignalTime())}` : '');
 
-  // Track: stop-loss on the left, target on the right, entry and current price in between
-  const pct = (v) => Math.max(0, Math.min(100, ((v - s.sl) / (s.tp - s.sl)) * 100));
+  // Track: stop-loss on the left, last target on the right, entry / targets / price in between
+  const far = tps[tps.length - 1];
+  const pct = (v) => Math.max(0, Math.min(100, ((v - s.sl) / (far - s.sl)) * 100));
   const ePct = pct(s.entry);
   $('track').style.setProperty('--entry', `${ePct}%`);
   $('trEntry').style.left = `${ePct}%`;
+  $('trTicks').innerHTML = multi ? tps.slice(0, -1).map((tp, k) => `<i class="${hit > k ? 'done' : ''}" style="left:${pct(tp)}%"><span>TP${k + 1}</span></i>`).join('') : '';
   const nowPx = final ? s.exitPrice : price;
   $('trNow').hidden = nowPx == null;
   if (nowPx != null) {
@@ -458,21 +472,26 @@ function renderSignalHome() {
     $('trNowLabel').textContent = `${final ? 'ปิดที่' : 'ตอนนี้'} ${f2(nowPx)}`;
   }
   $('trLeft').textContent = `🛑 ${f2(s.sl)}`;
-  $('trRight').textContent = `💰 ${f2(s.tp)}`;
+  $('trRight').textContent = `💰 ${multi ? `TP${tps.length} ` : ''}${f2(far)}`;
 
   // Open trade: profit/loss from the live price (the 15-minute candles can lag a few minutes)
-  const pnl = s.status === 'active' && price != null ? SIG.round(buy ? price - s.entry : s.entry - price) : s.pnl;
-  if (s.status === 'active') $('sgPnl').textContent = `กำไร/ขาดทุนตอนนี้: ${money(pnl)} ต่อ 1 ออนซ์`;
+  const d = buy ? 1 : -1;
+  const openPart = (tps.length - hit) / tps.length;
+  const pnl = s.status === 'active' && price != null ? SIG.round((s.realized || 0) + openPart * d * (price - s.entry)) : s.pnl;
+  if (s.status === 'active') $('sgPnl').textContent = `กำไร/ขาดทุนตอนนี้: ${money(pnl)} ต่อ 1 ออนซ์${hit ? ` (เก็บแล้ว ${money(s.realized || 0)})` : ''}`;
   else if (s.status === 'win' || s.status === 'loss') $('sgPnl').textContent = `ผลลัพธ์: ${money(pnl)} ต่อ 1 ออนซ์`;
   else $('sgPnl').textContent = `ถ้าถึงเป้า ได้ ${money(Math.abs(s.tp - s.entry))} · ถ้าโดนตัดขาดทุน เสีย ${money(-Math.abs(s.entry - s.sl))} (ต่อ 1 ออนซ์)`;
   $('sgPnl').className = `sig-pnl ${pnl > 0 ? 'up' : pnl < 0 ? 'down' : ''}`;
 
   const order = s.market ? `${buy ? 'Buy' : 'Sell'} ทันที (Market)` : `${buy ? 'Buy' : 'Sell'} Limit`;
   const late = s.market && !final && price != null ? ` — ราคาตอนนี้ ${f2(price)} (ห่างจากจุดเข้า $${f2(Math.abs(price - s.entry))})` : '';
+  const close = s.market ? `ถ้าถึง ${thaiTime(s.expiresAt)} ยังไม่ปิด ให้ปิดเอง` : `ถ้าถึง ${thaiTime(s.expiresAt)} ยังไม่เข้า ให้ยกเลิกคำสั่ง`;
   $('sgHow').innerHTML = [
     `เปิดออเดอร์ <b>${order}</b>${s.market ? ' ที่ราคาประมาณ' : ' ที่'} <b class="mono">${f2(s.entry)}</b>${late}`,
     `ตั้ง <b>Stop Loss</b> ที่ <b class="mono">${f2(s.sl)}</b> — เสียไม่เกิน $${f2(Math.abs(s.entry - s.sl))}/ออนซ์`,
-    `ตั้ง <b>Take Profit</b> ที่ <b class="mono">${f2(s.tp)}</b> — ${s.market ? `ถ้าถึง ${thaiTime(s.expiresAt)} ยังไม่ปิด ให้ปิดเอง` : `ถ้าถึง ${thaiTime(s.expiresAt)} ยังไม่เข้า ให้ยกเลิกคำสั่ง`}`,
+    multi
+      ? `แบ่งปิด ⅓ ที่ <b>TP1</b> <b class="mono">${f2(tps[0])}</b> · <b>TP2</b> <b class="mono">${f2(tps[1])}</b> · <b>TP3</b> <b class="mono">${f2(tps[2])}</b> — ถึง TP1 แล้วเลื่อน SL ไปที่ทุน · ${close}`
+      : `ตั้ง <b>Take Profit</b> ที่ <b class="mono">${f2(s.tp)}</b> — ${close}`,
   ].map((l) => `<li>${l}</li>`).join('');
   $('sgWhy').innerHTML = (s.why || []).map((l) => `<li>${l}</li>`).join('') || '<li class="muted">—</li>';
 
@@ -543,7 +562,7 @@ function tilesHtml(s) {
     t('แพ้', s.losses, 'down'),
     t('อัตราชนะ', s.winRate == null ? '—' : `${s.winRate}%`),
     t('กำไรสะสม', s.traded ? money(s.pnl) : '—', s.pnl > 0 ? 'up' : s.pnl < 0 ? 'down' : '', 'ต่อ 1 ออนซ์'),
-    t('เฉลี่ยต่อครั้ง', s.avg == null ? '—' : money(s.avg), '', 'ต่อ 1 ออนซ์'),
+    t('ถึง TP1 · TP2 · TP3', `${s.tp1 || 0} · ${s.tp2 || 0} · ${s.tp3 || 0}`, '', 'ครั้ง'),
     t('เทรดทั้งหมด', s.traded, '', 'ครั้ง'),
   ].join('');
 }
@@ -564,7 +583,7 @@ function renderStats() {
       <span class="h-date">${thaiDay(s.id)}</span>
       <span class="h-side ${buy ? 'buy' : 'sell'}">${buy ? 'ซื้อ' : 'ขาย'}</span>
       <span class="h-px mono">${f2(s.entry)}</span>
-      <span class="h-st">${SIG.STATUS_TH[s.status]}</span>
+      <span class="h-st">${SIG.STATUS_TH[s.status]}${s.hit ? ` (TP${s.hit})` : ''}</span>
       <b class="h-pnl mono">${res}</b>
     </div>`;
   }).join('') : '<p class="muted">ยังไม่มีสัญญาณ</p>';

@@ -31,8 +31,9 @@
   const expiry = (id) => Date.parse(`${id}T00:00:00+07:00`) + DAY + (6 * 60 + 45) * 60e3;
 
   // "Enter now" short-trade rule: only 5-star days (medium- and long-term trends both strongly the
-  // same way), trade at the current price with a fixed $15 target and $15 stop. Otherwise no trade.
-  const RULE = { minTrend: 4, slUsd: 15, tpUsd: 15 };
+  // same way), trade at the current price with a $15 stop and three targets at $15 / $20 / $30.
+  // A third of the position closes at each target; after TP1 the stop moves to the entry price.
+  const RULE = { minTrend: 4, slUsd: 15, tpUsd: [15, 20, 30] };
   const STRENGTH = { strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 };
   function makeMarket({ bias, price, createdAt, extra = {} }) {
     const id = thaiDate(createdAt);
@@ -42,14 +43,51 @@
     const buy = trend > 0, d = buy ? 1 : -1;
     return {
       ...base, market: true, side: buy ? 'BUY' : 'SELL',
-      entry: round(price), sl: round(price - d * RULE.slUsd), tp: round(price + d * RULE.tpUsd),
+      entry: round(price), sl: round(price - d * RULE.slUsd),
+      tps: RULE.tpUsd.map((u) => round(price + d * u)), tp: round(price + d * RULE.tpUsd[0]),
       stars: 5, status: 'active', entryAt: createdAt,
     };
   }
 
   // bars: [{ time (ms), open, high, low, close }] sorted by time. Returns the signal's state at `now`.
+  // Three-target trade: ⅓ closes at each target, stop moves to entry after TP1. A candle that touches
+  // the stop is treated as hitting it before any target (conservative). pnl is $ per 1 oz position.
+  function evaluateTargets(sig, bars, now) {
+    const buy = sig.side === 'BUY', d = buy ? 1 : -1;
+    const n = sig.tps.length, part = 1 / n;
+    const end = Math.min(now, sig.expiresAt);
+    let stop = sig.sl, hit = 0, realized = 0, last = null;
+    const hitAt = [];
+    const finish = (status, closedBy, exitPrice, at) => ({ ...sig, status, closedBy, exitPrice, exitAt: at, entryAt: sig.createdAt,
+      hit, hitAt, stop, pnl: round(realized) });
+    for (const b of bars) {
+      if (b.time < sig.createdAt || b.time >= end) continue;
+      last = b;
+      if (buy ? b.low <= stop : b.high >= stop) {
+        realized += (n - hit) * part * d * (stop - sig.entry);
+        return hit ? finish('win', 'be', stop, b.time) : finish('loss', 'sl', stop, b.time);
+      }
+      while (hit < n && (buy ? b.high >= sig.tps[hit] : b.low <= sig.tps[hit])) {
+        realized += part * Math.abs(sig.tps[hit] - sig.entry);
+        hitAt.push(b.time);
+        hit++;
+        stop = sig.entry; // breakeven once the first target is in
+      }
+      if (hit === n) return finish('win', 'tp', sig.tps[n - 1], b.time);
+    }
+    if (!last) return { ...sig, status: 'active', hit, stop, pnl: 0 };
+    const px = last.close;
+    const open = (n - hit) * part * d * (px - sig.entry);
+    if (now >= sig.expiresAt) {
+      realized += open;
+      return finish(hit || realized >= 0 ? 'win' : 'loss', 'eod', px, last.time);
+    }
+    return { ...sig, status: 'active', hit, hitAt, stop, realized: round(realized), pnl: round(realized + open), last: px };
+  }
+
   function evaluate(sig, bars, now = Date.now()) {
     if (sig.status === 'skip') return sig;
+    if (sig.tps) return evaluateTargets(sig, bars, now);
     const buy = sig.side === 'BUY';
     const end = Math.min(now, sig.expiresAt);
     // Market signals are filled at creation; follow them from the next candle on
@@ -102,6 +140,10 @@
       bestWin: traded.reduce((m, s) => Math.max(m, s.pnl || 0), 0),
       worstLoss: traded.reduce((m, s) => Math.min(m, s.pnl || 0), 0),
       last: done.slice(-10),
+      // How far the three-target trades went
+      tp1: traded.filter((s) => (s.hit || 0) >= 1).length,
+      tp2: traded.filter((s) => (s.hit || 0) >= 2).length,
+      tp3: traded.filter((s) => (s.hit || 0) >= 3).length,
     };
   }
 

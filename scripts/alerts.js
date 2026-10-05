@@ -35,6 +35,24 @@ function exitText(s, sum) {
   ].join('\n');
 }
 
+// Three-target signals: one message per new event (TP1/TP2/TP3, breakeven exit, stop-loss)
+function targetEvents(s, sent, now) {
+  const lines = [];
+  const side = s.side === 'BUY' ? 'ซื้อ' : 'ขาย';
+  for (let k = 1; k <= (s.hit || 0); k++) {
+    if (sent[`tp${k}`]) continue;
+    sent[`tp${k}`] = now;
+    const usd = Math.abs(s.tps[k - 1] - s.entry);
+    lines.push(`✅ TP${k} ถึงแล้ว! ${money(s.tps[k - 1])} (+$${money(usd)}) — ปิด ⅓ ของออเดอร์`);
+    if (k === 1) lines.push(`🛡️ เลื่อน SL ไปที่ทุน ${money(s.entry)} → ไม้นี้ไม่ขาดทุนแล้ว`);
+  }
+  if (s.closedBy === 'tp' && !sent.exit) lines.push(`🏆 ครบทั้ง 3 เป้า! ${side}ที่ ${money(s.entry)} · กำไรรวม ${signed(s.pnl)}/ออนซ์`);
+  if (s.closedBy === 'be' && !sent.exit) lines.push(`⏹ ราคากลับมาที่ทุน ปิดส่วนที่เหลือ (${at(s.exitAt)} น.) · กำไรรวม ${signed(s.pnl)}/ออนซ์`);
+  if (s.closedBy === 'sl' && !sent.exit) lines.push(`❌ โดน SL ที่ ${money(s.sl)} (${at(s.exitAt)} น.) · ${side}ที่ ${money(s.entry)} = ${signed(s.pnl)}/ออนซ์`);
+  if (['tp', 'be', 'sl'].includes(s.closedBy)) sent.exit = sent.exit || now;
+  return lines;
+}
+
 (async function main() {
   const data = JSON.parse(fs.readFileSync(path.resolve(process.argv[2] || 'data.json'), 'utf8'));
   const bars = (data.m15 || []).map((b) => ({ time: b[0], open: b[1], high: b[2], low: b[3], close: b[4] }));
@@ -56,8 +74,15 @@ function exitText(s, sum) {
     messages.push({ type: 'text', text: entryText(s, price) });
     sent.entry = now;
   }
-  if ((s.closedBy === 'tp' || s.closedBy === 'sl') && !sent.exit) {
-    const others = store.signals.filter((_, j) => j !== i);
+  const others = store.signals.filter((_, j) => j !== i);
+  const sumLine = (sum) => `ผลงานสะสม: ชนะ ${sum.wins} · แพ้ ${sum.losses}${sum.winRate != null ? ` (ชนะ ${sum.winRate}%)` : ''} · ${signed(sum.pnl)}/ออนซ์`;
+  if (s.tps) {
+    const lines = targetEvents(s, sent, now);
+    if (lines.length) {
+      if (SIG.isFinal(s)) lines.push(sumLine(SIG.summary([...others, s])), `ดูสถิติ: ${SITE_URL}/#stats`);
+      messages.push({ type: 'text', text: lines.join('\n') });
+    }
+  } else if ((s.closedBy === 'tp' || s.closedBy === 'sl') && !sent.exit) {
     messages.push({ type: 'text', text: exitText(s, SIG.summary([...others, s])) });
     sent.exit = now;
   }
@@ -67,7 +92,7 @@ function exitText(s, sum) {
   const changed = messages.length || s.status !== store.signals[i].status;
   if (!changed) return;
   // Only TP/SL outcomes are final here; end-of-day closes are left to the morning job
-  const keep = s.status === 'active' || s.closedBy === 'tp' || s.closedBy === 'sl' ? s : store.signals[i];
+  const keep = s.status === 'active' || ['tp', 'sl', 'be'].includes(s.closedBy) ? s : store.signals[i];
   store.signals[i] = { ...keep, alerts: sent };
   store.summary = SIG.summary(store.signals);
   store.updatedAt = now;

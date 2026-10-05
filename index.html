@@ -10,7 +10,7 @@
   <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610051434">
+  <link rel="stylesheet" href="style.css?v=202610051443">
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -76,11 +76,12 @@
             <div class="sig-nums">
               <div class="n entry"><label>🎯 จุดเข้า</label><b class="mono" id="sgEntry">—</b></div>
               <div class="n sl"><label>🛑 ตัดขาดทุน</label><b class="mono" id="sgSl">—</b></div>
-              <div class="n tp"><label>💰 เป้าหมาย</label><b class="mono" id="sgTp">—</b></div>
             </div>
+            <div class="sig-tps" id="sgTps"></div>
 
             <div class="track" id="track">
               <div class="track-bar"><div class="track-loss"></div><div class="track-win"></div></div>
+              <div class="track-ticks" id="trTicks"></div>
               <div class="track-entry" id="trEntry"></div>
               <div class="track-now" id="trNow"><span id="trNowLabel">ราคาตอนนี้</span></div>
               <div class="track-ends"><span id="trLeft">ตัดขาดทุน</span><span id="trRight">เป้าหมาย</span></div>
@@ -134,7 +135,7 @@
 
         <section class="card bt">
           <h3>ทดสอบย้อนหลัง 1 ปี <span class="tag neutral">จำลอง</span></h3>
-          <p class="hint">ใช้กติกาเดียวกันกับสัญญาณจริง (เฉพาะวัน 5 ดาว · เข้าตอน 07:00 · TP $15 · SL $15) ย้อนหลังทุกวันทำการ 1 ปี (ข้อมูลราคาจาก Binance PAXG และทิศทางจากเครื่องมือของเราเอง เพราะ investing.com ไม่เก็บผลวิเคราะห์ย้อนหลัง) ยังไม่หักค่าธรรมเนียม/สเปรด</p>
+          <p class="hint">ใช้กติกาเดียวกันกับสัญญาณจริง (เฉพาะวัน 5 ดาว · เข้าตอน 07:00 · SL $15 · ปิด ⅓ ที่ TP $15 / $20 / $30 · ถึง TP1 แล้วเลื่อน SL ไปที่ทุน) ย้อนหลังทุกวันทำการ 1 ปี (ข้อมูลราคาจาก Binance PAXG และทิศทางจากเครื่องมือของเราเอง เพราะ investing.com ไม่เก็บผลวิเคราะห์ย้อนหลัง) ยังไม่หักค่าธรรมเนียม/สเปรด</p>
           <div class="tiles" id="btTiles"></div>
           <p class="bt-note" id="btNote"></p>
           <div id="btChart" class="chart-eq"></div>
@@ -143,11 +144,11 @@
         <section class="card">
           <h3>นับชนะ–แพ้ยังไง?</h3>
           <ul class="why">
-            <li><b>✅ ชนะ</b> — ราคาถึงจุดเข้าแล้ว วิ่งไปถึง <b>เป้าหมาย</b> ก่อน</li>
-            <li><b>❌ แพ้</b> — ราคาถึงจุดเข้าแล้ว วิ่งไปโดน <b>ตัดขาดทุน</b> ก่อน (ถ้าแท่ง 15 นาทีเดียวโดนทั้งคู่ นับเป็นแพ้)</li>
+            <li><b>✅ ชนะ</b> — ราคาถึง <b>TP1</b> ก่อน SL (จากนั้นนับต่อว่าไปถึง TP2 / TP3 หรือไม่)</li>
+            <li><b>❌ แพ้</b> — ราคาโดน <b>SL</b> ก่อนถึง TP1 (ถ้าแท่ง 15 นาทีเดียวโดนทั้งคู่ นับเป็นแพ้)</li>
             <li><b>⏸ ไม่มีสัญญาณ</b> — วันที่ตลาดไม่ชัด ระบบไม่ให้เทรด ไม่นับชนะหรือแพ้</li>
             <li><b>ปิดสิ้นวัน</b> — เข้าแล้วแต่ไม่ถึงทั้งเป้าและตัดขาดทุน ปิดที่ราคาเช้าวันถัดไป กำไร = ชนะ ขาดทุน = แพ้</li>
-            <li>กำไร/ขาดทุนคิดเป็น <b>ดอลลาร์ต่อทอง 1 ออนซ์</b></li>
+            <li>กำไร/ขาดทุนคิดเป็น <b>ดอลลาร์ต่อทอง 1 ออนซ์</b> โดยปิด ⅓ ที่แต่ละ TP — ครบ 3 เป้า = <b>+$21.67</b> · โดน SL = <b>−$15</b></li>
           </ul>
         </section>
       </section>
@@ -273,7 +274,7 @@
         <section class="card">
           <h3>สัญญาณคืออะไร?</h3>
           <p>ทุกเช้าวันจันทร์–ศุกร์ เวลา 07:00 ระบบจะบอกว่าวันนี้ให้ <b>ซื้อตอนนี้</b> หรือ <b>ขายตอนนี้</b> แบบ<b>เทรดสั้น</b>
-            เป้าหมาย <b>$15</b> · ตัดขาดทุน <b>$15</b> — ให้สัญญาณเฉพาะวันที่ <b>มั่นใจ 5 ดาว</b> (แนวโน้มระยะกลางและระยะยาวชี้ทางเดียวกันชัดเจน) วันอื่นจะบอกว่า <b>“ไม่มีสัญญาณ”</b> ไม่ฝืนเทรด
+            เป้าหมาย <b>TP1 $15 · TP2 $20 · TP3 $30</b> · ตัดขาดทุน <b>$15</b> — ให้สัญญาณเฉพาะวันที่ <b>มั่นใจ 5 ดาว</b> (แนวโน้มระยะกลางและระยะยาวชี้ทางเดียวกันชัดเจน) วันอื่นจะบอกว่า <b>“ไม่มีสัญญาณ”</b> ไม่ฝืนเทรด
             <br>ระหว่างวันระบบเช็กราคาทุก 5 นาที และส่ง LINE ทันทีเมื่อ 🔔 ถึงจุดเข้า · ✅ ถึงเป้าหมาย · ❌ โดนตัดขาดทุน</p>
         </section>
 
@@ -282,7 +283,7 @@
           <ol class="steps">
             <li><b>เปิดออเดอร์ทันที (Market)</b> ตามสัญญาณ ซื้อ หรือ ขาย เมื่อได้รับสัญญาณตอน 07:00</li>
             <li><b>ตั้งตัดขาดทุน (Stop Loss)</b> ทุกครั้ง — กันขาดทุนบานปลายถ้าผิดทาง</li>
-            <li><b>ตั้งเป้าหมาย (Take Profit)</b> — ถึงแล้วปิดเก็บกำไรอัตโนมัติ ถ้าถึง 06:45 เช้าวันถัดไปยังไม่ปิด ให้ปิดเอง</li>
+            <li><b>แบ่งปิด 3 ส่วน</b> ที่ TP1 · TP2 · TP3 — พอถึง TP1 ให้<b>เลื่อน SL ไปที่ราคาเข้า</b> (ไม้นั้นจะไม่ขาดทุนแล้ว) ถ้าถึง 06:45 เช้าวันถัดไปยังไม่ปิด ให้ปิดเอง</li>
           </ol>
         </section>
 
@@ -337,21 +338,21 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610051434</p>
+        <p class="muted small center">เวอร์ชัน 202610051443</p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610051434"></script>
-  <script src="auth.js?v=202610051434"></script>
-  <script src="indicators.js?v=202610051434"></script>
-  <script src="investing.js?v=202610051434"></script>
-  <script src="explain.js?v=202610051434"></script>
-  <script src="dailyplan.js?v=202610051434"></script>
-  <script src="signals.js?v=202610051434"></script>
-  <script src="ui.js?v=202610051434"></script>
-  <script src="main.js?v=202610051434"></script>
+  <script src="config.js?v=202610051443"></script>
+  <script src="auth.js?v=202610051443"></script>
+  <script src="indicators.js?v=202610051443"></script>
+  <script src="investing.js?v=202610051443"></script>
+  <script src="explain.js?v=202610051443"></script>
+  <script src="dailyplan.js?v=202610051443"></script>
+  <script src="signals.js?v=202610051443"></script>
+  <script src="ui.js?v=202610051443"></script>
+  <script src="main.js?v=202610051443"></script>
 </body>
 </html>
