@@ -13,7 +13,7 @@ const TF_LABEL = Object.fromEntries(TFS.map((t) => [t.key, t.label]));
 TF_LABEL['1mo'] = '1 เดือน';
 const HIGHER = { '5m': '1h', '15m': '1h', '30m': '5h', '1h': '5h', '5h': '1d', '1d': '1w', '1w': '1mo' };
 const TZ = -new Date().getTimezoneOffset() * 60; // show candles in local time
-const POLL_PRICE = 3000, POLL_TECH = 30000, POLL_DAILY = 60000;
+const POLL_PRICE = 3000, POLL_TECH = 60000, POLL_DAILY = 60000;
 // investing.com's data API allows cross-origin requests that carry its domain-id header,
 // so the visitor's browser fetches it directly (server-side requests get Cloudflare-challenged)
 const INVESTING_API = 'https://api.investing.com/api/financialdata';
@@ -27,7 +27,7 @@ const ACTION_TH = {
 const state = {
   tf: '1h', bars: [], daily: [], tech: null, techAt: null, source: null,
   locked: null, lastPrice: null, chartKey: '', pivotKey: '', busy: false, zoneKey: '', signals: [], m15: [], backtest: null, intra: null, bt30: null, intraCandles: null, news: [], thb: null,
-  tick: [], tickAt: 0, tickSrc: null, livePrice: null, livePrev: null, s15: null, bt15: null,
+  tick: [], tickAt: 0, tickSrc: null, livePrice: null, livePrev: null, s15: null, bt15: null, stream: null,
 };
 // Simple-mode history ranges map onto chart timeframes (160 bars each)
 const RANGES = [
@@ -644,7 +644,75 @@ function renderStats() {
   renderIntraStats();
 }
 
-// ---------- Live price (1-minute candles every 3 s) ----------
+// ---------- Live stream: investing.com's own price stream (SockJS, ~1 tick a second) ----------
+// The same feed th.investing.com uses for its live quote. Not behind the Cloudflare check that sometimes
+// blocks the REST API, so it keeps the price live even when the candles come from the backup source.
+const STREAM = { ws: null, lastTick: 0, retry: 0, timer: 0 };
+const streamFresh = () => Date.now() - STREAM.lastTick < 10e3;
+
+function startStream() {
+  if (STREAM.ws && STREAM.ws.readyState <= 1) return;
+  let ws;
+  try {
+    ws = new WebSocket(`wss://streaming.forexpros.com/echo/${Math.floor(Math.random() * 1000)}/${Math.random().toString(36).slice(2, 10)}/websocket`);
+  } catch (e) { return retryStream(); }
+  STREAM.ws = ws;
+  const send = (obj) => ws.send(JSON.stringify([JSON.stringify(obj)]));
+  ws.onmessage = (e) => {
+    const d = String(e.data);
+    if (d === 'o') { send({ _event: 'bulk-subscribe', tzID: 8, message: `pid-${PAIR_ID}:` }); STREAM.retry = 0; return; }
+    if (d[0] !== 'a') return; // 'h' = server heartbeat
+    JSON.parse(d.slice(1)).forEach((m) => {
+      try {
+        const msg = JSON.parse(m).message || '';
+        if (msg.startsWith(`pid-${PAIR_ID}::`)) onStreamTick(JSON.parse(msg.slice(msg.indexOf('::') + 2)));
+      } catch (err) { /* ignore a malformed frame */ }
+    });
+  };
+  ws.onclose = retryStream;
+  ws.onerror = () => ws.close();
+}
+function retryStream() {
+  STREAM.ws = null;
+  clearTimeout(STREAM.timer);
+  STREAM.timer = setTimeout(startStream, Math.min(30e3, 2000 * 2 ** STREAM.retry++));
+}
+// Keep-alive, as investing.com's own page does
+setInterval(() => {
+  if (STREAM.ws && STREAM.ws.readyState === 1) STREAM.ws.send(JSON.stringify([JSON.stringify({ _event: 'heartbeat', data: 'h' })]));
+}, 25e3);
+
+const num = (s) => (s == null ? null : +String(s).replace(/,/g, ''));
+
+function onStreamTick(p) {
+  const price = p.last_numeric;
+  if (!(price > 0)) return;
+  const now = Date.now();
+  STREAM.lastTick = now;
+  state.stream = p;
+  state.livePrice = price;
+  state.tickAt = now;
+  state.tickSrc = 'stream';
+  // Fold the tick into the 1-minute bars behind the sparkline (times in seconds, like investing's)
+  const t = Math.floor(now / 60e3) * 60, bars = state.tick, last = bars[bars.length - 1];
+  if (last && last.time === t) {
+    last.close = price; last.high = Math.max(last.high, price); last.low = Math.min(last.low, price);
+  } else if (!last || t > last.time) {
+    bars.push({ time: t, open: price, high: price, low: price, close: price });
+    if (bars.length > 90) bars.shift();
+  }
+  patchIntraCandles(now);
+  renderLive();
+  // The heavier panels at most once a second
+  if (now - (onStreamTick.heavy || 0) >= 1000) {
+    onStreamTick.heavy = now;
+    renderIntra();
+    renderSignalHome();
+    renderS15();
+  }
+}
+
+// ---------- Live price fallback / history (1-minute candles) ----------
 const nowPrice = () => (state.livePrice != null ? state.livePrice : state.lastPrice);
 
 async function refreshTick() {
@@ -658,10 +726,18 @@ async function refreshTick() {
       bars = await backupBars('1m', 90);
       src = 'backup';
     }
-    state.tick = bars.slice(-90);
-    state.tickSrc = src;
-    state.tickAt = Date.now();
-    state.livePrice = bars[bars.length - 1].close;
+    if (streamFresh()) {
+      // The stream is the live price: take the candle history, keep the stream's latest bars and price
+      const lastT = bars[bars.length - 1].time;
+      const newer = state.tick.filter((b) => b.time > lastT);
+      bars[bars.length - 1].close = state.livePrice;
+      state.tick = [...bars, ...newer].slice(-90);
+    } else {
+      state.tick = bars.slice(-90);
+      state.tickSrc = src;
+      state.tickAt = Date.now();
+      state.livePrice = bars[bars.length - 1].close;
+    }
     patchIntraCandles();
     renderLive();
     renderIntra();
@@ -675,7 +751,7 @@ async function refreshTick() {
 function renderLive() {
   const bars = state.tick;
   if (!bars.length) return;
-  const price = bars[bars.length - 1].close;
+  const price = state.livePrice != null ? state.livePrice : bars[bars.length - 1].close;
   const el = $('lvPrice');
   if (state.livePrev != null && price !== state.livePrev) {
     el.classList.remove('flash-up', 'flash-down');
@@ -693,7 +769,11 @@ function renderLive() {
     $('lvChg').className = `lv-chg mono ${chg >= 0 ? 'up' : 'down'}`;
   }
   const today = state.daily[state.daily.length - 1];
-  if (today && (!prev || today.time * 1000 > prev.ms)) {
+  const S = streamFresh() ? state.stream : null; // the stream carries today's high / low
+  if (S && num(S.high)) {
+    $('lvHigh').textContent = f2(Math.max(num(S.high), price));
+    $('lvLow').textContent = f2(Math.min(num(S.low), price));
+  } else if (today && (!prev || today.time * 1000 > prev.ms)) {
     $('lvHigh').textContent = f2(Math.max(today.high, price));
     $('lvLow').textContent = f2(Math.min(today.low, price));
   }
@@ -729,7 +809,7 @@ function renderLiveStatus() {
   if (!open || quiet) {
     pill.className = 'lv-pill closed';
     $('lvMarketText').textContent = open ? 'ราคาไม่ขยับ · ตลาดอาจหยุด' : 'ตลาดปิด · เปิด 07:00 น.';
-  } else if (state.tickSrc === 'backup') {
+  } else if (state.tickSrc === 'backup' && !streamFresh()) {
     pill.className = 'lv-pill backup';
     $('lvMarketText').textContent = 'สด · แหล่งสำรอง';
   } else {
@@ -739,7 +819,9 @@ function renderLiveStatus() {
   const age = Math.round((now - state.tickAt) / 1000);
   $('lvAgo').textContent = age > 20
     ? `⚠️ ไม่ได้อัปเดตมา ${age} วินาที — กำลังเชื่อมต่อใหม่…`
-    : `อัปเดตเมื่อ ${age} วินาทีที่แล้ว · ราคาจาก ${state.tickSrc === 'backup' ? 'Binance PAXG (สำรอง)' : 'investing.com'} · ดึงใหม่ทุก 3 วินาที`;
+    : streamFresh()
+      ? `อัปเดตเมื่อ ${age} วินาทีที่แล้ว · สตรีมสดจาก investing.com (ราคาเปลี่ยนทันทีที่ตลาดขยับ ~ทุก 1 วินาที)`
+      : `อัปเดตเมื่อ ${age} วินาทีที่แล้ว · ราคาจาก ${state.tickSrc === 'backup' ? 'Binance PAXG (สำรอง)' : 'investing.com'} · ดึงใหม่ทุก 3 วินาที (กำลังต่อสตรีมสด…)`;
 }
 
 // ---------- 30-minute signals ----------
@@ -779,7 +861,10 @@ async function refreshIntraCandles() {
 // Move the still-forming 30m / 1h / 5h candles to the live price, so the trend score follows every tick
 function patchIntraCandles(now = Date.now()) {
   const price = state.livePrice, C = state.intraCandles;
-  if (!C || price == null) return;
+  if (price == null) return;
+  const f = state.m15[state.m15.length - 1]; // the forming 15-minute candle too (15-minute card / open trade)
+  if (f && now < f.time + 15 * 60e3) { f.close = price; f.high = Math.max(f.high, price); f.low = Math.min(f.low, price); }
+  if (!C) return;
   Object.entries(INTRA_DUR).forEach(([k, dur]) => {
     const last = C[k] && C[k][C[k].length - 1];
     if (!last || now >= last.time + dur) return;
@@ -1354,7 +1439,7 @@ UI.on('tab:chart', () => setTimeout(() => {
 function every(ms, fn) {
   setInterval(() => { if (!document.hidden) fn(); }, ms);
 }
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { refreshTick(); refreshTech(); refreshPrice(); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { startStream(); refreshTick(); refreshTech(); refreshPrice(); } });
 
 (async function init() {
   await AUTH.ready;
@@ -1373,14 +1458,18 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { re
   SPLASH.hide();
   // Home is real time: live price every 3 s, trend candles every 30 s. The trader chart reloads
   // every 3 s only while it's on screen.
-  every(POLL_PRICE, refreshTick);
-  let ticks = 0;
-  every(POLL_PRICE, () => { if (location.hash === '#chart' || ++ticks % 10 === 0) refreshPrice(); });
+  // Live price: investing.com's stream (~1 tick a second). 1-minute candles every 3 s only while the
+  // stream is down, otherwise every ~21 s for the sparkline history. Fewer REST calls also keeps
+  // investing.com from rate-limiting the visitor (it blocked us at ~1 request a second).
+  startStream();
+  let ticks = 0, prices = 0;
+  every(POLL_PRICE, () => { if (!streamFresh() || ++ticks % 7 === 0) refreshTick(); });
+  every(POLL_PRICE, () => { if (location.hash === '#chart' || ++prices % 20 === 0) refreshPrice(); });
   setInterval(() => { if (state.tickAt) renderLiveStatus(); }, 1000);
   every(POLL_TECH, refreshTech);
   every(POLL_DAILY, refreshDaily);
-  every(30e3, refreshM15);
-  every(30e3, refreshIntraCandles);
+  every(60e3, refreshM15);
+  every(60e3, refreshIntraCandles);
   every(30 * 60e3, refreshNews);
   every(60 * 60e3, refreshThb);
   every(5 * 60e3, refreshSignals);

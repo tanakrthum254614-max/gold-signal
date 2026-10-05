@@ -37,6 +37,13 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 - ชั่วโมงที่ประกาศไปแล้วเก็บใน `state/notify.json` ผ่าน **Actions cache** (ไม่ commit ทุกชั่วโมง → Vercel ไม่ deploy ถี่)
 - ข้อสังเกตจากตาราง (2 ปี): ฝั่ง **ซื้อ** คะแนน +4…+6 ชนะ 57–59% · ฝั่ง **ขาย** −4…−6 แค่ ~49–50% (ทองเป็นขาขึ้นเกือบทั้งช่วง)
 
+### ⚡ ราคาสดจากสตรีมของ investing.com (5 ต.ค. 2569)
+- ราคาหน้าเว็บมาจาก **SockJS stream ที่ investing.com ใช้เอง**: `wss://streaming.forexpros.com/echo/<n>/<id>/websocket` → ได้ `o` แล้วส่ง `[JSON.stringify({_event:"bulk-subscribe",tzID:8,message:"pid-68:"})]` → เฟรม `a[...]` = `{message:"pid-68::{last_numeric, bid, ask, high, low, last_close, pc, pcp, timestamp}"}` ~1 tick/วินาที · heartbeat `{_event:"heartbeat",data:"h"}` ทุก 25 วิ · ต่อใหม่แบบ backoff (main.js `startStream` / `onStreamTick`)
+- **ไม่ผ่าน Cloudflare** ของ REST API — ใช้ได้แม้ REST โดนบล็อก · ทดสอบ: หน้าเว็บเปลี่ยนราคา 17 ครั้ง/20 วินาที (เดิมแทบไม่ขยับเพราะตกไปแหล่งสำรอง)
+- REST (PT1M) เหลือทุก ~21 วิ (ทุก 3 วิเฉพาะตอนสตรีมหลุด) · ตัวชี้วัด 60 วิ · แท่ง 15m/30m/1h/5h 60 วิ — เดิมยิง ~1 ครั้ง/วินาที/แท็บ จน investing.com บล็อก IP (`Failed to fetch`)
+- แหล่งอื่นที่ลองแล้ว: gold-api.com อัปเดต ~1.5 นาที · Binance PAXG trade ~30/นาที, bookTicker mid เปลี่ยน ~ทุก 3 วิ · Swissquote โดน CORS · Binance Futures XAUUSDT ws ไม่มีข้อความ
+- ทดสอบแบบเวลาจริงต้องใช้ puppeteer-core (Chrome `--virtual-time-budget` เร่งเวลา ทำให้วัดความถี่ผิด)
+
 ### ⏱️ สัญญาณ 15 นาที — เว็บเท่านั้น (5 ต.ค. 2569)
 - `INTRA.decide15` = `decideWith(FRAMES15, RULE15, …)`: แนวโน้ม 15m/1h/5h · **ซื้ออย่างเดียวที่ +5** · SL/TP เหมือนระบบ 30 นาที · ไม่ส่ง LINE ไม่บันทึกไฟล์
 - เว็บ (main.js `run15`): จำลองย้อนหลังบนแท่ง 15m ที่อยู่บนจอ (investing 160 แท่ง ≈ 40 ชม.) ด้วยกติกาเดียวกับ backtest (ไม้เดียว, รอ 15 นาทีหลังปิด) → การ์ดหน้าแรก (กราฟแท่ง 15m + ▲ ซื้อ / ● TP / ● SL + พื้นหลังเขียว=เข้าได้ เหลือง=ข่าว) และ markers ในหน้ากราฟเมื่อเลือก 15m (ช่วง 2 วัน)
@@ -186,6 +193,7 @@ gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=fal
 5. สัญญาณทุกวัน (ไม่จำกัด 5 ดาว) → +$70/ปี (ปัจจุบัน)
 6. เพิ่มระบบ 30 นาที (±5) → +$603/ปี (ปัจจุบัน)
 7. (5 ต.ค. 2569) เปลี่ยนเป็นธีมสว่าง (theme.css) + หน้าโหลดค้างอย่างน้อย 4 วินาที (auth.js MIN_MS) วงแหวนเติมช้าลง
+12. (5 ต.ค. 2569) ราคาสดจากสตรีม investing.com (~1 วินาที) + ลดการยิง REST
 11. (5 ต.ค. 2569) เพิ่มสัญญาณ 15 นาทีบนเว็บ (ไม่ส่ง LINE) + ลูกศรบนกราฟ
 10. (5 ต.ค. 2569) สัญญาณรายวันเป็นข้อมูลประกอบ (advisory) + เช็กโควตา LINE ทุกเช้า
 9. (5 ต.ค. 2569) LINE ส่งเฉพาะตอน ✅ เปลี่ยน + รวมข้อความต่อรอบ + เบรกฉุกเฉิน
