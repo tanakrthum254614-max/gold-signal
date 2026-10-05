@@ -2,9 +2,10 @@
 // half hour, opens a new one when the 30-minute, 1-hour and 5-hour trends strongly agree.
 // Results live in intraday.json. Same opening rule as scripts/backtest-30m.js: one trade at a time,
 // a new trade only in a half hour that starts at least 15 minutes after the previous one closed.
-// Every half hour it also sends one update (no skipped slots): which way to lean, where, SL/TP and the
-// historical chance of reaching TP1 first (calibration table in backtest-30m.json). The last half hour
-// announced is kept in STATE_DIR, which the workflow restores/saves with the Actions cache.
+// Every hour it also sends one update (no skipped hours): which way to lean, where, SL/TP and the
+// historical chance of reaching TP1 first (calibration table in backtest-30m.json). Trade events
+// (entry, TPs, stop) are still sent the moment they happen. The last hour announced is kept in
+// STATE_DIR, which the workflow restores/saves with the Actions cache.
 // Usage: node scripts/intraday-run.js data.json   Env: LINE_CHANNEL_ACCESS_TOKEN, SEND, RECORD, SITE_URL, STATE_DIR
 const fs = require('fs');
 const path = require('path');
@@ -19,6 +20,8 @@ const FILE = process.env.INTRADAY_FILE || path.join(__dirname, '..', 'intraday.j
 const BACKTEST = path.join(__dirname, '..', 'backtest-30m.json');
 const STATE_DIR = process.env.STATE_DIR || path.join(__dirname, '..', 'state');
 const STATE_FILE = path.join(STATE_DIR, 'notify.json');
+const UPDATE_EVERY = 60 * 60e3; // periodic LINE update interval
+const updateSlot = (ms) => Math.floor(ms / UPDATE_EVERY) * UPDATE_EVERY;
 const TH = INTRA.TREND_TH;
 const bars = (rows) => (rows || []).map((b) => ({ time: b[0], open: b[1], high: b[2], low: b[3], close: b[4] }));
 
@@ -28,9 +31,9 @@ const grade = (o) => (!o ? '❔ ยังไม่มีสถิติพอ'
     : o.winRate >= 53 ? '🟡 พอเข้าได้ (ลดขนาดไม้)'
       : '⚠️ ไม่ค่อยคุ้ม — โอกาสใกล้ 50/50');
 
-// The half-hourly message: current lean, where to enter, SL/TP and historical odds (or the open trade)
+// The hourly message: current lean, where to enter, SL/TP and historical odds (or the open trade)
 function updateText(dec, price, odds, open, now) {
-  const lines = [`⏱️ อัปเดต 30 นาที · ${at(INTRA.slotOf(now))} น.`, `ราคาทอง ${money(price)}`];
+  const lines = [`⏱️ อัปเดตรายชั่วโมง · ${at(updateSlot(now))} น.`, `ราคาทอง ${money(price)}`];
   const lv = INTRA.levels(dec.lean || 1, price);
   const side = lv.side === 'BUY' ? '🟢 ซื้อ (BUY)' : '🔴 ขาย (SELL)';
   const oddsText = odds ? `${odds.winRate}%` : '—';
@@ -104,9 +107,10 @@ function entryText(t) {
     console.log(`new trade ${t.id} ${t.side} ${t.entry} sl ${t.sl} tps ${t.tps.join('/')}`);
   }
 
-  // 3. Half-hourly update — once per half hour, whatever the signal
+  // 3. Hourly update — once per hour, whatever the signal
   const state = fs.existsSync(STATE_FILE) ? JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')) : {};
-  const newSlot = dec && !dec.stale && slot > (state.lastSlot || 0);
+  const hour = updateSlot(now);
+  const newSlot = dec && !dec.stale && hour > (state.lastSlot || 0);
   if (newSlot) {
     const calib = fs.existsSync(BACKTEST) ? JSON.parse(fs.readFileSync(BACKTEST, 'utf8')).calibration : null;
     const odds = INTRA.odds(dec.score, calib);
@@ -131,7 +135,7 @@ function entryText(t) {
 
   if (newSlot && process.env.RECORD === 'true') {
     fs.mkdirSync(STATE_DIR, { recursive: true });
-    fs.writeFileSync(STATE_FILE, JSON.stringify({ lastSlot: slot, at: now }));
+    fs.writeFileSync(STATE_FILE, JSON.stringify({ lastSlot: hour, at: now }));
   }
   if (JSON.stringify(store.trades) === before) return console.log('trades unchanged');
   store.summary = SIG.summary(store.trades);
