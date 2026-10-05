@@ -34,14 +34,16 @@
   // long-term trend (ties go to the medium term), at the current price with a $15 stop and three
   // targets at $15 / $20 / $30. A third closes at each target; after TP1 the stop moves to entry.
   // Stars show how strongly the three timeframes agree (|trend| 0–6).
-  const RULE = { minTrend: 0, slUsd: 15, tpUsd: [15, 20, 30] };
+  // advisory: the daily call is shown as a market overview, not as a trade to copy — its 1-year backtest
+  // loses after spread (the 30-minute system is the main signal). Results are still recorded and tracked.
+  const RULE = { minTrend: 0, slUsd: 15, tpUsd: [15, 20, 30], advisory: true };
   const STARS = [1, 2, 3, 3, 4, 5, 5];
   const STRENGTH = { strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 };
   function makeMarket({ bias, price, createdAt, extra = {} }) {
     const id = thaiDate(createdAt);
     const mid = STRENGTH[bias.mid] || 0;
     const trend = (STRENGTH[bias.short] || 0) + mid + (STRENGTH[bias.long] || 0);
-    const base = { id, createdAt, expiresAt: expiry(id), rule: 'market-trend', trendScore: trend, priceAtSignal: round(price), ...extra };
+    const base = { id, createdAt, expiresAt: expiry(id), rule: 'market-trend', trendScore: trend, priceAtSignal: round(price), ...(RULE.advisory ? { advisory: true } : {}), ...extra };
     if (Math.abs(trend) < RULE.minTrend) return { ...base, status: 'skip' };
     const buy = trend > 0 || (trend === 0 && mid >= 0), d = buy ? 1 : -1;
     return {

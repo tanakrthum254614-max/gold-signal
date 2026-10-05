@@ -1,6 +1,7 @@
 // Runs every 5 minutes: follows today's signal on 15-minute candles and sends a LINE alert
 // when the price reaches the entry, the target (TP) or the stop-loss (SL). Each alert is sent once;
-// what was sent is remembered in the signal record (signals.json).
+// what was sent is remembered in the signal record (signals.json). Advisory signals (SIG.RULE.advisory)
+// are scored the same way but send nothing.
 // Usage: node scripts/alerts.js data.json     Env: LINE_CHANNEL_ACCESS_TOKEN, SEND=true, SITE_URL
 const fs = require('fs');
 const path = require('path');
@@ -78,7 +79,9 @@ function exitText(s, sum) {
   store.summary = SIG.summary(store.signals, SPREAD);
   store.updatedAt = now;
 
-  await send(messages.map((m) => `📅 สัญญาณรายวัน ${s.id}\n${m.text}`));
+  // Advisory (overview-only) days are tracked silently: no entry / TP / SL messages
+  if (s.advisory) console.log(`advisory signal — ${messages.length} event(s) recorded, not sent`);
+  else await send(messages.map((m) => `📅 สัญญาณรายวัน ${s.id}\n${m.text}`));
   if (process.env.RECORD === 'true') {
     fs.writeFileSync(SIGNALS_FILE, `${JSON.stringify(store, null, 1)}\n`);
     console.log('✓ signals.json updated');

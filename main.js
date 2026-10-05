@@ -375,10 +375,12 @@ const thaiDay = (id) => new Date(`${id}T12:00:00+07:00`).toLocaleDateString('th-
 
 async function refreshSignals() {
   try {
-    const [sig, bt, intra, bt30] = await Promise.all([
+    const [sig, bt, intra, bt30, quota] = await Promise.all([
       getJson('signals.json'), state.backtest ? null : getJson('backtest.json').catch(() => null),
       getJson('intraday.json').catch(() => null), state.bt30 ? null : getJson('backtest-30m.json').catch(() => null),
+      getJson('quota.json').catch(() => null),
     ]);
+    renderQuota(quota);
     state.signals = sig.signals || [];
     if (bt) state.backtest = bt;
     if (intra) state.intra = intra;
@@ -387,6 +389,16 @@ async function refreshSignals() {
   renderSignalHome();
   renderIntra();
   renderStats();
+}
+
+// LINE messages used this month (checked every morning by scripts/line-quota.js)
+function renderQuota(q) {
+  if (!q || q.used == null) return;
+  const pct = q.limit ? Math.round((q.used / q.limit) * 100) : null;
+  $('lineQuota').textContent = q.limit
+    ? `📊 โควตา LINE เดือนนี้ใช้ไป ${q.used} / ${q.limit} ข้อความ (${pct}%)${pct >= 80 ? ' — ใกล้หมด' : ''} · เช็กล่าสุด ${thaiTime(q.at)}`
+    : `📊 LINE เดือนนี้ส่งไป ${q.used} ข้อความ (แพ็กเกจไม่จำกัด)`;
+  $('lineQuota').style.color = pct >= 80 ? 'var(--down)' : '';
 }
 
 // 15-minute candles to follow today's signal live
@@ -427,6 +439,9 @@ function renderSignalHome() {
   $('sgDate').textContent = `${isToday ? 'สัญญาณวันนี้' : 'สัญญาณล่าสุด'} · ${thaiDay(s.id)}`;
   if (s.status === 'skip') {
     $('sigCard').className = 'card sig skip';
+    $('sgAdv').hidden = true;
+    $('sgHowBox').hidden = false;
+    $('sgAlertNote').hidden = false;
     $('sgStars').textContent = '';
     $('sgSide').innerHTML = '⏸ วันนี้ไม่มีสัญญาณ';
     $('sgStatus').textContent = `ตลาดยังไม่ชัดพอ — ไม่เทรดดีกว่า · สัญญาณถัดไป ${thaiTime(nextSignalTime())}`;
@@ -435,9 +450,16 @@ function renderSignalHome() {
     renderMiniRecord();
     return;
   }
+  // Advisory days: a market overview, not a trade to copy (the levels are tracked for the record only)
+  const advisory = !!s.advisory;
+  $('sgAdv').hidden = !advisory;
+  $('sgHowBox').hidden = advisory;
+  $('sgAlertNote').hidden = advisory;
   $('sgStars').textContent = '★'.repeat(s.stars) + '☆'.repeat(5 - s.stars);
-  $('sigCard').className = `card sig ${buy ? 'buy' : 'sell'} st-${s.status}`;
-  $('sgSide').innerHTML = `${buy ? '🟢 ซื้อ' : '🔴 ขาย'}${s.market && !final ? 'ตอนนี้' : ''} <small>${buy ? 'BUY' : 'SELL'}</small>`;
+  $('sigCard').className = `card sig ${buy ? 'buy' : 'sell'} st-${s.status}${advisory ? ' advisory' : ''}`;
+  $('sgSide').innerHTML = advisory
+    ? `🧭 เอียง${buy ? 'ขึ้น' : 'ลง'} <small>แนวโน้มวันนี้</small>`
+    : `${buy ? '🟢 ซื้อ' : '🔴 ขาย'}${s.market && !final ? 'ตอนนี้' : ''} <small>${buy ? 'BUY' : 'SELL'}</small>`;
   $('sgEntry').textContent = f2(s.entry);
   $('sgSl').textContent = f2(s.sl);
 
@@ -464,7 +486,7 @@ function renderSignalHome() {
     loss: `${SIG.STATUS_TH.loss} — ${s.closedBy === 'eod' ? 'ปิดสิ้นวันขาดทุน' : 'โดนตัดขาดทุน'}`,
     expired: `${SIG.STATUS_TH.expired} — วันนั้นไม่ได้เทรด`,
   }[s.status];
-  $('sgStatus').textContent = status + (final ? ` · สัญญาณถัดไป ${thaiTime(nextSignalTime())}` : '');
+  $('sgStatus').textContent = (advisory ? '📝 ผลสมมติ: ' : '') + status + (final ? ` · ${advisory ? 'ภาพรวม' : 'สัญญาณ'}ถัดไป ${thaiTime(nextSignalTime())}` : '');
 
   // Track: stop-loss on the left, last target on the right, entry / targets / price in between
   const far = tps[tps.length - 1];
@@ -490,7 +512,7 @@ function renderSignalHome() {
   else if (s.status === 'win' || s.status === 'loss') $('sgPnl').textContent = `ผลลัพธ์: ${money(pnl)} ต่อ 1 ออนซ์`;
   else $('sgPnl').textContent = `ถ้าถึงเป้า ได้ ${money(Math.abs(s.tp - s.entry))} · ถ้าโดนตัดขาดทุน เสีย ${money(-Math.abs(s.entry - s.sl))} (ต่อ 1 ออนซ์)`;
   $('sgPnl').className = `sig-pnl ${pnl > 0 ? 'up' : pnl < 0 ? 'down' : ''}`;
-  $('sgLot').innerHTML = final ? '' : lotHtml(Math.abs(s.entry - s.sl));
+  $('sgLot').innerHTML = final || advisory ? '' : lotHtml(Math.abs(s.entry - s.sl));
 
   const order = s.market ? `${buy ? 'Buy' : 'Sell'} ทันที (Market)` : `${buy ? 'Buy' : 'Sell'} Limit`;
   const late = s.market && !final && price != null ? ` — ราคาตอนนี้ ${f2(price)} (ห่างจากจุดเข้า $${f2(Math.abs(price - s.entry))})` : '';
@@ -508,13 +530,14 @@ function renderSignalHome() {
   drawSignalLines(s);
 }
 
+// Home record box: the 30-minute system (the main signal)
 function renderMiniRecord() {
-  const sum = SIG.summary(liveSignals(), userSpread());
+  const sum = SIG.summary(intraTrades(), userSpread());
   $('msWin').textContent = sum.wins;
   $('msLoss').textContent = sum.losses;
   $('msLine').textContent = sum.traded
     ? `อัตราชนะ ${sum.winRate}% · กำไรสะสม ${money(sum.pnl)}/ออนซ์`
-    : 'เพิ่งเริ่มบันทึก — ผลจะขึ้นเมื่อสัญญาณแรกจบ';
+    : 'เพิ่งเริ่มบันทึก — ผลจะขึ้นเมื่อไม้แรกของระบบ 30 นาทีจบ';
   $('msDots').innerHTML = sum.last.map(dot).join('');
 }
 

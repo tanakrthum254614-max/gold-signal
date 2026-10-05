@@ -51,11 +51,15 @@ function section(name, trades) {
   const done = (t) => t.status === 'win' || t.status === 'loss';
   const inWeek = (list, a, b) => list.filter((t) => t.createdAt >= a && t.createdAt < b && done(t));
   const i30 = section('⏱️ สัญญาณ 30 นาที', inWeek(intra.trades, from, now));
-  const d1 = section('📅 สัญญาณรายวัน', inWeek(daily.signals, from, now));
-  const total = i30.s.pnl + d1.s.pnl;
-  const prevTotal = SIG.summary(inWeek(intra.trades, prevFrom, from), SPREAD).pnl + SIG.summary(inWeek(daily.signals, prevFrom, from), SPREAD).pnl;
+  // Advisory daily calls (overview only, SIG.RULE.advisory) are reported but not counted in the total
+  const real = (list) => list.filter((t) => !t.advisory);
+  const weekDaily = inWeek(daily.signals, from, now);
+  const advisoryOnly = weekDaily.length && !real(weekDaily).length;
+  const d1 = section(advisoryOnly ? '📅 สูตรรายวัน (ข้อมูลประกอบ · ไม่นับรวม)' : '📅 สัญญาณรายวัน', weekDaily);
+  const total = i30.s.pnl + SIG.summary(real(weekDaily), SPREAD).pnl;
+  const prevTotal = SIG.summary(inWeek(intra.trades, prevFrom, from), SPREAD).pnl + SIG.summary(real(inWeek(daily.signals, prevFrom, from)), SPREAD).pnl;
 
-  const all = [...inWeek(intra.trades, from, now), ...inWeek(daily.signals, from, now)].map((t) => ({ ...t, net: t.pnl - SPREAD }));
+  const all = [...inWeek(intra.trades, from, now), ...real(weekDaily)].map((t) => ({ ...t, net: t.pnl - SPREAD }));
   const best = all.reduce((m, t) => (!m || t.net > m.net ? t : m), null);
   const worst = all.reduce((m, t) => (!m || t.net < m.net ? t : m), null);
   const label = (t) => `${day(t.createdAt)} ${t.side === 'BUY' ? 'ซื้อ' : 'ขาย'} ${money(t.entry)} → ${signed(t.net)}`;
