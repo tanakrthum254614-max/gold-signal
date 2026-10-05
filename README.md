@@ -26,3 +26,6 @@ npm start
 SL = 1.5 × ATR(14) ของ investing.com, TP1/TP2 = Pivot ถัดไปในทิศทางเทรด (หรือ 1.5/3 ATR)
 
 > ⚠️ เป็นเครื่องมือวิเคราะห์ทางเทคนิค ไม่ใช่คำแนะนำการลงทุน
+
+## Deploy
+เว็บจริง: https://gold-signal-ten.vercel.app — เชื่อม GitHub กับ Vercel แล้ว **push ขึ้น `main` = deploy อัตโนมัติ**
