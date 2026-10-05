@@ -1,10 +1,10 @@
 name: Morning gold signal
 
 on:
-  # 23:50 UTC Sun–Thu = 06:50 Thai time Mon–Fri. GitHub cron often starts a few minutes late,
-  # so this lands around 07:00 and never on Saturday/Sunday.
+  # 00:05 UTC Mon–Fri = 07:05 Thai time, just after the market opens (07:00–03:00 Thai time).
+  # GitHub cron can start a few minutes late. Never runs on Saturday/Sunday.
   schedule:
-    - cron: "50 23 * * 0-4"
+    - cron: "5 0 * * 1-5"
   workflow_dispatch:
     inputs:
       send:

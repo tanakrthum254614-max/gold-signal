@@ -9,7 +9,22 @@
   const SLOT = 30 * 60e3;
   const STRENGTH = { strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 };
   const TREND_TH = { strong_buy: 'ขาขึ้นแรง', buy: 'ขาขึ้น', neutral: 'ไซด์เวย์', sell: 'ขาลง', strong_sell: 'ขาลงแรง' };
-  const FRIDAY_CUTOFF_UTC = 19; // no new trades after 19:00 UTC Friday (market closes ~21:00 UTC)
+  // Trading hours (Thai time): open 07:00 – 03:00 next day, Monday 07:00 to Saturday 03:00.
+  // No new trades in the last hour (02:00–03:00); every trade is closed by 02:45.
+  const HOURS = { open: 7, close: 3, lastEntry: 2, closeAt: { h: 2, m: 45 } };
+  const thai = (ms) => { const d = new Date(ms + 7 * 3600e3); return { wd: d.getUTCDay(), h: d.getUTCHours(), m: d.getUTCMinutes() }; };
+  function marketOpen(now) {
+    const { wd, h } = thai(now);
+    return (h >= HOURS.open && wd >= 1 && wd <= 5) || (h < HOURS.close && wd >= 2 && wd <= 6);
+  }
+  // The next 02:45 Thai time after `now` — when open trades are closed before the market shuts
+  function nextClose(now) {
+    const { h, m } = thai(now);
+    const day = new Date(now + 7 * 3600e3).toISOString().slice(0, 10);
+    const today = Date.parse(`${day}T0${HOURS.closeAt.h}:${HOURS.closeAt.m}:00+07:00`);
+    const before = h < HOURS.closeAt.h || (h === HOURS.closeAt.h && m < HOURS.closeAt.m);
+    return before ? today : today + 24 * 3600e3;
+  }
 
   const slotOf = (ms) => Math.floor(ms / SLOT) * SLOT;
   // Only candles that have finished by `now`
@@ -24,21 +39,21 @@
     const score = STRENGTH[keys.m30] + STRENGTH[keys.h1] + STRENGTH[keys.h5];
     // Direction to lean every half hour, even when the score is too weak for an official trade
     const lean = Math.sign(score) || Math.sign(STRENGTH[keys.h1]) || Math.sign(STRENGTH[keys.h5]) || Math.sign(STRENGTH[keys.m30]);
-    const d = new Date(now);
-    const lateFriday = d.getUTCDay() === 5 && d.getUTCHours() >= FRIDAY_CUTOFF_UTC;
-    const stale = now - c30[c30.length - 1].time > 2 * 3600e3; // market closed
+    const open = marketOpen(now);
+    const lastHour = open && thai(now).h === HOURS.lastEntry; // 02:00–03:00: too close to the close
+    const stale = !open || now - c30[c30.length - 1].time > 2 * 3600e3; // market closed / no prices
     return {
       slot: slotOf(now), score, keys, lean,
-      dir: Math.abs(score) >= RULE.threshold && !lateFriday && !stale ? Math.sign(score) : 0,
-      lateFriday, stale,
+      dir: Math.abs(score) >= RULE.threshold && !lastHour && !stale ? Math.sign(score) : 0,
+      lastHour, stale, open,
     };
   }
 
   // Plain-Thai reasons for a decision
   function reasons(dec) {
     const lines = [`แนวโน้ม 30 นาที ${TREND_TH[dec.keys.m30]} · 1 ชม. ${TREND_TH[dec.keys.h1]} · 5 ชม. ${TREND_TH[dec.keys.h5]} (คะแนน ${dec.score > 0 ? '+' : ''}${dec.score} จาก ±6)`];
-    if (dec.stale) lines.push('ตลาดปิดอยู่ — ไม่มีราคาเคลื่อนไหว');
-    else if (dec.lateFriday) lines.push('ใกล้ปิดตลาดวันศุกร์ — ไม่เปิดไม้ใหม่ค้างข้ามสุดสัปดาห์');
+    if (dec.stale) lines.push('ตลาดปิดอยู่ (เปิด 07:00–03:00 น.) — ไม่เปิดไม้ใหม่');
+    else if (dec.lastHour) lines.push('ใกล้ปิดตลาด 03:00 น. — ไม่เปิดไม้ใหม่ในชั่วโมงสุดท้าย');
     else if (!dec.dir) lines.push(`ต้องได้คะแนน ±${RULE.threshold} ขึ้นไปถึงจะเข้า (ทั้ง 3 ช่วงเวลาต้องชี้ทางเดียวกันชัดเจน)`);
     return lines;
   }
@@ -59,13 +74,8 @@
   function makeTrade(dec, price, now = Date.now()) {
     const buy = dec.dir > 0, d = buy ? 1 : -1;
     const r = (v) => SIG.round(v);
-    let expiresAt = now + RULE.maxHoldMs;
-    const fri = new Date(now);
-    if (fri.getUTCDay() === 5 || fri.getUTCDay() === 4) {
-      // Close before the weekend: Friday 20:45 UTC at the latest
-      const cut = Date.UTC(fri.getUTCFullYear(), fri.getUTCMonth(), fri.getUTCDate() + (fri.getUTCDay() === 4 ? 1 : 0), 20, 45);
-      expiresAt = Math.min(expiresAt, cut);
-    }
+    // Closed by 02:45 Thai time at the latest, before the market shuts at 03:00
+    const expiresAt = Math.min(now + RULE.maxHoldMs, nextClose(now));
     return {
       id: `${SIG.thaiDate(now)}-${new Date(now + 7 * 3600e3).toISOString().slice(11, 16).replace(':', '')}`,
       rule: 'intraday-30m', createdAt: now, expiresAt, market: true, status: 'active', entryAt: now,
@@ -75,7 +85,7 @@
     };
   }
 
-  const INTRA = { RULE, SLOT, slotOf, closed, decide, reasons, odds, levels, makeTrade, TREND_TH };
+  const INTRA = { RULE, SLOT, HOURS, slotOf, closed, marketOpen, nextClose, decide, reasons, odds, levels, makeTrade, TREND_TH };
   if (typeof module !== 'undefined' && module.exports) module.exports = INTRA;
   else root.INTRA = INTRA;
 })(typeof window !== 'undefined' ? window : globalThis);

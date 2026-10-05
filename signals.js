@@ -15,7 +15,6 @@
     return {
       id,
       createdAt,
-      // Valid until 06:45 Thai time the next day, just before the next morning signal
       expiresAt: expiry(id),
       side: p.side,
       entry: round(p.entry), sl: round(p.sl), tp: round(p.tp1),
@@ -28,7 +27,8 @@
     };
   }
   const round = (v) => Math.round(v * 100) / 100;
-  const expiry = (id) => Date.parse(`${id}T00:00:00+07:00`) + DAY + (6 * 60 + 45) * 60e3;
+  // Closed at 02:45 Thai time the next night, before the market shuts at 03:00 (open 07:00–03:00)
+  const expiry = (id) => Date.parse(`${id}T02:45:00+07:00`) + DAY;
 
   // "Enter now" short-trade rule: a signal every weekday in the direction of the short + medium +
   // long-term trend (ties go to the medium term), at the current price with a $15 stop and three
