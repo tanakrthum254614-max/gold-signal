@@ -22,6 +22,13 @@
     const { wd, h } = thai(now);
     return (h >= HOURS.open && wd >= 1 && wd <= 5) || (h < HOURS.close && wd >= 2 && wd <= 6);
   }
+  // When the market next opens (ms), or `now` if it is open — scans forward in half hours
+  function nextOpen(now) {
+    if (marketOpen(now)) return now;
+    let t = Math.ceil(now / SLOT) * SLOT;
+    for (let i = 0; i < 7 * 48 && !marketOpen(t); i++) t += SLOT;
+    return t;
+  }
   // The next 02:45 Thai time after `now` — when open trades are closed before the market shuts
   function nextClose(now) {
     const { h, m } = thai(now);
@@ -87,7 +94,8 @@
   function reasons(dec) {
     const rule = dec.rule || RULE;
     const lines = [`แนวโน้ม ${dec.frames.map((f) => `${f.label} ${TREND_TH[f.trend]}`).join(' · ')} (คะแนน ${dec.score > 0 ? '+' : ''}${dec.score} จาก ±6)`];
-    if (dec.stale) lines.push('ตลาดปิดอยู่ (เปิด 07:00–03:00 น.) — ไม่เปิดไม้ใหม่');
+    if (dec.stale && !dec.open) lines.push('ตลาดปิดอยู่ (เปิด 07:00–03:00 น.) — ไม่เปิดไม้ใหม่');
+    else if (dec.stale) lines.push('ข้อมูลกราฟล่าช้า — ไม่เปิดไม้ใหม่จนกว่าข้อมูลจะกลับมา');
     else if (dec.lastHour) lines.push('ใกล้ปิดตลาด 03:00 น. — ไม่เปิดไม้ใหม่ในชั่วโมงสุดท้าย');
     else if (dec.news) lines.push(`📰 ช่วงข่าวแรง: ${dec.news.title} — ไม่เปิดไม้ใหม่ ±${RULE.newsMin} นาทีรอบข่าว`);
     else if (dec.sellSkipped) lines.push('แนวโน้มลงชัด แต่ระบบเข้าเฉพาะฝั่งซื้อ (สถิติ 2 ปี ฝั่งขายชนะแค่ ~50%) — แนะนำรอ');
@@ -156,7 +164,7 @@
   }
   const paused = (store, now) => !!(store && store.pause && now < store.pause.until);
 
-  const INTRA = { RULE, FRAMES, decideWith, FRAMES15, RULE15, SLOT15, decide15, weekStart, nextWeek, pauseCheck, paused, SLOT, HOURS, slotOf, closed, marketOpen, nextClose, newsNear, decide, reasons, odds, verdict, levels, makeTrade, TREND_TH };
+  const INTRA = { RULE, FRAMES, decideWith, FRAMES15, RULE15, SLOT15, decide15, weekStart, nextWeek, pauseCheck, paused, SLOT, HOURS, slotOf, closed, marketOpen, nextOpen, nextClose, newsNear, decide, reasons, odds, verdict, levels, makeTrade, TREND_TH };
   if (typeof module !== 'undefined' && module.exports) module.exports = INTRA;
   else root.INTRA = INTRA;
 })(typeof window !== 'undefined' ? window : globalThis);

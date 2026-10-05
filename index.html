@@ -10,9 +10,9 @@
   <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610052139">
-  <link rel="stylesheet" href="live.css?v=202610052139">
-  <link rel="stylesheet" href="theme.css?v=202610052139" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610051652">
+  <link rel="stylesheet" href="live.css?v=202610051652">
+  <link rel="stylesheet" href="theme.css?v=202610051652" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -111,21 +111,24 @@
 
         <!-- Live trend gauge -->
         <div class="card intra" id="intraCard">
-          <div class="sig-top"><span class="muted">🧭 แนวโน้มสด · ระบบ 30 นาที</span><span class="muted small" id="inNext"></span></div>
-          <div class="tg-wrap">
-            <svg class="tg" viewBox="0 0 220 128" aria-hidden="true">
-              <defs><linearGradient id="gGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e0424f"/><stop offset=".5" stop-color="#d5dbe4"/><stop offset="1" stop-color="#0f9f6e"/></linearGradient></defs>
-              <path class="g-track" d="M20 112 A90 90 0 0 1 200 112"/>
-              <path class="g-arc" d="M20 112 A90 90 0 0 1 200 112"/>
-              <g id="gTicks"></g>
-              <g class="g-needle" id="gNeedle"><line x1="110" y1="112" x2="110" y2="36"/><circle cx="110" cy="112" r="8"/></g>
-              <text x="22" y="126" class="g-lbl">ขาย</text><text x="198" y="126" class="g-lbl" text-anchor="end">ซื้อ</text>
-            </svg>
-            <div class="g-score"><b class="mono" id="gScore">0</b><small id="gScoreSub">คะแนนสด (จาก ±6)</small></div>
+          <div class="sig-top"><span class="muted"><i class="sm-dot" id="smDot"></i>แนวโน้มสด · ระบบ 30 นาที</span><span class="muted small" id="inNext"></span></div>
+          <!-- Trend strength: −6 … +6 as a segmented bar, plus the three timeframes that vote -->
+          <div class="sm" id="sm">
+            <div class="sm-head">
+              <div class="sm-score"><b class="mono" id="gScore">0</b><span class="mono">/ ±6</span></div>
+              <div class="sm-mood"><b id="smMood">กำลังวิเคราะห์…</b><small id="gScoreSub">คะแนนสด</small></div>
+            </div>
+            <div class="sm-meter">
+              <div class="sm-segs" id="smSegs"></div>
+              <div class="sm-entry" id="smEntry"><span>จุดเข้าซื้อ</span></div>
+              <div class="sm-cursor" id="smCursor"><i></i></div>
+            </div>
+            <div class="sm-scale"><span>ขายแรง −6</span><span>สมดุล 0</span><span>+6 ซื้อแรง</span></div>
+            <div class="sm-frames" id="inParts"></div>
+            <div class="sm-cycle"><div class="sm-cycle-bar"><i id="smCycle"></i></div><span class="mono" id="smCycleTx"></span></div>
           </div>
           <div class="intra-call" id="inCall">กำลังวิเคราะห์…</div>
           <p class="intra-why muted" id="inWhy"></p>
-          <div class="intra-parts" id="inParts"></div>
         </div>
 
         <div id="inTrade"></div>
@@ -509,22 +512,22 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610052139 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610051652 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610052139"></script>
-  <script src="auth.js?v=202610052139"></script>
-  <script src="indicators.js?v=202610052139"></script>
-  <script src="investing.js?v=202610052139"></script>
-  <script src="explain.js?v=202610052139"></script>
-  <script src="dailyplan.js?v=202610052139"></script>
-  <script src="signals.js?v=202610052139"></script>
-  <script src="intraday.js?v=202610052139"></script>
-  <script src="ui.js?v=202610052139"></script>
-  <script src="main.js?v=202610052139"></script>
+  <script src="config.js?v=202610051652"></script>
+  <script src="auth.js?v=202610051652"></script>
+  <script src="indicators.js?v=202610051652"></script>
+  <script src="investing.js?v=202610051652"></script>
+  <script src="explain.js?v=202610051652"></script>
+  <script src="dailyplan.js?v=202610051652"></script>
+  <script src="signals.js?v=202610051652"></script>
+  <script src="intraday.js?v=202610051652"></script>
+  <script src="ui.js?v=202610051652"></script>
+  <script src="main.js?v=202610051652"></script>
 </body>
 </html>

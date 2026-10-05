@@ -907,9 +907,17 @@ function patchIntraCandles(now = Date.now()) {
   const f = state.m15[state.m15.length - 1]; // the forming 15-minute candle too (15-minute card / open trade)
   if (f && now < f.time + 15 * 60e3) { f.close = price; f.high = Math.max(f.high, price); f.low = Math.min(f.low, price); }
   if (!C) return;
+  const fresh = streamFresh() && INTRA.marketOpen(now);
   Object.entries(INTRA_DUR).forEach(([k, dur]) => {
-    const last = C[k] && C[k][C[k].length - 1];
-    if (!last || now >= last.time + dur) return;
+    let last = C[k] && C[k][C[k].length - 1];
+    if (!last) return;
+    // A new period started before the next fetch: open its candle from the stream right away, so the
+    // live score (and the "market open" check) never waits on the REST API. The fetch replaces it.
+    if (fresh && now >= last.time + dur && now < last.time + 2 * dur) {
+      last = { time: last.time + dur, open: price, high: price, low: price, close: price };
+      C[k].push(last);
+    }
+    if (now >= last.time + dur) return;
     last.close = price;
     last.high = Math.max(last.high, price);
     last.low = Math.min(last.low, price);
@@ -918,18 +926,90 @@ function patchIntraCandles(now = Date.now()) {
 
 const intraTrades = () => ((state.intra && state.intra.trades) || []).map(live);
 
-// ----- Gauge: score −6 … +6 maps to −90° … +90° -----
-function buildGauge() {
-  const tick = (s, r1, r2, cls) => {
-    const a = (s / 6) * Math.PI / 2;
-    const x = (r) => (110 + r * Math.sin(a)).toFixed(1), y = (r) => (112 - r * Math.cos(a)).toFixed(1);
-    return `<line class="g-tick ${cls}" x1="${x(r1)}" y1="${y(r1)}" x2="${x(r2)}" y2="${y(r2)}"/>`;
+// ----- Trend strength meter: 13 segments for scores −6 … +6, and a card per voting timeframe -----
+const SM_FRAMES = [['m30', '30 นาที'], ['h1', '1 ชม.'], ['h5', '5 ชม.']];
+const SM_VOTE = { strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 };
+const smMood = (s) => (s >= 5 ? 'ซื้อแรง · ถึงเกณฑ์ +5' : s >= 3 ? 'เอียงขึ้นชัด' : s >= 1 ? 'เอียงขึ้นเล็กน้อย'
+  : s === 0 ? 'สมดุล ยังไม่มีทิศ' : s >= -2 ? 'เอียงลงเล็กน้อย' : s >= -4 ? 'เอียงลงชัด' : 'ขายแรง');
+const sm = { shown: null, key: '' };
+
+function buildMeter() {
+  $('smSegs').innerHTML = Array.from({ length: 13 }, (_, i) => `<i${i === 6 ? ' class="mid"' : ''}></i>`).join('');
+  $('inParts').innerHTML = SM_FRAMES.map(([k, label]) => `<div class="smf" id="smf-${k}">
+    <div class="smf-top"><span>${label}</span><span class="smf-vote"></span></div>
+    <div class="smf-chart"><svg class="smf-spark" viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true">
+      <path class="ar"/><path class="ln"/></svg><i class="smf-pt"></i></div>
+    <div class="smf-trend"><span class="tag neutral">—</span></div></div>`).join('');
+}
+
+// Count the big number up/down to the new score so changes are easy to follow
+function smCount(to) {
+  const el = $('gScore');
+  if (to == null) { el.textContent = '—'; sm.shown = null; return; }
+  if (sm.shown === to) return;
+  const from = sm.shown == null ? 0 : sm.shown;
+  sm.shown = to;
+  el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+  const t0 = performance.now(), dur = 600;
+  const step = (t) => {
+    const p = Math.min(1, (t - t0) / dur);
+    el.textContent = signedScore(Math.round(from + (to - from) * (1 - (1 - p) ** 3)));
+    if (p < 1 && sm.shown === to) requestAnimationFrame(step);
   };
-  let html = '';
-  for (let s = -6; s <= 6; s++) {
-    html += Math.abs(s) === INTRA.RULE.threshold ? tick(s, 76, 104, '') : tick(s, 84, 96, 'minor');
-  }
-  $('gTicks').innerHTML = html;
+  requestAnimationFrame(step);
+}
+
+function renderMeter(dec, off) {
+  const score = dec ? dec.score : 0;
+  const lean = dec && !off ? Math.sign(score) : 0;
+  $('sm').className = `sm ${off ? 'off' : lean > 0 ? 'buy' : lean < 0 ? 'sell' : ''}`;
+  $('sm').style.setProperty('--glow-x', `${((score + 6.5) / 13) * 100}%`);
+  $('smDot').className = `sm-dot${off ? ' off' : ''}`;
+  smCount(dec ? score : null);
+  $('smMood').textContent = !dec ? 'กำลังวิเคราะห์…' : off === 'closed' ? '🌙 ตลาดปิด' : off ? '⏳ รอข้อมูลกราฟ' : smMood(score);
+  [...$('smSegs').children].forEach((el, i) => {
+    const s = i - 6, lit = !off && dec && score !== 0 && Math.sign(s) === Math.sign(score) && Math.abs(s) <= Math.abs(score);
+    el.className = `${i === 6 ? 'mid ' : ''}${lit ? `on ${s > 0 ? 'b' : 's'}${s === score ? ' peak' : ''}` : ''}`;
+    el.style.setProperty('--k', Math.abs(s));
+  });
+  // centre of segment i with 13 columns and 4px (3px on phones) gaps
+  const gap = innerWidth <= 520 ? 3 : 4, i = score + 6;
+  $('smCursor').style.left = `calc((100% - ${12 * gap}px) / 13 * ${i + 0.5} + ${gap * i}px)`;
+
+  // One card per voting timeframe: last 30 candles as a sparkline + its trend and vote
+  const C = state.intraCandles;
+  SM_FRAMES.forEach(([k]) => {
+    const card = $(`smf-${k}`), trend = dec && dec.keys[k];
+    const v = trend ? SM_VOTE[trend] : 0;
+    card.className = `smf ${v > 0 ? 'up' : v < 0 ? 'down' : ''}`;
+    card.querySelector('.smf-vote').innerHTML = !trend ? '' : v > 0 ? `${'▲'.repeat(v)} <b>+${v}</b>` : v < 0 ? `${'▼'.repeat(-v)} <b>${v}</b>` : '— <b>0</b>';
+    card.querySelector('.smf-trend').innerHTML = trend ? tag(trend, INTRA.TREND_TH[trend]) : '<span class="tag neutral">—</span>';
+    const bars = ((C && C[k]) || []).filter((b) => b.time <= Date.now()).slice(-30);
+    if (bars.length < 2) return;
+    const lo = Math.min(...bars.map((b) => b.close)), hi = Math.max(...bars.map((b) => b.close)), span = hi - lo || 1;
+    const pts = bars.map((b, j) => [(j / (bars.length - 1)) * 100, 31 - ((b.close - lo) / span) * 28]);
+    const line = pts.map(([x, y], j) => `${j ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join('');
+    const svg = card.querySelector('svg'), [lx, ly] = pts[pts.length - 1];
+    svg.querySelector('.ln').setAttribute('d', line);
+    svg.querySelector('.ar').setAttribute('d', `${line}L100 34L0 34Z`);
+    const pt = card.querySelector('.smf-pt'); // HTML dot: the stretched SVG would turn a circle into an oval
+    pt.style.left = `${lx}%`; pt.style.top = `${(ly / 34) * 100}%`;
+    // redraw the line from left to right whenever a new candle starts
+    const key = `${k}:${bars[bars.length - 1].time}`;
+    if (svg.dataset.key !== key) { svg.dataset.key = key; svg.classList.remove('draw'); void svg.getBoundingClientRect(); svg.classList.add('draw'); }
+  });
+  renderCycle();
+}
+
+// Progress to the next official half-hourly check (the candle close the system decides on)
+function renderCycle() {
+  const now = Date.now(), start = INTRA.slotOf(now), left = start + INTRA.SLOT - now;
+  const bar = $('smCycle'), p = ((now - start) / INTRA.SLOT) * 100;
+  bar.style.transition = p < (bar.dataset.p || 0) ? 'none' : ''; // jump back to 0 when a new half hour starts
+  bar.dataset.p = p;
+  bar.style.width = `${p}%`;
+  const mm = Math.floor(left / 60e3), ss = Math.floor((left % 60e3) / 1000);
+  $('smCycleTx').textContent = `แท่ง 30 นาทีปิดในอีก ${mm}:${String(ss).padStart(2, '0')}`;
 }
 
 // ----- Donuts: what happened historically to trades opened at this score -----
@@ -1039,14 +1119,13 @@ function renderIntra() {
   const next = INTRA.slotOf(now) + INTRA.SLOT;
   $('inNext').textContent = `เช็กทางการรอบถัดไป ${hhmm(next)} น.`;
 
-  // Gauge
-  const score = dec ? dec.score : 0;
-  $('gNeedle').style.transform = `rotate(${(score / 6) * 90}deg)`;
-  $('gScore').textContent = dec ? signedScore(score) : '—';
-  $('gScore').className = `mono ${score > 0 ? 'up' : score < 0 ? 'down' : ''}`;
+  // Closed market (by the clock) vs. an open market whose candles are late (fetch failed / tab asleep)
+  const off = !dec ? '' : !dec.open ? 'closed' : dec.stale ? 'late' : '';
+  if (off === 'late' && now - (state.intraRetry || 0) > 20e3) { state.intraRetry = now; refreshIntraCandles(); }
+  renderMeter(dec, off);
   $('gScoreSub').textContent = official && dec && official.score !== dec.score
-    ? `คะแนนสด (จาก ±6) · รอบล่าสุดแท่งปิด ${signedScore(official.score)}`
-    : 'คะแนนสด (จาก ±6) · เข้าเมื่อถึง +5';
+    ? `คะแนนสดจากแท่งที่กำลังวิ่ง · รอบล่าสุดแท่งปิดได้ ${signedScore(official.score)}`
+    : `คะแนนสดจาก 3 กรอบเวลา · ระบบเข้าซื้อเมื่อแท่งปิดได้ +${INTRA.RULE.threshold}`;
 
   const pause = state.intra && INTRA.paused(state.intra, now) ? state.intra.pause : null;
   let call, cls;
@@ -1057,8 +1136,12 @@ function renderIntra() {
     cls = open.side === 'BUY' ? 'buy' : 'sell';
   } else if (!dec) {
     call = 'กำลังวิเคราะห์…'; cls = 'wait';
-  } else if (dec.stale) {
-    call = '🌙 ตลาดปิดอยู่ — เปิดอีกครั้ง 07:00 น.'; cls = 'wait';
+  } else if (off === 'closed') {
+    const at = INTRA.nextOpen(now), day = SIG.thaiDate(at) === SIG.thaiDate(now) ? ''
+      : `วัน${new Date(at).toLocaleDateString('th-TH', { weekday: 'long', timeZone: 'Asia/Bangkok' }).replace(/^วัน/, '')} `;
+    call = `🌙 ตลาดปิดอยู่ — เปิดอีกครั้ง${day ? ` ${day}` : ' '}${hhmm(at)} น.`; cls = 'wait';
+  } else if (off === 'late') {
+    call = '⏳ กำลังดึงข้อมูลกราฟล่าสุด…'; cls = 'wait';
   } else if (official && official.dir) {
     call = `${official.dir > 0 ? '🟢 ซื้อ' : '🔴 ขาย'}ได้ — ระบบกำลังส่งสัญญาณ`; cls = official.dir > 0 ? 'buy' : 'sell';
   } else if (dec.news) {
@@ -1077,15 +1160,11 @@ function renderIntra() {
 
   if (pause && !open) {
     $('inWhy').textContent = `ไม่เปิดไม้ใหม่จนถึง ${thaiTime(pause.until)} น. — เบรกฉุกเฉินเมื่อแพ้ ${INTRA.RULE.pause.streak} ไม้ติด หรือขาดทุนสัปดาห์ละ $${INTRA.RULE.pause.weekLoss}/ออนซ์`;
-    $('inParts').innerHTML = '';
   } else if (dec) {
     const why = INTRA.reasons(dec);
     $('inWhy').textContent = why.slice(1).join(' · ') || (dec.dir ? 'ทั้ง 3 ช่วงเวลาชี้ไปทางเดียวกันชัดเจน' : '');
-    $('inParts').innerHTML = [['30 นาที', dec.keys.m30], ['1 ชม.', dec.keys.h1], ['5 ชม.', dec.keys.h5]]
-      .map(([n, k]) => `<span>${n} ${tag(k, INTRA.TREND_TH[k])}</span>`).join('');
   } else {
     $('inWhy').textContent = 'กำลังโหลดข้อมูลกราฟ…';
-    $('inParts').innerHTML = '';
   }
 
   renderOpenTrade(open, price);
@@ -1094,7 +1173,8 @@ function renderIntra() {
   const calib = state.bt30 && state.bt30.calibration;
   [[1, 'dnBuy', 'buy'], [-1, 'dnSell', 'sell']].forEach(([dir, id, side]) => {
     const o = dec ? INTRA.odds(dec.score, calib, side) : null;
-    const v = dec && dec.stale ? { key: 'unknown', th: '🌙 ตลาดปิด' }
+    const v = off === 'closed' ? { key: 'unknown', th: '🌙 ตลาดปิด' }
+      : off === 'late' ? { key: 'unknown', th: '⏳ รอข้อมูลกราฟ' }
       : pause ? { key: 'bad', th: '🛑 ระบบพัก' }
       : dec && dec.news ? { key: 'bad', th: '⏸ งดเข้า (ช่วงข่าว)' } : INTRA.verdict(o);
     updateDonut($(id), dir, o, v, price);
@@ -1481,13 +1561,13 @@ UI.on('tab:chart', () => setTimeout(() => {
 function every(ms, fn) {
   setInterval(() => { if (!document.hidden) fn(); }, ms);
 }
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { startStream(); refreshTick(); refreshTech(); refreshPrice(); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { startStream(); refreshTick(); refreshTech(); refreshPrice(); refreshIntraCandles(); } });
 
 (async function init() {
   await AUTH.ready;
   renderTechTables();
   SPLASH.step('กำลังดึงราคาทองจาก investing.com…', 45);
-  buildGauge();
+  buildMeter();
   const pending = [
     refreshThb(), refreshNews(), refreshM15(), refreshDaily(), refreshPrice(),
     refreshTick().then(() => SPLASH.step('ได้ราคาสดแล้ว · กำลังโหลดสถิติ 2 ปี…', 60)),
@@ -1507,7 +1587,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { st
   let ticks = 0, prices = 0;
   every(POLL_PRICE, () => { if (!streamFresh() || ++ticks % 7 === 0) refreshTick(); });
   every(POLL_PRICE, () => { if (location.hash === '#chart' || ++prices % 20 === 0) refreshPrice(); });
-  setInterval(() => { if (state.tickAt) renderLiveStatus(); }, 1000);
+  setInterval(() => { if (state.tickAt) renderLiveStatus(); renderCycle(); }, 1000);
   every(POLL_TECH, refreshTech);
   every(POLL_DAILY, refreshDaily);
   every(60e3, refreshM15);

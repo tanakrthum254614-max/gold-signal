@@ -86,23 +86,79 @@
 .lv-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--up); animation: pulse 1.4s infinite; }
 @media (max-width: 520px) { .lv-price { font-size: 36px; } .lv-spark { width: 40%; height: 64px; } }
 
-/* ================= Gauge ================= */
-.tg-wrap { position: relative; max-width: 300px; margin: 6px auto 0; }
-.tg { width: 100%; display: block; overflow: visible; }
-.g-track { fill: none; stroke: #222936; stroke-width: 16; stroke-linecap: round; }
-.g-arc { fill: none; stroke: url(#gGrad); stroke-width: 10; stroke-linecap: round; opacity: .9; }
-.g-tick { stroke: #fff; stroke-width: 2; opacity: .8; }
-.g-tick.minor { stroke: #8a93a3; stroke-width: 1; opacity: .5; }
-.g-lbl { fill: #8a93a3; font-size: 11px; font-family: "IBM Plex Sans Thai", sans-serif; }
-.g-needle { transform-origin: 110px 112px; transition: transform 1s cubic-bezier(.3,1.5,.5,1); }
-.g-needle line { stroke: var(--gold); stroke-width: 4; stroke-linecap: round; filter: drop-shadow(0 0 4px rgba(232,182,76,.7)); }
-.g-needle circle { fill: var(--gold); stroke: var(--panel); stroke-width: 3; }
-.g-score { text-align: center; margin-top: -4px; }
-.g-score b { display: block; font-size: 28px; line-height: 1.1; }
-.g-score b.up { color: var(--up); } .g-score b.down { color: var(--down); }
-.g-score small { color: var(--muted); font-size: 12px; }
+/* ================= Trend strength meter (−6 … +6) ================= */
+.sm-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--up); margin-right: 7px; vertical-align: 1px; animation: pulse 1.6s infinite; }
+.sm-dot.off { background: var(--muted); animation: none; }
+.sm { --track: rgba(138,147,163,.16); --frame: var(--panel-2); --c: var(--muted); position: relative; margin: 10px 0 4px; padding: 14px 14px 12px; border-radius: 16px; border: 1px solid var(--line); background: linear-gradient(180deg, rgba(255,255,255,.02), transparent); isolation: isolate; overflow: hidden; }
+.sm.buy { --c: var(--up); } .sm.sell { --c: var(--down); }
+/* soft light behind the meter that breathes on the leaning side */
+.sm::before { content: ""; position: absolute; z-index: -1; inset: -40% -10%; background: radial-gradient(40% 50% at var(--glow-x, 50%) 45%, var(--c), transparent 70%); opacity: .10; transition: opacity .8s; animation: smBreathe 4.5s ease-in-out infinite; }
+.sm.off::before { opacity: 0; }
+@keyframes smBreathe { 50% { opacity: .2; } }
+
+.sm-head { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.sm-score { display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+.sm-score b { font-size: 44px; line-height: 1; color: var(--c); transition: color .6s; }
+.sm-score span { color: var(--muted); font-size: 13px; }
+.sm-score b.bump { animation: smBump .7s cubic-bezier(.2,1.6,.4,1); }
+@keyframes smBump { 30% { transform: scale(1.18); text-shadow: 0 0 18px var(--c); } }
+.sm-mood { display: flex; flex-direction: column; min-width: 0; }
+.sm-mood b { font-size: 19px; line-height: 1.3; color: var(--c); transition: color .6s; }
+.sm-mood small { color: var(--muted); font-size: 12px; }
+
+/* segment i (0…12) = score i − 6 · 4px gaps → position helpers in main.js (smPos) */
+.sm-meter { position: relative; padding-top: 20px; }
+.sm-segs { display: grid; grid-template-columns: repeat(13, 1fr); grid-template-rows: 14px; gap: 4px; }
+.sm-segs i { position: relative; display: block; height: 14px; min-width: 0; border-radius: 4px; background: var(--track); overflow: hidden; transition: background .5s, opacity .5s, box-shadow .5s; }
+.sm-segs i.mid { background: rgba(138,147,163,.38); }
+.sm-segs i.on { opacity: calc(.38 + var(--k) * .1); }
+.sm-segs i.on.b { background: var(--up); } .sm-segs i.on.s { background: var(--down); }
+.sm-segs i.on.peak { opacity: 1; box-shadow: 0 0 12px var(--c); }
+/* a light sweep travelling outward from the centre over the lit segments */
+.sm-segs i.on::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); transform: translateX(-120%); animation: smSweep 2.8s ease-in-out infinite; animation-delay: calc(var(--k) * 90ms); }
+.sm-segs i.on.s::after { animation-name: smSweepL; }
+@keyframes smSweep { 0%, 55% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }
+@keyframes smSweepL { 0%, 55% { transform: translateX(120%); } 85%, 100% { transform: translateX(-120%); } }
+.sm-entry { position: absolute; top: 0; bottom: -6px; width: 0; border-left: 2px dashed var(--gold); left: calc((100% - 48px) / 13 * 11 + 44px - 3px); }
+.sm-entry span { position: absolute; right: 4px; top: -2px; white-space: nowrap; font-size: 11px; font-weight: 700; color: var(--gold); }
+.sm-cursor { position: absolute; top: 14px; height: 26px; width: 0; left: 50%; transition: left 1s cubic-bezier(.22,1,.36,1); }
+.sm-cursor i { position: absolute; left: -3px; top: 0; width: 6px; height: 100%; border-radius: 3px; background: var(--text); box-shadow: 0 0 0 2px var(--panel), 0 0 14px var(--c); }
+.sm-cursor::before { content: ""; position: absolute; left: -6px; top: -8px; border: 6px solid transparent; border-top-color: var(--text); border-bottom: 0; }
+.sm.off .sm-cursor { opacity: .35; }
+.sm-scale { display: flex; justify-content: space-between; margin-top: 10px; font-size: 11px; color: var(--muted); }
+
+/* the three timeframes that vote */
+.sm-frames { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+.smf { --fc: var(--muted); padding: 9px 11px 10px; border-radius: 12px; background: var(--frame); border: 1px solid var(--line); min-width: 0; transition: border-color .6s; }
+.smf.up { --fc: var(--up); } .smf.down { --fc: var(--down); }
+.smf.up, .smf.down { border-color: color-mix(in srgb, var(--fc) 35%, var(--line)); }
+.smf-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; }
+.smf-vote { font-size: 11px; letter-spacing: -1px; color: var(--fc); }
+.smf-spark { display: block; width: 100%; height: 34px; margin: 6px 0; overflow: visible; }
+.smf-spark .ln { fill: none; stroke: var(--fc); stroke-width: 1.8; stroke-linejoin: round; vector-effect: non-scaling-stroke; transition: stroke .6s; }
+.smf-spark.draw .ln, .smf-spark.draw .ar { animation: smDraw 1.4s cubic-bezier(.3,.7,.3,1) both; }
+@keyframes smDraw { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.smf-spark .ar { fill: var(--fc); opacity: .12; transition: fill .6s; }
+.smf-chart { position: relative; }
+.smf-pt { position: absolute; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--fc); transition: top .6s, background .6s; }
+.smf-pt::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--fc); animation: smHalo 1.8s ease-out infinite; }
+@keyframes smHalo { from { transform: scale(1); opacity: .6; } to { transform: scale(3.4); opacity: 0; } }
+.smf .tag { font-size: 12px; padding: 1px 8px; }
+
+.sm-cycle { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+.sm-cycle-bar { flex: 1; height: 4px; border-radius: 2px; background: var(--track); overflow: hidden; }
+.sm-cycle-bar i { display: block; height: 100%; width: 0; border-radius: 2px; background: linear-gradient(90deg, var(--gold), #f6d47a); transition: width 1s linear; }
+.sm-cycle span { white-space: nowrap; }
+
 .intra .intra-call, .intra .intra-why { text-align: center; }
-.intra .intra-parts { justify-content: center; }
+@media (max-width: 520px) {
+  .sm { padding: 12px 10px 10px; }
+  .sm-score b { font-size: 38px; } .sm-mood b { font-size: 17px; }
+  .sm-segs { gap: 3px; } .sm-frames { gap: 6px; } .smf { padding: 8px; }
+  .sm-entry { left: calc((100% - 36px) / 13 * 11 + 33px - 2px); }
+  .smf-top { font-size: 12px; white-space: nowrap; } .smf-vote b { display: none; } .smf .tag { font-size: 11px; padding: 1px 6px; }
+  #inNext { display: none; } /* the progress bar under the meter shows the same */
+}
 
 /* ================= Donuts ================= */
 .donuts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
