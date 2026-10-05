@@ -5,3 +5,5 @@ package.json
 .claude
 skills-lock.json
 .env*
+scripts
+.github

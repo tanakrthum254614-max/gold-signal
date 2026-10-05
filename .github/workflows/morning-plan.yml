@@ -1,0 +1,35 @@
+name: Morning gold plan
+
+on:
+  # 23:50 UTC Sun–Thu = 06:50 Thai time Mon–Fri. GitHub cron often starts a few minutes late,
+  # so this lands around 07:00 and never on Saturday/Sunday.
+  schedule:
+    - cron: "50 23 * * 0-4"
+  workflow_dispatch:
+    inputs:
+      send:
+        description: "Send to LINE (otherwise just print the message)"
+        type: boolean
+        default: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: pip install curl_cffi
+      - name: Fetch gold data
+        run: python scripts/fetch_data.py data.json
+      - name: Build plan and send to LINE
+        env:
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          SEND: ${{ github.event_name == 'schedule' || inputs.send }}
+          SITE_URL: https://gold-signal-ten.vercel.app
+        run: node scripts/morning-plan.js data.json
