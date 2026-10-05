@@ -27,6 +27,7 @@ jobs:
     env:
       SEND: ${{ github.event_name == 'schedule' || inputs.send }}
       RECORD: "true"
+      STATE_DIR: state
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -39,17 +40,30 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Fetch 15m / 30m / 1h / 5h candles
         run: python scripts/fetch_data.py data.json --m15-only
-      - name: Check today's signal and alert
+      # Remembers which half hour was last announced, without a commit every 30 minutes
+      - name: Restore notify state
+        uses: actions/cache/restore@v4
+        with:
+          path: state
+          key: notify-${{ github.run_id }}
+          restore-keys: notify-
+      - name: Check signals, half-hourly update, alerts
         env:
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           SITE_URL: https://gold-signal-ten.vercel.app
         run: |
           node scripts/alerts.js data.json
           node scripts/intraday-run.js data.json
+      - name: Save notify state
+        if: always() && hashFiles('state/notify.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: state
+          key: notify-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Save results
         # Commit as the repo owner's GitHub identity: Vercel (Hobby) only deploys commits from linked accounts
         run: |
-          git add signals.json intraday.json 2>/dev/null || git add signals.json
+          git add signals.json intraday.json
           git diff --cached --quiet && exit 0
           git config user.name "tanakrthum254614-max"
           git config user.email "$(gh api users/tanakrthum254614-max --jq '"\(.id)+\(.login)@users.noreply.github.com"')"

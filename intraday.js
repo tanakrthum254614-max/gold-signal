@@ -22,11 +22,13 @@
     if (c30.length < 60 || c1.length < 60 || c5.length < 40) return null;
     const keys = { m30: trendKey(c30), h1: trendKey(c1), h5: trendKey(c5) };
     const score = STRENGTH[keys.m30] + STRENGTH[keys.h1] + STRENGTH[keys.h5];
+    // Direction to lean every half hour, even when the score is too weak for an official trade
+    const lean = Math.sign(score) || Math.sign(STRENGTH[keys.h1]) || Math.sign(STRENGTH[keys.h5]) || Math.sign(STRENGTH[keys.m30]);
     const d = new Date(now);
     const lateFriday = d.getUTCDay() === 5 && d.getUTCHours() >= FRIDAY_CUTOFF_UTC;
     const stale = now - c30[c30.length - 1].time > 2 * 3600e3; // market closed
     return {
-      slot: slotOf(now), score, keys,
+      slot: slotOf(now), score, keys, lean,
       dir: Math.abs(score) >= RULE.threshold && !lateFriday && !stale ? Math.sign(score) : 0,
       lateFriday, stale,
     };
@@ -39,6 +41,19 @@
     else if (dec.lateFriday) lines.push('ใกล้ปิดตลาดวันศุกร์ — ไม่เปิดไม้ใหม่ค้างข้ามสุดสัปดาห์');
     else if (!dec.dir) lines.push(`ต้องได้คะแนน ±${RULE.threshold} ขึ้นไปถึงจะเข้า (ทั้ง 3 ช่วงเวลาต้องชี้ทางเดียวกันชัดเจน)`);
     return lines;
+  }
+
+  // Historical odds for a score, from the calibration table in backtest-30m.json:
+  // { "<score>": { n, winRate, avg } } — winRate = % of trades in the lean direction that hit TP1 first
+  function odds(score, calibration) {
+    const c = calibration && calibration[String(score)];
+    return c && c.n >= 30 ? c : null;
+  }
+
+  // Entry / stop / targets for a direction at a price (used for the half-hourly suggestion too)
+  function levels(dir, price) {
+    const d = dir > 0 ? 1 : -1, r = (v) => SIG.round(v);
+    return { side: d > 0 ? 'BUY' : 'SELL', entry: r(price), sl: r(price - d * RULE.slUsd), tps: RULE.tpUsd.map((u) => r(price + d * u)) };
   }
 
   function makeTrade(dec, price, now = Date.now()) {
@@ -60,7 +75,7 @@
     };
   }
 
-  const INTRA = { RULE, SLOT, slotOf, closed, decide, reasons, makeTrade, TREND_TH };
+  const INTRA = { RULE, SLOT, slotOf, closed, decide, reasons, odds, levels, makeTrade, TREND_TH };
   if (typeof module !== 'undefined' && module.exports) module.exports = INTRA;
   else root.INTRA = INTRA;
 })(typeof window !== 'undefined' ? window : globalThis);

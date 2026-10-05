@@ -2,7 +2,10 @@
 // half hour, opens a new one when the 30-minute, 1-hour and 5-hour trends strongly agree.
 // Results live in intraday.json. Same opening rule as scripts/backtest-30m.js: one trade at a time,
 // a new trade only in a half hour that starts at least 15 minutes after the previous one closed.
-// Usage: node scripts/intraday-run.js data.json     Env: LINE_CHANNEL_ACCESS_TOKEN, SEND, RECORD, SITE_URL
+// Every half hour it also sends one update (no skipped slots): which way to lean, where, SL/TP and the
+// historical chance of reaching TP1 first (calibration table in backtest-30m.json). The last half hour
+// announced is kept in STATE_DIR, which the workflow restores/saves with the Actions cache.
+// Usage: node scripts/intraday-run.js data.json   Env: LINE_CHANNEL_ACCESS_TOKEN, SEND, RECORD, SITE_URL, STATE_DIR
 const fs = require('fs');
 const path = require('path');
 const SIG = require('../signals.js');
@@ -13,7 +16,41 @@ const { signed, at, sumLine, targetEvents } = require('./trade-events.js');
 
 const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
 const FILE = process.env.INTRADAY_FILE || path.join(__dirname, '..', 'intraday.json');
+const BACKTEST = path.join(__dirname, '..', 'backtest-30m.json');
+const STATE_DIR = process.env.STATE_DIR || path.join(__dirname, '..', 'state');
+const STATE_FILE = path.join(STATE_DIR, 'notify.json');
+const TH = INTRA.TREND_TH;
 const bars = (rows) => (rows || []).map((b) => ({ time: b[0], open: b[1], high: b[2], low: b[3], close: b[4] }));
+
+// How worthwhile the historical odds are
+const grade = (o) => (!o ? '❔ ยังไม่มีสถิติพอ'
+  : o.winRate >= 57 ? '✅ น่าเข้า'
+    : o.winRate >= 53 ? '🟡 พอเข้าได้ (ลดขนาดไม้)'
+      : '⚠️ ไม่ค่อยคุ้ม — โอกาสใกล้ 50/50');
+
+// The half-hourly message: current lean, where to enter, SL/TP and historical odds (or the open trade)
+function updateText(dec, price, odds, open, now) {
+  const lines = [`⏱️ อัปเดต 30 นาที · ${at(INTRA.slotOf(now))} น.`, `ราคาทอง ${money(price)}`];
+  const lv = INTRA.levels(dec.lean || 1, price);
+  const side = lv.side === 'BUY' ? '🟢 ซื้อ (BUY)' : '🔴 ขาย (SELL)';
+  const oddsText = odds ? `${odds.winRate}%` : '—';
+  if (open) {
+    const buy = open.side === 'BUY', d = buy ? 1 : -1, hit = open.hit || 0;
+    const pnl = (open.realized || 0) + ((3 - hit) / 3) * d * (price - open.entry);
+    lines.push(`📌 ถือไม้${buy ? 'ซื้อ' : 'ขาย'}อยู่ที่ ${money(open.entry)} · ตอนนี้ ${signed(pnl)}/ออนซ์`
+      + (hit ? ` · ถึง TP${hit} แล้ว (SL อยู่ที่ทุน)` : ` · SL ${money(open.sl)}`));
+    lines.push(`มุมมองตอนนี้: ${dec.lean ? side : 'ไม่มีทิศทาง'} · โอกาส ≈ ${oddsText}`);
+  } else if (!dec.lean) {
+    lines.push('👉 ตอนนี้ไม่มีทิศทาง (ทุกช่วงเวลาไซด์เวย์) — โอกาส ≈ 50/50 รอดูก่อนดีกว่า');
+  } else {
+    lines.push(`👉 ถ้าจะเข้า: ${side} ~${money(lv.entry)}`);
+    lines.push(`🛑 SL ${money(lv.sl)} · 💰 TP ${lv.tps.map(money).join(' / ')}`);
+    lines.push(`📊 โอกาสถึง TP1 ก่อน SL ≈ ${oddsText} (สถิติย้อนหลัง คะแนน ${dec.score > 0 ? '+' : ''}${dec.score})`);
+    lines.push(`ระดับ: ${grade(odds)}`);
+  }
+  lines.push(`แนวโน้ม 30น. ${TH[dec.keys.m30]} · 1ชม. ${TH[dec.keys.h1]} · 5ชม. ${TH[dec.keys.h5]}`);
+  return lines.join('\n');
+}
 
 function entryText(t) {
   const buy = t.side === 'BUY';
@@ -67,14 +104,38 @@ function entryText(t) {
     console.log(`new trade ${t.id} ${t.side} ${t.entry} sl ${t.sl} tps ${t.tps.join('/')}`);
   }
 
-  if (JSON.stringify(store.trades) === before) return console.log('no change');
-  store.summary = SIG.summary(store.trades);
-  store.updatedAt = now;
+  // 3. Half-hourly update — once per half hour, whatever the signal
+  const state = fs.existsSync(STATE_FILE) ? JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')) : {};
+  const newSlot = dec && !dec.stale && slot > (state.lastSlot || 0);
+  if (newSlot) {
+    const calib = fs.existsSync(BACKTEST) ? JSON.parse(fs.readFileSync(BACKTEST, 'utf8')).calibration : null;
+    const odds = INTRA.odds(dec.score, calib);
+    const open = store.trades.find((t) => !SIG.isFinal(t));
+    if (open && open.createdAt === now) {
+      // A trade opened this run already has its entry message: just add the odds to it
+      messages[messages.length - 1] += `\n📊 โอกาสถึง TP1 ก่อน SL ≈ ${odds ? `${odds.winRate}%` : '—'} (สถิติย้อนหลัง คะแนน ${dec.score > 0 ? '+' : ''}${dec.score})`;
+    } else {
+      messages.push(updateText(dec, m15[m15.length - 1].close, odds, open, now));
+    }
+  }
 
   if (messages.length && process.env.SEND === 'true') {
-    await broadcast(...messages.map((text) => ({ type: 'text', text })));
-    console.log('✓ sent to LINE');
+    try {
+      await broadcast(...messages.map((text) => ({ type: 'text', text })));
+      console.log(`✓ sent ${messages.length} message(s) to LINE`);
+    } catch (e) {
+      // Usually the monthly LINE quota; keep recording results either way
+      console.log(`⚠️ LINE send failed: ${e.message}`);
+    }
   } else messages.forEach((m) => console.log(`(dry run)\n${m}`));
+
+  if (newSlot && process.env.RECORD === 'true') {
+    fs.mkdirSync(STATE_DIR, { recursive: true });
+    fs.writeFileSync(STATE_FILE, JSON.stringify({ lastSlot: slot, at: now }));
+  }
+  if (JSON.stringify(store.trades) === before) return console.log('trades unchanged');
+  store.summary = SIG.summary(store.trades);
+  store.updatedAt = now;
   if (process.env.RECORD === 'true') {
     fs.writeFileSync(FILE, `${JSON.stringify(store, null, 1)}\n`);
     console.log('✓ intraday.json updated');

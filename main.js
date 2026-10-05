@@ -638,8 +638,13 @@ function renderIntra() {
   } else if (dec && dec.dir) {
     call = `${dec.dir > 0 ? '🟢 ซื้อ' : '🔴 ขาย'}ได้ — ระบบกำลังส่งสัญญาณ (ภายในไม่กี่นาที)`;
     cls = dec.dir > 0 ? 'buy' : 'sell';
+  } else if (dec && dec.lean) {
+    // Not strong enough for an official trade: still show which way to lean and the odds
+    const o = INTRA.odds(dec.score, state.bt30 && state.bt30.calibration);
+    call = `👉 ถ้าจะเข้า: ${dec.lean > 0 ? '🟢 ซื้อ' : '🔴 ขาย'}${o ? ` · โอกาส ≈ ${o.winRate}%` : ''}`;
+    cls = 'wait';
   } else {
-    call = '⏸ ตอนนี้ยังไม่ควรเข้า';
+    call = '⏸ ไม่มีทิศทาง — โอกาส ≈ 50/50';
     cls = 'wait';
   }
   $('intraCard').className = `card intra ${cls}`;
@@ -670,6 +675,18 @@ function renderIntra() {
         <div class="n sl"><label>🛑 SL${hit ? ' → ทุน' : ''}</label><b class="mono">${f2(hit ? open.entry : open.sl)}</b></div>
         ${open.tps.map((tp, k) => `<div class="n tp${hit > k ? ' done' : ''}"><label>TP${k + 1}${hit > k ? ' ✓' : ''}</label><b class="mono">${f2(tp)}</b></div>`).join('')}
       </div></div>`;
+  } else if (dec && dec.lean && state.lastPrice != null) {
+    const o = INTRA.odds(dec.score, state.bt30 && state.bt30.calibration);
+    const lv = INTRA.levels(dec.lean, state.lastPrice);
+    const grade = !o ? '❔ ยังไม่มีสถิติพอ' : o.winRate >= 57 ? '✅ น่าเข้า' : o.winRate >= 53 ? '🟡 พอเข้าได้ (ลดขนาดไม้)' : '⚠️ ไม่ค่อยคุ้ม — โอกาสใกล้ 50/50';
+    $('inTrade').innerHTML = `<div class="in-trade">
+      <div class="in-row"><span>${lv.side === 'BUY' ? '🟢 ซื้อ' : '🔴 ขาย'} ~<b class="mono">${f2(lv.entry)}</b></span><span class="muted small">${grade}</span></div>
+      <div class="sig-tps n3 mini">
+        <div class="n sl"><label>🛑 SL</label><b class="mono">${f2(lv.sl)}</b></div>
+        ${lv.tps.map((tp, k) => `<div class="n tp"><label>TP${k + 1}</label><b class="mono">${f2(tp)}</b></div>`).join('')}
+      </div>
+      <p class="muted small" style="margin:6px 0 0">โอกาสถึง TP1 ก่อน SL ≈ <b>${o ? `${o.winRate}%` : '—'}</b> จากสถิติย้อนหลังที่คะแนน ${dec.score > 0 ? '+' : ''}${dec.score} · ระบบเปิดไม้จริง (นับสถิติ) เมื่อถึง ±${INTRA.RULE.threshold}</p>
+    </div>`;
   } else $('inTrade').innerHTML = '';
 
   // Today's trades
