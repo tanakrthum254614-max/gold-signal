@@ -19,9 +19,9 @@ on:
 permissions:
   contents: write
 
-# Shares a lock with the price-alert job so the two never write signals.json at the same time
+# Own lock (sharing one with the 5-minute job let GitHub cancel this run while it waited)
 concurrency:
-  group: signals-file
+  group: morning-signal
   cancel-in-progress: false
 
 jobs:
@@ -66,7 +66,7 @@ jobs:
           git config user.email "$(gh api users/tanakrthum254614-max --jq '"\(.id)+\(.login)@users.noreply.github.com"')"
           git add signals.json backtest.json backtest-30m.json
           git diff --cached --quiet || git commit -m "Signal update $(TZ=Asia/Bangkok date +%F)"
-          git pull --rebase -q && git push
+          for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Tell the owner if this failed

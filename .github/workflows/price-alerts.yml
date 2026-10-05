@@ -15,9 +15,10 @@ on:
 permissions:
   contents: write
 
-# Shares a lock with the morning job so the two never write signals.json at the same time
+# Own lock: a waiting run may be replaced by a newer one (fine every 5 minutes), but never cancels the
+# morning or weekly jobs. signals.json is left to the morning job between 07:00 and 07:30 Thai time.
 concurrency:
-  group: signals-file
+  group: price-alerts
   cancel-in-progress: false
 
 jobs:
@@ -55,7 +56,8 @@ jobs:
         run: python scripts/fetch_data.py data.json --m15-only
       - name: Check signals, hourly update, news warnings, alerts
         run: |
-          node scripts/alerts.js data.json
+          # 00:00–00:30 UTC = 07:00–07:30 Thai: the morning job owns signals.json (no daily signal is open then)
+          if [ "$(date -u +%H)" != "00" ] || [ "$(date -u +%M)" -ge 30 ]; then node scripts/alerts.js data.json; fi
           node scripts/intraday-run.js data.json
       - name: Save results
         # Commit as the repo owner's GitHub identity: Vercel (Hobby) only deploys commits from linked accounts
@@ -65,7 +67,7 @@ jobs:
           git config user.name "tanakrthum254614-max"
           git config user.email "$(gh api users/tanakrthum254614-max --jq '"\(.id)+\(.login)@users.noreply.github.com"')"
           git commit -m "Signal update $(TZ=Asia/Bangkok date '+%F %H:%M')"
-          git pull --rebase -q && git push
+          for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Tell the owner if this failed

@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: signals-file
+  group: weekly-summary
   cancel-in-progress: false
 
 jobs:
@@ -52,7 +52,7 @@ jobs:
           git config user.name "tanakrthum254614-max"
           git config user.email "$(gh api users/tanakrthum254614-max --jq '"\(.id)+\(.login)@users.noreply.github.com"')"
           git commit -m "Weekly summary $(TZ=Asia/Bangkok date +%F)"
-          git pull --rebase -q && git push
+          for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Tell the owner if this failed
