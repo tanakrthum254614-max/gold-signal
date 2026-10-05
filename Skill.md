@@ -61,6 +61,12 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 - แหล่งอื่นที่ลองแล้ว: gold-api.com อัปเดต ~1.5 นาที · Binance PAXG trade ~30/นาที, bookTicker mid เปลี่ยน ~ทุก 3 วิ · Swissquote โดน CORS · Binance Futures XAUUSDT ws ไม่มีข้อความ
 - ทดสอบแบบเวลาจริงต้องใช้ puppeteer-core (Chrome `--virtual-time-budget` เร่งเวลา ทำให้วัดความถี่ผิด)
 
+### ⚡ โลโก้ + หน้าโหลด (6 ต.ค. 2569)
+- `logo.svg` = ตราหกเหลี่ยมทอง + แท่งทอง 3 แท่งไล่ขึ้น + สายฟ้า (ผู้ใช้ขอ "ตลาดทองคำ + สายฟ้า") · ใช้เป็น `<img class="logo">` ที่แถบบน/หน้าล็อกอิน + favicon · แก้รูปทรงต้องแก้ 2 ที่: logo.svg และ SVG `.sp-logo` ใน index.html (ภาพเดียวกัน แต่ id gradient `lg*`)
+- หน้าโหลด (live.css "Logo"): ขอบวาด (`lg-rim` pathLength=1) → แกนกลาง → แท่งทองเด้งขึ้น (`lg-bar`) → สายฟ้าฟาด 1.1 วิ (`lgStrike`) แล้ววนทุก 3.2 วิ พร้อม `lgZap` / ประกาย `lg-rays` / แสงวาบ `.sp-flash` / ฟ้าผ่าบนท้องฟ้า `.sp-sky` (มุมซ้าย-ขวาบน ไม่ทับชื่อ) · โหลดเสร็จ `lgDone`
+- กับดัก: `.sp-ring svg` เดิมหมุน −90° (สำหรับวงแหวน %) → ตอนนี้ใช้ `.sp-ring > svg:not(.sp-logo)`
+- ทดสอบอนิเมชั่น: หยุดภาพที่เวลาที่ต้องการด้วย `document.getAnimations().forEach(a => { a.pause(); a.currentTime = t; })` (บล็อก request ข้อมูลเพื่อให้หน้าโหลดค้าง) · dev-server เสิร์ฟ .svg/.png แล้ว
+
 ### 🧭 การ์ดแนวโน้มสด (แทนเกจเข็ม, 5 ต.ค. 2569)
 - index.html `#sm`: แถบ 13 ช่อง −6…+6 (`#smSegs`, ช่องที่ติด = `on b|s` + `peak`, `--k` = ความแรง) + เส้นประ "จุดเข้าซื้อ" ที่ +5 + เคอร์เซอร์ (`smCursor`, ตำแหน่ง calc ตาม gap 4px / 3px บนมือถือ) · คะแนนนับขึ้น/ลง (`smCount`) · ข้อความ `smMood` · 3 การ์ด `#smf-m30|h1|h5` (กราฟเล็ก 30 แท่งจาก `state.intraCandles`, จุดปลายเป็น HTML `.smf-pt` เพราะ SVG ยืด, วาดใหม่เมื่อมีแท่งใหม่, โหวต ▲▲ +2) · แถบนับถอยหลังถึงแท่ง 30 นาทีปิด (`renderCycle` ทุก 1 วิ) · โค้ด: main.js `buildMeter` / `renderMeter(dec, off)` · CSS: live.css "Trend strength meter" + theme.css
 - **ตลาดปิด vs ข้อมูลช้า**: `off = !dec.open ? "closed" : dec.stale ? "late" : ""` — "🌙 ตลาดปิด" ดูจากเวลาเท่านั้น (บอกวันด้วย `INTRA.nextOpen`) · ข้อมูลช้า → "⏳ กำลังดึงข้อมูลกราฟล่าสุด…" + ดึงใหม่ (ทุก ≥20 วิ) · `INTRA.reasons` แยกข้อความเหมือนกัน
@@ -109,6 +115,7 @@ style.css       โครง CSS เดิม (เดิมเป็นธีม
 theme.css       ธีมสว่าง (ค่าเริ่มต้น · <link id=themeLight> โหลดเป็นไฟล์สุดท้าย ทับสีของ style.css/live.css) · โหมดมืด = ปิดไฟล์นี้ (ปุ่ม 🌙 บนแถบบน / แท็บบัญชี, localStorage gs-theme, ui.js applyTheme → main.js applyChartTheme) — การ์ดขาว เงานุ่ม แถบสีด้านบนบอกสถานะ · สีกราฟอยู่ใน main.js (chartBase / series)
 live.css        หน้าโหลดแบบอนิเมชั่น (วงแหวน % + อนุภาค + รายการขั้น), ราคาสด, การ์ดแนวโน้มสด (แถบ −6…+6), โดนัท, การเคลื่อนไหวของแท็บ
 config.js       Clerk publishable key + ลิงก์เพิ่มเพื่อน LINE (ของสาธารณะ ไม่มีความลับ)
+logo.svg        โลโก้ (ตราหกเหลี่ยมทอง + แท่งทอง + สายฟ้า) — แถบบน, หน้าล็อกอิน, favicon
 auth.js         หน้าโหลด (SPLASH.step(text, pct) ขยับวงแหวน + นับ % + เก็บขั้นที่ผ่านแล้ว) + ล็อกอิน Google ผ่าน Clerk (clerk-js@6 + @clerk/ui@1 + ภาษาไทย thTH)
 ui.js           แท็บ (hash routing), หน้าบัญชี, แชร์ LINE
 main.js         ดึงข้อมูล investing.com จากเบราว์เซอร์, กราฟ, การ์ดสัญญาณ, หน้าสถิติ
@@ -216,6 +223,7 @@ gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=fal
 5. สัญญาณทุกวัน (ไม่จำกัด 5 ดาว) → +$70/ปี (ปัจจุบัน)
 6. เพิ่มระบบ 30 นาที (±5) → +$603/ปี (ปัจจุบัน)
 7. (5 ต.ค. 2569) เปลี่ยนเป็นธีมสว่าง (theme.css) + หน้าโหลดค้างอย่างน้อย 4 วินาที (auth.js MIN_MS) วงแหวนเติมช้าลง
+14. (6 ต.ค. 2569) โลโก้ใหม่ ทองคำ + สายฟ้า (logo.svg, favicon) + หน้าโหลดแบบฟ้าผ่า
 13. (5 ต.ค. 2569) เกจเข็ม → แถบความแรง −6…+6 + การ์ด 3 กรอบเวลา + นับถอยหลัง · แก้ "ตลาดปิด" ทั้งที่ตลาดเปิด
 12. (5 ต.ค. 2569) ราคาสดจากสตรีม investing.com (~1 วินาที) + ลดการยิง REST
 11. (5 ต.ค. 2569) เพิ่มสัญญาณ 15 นาทีบนเว็บ (ไม่ส่ง LINE) + ลูกศรบนกราฟ
