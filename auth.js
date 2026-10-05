@@ -97,7 +97,17 @@
   let resolveReady;
   window.AUTH = { ready: new Promise((r) => { resolveReady = r; }), user: null };
 
+  // Preview mode (?demo=1): the whole app, live, without signing in — for visitors from the portfolio.
+  // Settings are kept in this browser only; nothing needs an account.
+  const DEMO = new URLSearchParams(location.search).has('demo');
+
   async function start() {
+    if (DEMO) {
+      SPLASH.step('โหมดดูตัวอย่าง — ไม่ต้องล็อกอิน', 25);
+      $('demoBar').hidden = false;
+      showApp(null);
+      return resolveReady(null);
+    }
     SPLASH.step('กำลังตรวจสอบการเข้าสู่ระบบ…', 15);
     const pk = window.GOLD_CONFIG && window.GOLD_CONFIG.clerkPublishableKey;
     if (!pk) { showApp(null); return resolveReady(null); }

@@ -198,3 +198,10 @@
 .s15-sides .ok b { color: var(--up); } .s15-sides .no b { color: var(--muted); }
 .s15-stats { margin: 8px 0 0; }
 @media (max-width: 520px) { .s15-call { font-size: 22px; } .s15-chart { height: 240px; } }
+
+/* Preview mode (?demo=1) */
+.demo-btn { width: 100%; margin-top: 10px; }
+.demo-bar { max-width: 1180px; margin: 10px auto 0; padding: 9px 14px; border-radius: 12px; font-size: 14px;
+  background: rgba(47,111,237,.10); border: 1px solid rgba(47,111,237,.3); color: var(--text); }
+@media (max-width: 1212px) { .demo-bar { margin: 10px 16px 0; } }
+#accSignIn { margin-top: 8px; }

@@ -35,7 +35,7 @@
   // ---------- Account + sharing ----------
   function fillAccount() {
     const u = window.AUTH && AUTH.user;
-    const name = u ? (u.fullName || u.firstName || '') : 'ผู้ใช้';
+    const name = u ? (u.fullName || u.firstName || '') : 'ผู้เยี่ยมชม (โหมดดูตัวอย่าง)';
     const email = u && u.primaryEmailAddress ? u.primaryEmailAddress.emailAddress : '';
     const img = u && u.imageUrl;
     $('accName').textContent = name || email;
@@ -44,6 +44,7 @@
       if (img) el.src = img; else el.hidden = true;
     });
     $('signOut').hidden = !u;
+    $('accSignIn').hidden = !!u;
   }
 
   const shareUrl = location.origin + location.pathname;

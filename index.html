@@ -10,9 +10,9 @@
   <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610052127">
-  <link rel="stylesheet" href="live.css?v=202610052127">
-  <link rel="stylesheet" href="theme.css?v=202610052127" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610052135">
+  <link rel="stylesheet" href="live.css?v=202610052135">
+  <link rel="stylesheet" href="theme.css?v=202610052135" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -42,16 +42,17 @@
     <div class="login-intro">
       <div class="brand big"><span class="coin">Au</span><h1>Gold Signal</h1></div>
       <h2>อยากเทรดทองคำ<br>แต่ยังไม่มั่นใจ?</h2>
-      <p class="login-lead">รับสัญญาณวันละ 1 ครั้ง พร้อมดูสถิติจริงว่าชนะกี่ครั้ง แพ้กี่ครั้ง</p>
+      <p class="login-lead">ราคาทองสดทุกวินาที · สัญญาณเข้าซื้อ–ขายทุก 15 / 30 นาที พร้อมสถิติจริงว่าชนะกี่ครั้ง แพ้กี่ครั้ง</p>
       <ul>
         <li><span>🎯</span>บอกชัด: จุดเข้า · ตัดขาดทุน · เป้าหมาย</li>
         <li><span>📊</span>บันทึกผลทุกสัญญาณ ชนะ–แพ้ ไม่ปิดบัง</li>
-        <li><span>🔔</span>แจ้งเตือน LINE เมื่อถึงจุดเข้า · TP · SL</li>
+        <li><span>🔔</span>แจ้งเตือน LINE เมื่อมีจังหวะเข้า · ถึง TP · โดน SL</li>
       </ul>
     </div>
     <div class="login-card">
       <div id="signIn"></div>
       <p class="muted small center">ใช้งานฟรี · กดปุ่ม Google ด้านบนเพื่อเข้าใช้</p>
+      <a class="btn demo-btn" href="?demo=1">👀 ดูตัวอย่างก่อน — ไม่ต้องล็อกอิน</a>
     </div>
   </section>
 
@@ -74,6 +75,8 @@
       <a href="#learn" data-tab="learn"><span>📖</span>วิธีใช้</a>
       <a href="#account" data-tab="account"><span>👤</span>บัญชี</a>
     </nav>
+
+    <div class="demo-bar" id="demoBar" hidden>👀 <b>โหมดดูตัวอย่าง</b> — ราคาและสัญญาณเป็นข้อมูลสดจริงทั้งหมด · <a href="./">ล็อกอินด้วย Google</a> เพื่อบันทึกการตั้งค่าไว้กับบัญชี</div>
 
     <main class="content">
       <!-- 🎯 Signal -->
@@ -456,7 +459,8 @@
       <section id="tab-account" class="tab" hidden>
         <section class="card profile">
           <img id="accAvatar" class="avatar big" alt="">
-          <div><b id="accName">—</b><p class="muted small" id="accEmail"></p></div>
+          <div><b id="accName">—</b><p class="muted small" id="accEmail"></p>
+            <a class="btn" id="accSignIn" href="./" hidden>เข้าสู่ระบบด้วย Google</a></div>
         </section>
 
         <section class="card">
@@ -505,22 +509,22 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610052127</p>
+        <p class="muted small center">เวอร์ชัน 202610052135</p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610052127"></script>
-  <script src="auth.js?v=202610052127"></script>
-  <script src="indicators.js?v=202610052127"></script>
-  <script src="investing.js?v=202610052127"></script>
-  <script src="explain.js?v=202610052127"></script>
-  <script src="dailyplan.js?v=202610052127"></script>
-  <script src="signals.js?v=202610052127"></script>
-  <script src="intraday.js?v=202610052127"></script>
-  <script src="ui.js?v=202610052127"></script>
-  <script src="main.js?v=202610052127"></script>
+  <script src="config.js?v=202610052135"></script>
+  <script src="auth.js?v=202610052135"></script>
+  <script src="indicators.js?v=202610052135"></script>
+  <script src="investing.js?v=202610052135"></script>
+  <script src="explain.js?v=202610052135"></script>
+  <script src="dailyplan.js?v=202610052135"></script>
+  <script src="signals.js?v=202610052135"></script>
+  <script src="intraday.js?v=202610052135"></script>
+  <script src="ui.js?v=202610052135"></script>
+  <script src="main.js?v=202610052135"></script>
 </body>
 </html>

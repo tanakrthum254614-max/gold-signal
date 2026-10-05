@@ -1,10 +1,12 @@
 name: Price alerts + 30-minute signals
 
 on:
-  # Every 5 minutes Mon–Fri (UTC) = Mon 07:00 – Sat 06:59 Thai time, covering every signal's window.
-  # GitHub may start scheduled runs a few minutes late.
+  # Mon–Fri (UTC) = Mon 07:00 – Sat 06:59 Thai time. GitHub starts scheduled runs late and irregularly
+  # (often 10–20 minutes apart), so each run stays up ~28 minutes and checks at every 5-minute mark
+  # itself (scripts/check-loop.sh). A run is queued every 15 minutes: the next one starts as soon as the
+  # current one ends, so there is no gap. Free for a public repository.
   schedule:
-    - cron: "*/5 * * * 1-5"
+    - cron: "*/15 * * * 1-5"
   workflow_dispatch:
     inputs:
       send:
@@ -15,8 +17,8 @@ on:
 permissions:
   contents: write
 
-# Own lock: a waiting run may be replaced by a newer one (fine every 5 minutes), but never cancels the
-# morning or weekly jobs. signals.json is left to the morning job between 07:00 and 07:30 Thai time.
+# Own lock: one run at a time, one waiting (a newer waiting run replaces an older one). Never cancels
+# the morning or weekly jobs. signals.json is left to the morning job between 07:00 and 07:30 Thai time.
 concurrency:
   group: price-alerts
   cancel-in-progress: false
@@ -24,7 +26,7 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 40
     env:
       SEND: ${{ github.event_name == 'schedule' || inputs.send }}
       RECORD: "true"
@@ -34,7 +36,7 @@ jobs:
       SITE_URL: https://gold-signal-ten.vercel.app
     steps:
       - uses: actions/checkout@v4
-      # What was already announced (hourly update, news warnings, failure notices) — restored first so
+      # What was already announced (✅ updates, news warnings, failure notices) — restored first so
       # the failure notice can throttle itself even when an early step fails
       - name: Restore notify state
         uses: actions/cache/restore@v4
@@ -50,31 +52,14 @@ jobs:
         with:
           node-version: "22"
       - run: pip install -r requirements.txt
-      - name: Fetch 15m / 30m / 1h / 5h candles + news calendar
-        run: python scripts/fetch_data.py data.json --m15-only
-      - name: Check signals, ✅ updates, news warnings, alerts
-        # Both scripts queue their LINE messages in OUTBOX; flush.js sends them as ONE request (the free
-        # LINE plan counts requests, not bubbles) — even if one script failed
+      - name: Check every 5 minutes (alerts, 30-minute signals, ✅ updates, news warnings)
+        # Each check queues its LINE messages in OUTBOX and sends them as ONE request (flush.js),
+        # then commits signals.json / intraday.json
         env:
           OUTBOX: outbox.json
-        run: |
-          rc=0
-          # 00:00–00:30 UTC = 07:00–07:30 Thai: the morning job owns signals.json (no daily signal is open then)
-          if [ "$(date -u +%H)" != "00" ] || [ "$(date -u +%M)" -ge 30 ]; then node scripts/alerts.js data.json || rc=1; fi
-          node scripts/intraday-run.js data.json || rc=1
-          node scripts/flush.js
-          exit $rc
-      - name: Save results
-        # Commit as the repo owner's GitHub identity: Vercel (Hobby) only deploys commits from linked accounts
-        run: |
-          git add signals.json intraday.json
-          git diff --cached --quiet && exit 0
-          git config user.name "tanakrthum254614-max"
-          git config user.email "$(gh api users/tanakrthum254614-max --jq '"\(.id)+\(.login)@users.noreply.github.com"')"
-          git commit -m "Signal update $(TZ=Asia/Bangkok date '+%F %H:%M')"
-          ok=0; for i in 1 2 3; do git pull --rebase -q && git push && { ok=1; break; }; sleep 5; done; [ "$ok" = 1 ]
-        env:
+          LOOP_MINUTES: ${{ github.event_name == 'schedule' && '28' || '0' }}
           GH_TOKEN: ${{ github.token }}
+        run: bash scripts/check-loop.sh
       - name: Tell the owner if this failed
         if: failure()
         run: node scripts/notify-failure.js "เช็กราคา / สัญญาณ 30 นาที (ทุก 5 นาที)"
