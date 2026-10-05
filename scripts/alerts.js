@@ -7,11 +7,10 @@ const path = require('path');
 const SIG = require('../signals.js');
 const { money } = require('../dailyplan.js');
 const { broadcast } = require('./line.js');
+const { signed, at, sumLine, targetEvents } = require('./trade-events.js');
 
 const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
 const SIGNALS_FILE = process.env.SIGNALS_FILE || path.join(__dirname, '..', 'signals.json');
-const signed = (v) => `${v >= 0 ? '+' : '−'}$${money(Math.abs(v))}`;
-const at = (ms) => new Date(ms).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
 
 function entryText(s, price) {
   const buy = s.side === 'BUY';
@@ -33,24 +32,6 @@ function exitText(s, sum) {
     `ผลงานสะสม: ชนะ ${sum.wins} · แพ้ ${sum.losses}${sum.winRate != null ? ` (ชนะ ${sum.winRate}%)` : ''} · ${signed(sum.pnl)}/ออนซ์`,
     `ดูสถิติ: ${SITE_URL}/#stats`,
   ].join('\n');
-}
-
-// Three-target signals: one message per new event (TP1/TP2/TP3, breakeven exit, stop-loss)
-function targetEvents(s, sent, now) {
-  const lines = [];
-  const side = s.side === 'BUY' ? 'ซื้อ' : 'ขาย';
-  for (let k = 1; k <= (s.hit || 0); k++) {
-    if (sent[`tp${k}`]) continue;
-    sent[`tp${k}`] = now;
-    const usd = Math.abs(s.tps[k - 1] - s.entry);
-    lines.push(`✅ TP${k} ถึงแล้ว! ${money(s.tps[k - 1])} (+$${money(usd)}) — ปิด ⅓ ของออเดอร์`);
-    if (k === 1) lines.push(`🛡️ เลื่อน SL ไปที่ทุน ${money(s.entry)} → ไม้นี้ไม่ขาดทุนแล้ว`);
-  }
-  if (s.closedBy === 'tp' && !sent.exit) lines.push(`🏆 ครบทั้ง 3 เป้า! ${side}ที่ ${money(s.entry)} · กำไรรวม ${signed(s.pnl)}/ออนซ์`);
-  if (s.closedBy === 'be' && !sent.exit) lines.push(`⏹ ราคากลับมาที่ทุน ปิดส่วนที่เหลือ (${at(s.exitAt)} น.) · กำไรรวม ${signed(s.pnl)}/ออนซ์`);
-  if (s.closedBy === 'sl' && !sent.exit) lines.push(`❌ โดน SL ที่ ${money(s.sl)} (${at(s.exitAt)} น.) · ${side}ที่ ${money(s.entry)} = ${signed(s.pnl)}/ออนซ์`);
-  if (['tp', 'be', 'sl'].includes(s.closedBy)) sent.exit = sent.exit || now;
-  return lines;
 }
 
 (async function main() {
@@ -75,7 +56,6 @@ function targetEvents(s, sent, now) {
     sent.entry = now;
   }
   const others = store.signals.filter((_, j) => j !== i);
-  const sumLine = (sum) => `ผลงานสะสม: ชนะ ${sum.wins} · แพ้ ${sum.losses}${sum.winRate != null ? ` (ชนะ ${sum.winRate}%)` : ''} · ${signed(sum.pnl)}/ออนซ์`;
   if (s.tps) {
     const lines = targetEvents(s, sent, now);
     if (lines.length) {

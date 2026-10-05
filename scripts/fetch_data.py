@@ -6,7 +6,7 @@ If investing.com still refuses, fall back to Binance PAXG candles (via the geo-u
 data-api.binance.vision host) shifted onto the gold-api.com spot price.
 
 Usage: python scripts/fetch_data.py data.json [--m15-only]
-  --m15-only  only the 15-minute candles (for the 5-minute price-alert check)
+  --m15-only  only the short-term candles (for the 5-minute price-alert / 30-minute signal check)
 """
 import json
 import sys
@@ -60,16 +60,34 @@ def from_binance(session):
     return {"source": "binance", "daily": shift(daily), "hourly": shift(hourly), "h4": shift(h4), "m15": shift(m15), "m30": shift(m30)}
 
 
+INTRADAY = {"m15": "PT15M", "m30": "PT30M", "h1": "PT1H", "h5": "PT5H"}
+
+
 def m15_investing(session):
-    m15 = get_json(session, f"{INVESTING}/{PAIR_ID}/historical/chart/?interval=PT15M&pointscount=160", HEADERS)["data"]
-    return {"source": "investing.com", "m15": [b[:5] for b in m15]}
+    """15/30-minute, 1-hour and 5-hour candles: follow open trades and make the 30-minute call."""
+    out = {"source": "investing.com"}
+    for key, interval in INTRADAY.items():
+        rows = get_json(session, f"{INVESTING}/{PAIR_ID}/historical/chart/?interval={interval}&pointscount=160", HEADERS)["data"]
+        out[key] = [b[:5] for b in rows]
+    return out
 
 
 def m15_binance(session):
-    url = "https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT&interval=15m&limit=200"
-    m15 = [[k[0], float(k[1]), float(k[2]), float(k[3]), float(k[4])] for k in get_json(session, url)]
+    def klines(interval, limit):
+        url = f"https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT&interval={interval}&limit={limit}"
+        return [[k[0], float(k[1]), float(k[2]), float(k[3]), float(k[4])] for k in get_json(session, url)]
+
+    m15, m30, h1 = klines("15m", 200), klines("30m", 200), klines("1h", 1000)
+    h5 = []  # Binance has no 5-hour candles: build them from 1-hour ones
+    for r in h1:
+        t = r[0] // (5 * 3600000) * (5 * 3600000)
+        if h5 and h5[-1][0] == t:
+            h5[-1] = [t, h5[-1][1], max(h5[-1][2], r[2]), min(h5[-1][3], r[3]), r[4]]
+        else:
+            h5.append([t, *r[1:5]])
     off = get_json(session, "https://api.gold-api.com/price/XAU")["price"] - m15[-1][4]
-    return {"source": "binance", "m15": [[r[0], r[1] + off, r[2] + off, r[3] + off, r[4] + off] for r in m15]}
+    shift = lambda rows: [[r[0], r[1] + off, r[2] + off, r[3] + off, r[4] + off] for r in rows]
+    return {"source": "binance", "m15": shift(m15), "m30": shift(m30), "h1": shift(h1[-200:]), "h5": shift(h5[-160:])}
 
 
 def main(out_path, m15_only=False):

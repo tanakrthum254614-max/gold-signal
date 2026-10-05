@@ -10,7 +10,7 @@
   <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610051451">
+  <link rel="stylesheet" href="style.css?v=202610051506">
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -64,6 +64,16 @@
       <!-- 🎯 Signal -->
       <section id="tab-home" class="tab">
 
+        <div class="card intra" id="intraCard">
+          <div class="sig-top"><span class="muted">⏱️ สัญญาณ 30 นาที · วิเคราะห์ทุกครึ่งชั่วโมง</span><span class="muted small" id="inNext"></span></div>
+          <div class="intra-call" id="inCall">กำลังวิเคราะห์…</div>
+          <p class="intra-why muted" id="inWhy"></p>
+          <div class="intra-parts" id="inParts"></div>
+          <div id="inTrade"></div>
+          <div id="inToday"></div>
+        </div>
+
+        <h3 class="sec-title">📅 สัญญาณรายวัน (07:00)</h3>
         <div class="home-cols">
           <div class="card sig" id="sigCard">
             <div class="sig-top">
@@ -121,8 +131,26 @@
 
       <!-- 📊 Stats -->
       <section id="tab-stats" class="tab" hidden>
+
         <section class="card">
-          <h3>ผลงานสัญญาณจริง</h3>
+          <h3>⏱️ สัญญาณ 30 นาที — ผลจริง</h3>
+          <p class="hint">วิเคราะห์ทุกครึ่งชั่วโมง เข้าเมื่อแนวโน้ม 30 นาที · 1 ชม. · 5 ชม. ชี้ทางเดียวกันชัดเจน (คะแนน ±5 ขึ้นไป) · ครั้งละ 1 ไม้ · SL $15 · TP $15 / $20 / $30</p>
+          <div class="tiles" id="inLiveTiles"></div>
+          <div id="inLiveChart" class="chart-eq"></div>
+          <div class="history" id="inHistory"></div>
+        </section>
+
+        <section class="card bt">
+          <h3>⏱️ สัญญาณ 30 นาที — ทดสอบย้อนหลัง 1 ปี <span class="tag neutral">จำลอง</span></h3>
+          <p class="hint">ใช้โค้ดตัดสินใจชุดเดียวกับของจริง บนข้อมูล Binance PAXG (แท่ง 5 ชม. สร้างจากแท่ง 1 ชม.)</p>
+          <div class="tiles" id="inBtTiles"></div>
+          <p class="bt-note up" id="inBtNote"></p>
+          <div id="inBtChart" class="chart-eq"></div>
+        </section>
+
+        <h3 class="sec-title">📅 สัญญาณรายวัน (07:00)</h3>
+        <section class="card">
+          <h3>📅 สัญญาณรายวัน — ผลจริง</h3>
           <p class="hint" id="liveSince">บันทึกทุกสัญญาณที่ส่งจริง ไม่ตัดทิ้ง ไม่แก้ย้อนหลัง</p>
           <div class="tiles" id="liveTiles"></div>
           <div id="liveChart" class="chart-eq"></div>
@@ -279,6 +307,12 @@
         </section>
 
         <section class="card">
+          <h3>⏱️ สัญญาณ 30 นาที</h3>
+          <p>ระหว่างวันระบบวิเคราะห์ทุกครึ่งชั่วโมง ถ้าแนวโน้ม <b>30 นาที · 1 ชม. · 5 ชม.</b> ชี้ไปทางเดียวกันชัดเจน จะส่ง <b>“ซื้อ/ขายตอนนี้”</b> พร้อม SL $15 และ TP $15 / $20 / $30 เข้า LINE ทันที
+            (ประมาณวันละ 2–4 ไม้ ครั้งละไม้เดียว) ถ้ายังไม่ชัด หน้าเว็บจะบอกว่า <b>“ยังไม่ควรเข้า”</b> พร้อมเหตุผล</p>
+        </section>
+
+        <section class="card">
           <h3>ใช้สัญญาณใน 3 ขั้น</h3>
           <ol class="steps">
             <li><b>เปิดออเดอร์ทันที (Market)</b> ตามสัญญาณ ซื้อ หรือ ขาย เมื่อได้รับสัญญาณตอน 07:00</li>
@@ -338,21 +372,22 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610051451</p>
+        <p class="muted small center">เวอร์ชัน 202610051506</p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610051451"></script>
-  <script src="auth.js?v=202610051451"></script>
-  <script src="indicators.js?v=202610051451"></script>
-  <script src="investing.js?v=202610051451"></script>
-  <script src="explain.js?v=202610051451"></script>
-  <script src="dailyplan.js?v=202610051451"></script>
-  <script src="signals.js?v=202610051451"></script>
-  <script src="ui.js?v=202610051451"></script>
-  <script src="main.js?v=202610051451"></script>
+  <script src="config.js?v=202610051506"></script>
+  <script src="auth.js?v=202610051506"></script>
+  <script src="indicators.js?v=202610051506"></script>
+  <script src="investing.js?v=202610051506"></script>
+  <script src="explain.js?v=202610051506"></script>
+  <script src="dailyplan.js?v=202610051506"></script>
+  <script src="signals.js?v=202610051506"></script>
+  <script src="intraday.js?v=202610051506"></script>
+  <script src="ui.js?v=202610051506"></script>
+  <script src="main.js?v=202610051506"></script>
 </body>
 </html>
