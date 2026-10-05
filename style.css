@@ -163,26 +163,6 @@ footer p { margin: 4px 0; }
 h3 .tag { margin-left: 6px; vertical-align: 1px; }
 .conn.backup .dot { background: var(--wait); }
 
-/* Loading screen */
-.splash {
-  position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 6px; background: radial-gradient(circle at 50% 35%, #1d1a10 0%, var(--bg) 60%); text-align: center; padding: 16px;
-  transition: opacity .45s ease, visibility .45s;
-}
-.splash.gone { opacity: 0; visibility: hidden; }
-.splash h1 { margin: 14px 0 0; font-size: 28px; }
-.splash p { margin: 0; }
-.splash-coin {
-  width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center;
-  background: radial-gradient(circle at 30% 30%, #ffe9a8, #d79b2c 65%, #8a5f12);
-  box-shadow: 0 0 0 6px var(--gold-soft), 0 0 50px rgba(232, 182, 76, .35);
-  animation: coinSpin 2.4s ease-in-out infinite;
-}
-.splash-coin span { color: #3b2a06; font-weight: 700; font-size: 28px; }
-@keyframes coinSpin { 0%, 100% { transform: rotateY(0) translateY(0); } 50% { transform: rotateY(180deg) translateY(-6px); } }
-.splash-bar { width: min(280px, 80vw); height: 6px; border-radius: 99px; background: var(--panel-2); overflow: hidden; margin-top: 18px; }
-.splash-bar div { height: 100%; width: 5%; background: linear-gradient(90deg, #c8902a, #ffe08a); transition: width .4s ease; }
-.splash-text { color: var(--muted); font-size: 14px; min-height: 21px; }
 
 /* Sign-in page */
 .login { min-height: 100vh; display: grid; grid-template-columns: 1fr auto; gap: 48px; align-items: center; max-width: 1000px; margin: 0 auto; padding: 32px 0; }

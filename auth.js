@@ -2,17 +2,41 @@
 (function () {
   const $ = (id) => document.getElementById(id);
 
+  // Progress ring (r = 72) + a counting percentage + a list of finished steps
+  const RING = 2 * Math.PI * 72;
+  let shown = 0, target = 0, raf = 0, lastText = '';
+  function count() {
+    shown += Math.max(0.6, (target - shown) * 0.12);
+    if (shown >= target) shown = target;
+    $('splashPct').textContent = `${Math.round(shown)}%`;
+    $('splashFill').style.strokeDashoffset = RING * (1 - shown / 100);
+    raf = shown < target ? requestAnimationFrame(count) : 0;
+  }
   window.SPLASH = {
     step(text, pct) {
+      if (lastText && lastText !== text) {
+        const li = document.createElement('li');
+        li.textContent = lastText;
+        $('splashSteps').appendChild(li);
+        while ($('splashSteps').children.length > 3) $('splashSteps').firstChild.remove();
+      }
+      lastText = text;
       $('splashText').textContent = text;
-      if (pct != null) $('splashFill').style.width = `${pct}%`;
+      if (pct != null && pct > target) {
+        target = pct;
+        if (!raf) raf = requestAnimationFrame(count);
+      }
     },
-    show() { $('splash').classList.remove('gone'); },
+    show() { shown = target = 0; $('splash').classList.remove('gone', 'done'); },
     hide() {
       this.step('พร้อมแล้ว!', 100);
-      setTimeout(() => $('splash').classList.add('gone'), 350);
+      $('splash').classList.add('done');
+      setTimeout(() => $('splash').classList.add('gone'), 650);
     },
   };
+  $('splashFill').style.strokeDasharray = RING;
+  $('splashFill').style.strokeDashoffset = RING;
+  SPLASH.step('กำลังเริ่มต้น…', 5);
 
   const THEME = {
     variables: {

@@ -41,8 +41,11 @@
   }
 
   // candles: { m30, h1, h5 } arrays of { time (ms), open, high, low, close }; news: upcoming releases
-  function decide(candles, now = Date.now(), news = null) {
-    const c30 = closed(candles.m30, 30 * 60e3, now), c1 = closed(candles.h1, 3600e3, now), c5 = closed(candles.h5, 5 * 3600e3, now);
+  // live: also use the candles still forming (for the website's real-time view). Official decisions
+  // (LINE, recorded trades, backtest) use closed candles only.
+  function decide(candles, now = Date.now(), news = null, live = false) {
+    const pick = (bars, dur) => (live ? bars.filter((b) => b.time <= now).slice(-200) : closed(bars, dur, now));
+    const c30 = pick(candles.m30, 30 * 60e3), c1 = pick(candles.h1, 3600e3), c5 = pick(candles.h5, 5 * 3600e3);
     if (c30.length < 60 || c1.length < 60 || c5.length < 40) return null;
     const keys = { m30: trendKey(c30), h1: trendKey(c1), h5: trendKey(c5) };
     const score = STRENGTH[keys.m30] + STRENGTH[keys.h1] + STRENGTH[keys.h5];
@@ -72,8 +75,9 @@
   }
 
   // Historical odds at a score, from the calibration table in backtest-30m.json:
-  // { buy: { "<score>": { n, winRate, avg } }, sell: {...} } — winRate = % of hypothetical trades on that
-  // side, opened at that score, that reached TP1 before the stop. side defaults to the score's direction.
+  // { buy: { "<score>": { n, winRate, avg, split } }, sell: {...} } — winRate = % of hypothetical trades on
+  // that side, opened at that score, that ended in profit (TP1 reached, or closed in profit at the time
+  // limit); split = % that never reached TP1 / reached TP1 / TP2 / TP3. side defaults to the score's sign.
   function odds(score, calibration, side) {
     if (!calibration) return null;
     const s = side || (score < 0 ? 'sell' : 'buy');

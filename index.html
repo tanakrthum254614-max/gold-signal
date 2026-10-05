@@ -10,17 +10,29 @@
   <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610051717">
+  <link rel="stylesheet" href="style.css?v=202610051033">
+  <link rel="stylesheet" href="live.css?v=202610051033">
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
   <!-- Loading screen -->
   <div id="splash" class="splash">
-    <div class="splash-coin"><span>Au</span></div>
-    <h1>Gold Signal</h1>
-    <p class="muted">สัญญาณเทรดทองคำ วันละ 1 สัญญาณ</p>
-    <div class="splash-bar"><div id="splashFill"></div></div>
+    <div class="sp-glow"></div>
+    <div class="sp-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="sp-ring">
+      <svg viewBox="0 0 160 160" aria-hidden="true">
+        <defs><linearGradient id="spGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#c8902a"/></linearGradient></defs>
+        <circle class="sp-track" cx="80" cy="80" r="72"/>
+        <circle class="sp-orbit" cx="80" cy="80" r="62"/>
+        <circle class="sp-prog" id="splashFill" cx="80" cy="80" r="72"/>
+      </svg>
+      <div class="splash-coin"><span>Au</span></div>
+    </div>
+    <h1 class="sp-title">Gold Signal</h1>
+    <p class="muted">สัญญาณเทรดทองคำ XAU/USD · เรียลไทม์</p>
+    <div class="sp-pct mono" id="splashPct">0%</div>
     <p class="splash-text" id="splashText">กำลังเริ่มต้น…</p>
+    <ul class="sp-steps" id="splashSteps"></ul>
   </div>
 
   <!-- Sign-in page -->
@@ -64,12 +76,63 @@
       <!-- 🎯 Signal -->
       <section id="tab-home" class="tab">
 
+        <!-- Live price -->
+        <div class="card lv" id="liveHero">
+          <div class="lv-top">
+            <span class="lv-pill" id="lvMarket"><i></i><span id="lvMarketText">กำลังเชื่อมต่อ</span></span>
+            <span class="mono muted small" id="lvClock">--:--:--</span>
+          </div>
+          <div class="lv-main">
+            <div class="lv-px">
+              <div class="muted small">ทองคำ XAU/USD · ดอลลาร์/ออนซ์</div>
+              <div class="lv-price mono" id="lvPrice">—</div>
+              <div class="lv-chg mono" id="lvChg"></div>
+            </div>
+            <svg class="lv-spark" id="lvSpark" viewBox="0 0 240 80" preserveAspectRatio="none" aria-hidden="true">
+              <defs><linearGradient id="lvFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b64c" stop-opacity=".35"/><stop offset="1" stop-color="#e8b64c" stop-opacity="0"/></linearGradient></defs>
+              <path id="lvArea" fill="url(#lvFill)"/>
+              <path id="lvLine" class="lv-line"/>
+              <circle id="lvDot" class="lv-dot" r="3.5" cx="-10" cy="-10"/>
+            </svg>
+          </div>
+          <div class="lv-stats">
+            <div><label>สูงสุดวันนี้</label><b class="mono" id="lvHigh">—</b></div>
+            <div><label>ต่ำสุดวันนี้</label><b class="mono" id="lvLow">—</b></div>
+            <div><label>เทียบ 1 ชม. ก่อน</label><b class="mono" id="lvH1">—</b></div>
+          </div>
+          <p class="lv-foot muted small" id="lvAgo">กำลังดึงราคาสด…</p>
+        </div>
+
+        <!-- Live trend gauge -->
         <div class="card intra" id="intraCard">
-          <div class="sig-top"><span class="muted">⏱️ สัญญาณ 30 นาที · วิเคราะห์ทุกครึ่งชั่วโมง</span><span class="muted small" id="inNext"></span></div>
+          <div class="sig-top"><span class="muted">🧭 แนวโน้มสด · ระบบ 30 นาที</span><span class="muted small" id="inNext"></span></div>
+          <div class="tg-wrap">
+            <svg class="tg" viewBox="0 0 220 128" aria-hidden="true">
+              <defs><linearGradient id="gGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f0506e"/><stop offset=".5" stop-color="#4b5565"/><stop offset="1" stop-color="#22c58b"/></linearGradient></defs>
+              <path class="g-track" d="M20 112 A90 90 0 0 1 200 112"/>
+              <path class="g-arc" d="M20 112 A90 90 0 0 1 200 112"/>
+              <g id="gTicks"></g>
+              <g class="g-needle" id="gNeedle"><line x1="110" y1="112" x2="110" y2="36"/><circle cx="110" cy="112" r="8"/></g>
+              <text x="22" y="126" class="g-lbl">ขาย</text><text x="198" y="126" class="g-lbl" text-anchor="end">ซื้อ</text>
+            </svg>
+            <div class="g-score"><b class="mono" id="gScore">0</b><small id="gScoreSub">คะแนนสด (จาก ±6)</small></div>
+          </div>
           <div class="intra-call" id="inCall">กำลังวิเคราะห์…</div>
           <p class="intra-why muted" id="inWhy"></p>
           <div class="intra-parts" id="inParts"></div>
-          <div id="inTrade"></div>
+        </div>
+
+        <div id="inTrade"></div>
+
+        <!-- Odds for each side, as donuts -->
+        <h3 class="sec-title">🎯 ถ้าเข้าตอนนี้ — โอกาสแต่ละจุด <span class="lv-tag">สด</span></h3>
+        <div class="donuts">
+          <div class="card dn buy" id="dnBuy"></div>
+          <div class="card dn sell" id="dnSell"></div>
+        </div>
+        <p class="muted small dn-note" id="dnNote"></p>
+
+        <div class="card news-card">
           <div id="inNews"></div>
           <div id="inToday"></div>
         </div>
@@ -310,7 +373,7 @@
 
         <section class="card">
           <h3>⏱️ สัญญาณ 30 นาที</h3>
-          <p>ระหว่างวันระบบวิเคราะห์ทุกครึ่งชั่วโมง ถ้าแนวโน้ม <b>30 นาที · 1 ชม. · 5 ชม.</b> ชี้ไปทางเดียวกันชัดเจน จะส่ง <b>“ซื้อ/ขายตอนนี้”</b> พร้อม SL $15 และ TP $15 / $20 / $30 เข้า LINE ทันที และส่ง <b>อัปเดตทุก 30 นาที</b> บอกทั้ง <b>ฝั่งซื้อ</b> และ <b>ฝั่งขาย</b> ว่า ✅ ควรเข้า / 🟡 เข้าได้แต่ลดขนาดไม้ / ❌ ไม่ควรเข้า พร้อม % โอกาสจากสถิติย้อนหลัง
+          <p>ระหว่างวันระบบวิเคราะห์ทุกครึ่งชั่วโมง ถ้าแนวโน้ม <b>30 นาที · 1 ชม. · 5 ชม.</b> ชี้ไปทางเดียวกันชัดเจน จะส่ง <b>“ซื้อ/ขายตอนนี้”</b> พร้อม SL $15 และ TP $15 / $20 / $30 เข้า LINE ทันที และส่ง <b>อัปเดตทุก 30 นาที</b> บอกทั้ง <b>ฝั่งซื้อ</b> และ <b>ฝั่งขาย</b> ว่า ✅ ควรเข้า / 🟡 เข้าได้แต่ลดขนาดไม้ / ❌ ไม่ควรเข้า พร้อม % “จบกำไร” และ % “ถึง TP1” จากสถิติย้อนหลัง 2 ปี — บนเว็บแสดงเป็นแผนภูมิวงกลมแบบสด
             (ประมาณวันละ 2–4 ไม้ ครั้งละไม้เดียว) ถ้ายังไม่ชัด หน้าเว็บจะบอกว่า <b>“ยังไม่ควรเข้า”</b> พร้อมเหตุผล</p>
         </section>
 
@@ -404,22 +467,22 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610051717</p>
+        <p class="muted small center">เวอร์ชัน 202610051033</p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610051717"></script>
-  <script src="auth.js?v=202610051717"></script>
-  <script src="indicators.js?v=202610051717"></script>
-  <script src="investing.js?v=202610051717"></script>
-  <script src="explain.js?v=202610051717"></script>
-  <script src="dailyplan.js?v=202610051717"></script>
-  <script src="signals.js?v=202610051717"></script>
-  <script src="intraday.js?v=202610051717"></script>
-  <script src="ui.js?v=202610051717"></script>
-  <script src="main.js?v=202610051717"></script>
+  <script src="config.js?v=202610051033"></script>
+  <script src="auth.js?v=202610051033"></script>
+  <script src="indicators.js?v=202610051033"></script>
+  <script src="investing.js?v=202610051033"></script>
+  <script src="explain.js?v=202610051033"></script>
+  <script src="dailyplan.js?v=202610051033"></script>
+  <script src="signals.js?v=202610051033"></script>
+  <script src="intraday.js?v=202610051033"></script>
+  <script src="ui.js?v=202610051033"></script>
+  <script src="main.js?v=202610051033"></script>
 </body>
 </html>

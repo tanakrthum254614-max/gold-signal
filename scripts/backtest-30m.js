@@ -71,8 +71,9 @@ function before(bars, t, n = 260) {
     for (const [side, dir] of [['buy', 1], ['sell', -1]]) {
       const r = SIG.evaluate(INTRA.makeTrade({ ...dec, dir }, price.close, t), ahead, now);
       if (r.status !== 'win' && r.status !== 'loss') continue;
-      const c = (calib[side][dec.score] = calib[side][dec.score] || { n: 0, wins: 0, pnl: 0 });
+      const c = (calib[side][dec.score] = calib[side][dec.score] || { n: 0, wins: 0, pnl: 0, hit: [0, 0, 0, 0] });
       c.n++; if (r.status === 'win') c.wins++; c.pnl += r.pnl;
+      c.hit[r.hit || 0]++; // how far it went: 0 = never reached TP1 … 3 = all targets
     }
     if (t < tradeFrom || t < busyUntil) continue;
     decisions++;
@@ -86,7 +87,11 @@ function before(bars, t, n = 260) {
   const s = SIG.summary(trades);
   const days = DAYS * 5 / 7;
   const table = (bySide) => Object.fromEntries(Object.entries(bySide).sort((a, b) => a[0] - b[0]).map(([k, c]) =>
-    [k, { n: c.n, winRate: Math.round((c.wins / c.n) * 100), avg: SIG.round(c.pnl / c.n) }]));
+    [k, {
+      n: c.n, winRate: Math.round((c.wins / c.n) * 100), avg: SIG.round(c.pnl / c.n),
+      // outcome split in %: [never reached TP1, reached TP1 only, reached TP2, reached TP3]
+      split: c.hit.map((h) => SIG.round((h / c.n) * 100)),
+    }]));
   const calibration = { buy: table(calib.buy), sell: table(calib.sell) };
   const out = { generatedAt: now, days: DAYS, calibrationDays: CAL_DAYS, rule: INTRA.RULE, source: 'Binance PAXG/USDT (จำลอง)', perDay: +(trades.length / days).toFixed(1), summary: s, calibration, trades };
   fs.writeFileSync(path.join(__dirname, '..', 'backtest-30m.json'), JSON.stringify(out));

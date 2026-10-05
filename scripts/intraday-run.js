@@ -35,7 +35,7 @@ function sideLines(dir, dec, price, calib) {
   const lv = INTRA.levels(dir, price);
   const v = dec.news ? { th: '⏸ งดเข้า (ช่วงข่าวแรง)' } : INTRA.verdict(o);
   return [
-    `${dir > 0 ? '🟢 ฝั่งซื้อ' : '🔴 ฝั่งขาย'}: ${v.th} · โอกาสถึง TP1 ≈ ${o ? `${o.winRate}%` : '—'}`,
+    `${dir > 0 ? '🟢 ฝั่งซื้อ' : '🔴 ฝั่งขาย'}: ${v.th} · จบกำไร ≈ ${o ? `${o.winRate}%` : '—'}${o && o.split ? ` · ถึง TP1 ≈ ${Math.round(100 - o.split[0])}%` : ''}`,
     `   เข้า ~${money(lv.entry)} · SL ${money(lv.sl)} · TP ${lv.tps.map(money).join(' / ')}`,
   ];
 }
@@ -68,7 +68,7 @@ function entryText(t, odds) {
     `${buy ? '🟢 ซื้อตอนนี้ (BUY)' : '🔴 ขายตอนนี้ (SELL)'} ทองคำ ~${money(t.entry)}`,
     `🛑 SL ${money(t.sl)} (−$${money(Math.abs(t.entry - t.sl))})`,
     `💰 TP1 ${money(t.tps[0])} · TP2 ${money(t.tps[1])} · TP3 ${money(t.tps[2])}`,
-    `📊 โอกาสถึง TP1 ก่อน SL ≈ ${odds ? `${odds.winRate}%` : '—'} (สถิติย้อนหลัง คะแนน ${t.score > 0 ? '+' : ''}${t.score})`,
+    `📊 สถิติย้อนหลังที่คะแนน ${t.score > 0 ? '+' : ''}${t.score}: จบกำไร ≈ ${odds ? `${odds.winRate}%` : '—'}${odds && odds.split ? ` · ถึง TP1 ≈ ${Math.round(100 - odds.split[0])}%` : ''}`,
     t.why[0],
     lotLine(INTRA.RULE.slUsd),
     'ปิด ⅓ ที่แต่ละ TP · ถึง TP1 แล้วเลื่อน SL ไปที่ทุน',
