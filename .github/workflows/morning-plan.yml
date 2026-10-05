@@ -1,4 +1,4 @@
-name: Morning gold plan
+name: Morning gold signal
 
 on:
   # 23:50 UTC Sun–Thu = 06:50 Thai time Mon–Fri. GitHub cron often starts a few minutes late,
@@ -8,14 +8,24 @@ on:
   workflow_dispatch:
     inputs:
       send:
-        description: "Send to LINE (otherwise just print the message)"
+        description: "Send to LINE"
+        type: boolean
+        default: false
+      record:
+        description: "Record today's signal and results in signals.json"
         type: boolean
         default: false
 
+permissions:
+  contents: write
+
 jobs:
-  plan:
+  signal:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    env:
+      SEND: ${{ github.event_name == 'schedule' || inputs.send }}
+      RECORD: ${{ github.event_name == 'schedule' || inputs.record }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,9 +37,23 @@ jobs:
       - run: pip install curl_cffi
       - name: Fetch gold data
         run: python scripts/fetch_data.py data.json
-      - name: Build plan and send to LINE
+      - name: Refresh 1-year backtest (Mondays)
+        if: env.RECORD == 'true'
+        run: |
+          if [ "$(TZ=Asia/Bangkok date +%u)" = "1" ] || [ ! -f backtest.json ]; then node scripts/backtest.js 365; fi
+      - name: Score signals, record today's, send to LINE
         env:
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
-          SEND: ${{ github.event_name == 'schedule' || inputs.send }}
           SITE_URL: https://gold-signal-ten.vercel.app
         run: node scripts/morning-plan.js data.json
+      - name: Save results
+        if: env.RECORD == 'true'
+        # Commit as the repo owner's GitHub identity: Vercel (Hobby) only deploys commits from linked accounts
+        run: |
+          git config user.name "tanakrthum254614-max"
+          git config user.email "$(gh api users/tanakrthum254614-max --jq '"\(.id)+\(.login)@users.noreply.github.com"')"
+          git add signals.json backtest.json
+          git diff --cached --quiet || git commit -m "Signal update $(TZ=Asia/Bangkok date +%F)"
+          git push
+        env:
+          GH_TOKEN: ${{ github.token }}

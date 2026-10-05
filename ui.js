@@ -1,12 +1,7 @@
-// App shell: tabs, first-time setup, account page, sharing
+// App shell: tabs, account page, sharing
 (function () {
   const $ = (id) => document.getElementById(id);
-  const TABS = ['home', 'chart', 'learn', 'account'];
-  const PERSONAS = {
-    buy: { icon: '🛒', name: 'อยากซื้อทองเก็บ' },
-    hold: { icon: '💰', name: 'มีทองอยู่แล้ว' },
-    trade: { icon: '⚡', name: 'เทรดทำกำไรระยะสั้น' },
-  };
+  const TABS = ['home', 'stats', 'chart', 'learn', 'account'];
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage unavailable */ } },
@@ -37,40 +32,6 @@
   }
   $('chartMode').addEventListener('click', (e) => e.target.dataset.mode && setChartMode(e.target.dataset.mode));
 
-  // ---------- Persona: saved on the Clerk account so it follows the user across devices ----------
-  function persona() {
-    const u = window.AUTH && AUTH.user;
-    const fromAccount = u && u.unsafeMetadata && u.unsafeMetadata.goldPersona;
-    return fromAccount || store.get('gs-persona');
-  }
-  async function setPersona(p) {
-    store.set('gs-persona', p);
-    markPersona();
-    emit('persona');
-    const u = window.AUTH && AUTH.user;
-    if (u && u.update) {
-      try { await u.update({ unsafeMetadata: { ...(u.unsafeMetadata || {}), goldPersona: p } }); } catch (e) { /* kept locally */ }
-    }
-  }
-  function markPersona() {
-    const p = persona();
-    document.querySelectorAll('.persona-pick button').forEach((b) => b.classList.toggle('on', b.dataset.p === p));
-  }
-  $('accPick').addEventListener('click', (e) => {
-    const b = e.target.closest('button');
-    if (!b) return;
-    setPersona(b.dataset.p);
-    toast(`บันทึกแล้ว: ${PERSONAS[b.dataset.p].name}`);
-  });
-  $('obPick').addEventListener('click', (e) => {
-    const b = e.target.closest('button');
-    if (!b) return;
-    setPersona(b.dataset.p);
-    $('onboard').hidden = true;
-    location.hash = '#home';
-    toast('เรียบร้อย! ใช้เมนูด้านล่างเพื่อดูกราฟ เรียนรู้ หรือตั้งค่าบัญชี');
-  });
-
   // ---------- Account + sharing ----------
   function fillAccount() {
     const u = window.AUTH && AUTH.user;
@@ -82,12 +43,11 @@
     [$('accAvatar'), $('hdrAvatar')].forEach((el) => {
       if (img) el.src = img; else el.hidden = true;
     });
-    $('obName').textContent = u && u.firstName ? ` คุณ${u.firstName}` : '';
     $('signOut').hidden = !u;
   }
 
   const shareUrl = location.origin + location.pathname;
-  const shareText = 'ลองใช้ Gold Signal ดูสิ — บอกว่าทองขึ้นหรือลง ควรซื้อหรือรอ เข้าใจง่ายมาก';
+  const shareText = 'ลองใช้ Gold Signal — สัญญาณเทรดทองวันละ 1 ครั้ง พร้อมสถิติชนะ–แพ้จริง';
   $('shareLine').href = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
   $('shareCopy').addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(shareUrl); toast('คัดลอกลิงก์แล้ว ส่งให้เพื่อนได้เลย'); }
@@ -112,15 +72,12 @@
   // Called by main.js once the user is signed in and the first data has loaded
   function start() {
     fillAccount();
-    markPersona();
     setChartMode(store.get('gs-chart') || 'simple');
     showTab(currentTab());
-    if (!persona()) $('onboard').hidden = false;
   }
 
   window.UI = {
-    PERSONAS, persona, start, toast,
+    start, toast,
     on(name, fn) { listeners.push([name, fn]); },
-    isVisible: (id) => !!$(id) && $(id).offsetParent !== null,
   };
 })();

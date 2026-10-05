@@ -32,11 +32,17 @@ def from_investing(session):
         time.sleep(0.3)
     daily = get_json(session, f"{INVESTING}/{PAIR_ID}/historical/chart/?interval=P1D&pointscount=60", HEADERS)["data"]
     hourly = get_json(session, f"{INVESTING}/{PAIR_ID}/historical/chart/?interval=PT1H&pointscount=160", HEADERS)["data"]
+    # 15-minute candles (160 = 40 hours) score yesterday's signal; 30-minute (80 hours) reach back
+    # over the weekend to Friday's signal on Monday morning
+    m15 = get_json(session, f"{INVESTING}/{PAIR_ID}/historical/chart/?interval=PT15M&pointscount=160", HEADERS)["data"]
+    m30 = get_json(session, f"{INVESTING}/{PAIR_ID}/historical/chart/?interval=PT30M&pointscount=160", HEADERS)["data"]
     return {
         "source": "investing.com",
         "tech": tech,
         "daily": [b[:5] for b in daily],
         "hourly": [b[:5] for b in hourly],
+        "m15": [b[:5] for b in m15],
+        "m30": [b[:5] for b in m30],
     }
 
 
@@ -45,11 +51,12 @@ def from_binance(session):
         url = f"https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT&interval={interval}&limit={limit}"
         return [[k[0], float(k[1]), float(k[2]), float(k[3]), float(k[4])] for k in get_json(session, url)]
 
-    daily, hourly, h4 = klines("1d", 300), klines("1h", 300), klines("4h", 300)
+    daily, hourly, h4, m15 = klines("1d", 300), klines("1h", 300), klines("4h", 300), klines("15m", 200)
+    m30 = klines("30m", 200)
     spot = get_json(session, "https://api.gold-api.com/price/XAU")["price"]
     off = spot - hourly[-1][4]  # PAXG trades at a small premium/discount to spot gold
     shift = lambda rows: [[r[0], r[1] + off, r[2] + off, r[3] + off, r[4] + off] for r in rows]
-    return {"source": "binance", "daily": shift(daily), "hourly": shift(hourly), "h4": shift(h4)}
+    return {"source": "binance", "daily": shift(daily), "hourly": shift(hourly), "h4": shift(h4), "m15": shift(m15), "m30": shift(m30)}
 
 
 def main(out_path):

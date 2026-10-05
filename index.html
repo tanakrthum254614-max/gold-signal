@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d1016">
-  <title>Gold Signal · วิเคราะห์ทองคำ</title>
-  <meta name="description" content="ทองขึ้นหรือลง ควรซื้อหรือรอ? สรุปให้เข้าใจง่ายเป็นภาษาไทย อิงสถิติจาก investing.com แบบเรียลไทม์">
-  <meta property="og:title" content="Gold Signal · ทองขึ้นหรือลง ควรซื้อหรือรอ?">
-  <meta property="og:description" content="สรุปราคาทองแบบเข้าใจง่าย อิงสถิติจาก investing.com แบบเรียลไทม์">
+  <title>Gold Signal · สัญญาณเทรดทองคำ</title>
+  <meta name="description" content="สัญญาณเทรดทองคำ XAU/USD วันละ 1 สัญญาณ พร้อมจุดเข้า ตัดขาดทุน เป้าหมาย และสถิติชนะ–แพ้ที่บันทึกจริง">
+  <meta property="og:title" content="Gold Signal · สัญญาณเทรดทองคำ">
+  <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610051349">
+  <link rel="stylesheet" href="style.css?v=202610051403">
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -18,7 +18,7 @@
   <div id="splash" class="splash">
     <div class="splash-coin"><span>Au</span></div>
     <h1>Gold Signal</h1>
-    <p class="muted">ทองขึ้นหรือลง ควรซื้อหรือรอ — สรุปให้เข้าใจง่าย</p>
+    <p class="muted">สัญญาณเทรดทองคำ วันละ 1 สัญญาณ</p>
     <div class="splash-bar"><div id="splashFill"></div></div>
     <p class="splash-text" id="splashText">กำลังเริ่มต้น…</p>
   </div>
@@ -27,12 +27,12 @@
   <section id="login" class="login" hidden>
     <div class="login-intro">
       <div class="brand big"><span class="coin">Au</span><h1>Gold Signal</h1></div>
-      <h2>ทองขึ้นหรือลง?<br>ควรซื้อ ขาย หรือรอ?</h2>
-      <p class="login-lead">เราสรุปให้คุณเข้าใจได้ใน 5 วินาที</p>
+      <h2>อยากเทรดทองคำ<br>แต่ยังไม่มั่นใจ?</h2>
+      <p class="login-lead">รับสัญญาณวันละ 1 ครั้ง พร้อมดูสถิติจริงว่าชนะกี่ครั้ง แพ้กี่ครั้ง</p>
       <ul>
-        <li><span>🚦</span>ไฟเขียว–เหลือง–แดง บอกทิศทางทองทันที</li>
-        <li><span>💬</span>คำแนะนำภาษาไทยง่าย ๆ ตามแบบของคุณ</li>
-        <li><span>📈</span>ราคาเรียลไทม์ อิงสถิติจาก investing.com</li>
+        <li><span>🎯</span>บอกชัด: จุดเข้า · ตัดขาดทุน · เป้าหมาย</li>
+        <li><span>📊</span>บันทึกผลทุกสัญญาณ ชนะ–แพ้ ไม่ปิดบัง</li>
+        <li><span>📩</span>ส่งเข้า LINE ทุกเช้า 07:00 (จันทร์–ศุกร์)</li>
       </ul>
     </div>
     <div class="login-card">
@@ -41,87 +41,115 @@
     </div>
   </section>
 
-  <!-- First-time setup: pick your type -->
-  <section id="onboard" class="onboard" hidden>
-    <div class="onboard-box">
-      <p class="eyebrow">ยินดีต้อนรับ<span id="obName"></span> 👋</p>
-      <h2>คุณสนใจทองแบบไหน?</h2>
-      <p class="muted">เลือก 1 ข้อ เราจะแสดงคำแนะนำที่ตรงกับคุณที่หน้าแรก (เปลี่ยนได้ภายหลังที่เมนู “บัญชี”)</p>
-      <div class="persona-pick" id="obPick">
-        <button data-p="buy"><span class="pp-icon">🛒</span><b>อยากซื้อทองเก็บ</b><small>ซื้อทองแท่ง/ทองรูปพรรณไว้ออมหรือลงทุนระยะยาว</small></button>
-        <button data-p="hold"><span class="pp-icon">💰</span><b>มีทองอยู่แล้ว</b><small>อยากรู้ว่าควรถือต่อหรือขายดี</small></button>
-        <button data-p="trade"><span class="pp-icon">⚡</span><b>เทรดทำกำไรระยะสั้น</b><small>ซื้อขายในบัญชีเทรด เช่น โกลด์ฟิวเจอร์ส / CFD</small></button>
-      </div>
-    </div>
-  </section>
-
   <!-- App -->
   <div id="app" hidden>
     <header class="appbar">
       <a class="brand" href="#home"><span class="coin">Au</span><b>Gold Signal</b></a>
       <div class="appbar-right">
+        <span class="hdr-price mono" id="hdrPrice">—</span>
         <span class="conn" id="conn"><span class="dot"></span><span id="connText">กำลังเชื่อมต่อ…</span></span>
         <a href="#account" class="avatar-link" title="บัญชีของฉัน"><img id="hdrAvatar" class="avatar" alt=""></a>
       </div>
     </header>
 
-    <nav class="tabbar" id="tabbar">
-      <a href="#home" data-tab="home"><span>🏠</span>หน้าแรก</a>
+    <nav class="tabbar five" id="tabbar">
+      <a href="#home" data-tab="home"><span>🎯</span>สัญญาณ</a>
+      <a href="#stats" data-tab="stats"><span>📊</span>สถิติ</a>
       <a href="#chart" data-tab="chart"><span>📈</span>กราฟ</a>
-      <a href="#learn" data-tab="learn"><span>📖</span>เรียนรู้</a>
+      <a href="#learn" data-tab="learn"><span>📖</span>วิธีใช้</a>
       <a href="#account" data-tab="account"><span>👤</span>บัญชี</a>
     </nav>
 
     <main class="content">
-      <!-- 🏠 Home -->
+      <!-- 🎯 Signal -->
       <section id="tab-home" class="tab">
-        <div class="home-grid">
-          <div class="card hero" id="hero">
-            <p class="eyebrow">ทองคำตอนนี้</p>
-            <div class="hero-row"><span class="hero-light" id="hLight">🟡</span><h1 id="hTrend">กำลังวิเคราะห์…</h1></div>
-            <div class="hero-price">
-              <div><span class="big-num mono" id="hUsd">—</span> <span>ดอลลาร์/ออนซ์</span></div>
-              <small class="muted">ราคาทองคำสหรัฐ (XAU/USD) จาก investing.com</small>
+        <div class="trial">🧪 <b>โหมดทดลอง</b> — ระบบกำลังเก็บสถิติจริง ดูผลที่แท็บ <a href="#stats">สถิติ</a> ก่อนใช้เงินจริง</div>
+
+        <div class="home-cols">
+          <div class="card sig" id="sigCard">
+            <div class="sig-top">
+              <span class="muted" id="sgDate">สัญญาณวันนี้</span>
+              <span class="stars" id="sgStars" title="ความมั่นใจ"></span>
             </div>
-            <p class="today" id="hToday"></p>
-          </div>
+            <div class="sig-side" id="sgSide">กำลังโหลด…</div>
+            <div class="sig-status" id="sgStatus"></div>
 
-          <div class="card mine" id="mine">
-            <div class="mine-head">
-              <span class="mine-icon" id="myIcon">🛒</span>
-              <div><p class="eyebrow">คำแนะนำสำหรับคุณ</p><b id="myName">—</b></div>
-              <a href="#account" class="chip">เปลี่ยน</a>
+            <div class="sig-nums">
+              <div class="n entry"><label>🎯 จุดเข้า</label><b class="mono" id="sgEntry">—</b></div>
+              <div class="n sl"><label>🛑 ตัดขาดทุน</label><b class="mono" id="sgSl">—</b></div>
+              <div class="n tp"><label>💰 เป้าหมาย</label><b class="mono" id="sgTp">—</b></div>
             </div>
-            <div class="mine-answer" id="myAnswer">—</div>
-            <p class="mine-text" id="myText"></p>
+
+            <div class="track" id="track">
+              <div class="track-bar"><div class="track-loss"></div><div class="track-win"></div></div>
+              <div class="track-entry" id="trEntry"></div>
+              <div class="track-now" id="trNow"><span id="trNowLabel">ราคาตอนนี้</span></div>
+              <div class="track-ends"><span id="trLeft">ตัดขาดทุน</span><span id="trRight">เป้าหมาย</span></div>
+            </div>
+            <p class="sig-pnl" id="sgPnl"></p>
+
+            <details class="fold" open>
+              <summary>วิธีใช้สัญญาณนี้ (3 ขั้น)</summary>
+              <ol class="steps" id="sgHow"></ol>
+            </details>
+            <details class="fold">
+              <summary>ทำไมถึงให้สัญญาณนี้</summary>
+              <ul class="why" id="sgWhy"></ul>
+            </details>
           </div>
 
-          <div class="card tplan" id="tplan">
-            <div class="tp-top"><h3>📋 แผนเทรดวันนี้</h3><span class="muted small" id="tpDate"></span></div>
-            <p class="tp-head" id="tpHead">กำลังคำนวณ…</p>
-            <div class="tp-sides" id="tpSides"></div>
-            <p class="tp-warn" id="tpWarn"></p>
-            <p class="hint" id="tpFrom"></p>
-          </div>
+          <div class="side-col">
+            <a class="card mini-stats" href="#stats">
+              <h3>ผลงานสัญญาณจริง</h3>
+              <div class="ms-big"><span class="win" id="msWin">0</span><small>ชนะ</small><span class="loss" id="msLoss">0</span><small>แพ้</small></div>
+              <p id="msLine" class="muted">เพิ่งเริ่มบันทึก</p>
+              <div class="dots" id="msDots"></div>
+              <span class="more">ดูสถิติทั้งหมด →</span>
+            </a>
 
-          <div class="card">
-            <h3>ทองจะขึ้นหรือลง?</h3>
-            <div class="gauge"><div class="gauge-marker" id="gMarker"></div></div>
-            <div class="gauge-labels"><span>ลงแรง</span><span>ลง</span><span>ทรงตัว</span><span>ขึ้น</span><span>ขึ้นแรง</span></div>
-            <p class="gauge-sure">ความมั่นใจ: <b id="sSure">—</b></p>
+            <div class="card market">
+              <h3>ตลาดทองตอนนี้</h3>
+              <div class="mk-price"><span class="mono" id="mkPrice">—</span> <small class="muted">ดอลลาร์/ออนซ์ (XAU/USD)</small></div>
+              <p id="mkToday" class="today"></p>
+              <p id="mkTrend"></p>
+            </div>
           </div>
-
-          <div class="card">
-            <h3>ทำไมถึงบอกแบบนี้?</h3>
-            <ul class="why" id="hWhy"></ul>
-          </div>
-
-          <details class="card others">
-            <summary>ดูคำแนะนำสำหรับคนแบบอื่น</summary>
-            <div id="otherAdvice"></div>
-          </details>
         </div>
         <p class="updated muted small">อัปเดต <span id="hUpdated">—</span> · ข้อมูลจาก investing.com · ไม่ใช่คำแนะนำการลงทุน</p>
+      </section>
+
+      <!-- 📊 Stats -->
+      <section id="tab-stats" class="tab" hidden>
+        <section class="card">
+          <h3>ผลงานสัญญาณจริง</h3>
+          <p class="hint" id="liveSince">บันทึกทุกสัญญาณที่ส่งจริง ไม่ตัดทิ้ง ไม่แก้ย้อนหลัง</p>
+          <div class="tiles" id="liveTiles"></div>
+          <div id="liveChart" class="chart-eq"></div>
+        </section>
+
+        <section class="card">
+          <h3>ประวัติสัญญาณ</h3>
+          <div class="history" id="history"><p class="muted">ยังไม่มีสัญญาณ</p></div>
+        </section>
+
+        <section class="card bt">
+          <h3>ทดสอบย้อนหลัง 1 ปี <span class="tag neutral">จำลอง</span></h3>
+          <p class="hint">ใช้กติกาเดียวกันกับสัญญาณจริง ย้อนหลังทุกวันทำการ 1 ปี (ข้อมูลราคาจาก Binance PAXG และทิศทางจากเครื่องมือของเราเอง เพราะ investing.com ไม่เก็บผลวิเคราะห์ย้อนหลัง) ยังไม่หักค่าธรรมเนียม/สเปรด</p>
+          <div class="tiles" id="btTiles"></div>
+          <p class="bt-note" id="btNote"></p>
+          <div id="btChart" class="chart-eq"></div>
+        </section>
+
+        <section class="card">
+          <h3>นับชนะ–แพ้ยังไง?</h3>
+          <ul class="why">
+            <li><b>✅ ชนะ</b> — ราคาถึงจุดเข้าแล้ว วิ่งไปถึง <b>เป้าหมาย</b> ก่อน</li>
+            <li><b>❌ แพ้</b> — ราคาถึงจุดเข้าแล้ว วิ่งไปโดน <b>ตัดขาดทุน</b> ก่อน (ถ้าแท่ง 15 นาทีเดียวโดนทั้งคู่ นับเป็นแพ้)</li>
+            <li><b>⏹ ไม่เข้า</b> — วันนั้นราคาไม่ถึงจุดเข้าเลย ไม่ได้เทรด ไม่นับชนะหรือแพ้</li>
+            <li><b>ปิดสิ้นวัน</b> — เข้าแล้วแต่ไม่ถึงทั้งเป้าและตัดขาดทุน ปิดที่ราคาเช้าวันถัดไป กำไร = ชนะ ขาดทุน = แพ้</li>
+            <li>กำไร/ขาดทุนคิดเป็น <b>ดอลลาร์ต่อทอง 1 ออนซ์</b></li>
+          </ul>
+        </section>
       </section>
 
       <!-- 📈 Chart -->
@@ -138,7 +166,7 @@
               <nav class="tfs" id="sRange"></nav>
             </div>
             <div id="simpleChart" class="chart-simple"></div>
-            <p class="hint">เส้นสีทอง = ราคาทอง · จุดเข้า/ตัดขาดทุน/เป้ากำไร มาจาก “แผนเทรดวันนี้” ที่หน้าแรก</p>
+            <p class="hint">เส้นสีทอง = ราคาทอง · 🎯 จุดเข้า · 🛑 ตัดขาดทุน · 💰 เป้าหมาย ของสัญญาณล่าสุด</p>
           </section>
         </div>
 
@@ -240,47 +268,47 @@
         </div>
       </section>
 
-      <!-- 📖 Learn -->
+      <!-- 📖 How to use -->
       <section id="tab-learn" class="tab" hidden>
         <section class="card">
-          <h3>ใช้งานเว็บนี้ใน 3 ขั้นตอน</h3>
+          <h3>สัญญาณคืออะไร?</h3>
+          <p>ทุกเช้าวันจันทร์–ศุกร์ เวลา 07:00 ระบบจะให้ <b>1 สัญญาณ</b> ว่าวันนี้ควร <b>ซื้อ</b> หรือ <b>ขาย</b> ทองที่ราคาเท่าไร
+            พร้อมจุด <b>ตัดขาดทุน</b> (ยอมแพ้ถ้าผิดทาง) และ <b>เป้าหมาย</b> (เก็บกำไร) สัญญาณมีอายุถึงเช้าวันถัดไป</p>
+        </section>
+
+        <section class="card">
+          <h3>ใช้สัญญาณใน 3 ขั้น</h3>
           <ol class="steps">
-            <li><b>ดูไฟสี</b> ที่หน้าแรก 🟢 = ทองกำลังขึ้น · 🟡 = ยังไม่ชัด · 🔴 = ทองกำลังลง</li>
-            <li><b>อ่าน “คำแนะนำสำหรับคุณ”</b> บอกว่าคนแบบคุณควร ซื้อ / ถือ / ขาย / รอ</li>
-            <li><b>ดู “ราคาที่ต้องจับตา”</b> ถ้าราคาไปถึงตัวเลขนั้น คือจังหวะที่น่าสนใจ</li>
+            <li><b>ตั้งคำสั่งรอ (Limit)</b> ที่ “จุดเข้า” — ไม่ต้องนั่งเฝ้า ถ้าราคามาถึง คำสั่งจะทำงานเอง</li>
+            <li><b>ตั้งตัดขาดทุน (Stop Loss)</b> ทุกครั้ง — กันขาดทุนบานปลายถ้าผิดทาง</li>
+            <li><b>ตั้งเป้าหมาย (Take Profit)</b> — ถึงแล้วปิดเก็บกำไรอัตโนมัติ ถ้าถึงเช้าวันถัดไปยังไม่เข้า ให้ยกเลิกคำสั่ง</li>
           </ol>
         </section>
 
         <section class="card">
-          <h3>เว็บนี้วิเคราะห์ยังไง?</h3>
-          <p>เราดึงราคาทองโลกและผลวิเคราะห์ทางเทคนิคจาก <a href="https://th.investing.com/currencies/xau-usd" target="_blank" rel="noopener">investing.com</a> ทุกไม่กี่วินาที
-            ซึ่งวิเคราะห์ทองไว้ 8 ช่วงเวลา (ตั้งแต่ 5 นาทีถึง 1 เดือน) ด้วยเครื่องมือของนักเทรดกว่า 20 ตัว
-            แล้วเราสรุปให้เหลือคำตอบเดียวที่เข้าใจง่าย</p>
-          <ul class="why">
-            <li><b>ระยะสั้น</b> (5–30 นาที) — ขึ้นลงเร็ว เหมาะกับคนเทรดรายวัน</li>
-            <li><b>ระยะกลาง</b> (1–5 ชั่วโมง) — ทิศทางในไม่กี่วันนี้</li>
-            <li><b>ระยะยาว</b> (1 วัน–1 สัปดาห์) — ทิศทางใหญ่ เหมาะกับคนซื้อเก็บ</li>
-          </ul>
+          <h3>ดาวความมั่นใจ ★</h3>
+          <p>★ มาก = เครื่องมือวิเคราะห์หลายช่วงเวลาชี้ไปทางเดียวกัน · ★ น้อย = ตลาดยังไม่ชัด ควรลงเงินน้อยลงหรือข้ามไป
+            <br><span class="muted small">ดาวไม่ได้รับประกันผล — ดูสถิติจริงประกอบเสมอ</span></p>
         </section>
 
         <section class="card glossary">
-          <h3>คำศัพท์ที่ควรรู้</h3>
+          <h3>คำศัพท์</h3>
           <dl>
-            <dt>ออนซ์</dt><dd>หน่วยน้ำหนักทองสากล 1 ออนซ์ ≈ 31.1 กรัม</dd>
-            <dt>XAU/USD</dt><dd>ราคาทองคำในตลาดโลก คิดเป็นดอลลาร์สหรัฐต่อออนซ์</dd>
-            <dt>ขาขึ้น / ขาลง</dt><dd>ช่วงที่ราคามีแนวโน้มสูงขึ้นเรื่อย ๆ / ต่ำลงเรื่อย ๆ</dd>
-            <dt>แนวรับ</dt><dd>ราคาที่ลงมาแล้วมักเด้งขึ้น เหมือน “พื้น”</dd>
-            <dt>แนวต้าน</dt><dd>ราคาที่ขึ้นไปแล้วมักถูกกดลง เหมือน “เพดาน”</dd>
-            <dt>ตัดขาดทุน</dt><dd>ราคาที่ตั้งใจไว้ว่าถ้าผิดทางถึงจุดนี้จะยอมขายออก เพื่อไม่ให้ขาดทุนมากขึ้น</dd>
-            <dt>ทำกำไร</dt><dd>ราคาเป้าหมายที่จะขายเพื่อเก็บกำไร</dd>
-            <dt>ทยอยซื้อ</dt><dd>แบ่งเงินซื้อทีละส่วนในหลายวัน ช่วยลดความเสี่ยงซื้อได้ราคาแพง</dd>
-            <dt>Short (ขายก่อน)</dt><dd>การเทรดที่ได้กำไรเมื่อราคาลง ใช้ได้เฉพาะบัญชีเทรด ไม่ใช่ทองแท่งจริง</dd>
+            <dt>XAU/USD</dt><dd>ราคาทองคำในตลาดโลก เป็นดอลลาร์สหรัฐต่อออนซ์ (1 ออนซ์ ≈ 31.1 กรัม)</dd>
+            <dt>ซื้อ (Buy)</dt><dd>ได้กำไรเมื่อราคาขึ้น</dd>
+            <dt>ขาย (Sell / Short)</dt><dd>ได้กำไรเมื่อราคาลง (ทำได้ในบัญชีเทรด เช่น โกลด์ฟิวเจอร์ส / CFD)</dd>
+            <dt>Limit Order</dt><dd>คำสั่งรอซื้อ/ขายที่ราคาที่กำหนด ทำงานเองเมื่อราคามาถึง</dd>
+            <dt>Stop Loss (SL)</dt><dd>จุดตัดขาดทุน — ปิดออเดอร์อัตโนมัติเมื่อผิดทางถึงระดับนี้</dd>
+            <dt>Take Profit (TP)</dt><dd>จุดเป้าหมาย — ปิดเก็บกำไรอัตโนมัติ</dd>
+            <dt>อัตราชนะ</dt><dd>ชนะกี่ % ของครั้งที่ได้เข้าเทรดจริง</dd>
           </dl>
         </section>
 
         <section class="card">
           <h3>ข้อควรระวัง ⚠️</h3>
-          <p>เว็บนี้เป็นการวิเคราะห์ทางเทคนิคอัตโนมัติ <b>ไม่ใช่คำแนะนำการลงทุน</b> ราคาทองอาจเปลี่ยนเร็วจากข่าวที่ไม่มีใครคาดได้ ควรตัดสินใจด้วยตัวเองทุกครั้ง</p>
+          <p>สัญญาณเป็นการวิเคราะห์ทางเทคนิคอัตโนมัติ <b>ไม่ใช่คำแนะนำการลงทุน</b> ไม่มีระบบไหนชนะทุกครั้ง
+            ผลทดสอบย้อนหลังยังไม่ได้กำไร จึงยังเป็นโหมดทดลอง แนะนำให้ <b>ดูผลจริงสะสมอย่างน้อย 1–2 เดือน</b> หรือลองกับบัญชีทดลอง (Demo) ก่อนใช้เงินจริง
+            และอย่าเสี่ยงเกิน 1–2% ของเงินทุนต่อครั้ง</p>
         </section>
       </section>
 
@@ -292,18 +320,9 @@
         </section>
 
         <section class="card">
-          <h3>ฉันสนใจทองแบบ</h3>
-          <div class="persona-pick compact" id="accPick">
-            <button data-p="buy"><span class="pp-icon">🛒</span><b>อยากซื้อทองเก็บ</b></button>
-            <button data-p="hold"><span class="pp-icon">💰</span><b>มีทองอยู่แล้ว</b></button>
-            <button data-p="trade"><span class="pp-icon">⚡</span><b>เทรดทำกำไรระยะสั้น</b></button>
-          </div>
-        </section>
-
-        <section class="card">
-          <h3>รับแผนเทรดทุกเช้าทาง LINE 📩</h3>
-          <p class="muted">ส่งทุกวันจันทร์–ศุกร์ เวลา 07:00 น. (ยกเว้นเสาร์–อาทิตย์) เพิ่มเพื่อนครั้งเดียวรับได้เลย</p>
-          <a class="btn line" id="lineAdd" target="_blank" rel="noopener" hidden>เพิ่มเพื่อน LINE เพื่อรับแผน</a>
+          <h3>รับสัญญาณทุกเช้าทาง LINE 📩</h3>
+          <p class="muted">ส่งทุกวันจันทร์–ศุกร์ เวลา 07:00 น. พร้อมผลสัญญาณเมื่อวาน</p>
+          <a class="btn line" id="lineAdd" target="_blank" rel="noopener" hidden>เพิ่มเพื่อน LINE เพื่อรับสัญญาณ</a>
           <p class="muted small" id="lineSoon">กำลังเตรียมบัญชี LINE — เร็ว ๆ นี้</p>
         </section>
 
@@ -318,21 +337,21 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610051349</p>
+        <p class="muted small center">เวอร์ชัน 202610051403</p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610051349"></script>
-  <script src="auth.js?v=202610051349"></script>
-  <script src="indicators.js?v=202610051349"></script>
-  <script src="investing.js?v=202610051349"></script>
-  <script src="explain.js?v=202610051349"></script>
-  <script src="dailyplan.js?v=202610051349"></script>
-  <script src="simple.js?v=202610051349"></script>
-  <script src="ui.js?v=202610051349"></script>
-  <script src="main.js?v=202610051349"></script>
+  <script src="config.js?v=202610051403"></script>
+  <script src="auth.js?v=202610051403"></script>
+  <script src="indicators.js?v=202610051403"></script>
+  <script src="investing.js?v=202610051403"></script>
+  <script src="explain.js?v=202610051403"></script>
+  <script src="dailyplan.js?v=202610051403"></script>
+  <script src="signals.js?v=202610051403"></script>
+  <script src="ui.js?v=202610051403"></script>
+  <script src="main.js?v=202610051403"></script>
 </body>
 </html>

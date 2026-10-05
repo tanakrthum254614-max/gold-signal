@@ -26,7 +26,7 @@ const ACTION_TH = {
 
 const state = {
   tf: '1h', bars: [], daily: [], tech: null, techAt: null, source: null,
-  locked: null, lastPrice: null, chartKey: '', pivotKey: '', busy: false, zoneKey: '',
+  locked: null, lastPrice: null, chartKey: '', pivotKey: '', busy: false, zoneKey: '', signals: [], m15: [], backtest: null,
 };
 // Simple-mode history ranges map onto chart timeframes (160 bars each)
 const RANGES = [
@@ -158,7 +158,7 @@ const histS = macdChart.addHistogramSeries({ priceLineVisible: false, lastValueV
 const macdS = macdChart.addLineSeries(lineOpts('#4ea1ff', { lineWidth: 1.5 }));
 const sigS = macdChart.addLineSeries(lineOpts('#f2a93b', { lineWidth: 1.5 }));
 
-// Simple-mode chart: a plain price line with "good to buy / good to sell" levels
+// Simple chart: a plain price line with the latest signal's entry / stop / target
 const simpleChart = LC.createChart($('simpleChart'), {
   ...chartBase(true),
   handleScroll: false, handleScale: false,
@@ -169,23 +169,17 @@ const areaS = simpleChart.addAreaSeries({
   priceLineVisible: false,
 });
 let zoneLines = [];
-function drawPlanPoints(dp) {
-  const p = dp.primary, s = dp.secondary;
-  const key = [p && p.entry, s && s.entry].join('|');
+function drawSignalLines(s) {
+  const key = `${s.id}|${s.entry}`;
   if (key === state.zoneKey) return;
   state.zoneKey = key;
   zoneLines.forEach((l) => areaS.removePriceLine(l));
   zoneLines = [];
-  const line = (price, color, title, style = LC.LineStyle.Dashed, width = 2) =>
+  const line = (price, color, title, style, width = 2) =>
     zoneLines.push(areaS.createPriceLine({ price, color, lineWidth: width, lineStyle: style, title }));
-  if (p) {
-    const buy = p.side === 'BUY';
-    line(p.entry, buy ? '#22c58b' : '#f0506e', buy ? 'จุดซื้อ' : 'จุดขาย', LC.LineStyle.Solid);
-    line(p.sl, '#f0506e', 'ตัดขาดทุน', LC.LineStyle.Dotted, 1);
-    line(p.tp1, '#e8b64c', 'เป้า 1', LC.LineStyle.Dashed, 1);
-    line(p.tp2, '#e8b64c', 'เป้า 2', LC.LineStyle.Dashed, 1);
-  }
-  if (s) line(s.entry, s.side === 'BUY' ? '#22c58b' : '#f0506e', s.side === 'BUY' ? 'ซื้อ (สำรอง)' : 'ขาย (สำรอง)', LC.LineStyle.Dashed, 1);
+  line(s.entry, s.side === 'BUY' ? '#22c58b' : '#f0506e', s.side === 'BUY' ? '🎯 ซื้อ' : '🎯 ขาย', LC.LineStyle.Solid);
+  line(s.sl, '#f0506e', '🛑 ตัดขาดทุน', LC.LineStyle.Dotted, 1);
+  line(s.tp, '#e8b64c', '💰 เป้าหมาย', LC.LineStyle.Dashed, 1);
 }
 
 // Keep the three panes scrolled/zoomed together
@@ -297,7 +291,8 @@ function render() {
   }
 
   renderSignal(plan, htfKey);
-  renderHome(plan, price);
+  renderMarket(price);
+  renderSignalHome();
   document.title = `${f2(price)} · ${ACTION_TH[plan.action][0]} | Gold Signal`;
 }
 
@@ -371,81 +366,197 @@ function ownHorizons() {
   return [h(mid, 'ระยะสั้น'), h(mid, 'ระยะกลาง'), h(long, 'ระยะยาว')];
 }
 
-function renderHome(plan, price) {
-  const horizon = state.tech ? EXPLAIN.horizons(state.tech, INV) : state.bars.length ? ownHorizons() : null;
-  $('hUsd').textContent = f2(price);
+// ---------- Signals (recorded each weekday morning in signals.json) ----------
+const money = (v) => `${v >= 0 ? '+' : '−'}$${f2(Math.abs(v))}`;
+const thaiTime = (ms) => new Date(ms).toLocaleString('th-TH', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
+const thaiDay = (id) => new Date(`${id}T12:00:00+07:00`).toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' });
+
+async function refreshSignals() {
+  try {
+    const [sig, bt] = await Promise.all([getJson('signals.json'), state.backtest ? null : getJson('backtest.json').catch(() => null)]);
+    state.signals = sig.signals || [];
+    if (bt) state.backtest = bt;
+  } catch (e) { /* no signals recorded yet */ }
+  renderSignalHome();
+  renderStats();
+}
+
+// 15-minute candles to follow today's signal live
+async function refreshM15() {
+  try {
+    const j = await investing(`/${PAIR_ID}/historical/chart/?interval=PT15M&pointscount=160`, 2);
+    state.m15 = j.data.map((b) => ({ time: b[0], open: b[1], high: b[2], low: b[3], close: b[4] }));
+  } catch (e) { /* keep last */ }
+  renderSignalHome();
+}
+
+// Recorded signals are final once scored by the morning job; until then score them live
+const live = (s) => (SIG.isFinal(s) || !state.m15.length ? s : SIG.evaluate(s, state.m15, Date.now()));
+const liveSignals = () => state.signals.map(live);
+
+function nextSignalTime(now = Date.now()) {
+  for (let d = 0; d < 8; d++) {
+    const id = SIG.thaiDate(now + d * 864e5);
+    const t = Date.parse(`${id}T07:00:00+07:00`);
+    const wd = new Date(`${id}T12:00:00+07:00`).getUTCDay();
+    if (t > now && wd !== 0 && wd !== 6) return t;
+  }
+  return null;
+}
+
+function renderSignalHome() {
+  const price = state.lastPrice;
+  const raw = state.signals[state.signals.length - 1];
+  if (!raw) {
+    $('sgSide').textContent = 'ยังไม่มีสัญญาณ';
+    $('sgStatus').textContent = `สัญญาณแรกจะออก ${thaiTime(nextSignalTime())}`;
+    return;
+  }
+  const s = live(raw);
+  const buy = s.side === 'BUY';
+  const final = SIG.isFinal(s);
+  const isToday = s.id === SIG.thaiDate(Date.now());
+  $('sgDate').textContent = `${isToday ? 'สัญญาณวันนี้' : 'สัญญาณล่าสุด'} · ${thaiDay(s.id)}`;
+  $('sgStars').textContent = '★'.repeat(s.stars) + '☆'.repeat(5 - s.stars);
+  $('sigCard').className = `card sig ${buy ? 'buy' : 'sell'} st-${s.status}`;
+  $('sgSide').innerHTML = `${buy ? '🟢 ซื้อ' : '🔴 ขาย'} <small>${buy ? 'BUY' : 'SELL'}</small>`;
+  $('sgEntry').textContent = f2(s.entry);
+  $('sgSl').textContent = f2(s.sl);
+  $('sgTp').textContent = f2(s.tp);
+
+  const away = price != null ? Math.abs(price - s.entry) : null;
+  const status = {
+    pending: `${SIG.STATUS_TH.pending} — ต้อง${buy ? 'ลง' : 'ขึ้น'}อีก $${f2(away)} · หมดอายุ ${thaiTime(s.expiresAt)}`,
+    active: `${SIG.STATUS_TH.active} — เข้าที่ ${f2(s.entry)} แล้ว`,
+    win: `${SIG.STATUS_TH.win} — ราคาถึงเป้าหมาย${s.closedBy === 'eod' ? ' (ปิดสิ้นวันมีกำไร)' : ''}`,
+    loss: `${SIG.STATUS_TH.loss} — ${s.closedBy === 'eod' ? 'ปิดสิ้นวันขาดทุน' : 'โดนตัดขาดทุน'}`,
+    expired: `${SIG.STATUS_TH.expired} — วันนั้นไม่ได้เทรด`,
+  }[s.status];
+  $('sgStatus').textContent = status + (final ? ` · สัญญาณถัดไป ${thaiTime(nextSignalTime())}` : '');
+
+  // Track: stop-loss on the left, target on the right, entry and current price in between
+  const pct = (v) => Math.max(0, Math.min(100, ((v - s.sl) / (s.tp - s.sl)) * 100));
+  const ePct = pct(s.entry);
+  $('track').style.setProperty('--entry', `${ePct}%`);
+  $('trEntry').style.left = `${ePct}%`;
+  const nowPx = final ? s.exitPrice : price;
+  $('trNow').hidden = nowPx == null;
+  if (nowPx != null) {
+    $('trNow').style.left = `${pct(nowPx)}%`;
+    $('trNowLabel').textContent = `${final ? 'ปิดที่' : 'ตอนนี้'} ${f2(nowPx)}`;
+  }
+  $('trLeft').textContent = `🛑 ${f2(s.sl)}`;
+  $('trRight').textContent = `💰 ${f2(s.tp)}`;
+
+  if (s.status === 'active') $('sgPnl').textContent = `กำไร/ขาดทุนตอนนี้: ${money(s.pnl)} ต่อ 1 ออนซ์`;
+  else if (s.status === 'win' || s.status === 'loss') $('sgPnl').textContent = `ผลลัพธ์: ${money(s.pnl)} ต่อ 1 ออนซ์`;
+  else $('sgPnl').textContent = `ถ้าถึงเป้า ได้ ${money(Math.abs(s.tp - s.entry))} · ถ้าโดนตัดขาดทุน เสีย ${money(-Math.abs(s.entry - s.sl))} (ต่อ 1 ออนซ์)`;
+  $('sgPnl').className = `sig-pnl ${s.pnl > 0 ? 'up' : s.pnl < 0 ? 'down' : ''}`;
+
+  const order = buy ? 'Buy Limit' : 'Sell Limit';
+  $('sgHow').innerHTML = [
+    `ตั้งคำสั่ง <b>${order}</b> ที่ <b class="mono">${f2(s.entry)}</b>`,
+    `ตั้ง <b>Stop Loss</b> ที่ <b class="mono">${f2(s.sl)}</b> — เสียไม่เกิน $${f2(Math.abs(s.entry - s.sl))}/ออนซ์`,
+    `ตั้ง <b>Take Profit</b> ที่ <b class="mono">${f2(s.tp)}</b> — ถ้าถึง ${thaiTime(s.expiresAt)} ยังไม่เข้า ให้ยกเลิกคำสั่ง`,
+  ].map((l) => `<li>${l}</li>`).join('');
+  $('sgWhy').innerHTML = (s.why || []).map((l) => `<li>${l}</li>`).join('') || '<li class="muted">—</li>';
+
+  // Mini record
+  const sum = SIG.summary(liveSignals());
+  $('msWin').textContent = sum.wins;
+  $('msLoss').textContent = sum.losses;
+  $('msLine').textContent = sum.traded
+    ? `อัตราชนะ ${sum.winRate}% · กำไรสะสม ${money(sum.pnl)}/ออนซ์ · ไม่เข้า ${sum.expired}`
+    : 'เพิ่งเริ่มบันทึก — ผลจะขึ้นเมื่อสัญญาณแรกจบ';
+  $('msDots').innerHTML = sum.last.map(dot).join('');
+  drawSignalLines(s);
+}
+
+const dot = (s) => `<span class="dot-r ${s.status}" title="${s.id} ${SIG.STATUS_TH[s.status]}">${s.status === 'win' ? '✓' : s.status === 'loss' ? '✕' : '–'}</span>`;
+
+function renderMarket(price) {
+  $('hdrPrice').textContent = f2(price);
+  $('mkPrice').textContent = f2(price);
   $('hUpdated').textContent = new Date().toLocaleTimeString('th-TH');
-  if (!horizon) return;
-  const s = SIMPLE.analyze({
-    tech: state.tech, plan, price, daily: state.daily, horizons: horizon, INV, tfLabel: TF_LABEL[state.tf],
+  const d = state.daily;
+  const prev = PLAN.prevSession(d);
+  if (prev) {
+    const chg = price - prev.close, pct = (chg / prev.close) * 100;
+    $('mkToday').textContent = `${chg >= 0 ? '▲' : '▼'} ${money(chg)} (${pct.toFixed(2)}%) จากราคาปิดวัน${prev.dayTh}`;
+    $('mkToday').className = `today ${chg >= 0 ? 'up' : 'down'}`;
+  }
+  const h = state.tech ? EXPLAIN.horizons(state.tech, INV) : state.bars.length ? ownHorizons() : null;
+  if (h) $('mkTrend').innerHTML = h.map((x) => `${x.name} ${tag(x.key, x.th)}`).join(' ');
+}
+
+// ---------- Stats tab ----------
+const eqCharts = {};
+function equityChart(id) {
+  if (eqCharts[id]) return eqCharts[id];
+  const chart = LC.createChart($(id), { ...chartBase(true), handleScroll: false, handleScale: false });
+  const series = chart.addBaselineSeries({
+    baseValue: { type: 'price', price: 0 }, lineWidth: 2, priceLineVisible: false,
+    topLineColor: '#22c58b', topFillColor1: 'rgba(34,197,139,.25)', topFillColor2: 'rgba(34,197,139,0)',
+    bottomLineColor: '#f0506e', bottomFillColor1: 'rgba(240,80,110,0)', bottomFillColor2: 'rgba(240,80,110,.25)',
   });
-  const dp = tradePlan(price, horizon);
-  if (dp && dp.primary) {
-    const buy = dp.primary.side === 'BUY';
-    s.personas.trade = {
-      tone: dp.trend === 'up' ? 'good' : dp.trend === 'down' ? 'bad' : 'ok',
-      answer: `แผนวันนี้: ${buy ? 'รอซื้อ' : 'รอขาย'}ที่ ${f2(dp.primary.entry)}`,
-      text: `${dp.headline} · ตัดขาดทุน ${f2(dp.primary.sl)} · เป้า ${f2(dp.primary.tp1)} (ดูรายละเอียดที่ “แผนเทรดวันนี้”)`,
-    };
-  }
-
-  $('hero').className = `card hero ${s.mood}`;
-  $('hLight').textContent = s.light;
-  $('hTrend').textContent = s.trend;
-  if (s.today) {
-    $('hToday').textContent = s.today.text;
-    $('hToday').className = `today ${s.today.chg >= 0 ? 'up' : 'down'}`;
-  }
-
-  const key = UI.persona() || 'buy';
-  const mine = s.personas[key];
-  $('mine').className = `card mine ${mine.tone}`;
-  $('myIcon').textContent = UI.PERSONAS[key].icon;
-  $('myName').textContent = UI.PERSONAS[key].name;
-  $('myAnswer').textContent = mine.answer;
-  $('myText').textContent = mine.text;
-  $('otherAdvice').innerHTML = Object.keys(UI.PERSONAS).filter((k) => k !== key).map((k) => {
-    const p = s.personas[k];
-    return `<div class="other ${p.tone}"><b>${UI.PERSONAS[k].icon} ${UI.PERSONAS[k].name}: <span>${p.answer}</span></b><p>${p.text}</p></div>`;
-  }).join('');
-
-  $('gMarker').style.left = `${Math.max(2, Math.min(98, s.gauge))}%`;
-  $('sSure').textContent = s.sure;
-  $('hWhy').innerHTML = s.why.map((w) => `<li>${w}</li>`).join('');
-  if (dp) renderTradePlan(dp);
+  fitWhenSized($(id), () => chart.timeScale().fitContent());
+  return (eqCharts[id] = { chart, series });
+}
+function plotEquity(id, signals) {
+  let total = 0;
+  const pts = [];
+  signals.filter((s) => s.status === 'win' || s.status === 'loss').forEach((s) => {
+    total += s.pnl;
+    const time = Math.floor(s.createdAt / 1000) + TZ;
+    if (pts.length && pts[pts.length - 1].time >= time) return;
+    pts.push({ time, value: SIG.round(total) });
+  });
+  $(id).hidden = pts.length < 2;
+  if (pts.length < 2) return;
+  const { chart, series } = equityChart(id);
+  series.setData(pts);
+  chart.timeScale().fitContent();
 }
 
-// Today's day-trading plan (same logic as the 07:00 LINE message)
-function tradePlan(price, horizon) {
-  const lv = state.daily.length ? PLAN.levelsFromDaily(state.daily) : null;
-  if (!lv) return null;
-  const dp = PLAN.build({ price, levels: lv.levels, bias: { short: horizon[0].key, mid: horizon[1].key, long: horizon[2].key } });
-  dp.from = lv.from;
-  return dp;
+function tilesHtml(s) {
+  const t = (label, value, cls = '', note = '') => `<div class="tile ${cls}"><label>${label}</label><b class="mono">${value}</b>${note ? `<small>${note}</small>` : ''}</div>`;
+  return [
+    t('ชนะ', s.wins, 'up'),
+    t('แพ้', s.losses, 'down'),
+    t('อัตราชนะ', s.winRate == null ? '—' : `${s.winRate}%`),
+    t('กำไรสะสม', s.traded ? money(s.pnl) : '—', s.pnl > 0 ? 'up' : s.pnl < 0 ? 'down' : '', 'ต่อ 1 ออนซ์'),
+    t('เฉลี่ยต่อครั้ง', s.avg == null ? '—' : money(s.avg), '', 'ต่อ 1 ออนซ์'),
+    t('ไม่เข้า', s.expired, '', `จาก ${s.total} สัญญาณ`),
+  ].join('');
 }
 
-function renderTradePlan(dp) {
-  $('tplan').className = `card tplan ${dp.trend}`;
-  $('tpDate').textContent = new Date().toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'short' });
-  $('tpHead').textContent = `${dp.icon} ${dp.headline}`;
-  const side = (p, heading) => {
-    if (!p) return '';
-    const buy = p.side === 'BUY';
-    const r = (label, v, cls = '', note = '') => `<div class="tp-row ${cls}"><span>${label}</span><b class="mono">${v}</b>${note ? `<small>${note}</small>` : ''}</div>`;
-    return `<div class="tp-side ${buy ? 'buy' : 'sell'}">
-      <p class="tp-title">${heading}: <b>${buy ? 'ซื้อ' : 'ขาย'}</b>${p.note ? ` <small>(${p.note})</small>` : ''}</p>
-      ${r(buy ? '🎯 จุดซื้อ' : '🎯 จุดขาย', f2(p.entry), 'entry', p.label)}
-      ${r('🛑 ตัดขาดทุน', f2(p.sl), 'sl', buy ? 'ถ้าลงถึงจุดนี้ ปิดทันที' : 'ถ้าขึ้นถึงจุดนี้ ปิดทันที')}
-      ${r('💰 เป้า 1', f2(p.tp1), 'tp')}
-      ${r('💰 เป้า 2', f2(p.tp2), 'tp')}
-      ${r('กำไร : ความเสี่ยง', `${p.rr.toFixed(1)} : 1`)}
+function renderStats() {
+  const list = liveSignals();
+  const sum = SIG.summary(list);
+  $('liveTiles').innerHTML = tilesHtml(sum);
+  if (list.length) $('liveSince').textContent = `บันทึกทุกสัญญาณตั้งแต่ ${thaiDay(list[0].id)} — ไม่ตัดทิ้ง ไม่แก้ย้อนหลัง`;
+  plotEquity('liveChart', list);
+  $('history').innerHTML = list.length ? list.slice().reverse().map((s) => {
+    const buy = s.side === 'BUY';
+    const res = s.status === 'win' || s.status === 'loss' ? money(s.pnl) : '';
+    return `<div class="h-row ${s.status}">
+      <span class="h-date">${thaiDay(s.id)}</span>
+      <span class="h-side ${buy ? 'buy' : 'sell'}">${buy ? 'ซื้อ' : 'ขาย'}</span>
+      <span class="h-px mono">${f2(s.entry)}</span>
+      <span class="h-st">${SIG.STATUS_TH[s.status]}</span>
+      <b class="h-pnl mono">${res}</b>
     </div>`;
-  };
-  $('tpSides').innerHTML = side(dp.primary, 'แผนหลัก') + side(dp.secondary, 'แผนสำรอง');
-  $('tpWarn').textContent = dp.invalidate ? `⚠️ ${dp.invalidate}` : '';
-  const f = dp.from;
-  $('tpFrom').textContent = `จุดต่าง ๆ คำนวณจากราคาวัน${f.dayTh}: สูง ${f2(f.high)} · ต่ำ ${f2(f.low)} · ปิด ${f2(f.close)} (Pivot Points) · แผนนี้ส่งเข้า LINE ทุกเช้า 07:00 น.`;
-  drawPlanPoints(dp);
+  }).join('') : '<p class="muted">ยังไม่มีสัญญาณ</p>';
+
+  const bt = state.backtest;
+  if (bt) {
+    $('btTiles').innerHTML = tilesHtml(bt.summary);
+    $('btNote').innerHTML = bt.summary.pnl < 0
+      ? `⚠️ ผลย้อนหลัง 1 ปี <b>ยังขาดทุน ${money(bt.summary.pnl)}</b>/ออนซ์ (ชนะ ${bt.summary.winRate}%) — สัญญาณจึงยังอยู่ใน <b>โหมดทดลอง</b> และเรากำลังปรับปรุงสูตรต่อ`
+      : `ผลย้อนหลัง 1 ปี กำไร ${money(bt.summary.pnl)}/ออนซ์ (ชนะ ${bt.summary.winRate}%) — ผลในอดีตไม่รับประกันอนาคต`;
+    $('btNote').className = `bt-note ${bt.summary.pnl < 0 ? 'down' : 'up'}`;
+    plotEquity('btChart', bt.signals);
+  }
 }
 
 function renderLevels(lv, price) {
@@ -529,8 +640,8 @@ fitWhenSized($('mainChart'), () => {
   if (n) mainChart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 120), to: n + 6 });
 });
 
-// Re-render when the user changes their type; refit charts when the chart tab becomes visible
-UI.on('persona', render);
+// Refit charts when their tab becomes visible
+UI.on('tab:stats', () => setTimeout(renderStats, 50));
 UI.on('tab:chart', () => setTimeout(() => {
   simpleChart.timeScale().fitContent();
   const n = state.bars.length;
@@ -547,7 +658,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { re
   await AUTH.ready;
   renderTechTables();
   SPLASH.step('กำลังดึงราคาทองจาก investing.com…', 45);
-  const pending = [refreshDaily(), refreshTech().then(() => SPLASH.step('กำลังวิเคราะห์สถิติทุกกรอบเวลา…', 75)), refreshPrice()];
+  const pending = [refreshSignals(), refreshM15(), refreshDaily(), refreshTech().then(() => SPLASH.step('กำลังวิเคราะห์สถิติทุกกรอบเวลา…', 75)), refreshPrice()];
   await Promise.all(pending);
   render();
   UI.start();
@@ -555,4 +666,6 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { re
   every(POLL_PRICE, refreshPrice);
   every(POLL_TECH, refreshTech);
   every(POLL_DAILY, refreshDaily);
+  every(30e3, refreshM15);
+  every(5 * 60e3, refreshSignals);
 })();
