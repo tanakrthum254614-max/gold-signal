@@ -67,7 +67,8 @@ async function backupBars(bnInterval, limit) {
   const bars = k.map((x) => ({ time: x[0] / 1000, open: +x[1], high: +x[2], low: +x[3], close: +x[4] }));
   // PAXG trades at a small premium to spot; shift so prices line up with XAU/USD
   const fresh = spot && Date.now() - Date.parse(spot.updatedAt) < 10 * 60e3;
-  const off = fresh ? spot.price - bars[bars.length - 1].close : 0;
+  const last = bars[bars.length - 1].close;
+  const off = streamFresh() ? state.livePrice - last : fresh ? spot.price - last : 0;
   return bars.map((b) => ({ ...b, open: b.open + off, high: b.high + off, low: b.low + off, close: b.close + off }));
 }
 
@@ -89,7 +90,8 @@ async function refreshPrice() {
     if (tf !== state.tf) return; // timeframe switched while loading
     state.bars = bars;
     state.source = source;
-    setConn(source === 'investing' ? 'live' : 'backup',
+    patchChartBars(); // REST candles lag the stream: put the live price on the newest one
+    if (!streamFresh()) setConn(source === 'investing' ? 'live' : 'backup',
       source === 'investing' ? 'เรียลไทม์ · investing.com' : 'สำรอง · Binance PAXG');
     render();
   } catch (e) {
@@ -313,15 +315,16 @@ function renderQuote(price) {
   el.textContent = f2(price);
 
   const d = state.daily;
+  const S = streamFresh() ? state.stream : null;
   if (d.length >= 2) {
-    const today = d[d.length - 1], prev = d[d.length - 2];
+    const today = d[d.length - 1], prev = prevClose() || d[d.length - 2];
     const chg = price - prev.close, pct = (chg / prev.close) * 100;
     const c = $('chg');
     c.textContent = `${chg >= 0 ? '+' : ''}${chg.toFixed(2)} (${chg >= 0 ? '+' : ''}${pct.toFixed(2)}%)`;
     c.className = `chg mono ${chg >= 0 ? 'up' : 'down'}`;
     $('dOpen').textContent = f2(today.open);
-    $('dHigh').textContent = f2(Math.max(today.high, price));
-    $('dLow').textContent = f2(Math.min(today.low, price));
+    $('dHigh').textContent = f2(Math.max(S && num(S.high) ? num(S.high) : today.high, price));
+    $('dLow').textContent = f2(Math.min(S && num(S.low) ? num(S.low) : today.low, price));
     $('dPrev').textContent = f2(prev.close);
   }
   $('updated').textContent = new Date().toLocaleTimeString('th-TH');
@@ -550,16 +553,24 @@ function renderMiniRecord() {
 
 const dot = (s) => `<span class="dot-r ${s.status}" title="${s.id} ${SIG.STATUS_TH[s.status]}">${s.status === 'win' ? '✓' : s.status === 'loss' ? '✕' : '–'}</span>`;
 
+// The close every "change today" figure is measured from: investing.com's previous close (from the stream,
+// the same figure th.investing.com shows), else the last full weekday session
+function prevClose() {
+  const S = streamFresh() ? state.stream : null;
+  if (S && num(S.last_close)) return { close: num(S.last_close), label: 'ราคาปิดก่อนหน้า' };
+  const p = PLAN.prevSession(state.daily);
+  return p ? { close: p.close, label: `ราคาปิดวัน${p.dayTh}` } : null;
+}
+
 function renderMarket(chartPrice) {
   const price = nowPrice() != null ? nowPrice() : chartPrice;
   $('hdrPrice').textContent = f2(price);
   $('mkPrice').textContent = f2(price);
   $('hUpdated').textContent = new Date().toLocaleTimeString('th-TH');
-  const d = state.daily;
-  const prev = PLAN.prevSession(d);
+  const prev = prevClose();
   if (prev) {
     const chg = price - prev.close, pct = (chg / prev.close) * 100;
-    $('mkToday').textContent = `${chg >= 0 ? '▲' : '▼'} ${money(chg)} (${pct.toFixed(2)}%) จากราคาปิดวัน${prev.dayTh}`;
+    $('mkToday').textContent = `${chg >= 0 ? '▲' : '▼'} ${money(chg)} (${pct.toFixed(2)}%) จาก${prev.label}`;
     $('mkToday').className = `today ${chg >= 0 ? 'up' : 'down'}`;
   }
   const h = state.tech ? EXPLAIN.horizons(state.tech, INV) : state.bars.length ? ownHorizons() : null;
@@ -684,6 +695,32 @@ setInterval(() => {
 
 const num = (s) => (s == null ? null : +String(s).replace(/,/g, ''));
 
+// Put the live price on the chart's newest candle (a new candle when its period has rolled over)
+const TF_MS = { '5m': 5 * 60e3, '15m': 15 * 60e3, '30m': 30 * 60e3, '1h': 3600e3, '5h': 5 * 3600e3, '1d': 864e5, '1w': 7 * 864e5 };
+function patchChartBars(now = Date.now()) {
+  const bars = state.bars, price = state.livePrice;
+  if (!bars.length || price == null || !streamFresh()) return false;
+  const dur = TF_MS[state.tf], last = bars[bars.length - 1];
+  const start = last.time * 1000; // chart candles are in seconds
+  if (now < start + dur || state.tf === '1d' || state.tf === '1w') {
+    last.close = price; last.high = Math.max(last.high, price); last.low = Math.min(last.low, price);
+  } else if (now < start + 2 * dur) {
+    bars.push({ time: (start + dur) / 1000, open: last.close, high: Math.max(last.close, price), low: Math.min(last.close, price), close: price });
+    bars.shift();
+    return 'new';
+  } else return false; // candles too old (market closed / data gap): wait for the next download
+  return true;
+}
+
+// Cheap per-tick chart update: only the newest candle and the trader-view price
+function chartTick() {
+  const c = state.bars[state.bars.length - 1], t = c.time + TZ;
+  candles.update({ time: t, open: c.open, high: c.high, low: c.low, close: c.close });
+  areaS.update({ time: t, value: c.close });
+  renderQuote(c.close);
+  $('mkPrice').textContent = f2(c.close);
+}
+
 function onStreamTick(p) {
   const price = p.last_numeric;
   if (!(price > 0)) return;
@@ -703,11 +740,15 @@ function onStreamTick(p) {
   }
   patchIntraCandles(now);
   renderLive();
-  // The heavier panels at most once a second
+  // Every tick: the chart's newest candle and the trader-view price, so every number on the page matches
+  const patched = patchChartBars(now);
+  if (patched === 'new') render();
+  else if (patched) chartTick();
+  // The heavier panels (indicators, gauge, donuts, signal cards) at most once a second
   if (now - (onStreamTick.heavy || 0) >= 1000) {
     onStreamTick.heavy = now;
-    renderIntra();
-    renderSignalHome();
+    if (patched) render();
+    else { renderIntra(); renderSignalHome(); }
     renderS15();
   }
 }
@@ -762,10 +803,10 @@ function renderLive() {
   el.textContent = f2(price);
   $('hdrPrice').textContent = f2(price);
 
-  const prev = PLAN.prevSession(state.daily);
+  const prev = prevClose();
   if (prev) {
     const chg = price - prev.close, pct = (chg / prev.close) * 100;
-    $('lvChg').textContent = `${chg >= 0 ? '▲' : '▼'} ${money(chg)} (${chg >= 0 ? '+' : ''}${pct.toFixed(2)}%) จากปิดวัน${prev.dayTh}`;
+    $('lvChg').textContent = `${chg >= 0 ? '▲' : '▼'} ${money(chg)} (${chg >= 0 ? '+' : ''}${pct.toFixed(2)}%) จาก${prev.label}`;
     $('lvChg').className = `lv-chg mono ${chg >= 0 ? 'up' : 'down'}`;
   }
   const today = state.daily[state.daily.length - 1];
@@ -773,7 +814,7 @@ function renderLive() {
   if (S && num(S.high)) {
     $('lvHigh').textContent = f2(Math.max(num(S.high), price));
     $('lvLow').textContent = f2(Math.min(num(S.low), price));
-  } else if (today && (!prev || today.time * 1000 > prev.ms)) {
+  } else if (today) {
     $('lvHigh').textContent = f2(Math.max(today.high, price));
     $('lvLow').textContent = f2(Math.min(today.low, price));
   }
@@ -800,6 +841,7 @@ function renderLive() {
 // Market pill + clock + "updated N s ago" (also runs every second)
 function renderLiveStatus() {
   const now = Date.now();
+  if (streamFresh()) setConn('live', 'เรียลไทม์ · investing.com');
   $('lvClock').textContent = `${new Date(now).toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' })} น.`;
   const open = INTRA.marketOpen(now);
   const last = state.tick.length ? state.tick[state.tick.length - 1].time * 1000 : 0;
