@@ -1,0 +1,166 @@
+:root {
+  --bg: #0d1016;
+  --panel: #151a23;
+  --panel-2: #1b212c;
+  --line: #262e3b;
+  --text: #e6e9ef;
+  --muted: #8a93a3;
+  --gold: #e8b64c;
+  --gold-soft: rgba(232, 182, 76, 0.14);
+  --up: #22c58b;
+  --up-soft: rgba(34, 197, 139, 0.14);
+  --down: #f0506e;
+  --down-soft: rgba(240, 80, 110, 0.14);
+  --wait: #f2a93b;
+  --ema20: #4ea1ff;
+  --ema50: #c77dff;
+  --ema200: #e8b64c;
+  --pivot: #e8b64c;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "IBM Plex Sans Thai", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  padding: 0 20px 32px;
+  max-width: 1480px;
+  margin: 0 auto;
+}
+.mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+a { color: var(--gold); }
+h3 { font-size: 15px; margin: 18px 0 10px; font-weight: 600; }
+.card h3:first-child { margin-top: 0; }
+
+/* Header */
+.top { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; gap: 12px; }
+.brand { display: flex; gap: 12px; align-items: center; }
+.coin {
+  width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 30% 30%, #ffe08a, #c8902a 70%); color: #3b2a06;
+  font-weight: 700; font-size: 16px; box-shadow: 0 0 0 3px var(--gold-soft);
+}
+.brand h1 { font-size: 20px; margin: 0; line-height: 1.2; }
+.brand p { margin: 0; color: var(--muted); font-size: 13px; }
+.conn { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted);
+  background: var(--panel); padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line); }
+.conn .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--wait); }
+.conn.live .dot { background: var(--up); animation: pulse 1.6s infinite; }
+.conn.down .dot { background: var(--down); }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,139,.6); } 100% { box-shadow: 0 0 0 8px rgba(34,197,139,0); } }
+
+/* Quote */
+.quote { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px; }
+.quote-main { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.sym { color: var(--gold); font-weight: 600; }
+.price { font-size: 38px; font-weight: 700; letter-spacing: -0.5px; transition: color .3s; }
+.price.tick-up { color: var(--up); }
+.price.tick-down { color: var(--down); }
+.chg { font-size: 16px; font-weight: 700; }
+.chg.up { color: var(--up); } .chg.down { color: var(--down); }
+.quote-stats { display: flex; gap: 22px; flex-wrap: wrap; }
+.quote-stats div { display: flex; flex-direction: column; }
+.quote-stats label { font-size: 12px; color: var(--muted); }
+
+/* Timeframes */
+.tfs { display: flex; gap: 6px; margin: 14px 0; overflow-x: auto; }
+.tfs button {
+  background: var(--panel); color: var(--muted); border: 1px solid var(--line); border-radius: 10px;
+  padding: 7px 14px; font: inherit; font-size: 14px; cursor: pointer; white-space: nowrap;
+}
+.tfs button:hover { color: var(--text); }
+.tfs button.on { background: var(--gold-soft); color: var(--gold); border-color: var(--gold); font-weight: 600; }
+
+/* Layout */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 14px; align-items: start; }
+.layout2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+.side { display: flex; flex-direction: column; gap: 14px; }
+
+.charts { padding: 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--muted); margin: 0 4px 8px; }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.legend i.dash { border-top: 2px dashed #6b7686; height: 0; }
+.chart-main { height: 440px; }
+.chart-sub { height: 120px; }
+.sub-title { font-size: 12px; color: var(--muted); margin: 8px 4px 2px; }
+
+/* Signal card */
+.signal-head { display: flex; justify-content: space-between; font-size: 13px; }
+.action { font-size: 40px; font-weight: 700; margin-top: 4px; line-height: 1.15; }
+.action-sub { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+.signal.BUY { border-color: var(--up); background: linear-gradient(180deg, var(--up-soft), var(--panel) 45%); }
+.signal.SELL { border-color: var(--down); background: linear-gradient(180deg, var(--down-soft), var(--panel) 45%); }
+.signal.WAIT { border-color: var(--wait); background: linear-gradient(180deg, rgba(242,169,59,.12), var(--panel) 45%); }
+.signal.BUY .action { color: var(--up); }
+.signal.SELL .action { color: var(--down); }
+.signal.WAIT .action { color: var(--wait); }
+.meter { height: 8px; border-radius: 99px; background: var(--panel-2); overflow: hidden; }
+.meter div { height: 100%; width: 0; background: var(--gold); transition: width .4s; }
+.signal.BUY .meter div { background: var(--up); }
+.signal.SELL .meter div { background: var(--down); }
+.signal.WAIT .meter div { background: var(--wait); }
+#confText { margin-top: 6px; }
+
+.plan { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.plan div { background: var(--panel-2); border-radius: 10px; padding: 8px 10px; }
+.plan label { display: block; font-size: 12px; color: var(--muted); }
+.plan span { font-weight: 700; }
+.plan .sl span { color: var(--down); }
+.plan .tp span { color: var(--up); }
+.plan .wide { grid-column: span 2; }
+
+.reasons { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.reasons li { padding-left: 22px; position: relative; }
+.reasons li::before { content: "✓"; position: absolute; left: 2px; color: var(--up); font-weight: 700; }
+.signal.SELL .reasons:not(.warn) li::before { color: var(--down); }
+.reasons.warn { margin-top: 8px; }
+.reasons.warn li::before { content: "!"; color: var(--wait); left: 6px; }
+
+.levels { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.levels li { display: flex; justify-content: space-between; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+.levels li:last-child { border-bottom: 0; }
+.levels li.res span:first-child { color: var(--down); }
+.levels li.sup span:first-child { color: var(--up); }
+.levels li.now { background: var(--gold-soft); border-radius: 8px; color: var(--gold); font-weight: 700; border-bottom: 0; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; color: var(--muted); font-weight: 500; font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+td { padding: 8px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 13px; font-weight: 600; }
+.tag.strong-buy, .tag.buy, .tag.s1 { background: var(--up-soft); color: var(--up); }
+.tag.strong-sell, .tag.sell, .tag.s-1 { background: var(--down-soft); color: var(--down); }
+.tag.neutral, .tag.s0 { background: var(--panel-2); color: var(--muted); }
+.tag.strong-buy, .tag.strong-sell { outline: 1px solid currentColor; }
+td.why { color: var(--muted); font-size: 12px; display: block; padding-top: 0; border: 0; }
+
+footer { margin-top: 20px; font-size: 13px; color: var(--muted); }
+footer p { margin: 4px 0; }
+
+@media (max-width: 1080px) {
+  .layout, .layout2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  body { padding: 0 16px 24px; }
+  .price { font-size: 30px; }
+  .chart-main { height: 340px; }
+  .quote-stats { gap: 14px; }
+  .action { font-size: 32px; }
+}
+
+/* investing.com tables */
+.wide-card { margin-top: 14px; }
+.table-scroll { overflow-x: auto; }
+.mtf td small, .ma td small { color: var(--muted); font-size: 12px; margin-left: 6px; }
+.mtf tr.sel { background: var(--gold-soft); }
+h3 .tag { margin-left: 6px; vertical-align: 1px; }
+.conn.backup .dot { background: var(--wait); }

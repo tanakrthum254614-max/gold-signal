@@ -1,0 +1,9 @@
+{
+  "name": "gold-signal",
+  "version": "1.0.0",
+  "description": "Real-time XAU/USD chart analysis with buy/sell/wait signals",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  }
+}
