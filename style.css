@@ -375,3 +375,26 @@ h3 .tag { margin-left: 6px; vertical-align: 1px; }
   .watch { grid-template-columns: 1fr; }
   .chart-simple { height: 300px; }
 }
+
+/* Daily trading plan */
+.tplan { grid-column: 1 / -1; border-width: 2px; }
+.tplan.up { border-color: var(--up); } .tplan.down { border-color: var(--down); } .tplan.range { border-color: var(--wait); }
+.tp-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.tp-top h3 { margin: 0; font-size: 19px; }
+.tp-head { font-size: 22px; font-weight: 700; margin: 8px 0 14px; }
+.tplan.up .tp-head { color: var(--up); } .tplan.down .tp-head { color: var(--down); } .tplan.range .tp-head { color: var(--wait); }
+.tp-sides { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tp-side { background: var(--panel-2); border-radius: 12px; padding: 12px 14px; border-left: 4px solid var(--line); }
+.tp-side.buy { border-left-color: var(--up); } .tp-side.sell { border-left-color: var(--down); }
+.tp-title { margin: 0 0 8px; font-size: 15px; color: var(--muted); }
+.tp-title b { font-size: 18px; }
+.tp-side.buy .tp-title b { color: var(--up); } .tp-side.sell .tp-title b { color: var(--down); }
+.tp-row { display: grid; grid-template-columns: 1fr auto; align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--line); }
+.tp-row:last-child { border-bottom: 0; }
+.tp-row span { color: var(--muted); font-size: 14px; }
+.tp-row b { font-size: 17px; }
+.tp-row small { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
+.tp-row.entry b { color: var(--gold); font-size: 20px; }
+.tp-row.sl b { color: var(--down); } .tp-row.tp b { color: var(--up); }
+.tp-warn { margin: 12px 0 4px; color: var(--wait); font-size: 14px; }
+@media (max-width: 700px) { .tp-sides { grid-template-columns: 1fr; } .tp-head { font-size: 19px; } }

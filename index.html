@@ -10,7 +10,7 @@
   <meta property="og:description" content="สรุปราคาทองแบบเข้าใจง่าย อิงสถิติจาก investing.com แบบเรียลไทม์">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610051310">
+  <link rel="stylesheet" href="style.css?v=202610051325">
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -96,6 +96,14 @@
             <p class="mine-text" id="myText"></p>
           </div>
 
+          <div class="card tplan" id="tplan">
+            <div class="tp-top"><h3>📋 แผนเทรดวันนี้</h3><span class="muted small" id="tpDate"></span></div>
+            <p class="tp-head" id="tpHead">กำลังคำนวณ…</p>
+            <div class="tp-sides" id="tpSides"></div>
+            <p class="tp-warn" id="tpWarn"></p>
+            <p class="hint" id="tpFrom"></p>
+          </div>
+
           <div class="card">
             <h3>ทองจะขึ้นหรือลง?</h3>
             <div class="gauge"><div class="gauge-marker" id="gMarker"></div></div>
@@ -106,14 +114,6 @@
           <div class="card">
             <h3>ทำไมถึงบอกแบบนี้?</h3>
             <ul class="why" id="hWhy"></ul>
-          </div>
-
-          <div class="card">
-            <h3>ราคาที่ต้องจับตา</h3>
-            <div class="watch">
-              <div class="watch-item up"><span>🟢 ถ้าราคาลงมาถึง</span><b class="mono" id="wBuy">—</b><small id="wBuyThb"></small><p>ราคามักเด้งขึ้นแถวนี้ — เป็นจุดที่น่าซื้อ</p></div>
-              <div class="watch-item down"><span>🔴 ถ้าราคาขึ้นไปถึง</span><b class="mono" id="wSell">—</b><small id="wSellThb"></small><p>ราคามักถูกกดลงแถวนี้ — เป็นจุดที่น่าขาย</p></div>
-            </div>
           </div>
 
           <details class="card others">
@@ -138,7 +138,7 @@
               <nav class="tfs" id="sRange"></nav>
             </div>
             <div id="simpleChart" class="chart-simple"></div>
-            <p class="hint">เส้นสีทอง = ราคาทอง · 🟢 เส้นเขียว = ราคาที่น่าซื้อ · 🔴 เส้นแดง = ราคาที่น่าขาย</p>
+            <p class="hint">เส้นสีทอง = ราคาทอง · จุดเข้า/ตัดขาดทุน/เป้ากำไร มาจาก “แผนเทรดวันนี้” ที่หน้าแรก</p>
           </section>
         </div>
 
@@ -302,6 +302,13 @@
         </section>
 
         <section class="card">
+          <h3>รับแผนเทรดทุกเช้าทาง LINE 📩</h3>
+          <p class="muted">ส่งทุกวันจันทร์–ศุกร์ เวลา 07:00 น. (ยกเว้นเสาร์–อาทิตย์) เพิ่มเพื่อนครั้งเดียวรับได้เลย</p>
+          <a class="btn line" id="lineAdd" target="_blank" rel="noopener" hidden>เพิ่มเพื่อน LINE เพื่อรับแผน</a>
+          <p class="muted small" id="lineSoon">กำลังเตรียมบัญชี LINE — เร็ว ๆ นี้</p>
+        </section>
+
+        <section class="card">
           <h3>ชวนเพื่อนมาใช้ 🤝</h3>
           <p class="muted">ส่งลิงก์ให้เพื่อน เพื่อนกดเข้ามาแล้วล็อกอินด้วย Google ได้เลย</p>
           <div class="share">
@@ -312,20 +319,21 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610051310</p>
+        <p class="muted small center">เวอร์ชัน 202610051325</p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610051310"></script>
-  <script src="auth.js?v=202610051310"></script>
-  <script src="indicators.js?v=202610051310"></script>
-  <script src="investing.js?v=202610051310"></script>
-  <script src="explain.js?v=202610051310"></script>
-  <script src="simple.js?v=202610051310"></script>
-  <script src="ui.js?v=202610051310"></script>
-  <script src="main.js?v=202610051310"></script>
+  <script src="config.js?v=202610051325"></script>
+  <script src="auth.js?v=202610051325"></script>
+  <script src="indicators.js?v=202610051325"></script>
+  <script src="investing.js?v=202610051325"></script>
+  <script src="explain.js?v=202610051325"></script>
+  <script src="dailyplan.js?v=202610051325"></script>
+  <script src="simple.js?v=202610051325"></script>
+  <script src="ui.js?v=202610051325"></script>
+  <script src="main.js?v=202610051325"></script>
 </body>
 </html>

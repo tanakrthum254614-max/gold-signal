@@ -97,6 +97,8 @@
     $('shareNative').hidden = false;
     $('shareNative').addEventListener('click', () => navigator.share({ title: 'Gold Signal', text: shareText, url: shareUrl }).catch(() => {}));
   }
+  const lineUrl = window.GOLD_CONFIG && GOLD_CONFIG.lineAddFriendUrl;
+  if (lineUrl) { $('lineAdd').href = lineUrl; $('lineAdd').hidden = false; $('lineSoon').hidden = true; }
   $('signOut').addEventListener('click', () => window.Clerk && Clerk.signOut());
 
   function toast(text) {

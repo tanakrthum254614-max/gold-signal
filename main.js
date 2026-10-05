@@ -46,8 +46,15 @@ async function getJson(url, headers) {
   return r.json();
 }
 
-const investing = (path) => getJson(`${INVESTING_API}${path}`, { 'domain-id': 'th' });
-const investingChart = (interval) => investing(`/${PAIR_ID}/historical/chart/?interval=${interval}&pointscount=160`);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// investing.com occasionally rejects a request (Cloudflare); retry with a short backoff
+async function investing(path, tries = 3) {
+  for (let i = 0; ; i++) {
+    try { return await getJson(`${INVESTING_API}${path}`, { 'domain-id': 'th' }); }
+    catch (e) { if (i >= tries - 1) throw e; await sleep(800 * (i + 1)); }
+  }
+}
+const investingChart = (interval, tries) => investing(`/${PAIR_ID}/historical/chart/?interval=${interval}&pointscount=160`, tries);
 
 const fromInvesting = (rows) => rows.map((b) => ({ time: b[0] / 1000, open: b[1], high: b[2], low: b[3], close: b[4] }));
 
@@ -66,7 +73,7 @@ async function backupBars(bnInterval, limit) {
 async function loadBars(tf) {
   const t = tfOf(tf);
   try {
-    const j = await investingChart(t.inv);
+    const j = await investingChart(t.inv, 2);
     if (!j.data || !j.data.length) throw new Error('empty');
     return { bars: fromInvesting(j.data), source: 'investing' };
   } catch (e) {
@@ -90,15 +97,18 @@ async function refreshPrice() {
 }
 
 async function refreshTech() {
-  try {
-    const results = await Promise.allSettled(TECH_TFS.map((tf) => investing(`/technical/analysis/${PAIR_ID}/${tf}`)));
-    const tfs = {};
-    results.forEach((r, i) => { if (r.status === 'fulfilled' && r.value.summary) tfs[TECH_TFS[i]] = r.value; });
-    if (!Object.keys(tfs).length) throw new Error('no technical data');
-    state.tech = tfs;
+  // Small batches instead of 8 parallel requests, and never throw away data we already have
+  const tfs = {};
+  for (let i = 0; i < TECH_TFS.length; i += 3) {
+    const batch = TECH_TFS.slice(i, i + 3);
+    const rs = await Promise.allSettled(batch.map((tf) => investing(`/technical/analysis/${PAIR_ID}/${tf}`)));
+    rs.forEach((r, j) => { if (r.status === 'fulfilled' && r.value.summary) tfs[batch[j]] = r.value; });
+  }
+  if (Object.keys(tfs).length) {
+    state.tech = { ...(state.tech || {}), ...tfs };
     state.techAt = new Date().toISOString();
-  } catch (e) {
-    state.tech = null;
+  } else if (!state.tech) {
+    setTimeout(refreshTech, 5000); // nothing yet: try again soon rather than in 30 s
   }
   renderTechTables();
   render();
@@ -116,7 +126,9 @@ async function refreshDaily() {
     const j = await investingChart('P1D');
     state.daily = fromInvesting(j.data);
   } catch (e) {
-    try { state.daily = await backupBars('1d', 5); } catch (e2) { /* keep old */ }
+    if (!state.daily.length) {
+      try { state.daily = await backupBars('1d', 60); } catch (e2) { /* keep old */ }
+    }
   }
 }
 
@@ -164,14 +176,23 @@ const areaS = simpleChart.addAreaSeries({
   priceLineVisible: false,
 });
 let zoneLines = [];
-function drawZones(buy, sell) {
-  const key = `${buy && buy.price}|${sell && sell.price}`;
+function drawPlanPoints(dp) {
+  const p = dp.primary, s = dp.secondary;
+  const key = [p && p.entry, s && s.entry].join('|');
   if (key === state.zoneKey) return;
   state.zoneKey = key;
   zoneLines.forEach((l) => areaS.removePriceLine(l));
   zoneLines = [];
-  if (buy) zoneLines.push(areaS.createPriceLine({ price: buy.price, color: '#22c58b', lineWidth: 2, lineStyle: LC.LineStyle.Dashed, title: 'น่าซื้อแถวนี้' }));
-  if (sell) zoneLines.push(areaS.createPriceLine({ price: sell.price, color: '#f0506e', lineWidth: 2, lineStyle: LC.LineStyle.Dashed, title: 'น่าขายแถวนี้' }));
+  const line = (price, color, title, style = LC.LineStyle.Dashed, width = 2) =>
+    zoneLines.push(areaS.createPriceLine({ price, color, lineWidth: width, lineStyle: style, title }));
+  if (p) {
+    const buy = p.side === 'BUY';
+    line(p.entry, buy ? '#22c58b' : '#f0506e', buy ? 'จุดซื้อ' : 'จุดขาย', LC.LineStyle.Solid);
+    line(p.sl, '#f0506e', 'ตัดขาดทุน', LC.LineStyle.Dotted, 1);
+    line(p.tp1, '#e8b64c', 'เป้า 1', LC.LineStyle.Dashed, 1);
+    line(p.tp2, '#e8b64c', 'เป้า 2', LC.LineStyle.Dashed, 1);
+  }
+  if (s) line(s.entry, s.side === 'BUY' ? '#22c58b' : '#f0506e', s.side === 'BUY' ? 'ซื้อ (สำรอง)' : 'ขาย (สำรอง)', LC.LineStyle.Dashed, 1);
 }
 
 // Keep the three panes scrolled/zoomed together
@@ -348,14 +369,32 @@ function renderSignal(plan, htfKey) {
   $('warns').innerHTML = plan.warn.map((r) => `<li>${r}</li>`).join('');
 }
 
+// Short/mid/long trend from our own indicators, used only when investing.com's analysis is missing
+function ownHorizons() {
+  const key = (cs) => TA.analyze(cs).label.key.replace('-', '_');
+  const mid = key(state.bars);
+  const long = state.daily.length >= 30 ? key(state.daily) : mid;
+  const h = (k, name) => ({ key: k, th: INV.trendTh(k), name });
+  return [h(mid, 'ระยะสั้น'), h(mid, 'ระยะกลาง'), h(long, 'ระยะยาว')];
+}
+
 function renderHome(plan, price) {
-  const horizon = state.tech ? EXPLAIN.horizons(state.tech, INV) : null;
+  const horizon = state.tech ? EXPLAIN.horizons(state.tech, INV) : state.bars.length ? ownHorizons() : null;
   $('hUsd').textContent = f2(price);
   $('hUpdated').textContent = new Date().toLocaleTimeString('th-TH');
   if (!horizon) return;
   const s = SIMPLE.analyze({
     tech: state.tech, plan, price, daily: state.daily, thb: state.thb, horizons: horizon, INV, tfLabel: TF_LABEL[state.tf],
   });
+  const dp = tradePlan(price, horizon);
+  if (dp && dp.primary) {
+    const buy = dp.primary.side === 'BUY';
+    s.personas.trade = {
+      tone: dp.trend === 'up' ? 'good' : dp.trend === 'down' ? 'bad' : 'ok',
+      answer: `แผนวันนี้: ${buy ? 'รอซื้อ' : 'รอขาย'}ที่ ${f2(dp.primary.entry)}`,
+      text: `${dp.headline} · ตัดขาดทุน ${f2(dp.primary.sl)} · เป้า ${f2(dp.primary.tp1)} (ดูรายละเอียดที่ “แผนเทรดวันนี้”)`,
+    };
+  }
   const thb = (usd) => (state.thb ? `≈ ${(Math.round(SIMPLE.toThaiGold(usd, state.thb) / 50) * 50).toLocaleString('en-US')} บาท/บาททองคำ` : '');
 
   $('hero').className = `card hero ${s.mood}`;
@@ -382,11 +421,40 @@ function renderHome(plan, price) {
   $('gMarker').style.left = `${Math.max(2, Math.min(98, s.gauge))}%`;
   $('sSure').textContent = s.sure;
   $('hWhy').innerHTML = s.why.map((w) => `<li>${w}</li>`).join('');
-  $('wBuy').textContent = s.sup ? f2(s.sup.price) : '—';
-  $('wBuyThb').textContent = s.sup ? thb(s.sup.price) : '';
-  $('wSell').textContent = s.res ? f2(s.res.price) : '—';
-  $('wSellThb').textContent = s.res ? thb(s.res.price) : '';
-  drawZones(s.sup, s.res);
+  if (dp) renderTradePlan(dp, thb);
+}
+
+// Today's day-trading plan (same logic as the 07:00 LINE message)
+function tradePlan(price, horizon) {
+  const lv = state.daily.length ? PLAN.levelsFromDaily(state.daily) : null;
+  if (!lv) return null;
+  const dp = PLAN.build({ price, levels: lv.levels, bias: { short: horizon[0].key, mid: horizon[1].key, long: horizon[2].key } });
+  dp.from = lv.from;
+  return dp;
+}
+
+function renderTradePlan(dp, thb) {
+  $('tplan').className = `card tplan ${dp.trend}`;
+  $('tpDate').textContent = new Date().toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'short' });
+  $('tpHead').textContent = `${dp.icon} ${dp.headline}`;
+  const side = (p, heading) => {
+    if (!p) return '';
+    const buy = p.side === 'BUY';
+    const r = (label, v, cls = '', note = '') => `<div class="tp-row ${cls}"><span>${label}</span><b class="mono">${v}</b>${note ? `<small>${note}</small>` : ''}</div>`;
+    return `<div class="tp-side ${buy ? 'buy' : 'sell'}">
+      <p class="tp-title">${heading}: <b>${buy ? 'ซื้อ' : 'ขาย'}</b>${p.note ? ` <small>(${p.note})</small>` : ''}</p>
+      ${r(buy ? '🎯 จุดซื้อ' : '🎯 จุดขาย', f2(p.entry), 'entry', `${p.label}${thb(p.entry) ? ` · ${thb(p.entry)}` : ''}`)}
+      ${r('🛑 ตัดขาดทุน', f2(p.sl), 'sl', buy ? 'ถ้าลงถึงจุดนี้ ปิดทันที' : 'ถ้าขึ้นถึงจุดนี้ ปิดทันที')}
+      ${r('💰 เป้า 1', f2(p.tp1), 'tp')}
+      ${r('💰 เป้า 2', f2(p.tp2), 'tp')}
+      ${r('กำไร : ความเสี่ยง', `${p.rr.toFixed(1)} : 1`)}
+    </div>`;
+  };
+  $('tpSides').innerHTML = side(dp.primary, 'แผนหลัก') + side(dp.secondary, 'แผนสำรอง');
+  $('tpWarn').textContent = dp.invalidate ? `⚠️ ${dp.invalidate}` : '';
+  const f = dp.from;
+  $('tpFrom').textContent = `จุดต่าง ๆ คำนวณจากราคาวัน${f.dayTh}: สูง ${f2(f.high)} · ต่ำ ${f2(f.low)} · ปิด ${f2(f.close)} (Pivot Points) · แผนนี้ส่งเข้า LINE ทุกเช้า 07:00 น.`;
+  drawPlanPoints(dp);
 }
 
 function renderLevels(lv, price) {

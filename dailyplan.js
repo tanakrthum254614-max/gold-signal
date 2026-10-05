@@ -42,14 +42,19 @@
     const above = lv.filter((l) => l.price > price).sort((a, b) => a.price - b.price);
     const below = lv.filter((l) => l.price < price).sort((a, b) => b.price - a.price);
     const buf = Math.max(1, ((levels.R1 || price) - (levels.S1 || price)) * 0.08);
+    // First target that pays at least as much as the stop risks (falls back to the nearest level)
+    const pickTargets = (targets, entry, risk) => {
+      const i = targets.findIndex((t) => Math.abs(t.price - entry) >= risk);
+      return i > 0 ? targets.slice(i) : targets;
+    };
     const label = (l) => (l.name === 'P' ? 'จุดกึ่งกลาง (P)' : `${l.price < price ? 'แนวรับ' : 'แนวต้าน'} (${l.name})`);
 
     // Buy at a support below price, stop under the next support, targets at the levels above
     function buyAt(i) {
       const entry = below[i], stop = below[i + 1];
       if (!entry) return null;
-      const targets = [...below.slice(0, i).reverse(), ...above];
       const sl = stop ? stop.price - buf : entry.price - buf * 4;
+      const targets = pickTargets([...below.slice(0, i).reverse(), ...above], entry.price, entry.price - sl);
       const tp1 = targets[0] ? targets[0].price : entry.price + (entry.price - sl);
       const tp2 = targets[1] ? targets[1].price : tp1 + (tp1 - entry.price);
       return { side: 'BUY', at: entry, entry: entry.price, sl, tp1, tp2, rr: (tp1 - entry.price) / (entry.price - sl) };
@@ -58,8 +63,8 @@
     function sellAt(i) {
       const entry = above[i], stop = above[i + 1];
       if (!entry) return null;
-      const targets = [...above.slice(0, i).reverse(), ...below];
       const sl = stop ? stop.price + buf : entry.price + buf * 4;
+      const targets = pickTargets([...above.slice(0, i).reverse(), ...below], entry.price, sl - entry.price);
       const tp1 = targets[0] ? targets[0].price : entry.price - (sl - entry.price);
       const tp2 = targets[1] ? targets[1].price : tp1 - (entry.price - tp1);
       return { side: 'SELL', at: entry, entry: entry.price, sl, tp1, tp2, rr: (entry.price - tp1) / (sl - entry.price) };
