@@ -9,7 +9,7 @@
 // - ~30 minutes before each high-impact US release, a warning
 // What was already announced is kept in STATE_DIR (restored/saved by the workflow's Actions cache).
 // Usage: node scripts/intraday-run.js data.json
-// Env: LINE_CHANNEL_ACCESS_TOKEN, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, SEND, RECORD, SITE_URL, STATE_DIR, SPREAD_USD
+// Env: LINE_CHANNEL_ACCESS_TOKEN, SEND, RECORD, SITE_URL, STATE_DIR, SPREAD_USD
 const fs = require('fs');
 const path = require('path');
 const SIG = require('../signals.js');
@@ -150,8 +150,7 @@ function newsWarning(n, open) {
     }
   } else delete next.backupSince;
 
-  await send(important);
-  await send(routine, { routine: true });
+  await send([...important, ...routine]);
 
   if (process.env.RECORD === 'true') {
     fs.mkdirSync(STATE_DIR, { recursive: true });

@@ -1,4 +1,4 @@
-// Tells the owner (LINE / Telegram) that an automated job failed, at most once every 3 hours per job.
+// Tells the owner (LINE) that an automated job failed, at most once every 3 hours per job.
 // Usage: node scripts/notify-failure.js "<job name>"     Env: RUN_URL, STATE_DIR, SEND (+ tokens)
 const fs = require('fs');
 const path = require('path');

@@ -1,6 +1,6 @@
-// Saturday-morning weekly report (both systems, after spread) to LINE / Telegram.
+// Saturday-morning weekly report (both systems, after spread) to LINE.
 // Also scores any daily signal that expired after Friday's morning run (the morning job is off on weekends).
-// Usage: node scripts/weekly.js data.json      Env: SEND, RECORD, SPREAD_USD, SITE_URL (+ LINE/Telegram tokens)
+// Usage: node scripts/weekly.js data.json      Env: SEND, RECORD, SPREAD_USD, SITE_URL, LINE_CHANNEL_ACCESS_TOKEN
 const fs = require('fs');
 const path = require('path');
 const SIG = require('../signals.js');

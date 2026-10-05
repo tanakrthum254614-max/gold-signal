@@ -42,7 +42,7 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 - **หลบข่าวแรง**: ปฏิทิน investing.com `endpoints.investing.com/pd-instruments/v1/calendars/economic/events/occurrences?domain_id=1&country_ids=5&importances=high` (CORS เปิด, ดึงได้ทั้งเว็บและ Actions) → ไม่เปิดไม้ ±30 นาที (`RULE.newsMin`) · เตือนล่วงหน้า ~30 นาที · รายการข่าวในข้อความเช้า · backtest **ไม่มี**ตัวกรองข่าว (ไม่มีปฏิทินย้อนหลัง)
 - **ขนาดไม้**: 0.01 lot = 1 ออนซ์ → lot = ทุน×%เสี่ยง ÷ (SL×100) ปัดลง 0.01 · ตั้งค่า (ทุน USD/THB, %เสี่ยง, สเปรด) ในแท็บบัญชี เก็บใน Clerk `unsafeMetadata.goldSettings` + localStorage
 - **สเปรด**: `SIG.summary(list, spread)` หักต่อไม้ · ฝั่งเซิร์ฟเวอร์ใช้ `SPREAD_USD` จาก repo variable `vars.SPREAD_USD` (ค่าเริ่ม 0.4) · เว็บใช้ค่าที่ผู้ใช้ตั้ง
-- **ช่องทางส่ง** (`scripts/notify.js`): สำคัญ (เข้า/TP/SL/สัญญาณเช้า/สรุป) → LINE (+สำเนา Telegram) · ประจำ (อัปเดตรายชั่วโมง/เตือนข่าว) → Telegram ถ้าตั้ง `TELEGRAM_BOT_TOKEN`+`TELEGRAM_CHAT_ID` ไม่งั้น LINE · ส่งพลาดแค่ log ไม่ล้ม
+- **ช่องทางส่ง**: LINE อย่างเดียว (`scripts/notify.js` → `line.js`) · ส่งพลาด (เช่นโควตาหมด) แค่ log ไม่ล้ม · ผู้ใช้ไม่เอา Telegram (ลบโค้ดออกแล้ว)
 - **สรุปรายสัปดาห์**: `weekly-summary.yml` เสาร์ 00:30 UTC (07:30 ไทย) → `scripts/weekly.js` (ปิดสัญญาณรายวันวันศุกร์ที่หมดอายุด้วย)
 - **แจ้งเมื่อระบบพัง**: ทุก workflow มีขั้น `if: failure()` → `scripts/notify-failure.js` (ไม่เกิน 1 ครั้ง/3 ชม./งาน ผ่าน state cache) · ใช้ข้อมูลสำรอง Binance > 30 นาที → แจ้ง 1 ครั้ง/6 ชม.
 

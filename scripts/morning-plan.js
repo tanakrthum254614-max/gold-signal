@@ -95,20 +95,6 @@ const statsLine = (sum) => (sum.traded
   ? `ชนะ ${sum.wins} · แพ้ ${sum.losses} (ชนะ ${sum.winRate}%) · กำไรสะสม ${signed(sum.pnl)}/ออนซ์ (หักสเปรด $${sum.spread}/ไม้)`
   : 'เพิ่งเริ่มบันทึก — ยังไม่มีผลที่ปิดแล้ว');
 
-// Plain-text version (Telegram copy)
-function plainMessage(sig, prev, sum, news) {
-  const buy = sig.side === 'BUY';
-  const lines = [`🎯 สัญญาณทองคำวันนี้ (XAU/USD) · ${thaiDay()}`];
-  if (prev) lines.push(`ผลครั้งก่อน (${prev.id}): ${resultText(prev)}`);
-  if (sig.status === 'skip') lines.push('⏸ วันนี้ไม่มีสัญญาณ');
-  else {
-    lines.push(`${buy ? '🟢 ซื้อตอนนี้' : '🔴 ขายตอนนี้'} ~${money(sig.entry)} · ${'★'.repeat(sig.stars)}`,
-      `🛑 SL ${money(sig.sl)} · 💰 TP ${(sig.tps || [sig.tp]).map(money).join(' / ')}`, lotLine(SIG.RULE.slUsd));
-  }
-  lines.push('📰 ข่าวแรงวันนี้:', ...newsLines(news).map((l) => `• ${l}`), `📊 ${statsLine(sum)}`, SITE_URL);
-  return lines.join('\n');
-}
-
 function flexMessage(a, sig, prev, sum, bt, news) {
   const buy = sig.side === 'BUY';
   const color = buy ? C.up : C.down;
@@ -204,5 +190,5 @@ function flexMessage(a, sig, prev, sum, bt, news) {
   const close = INTRA.nextClose(now);
   const news = (data.news || []).filter((n) => n.time >= now && n.time <= close);
   console.log(`news today: ${news.length}`);
-  await sendFlex(flexMessage(a, sig, prev, sum, bt, news), plainMessage(sig, prev, sum, news));
+  await sendFlex(flexMessage(a, sig, prev, sum, bt, news));
 })().catch((e) => { console.error(e); process.exit(1); });

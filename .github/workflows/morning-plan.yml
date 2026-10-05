@@ -32,8 +32,6 @@ jobs:
       SEND: ${{ github.event_name == 'schedule' || inputs.send }}
       RECORD: ${{ github.event_name == 'schedule' || inputs.record }}
       SPREAD_USD: ${{ vars.SPREAD_USD || '0.4' }}
-      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@v4
