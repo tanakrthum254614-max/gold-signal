@@ -47,7 +47,7 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 - คะแนน = ผลรวม 3 ช่วง (−6…+6) → **เข้าเมื่อ |คะแนน| ≥ 5** · ครั้งละ 1 ไม้ · ไม้ใหม่ได้ในครึ่งชั่วโมงที่เริ่ม ≥15 นาทีหลังไม้ก่อนปิด
 - **เวลาตลาด (ไทย): 07:00–03:00** จันทร์ 07:00 ถึง เสาร์ 03:00 (`INTRA.marketOpen`) · ไม่เปิดไม้ใหม่ 02:00–03:00 · ทุกไม้ปิดภายใน **02:45** (`nextClose`) · ไม่ส่งอัปเดตตอนตลาดปิด
 - SL/TP เหมือนรายวัน
-- **อัปเดต LINE ทุก 30 นาที ไม่ข้าม** (`UPDATE_EVERY`, `updateText` ใน `scripts/intraday-run.js`): **ทั้งฝั่งซื้อและฝั่งขาย** แต่ละฝั่งมีคำตัดสิน (`INTRA.verdict`: ≥57% ✅ ควรเข้า · 53–56% 🟡 ลดขนาดไม้ · <53% ❌ ไม่ควรเข้า) + % + จุดเข้า/SL/TP + บรรทัดสรุปฝั่งที่ได้เปรียบ · ตาราง `calibration` แยก `{buy, sell}` ต่อคะแนน (ทุกครึ่งชั่วโมงจำลองทั้งซื้อและขาย) · ฝั่งขายไม่เคยเกิน ~53% ที่คะแนนใด → ไม้ที่นับสถิติยังเปิดเฉพาะฝั่งซื้อ (`RULE.sides`)
+- **ข้อความอัปเดต 30 นาที** (`UPDATE_EVERY`, `updateText` ใน `scripts/intraday-run.js`) — เช็กทุกครึ่งชั่วโมง แต่**ส่ง LINE เฉพาะตอน ✅ เปลี่ยน** (ดู "ประหยัดโควตา LINE" ด้านล่าง): **ทั้งฝั่งซื้อและฝั่งขาย** แต่ละฝั่งมีคำตัดสิน (`INTRA.verdict`: ≥57% ✅ ควรเข้า · 53–56% 🟡 ลดขนาดไม้ · <53% ❌ ไม่ควรเข้า) + % + จุดเข้า/SL/TP + บรรทัดสรุปฝั่งที่ได้เปรียบ · ตาราง `calibration` แยก `{buy, sell}` ต่อคะแนน (ทุกครึ่งชั่วโมงจำลองทั้งซื้อและขาย) · ฝั่งขายไม่เคยเกิน ~53% ที่คะแนนใด → ไม้ที่นับสถิติยังเปิดเฉพาะฝั่งซื้อ (`RULE.sides`)
   + **% จบกำไร** (winRate = ไม้ที่ปิดได้กำไร: ถึง TP1 หรือปิดตอนหมดเวลาแล้วมีกำไร — ไม่ใช่ "ถึง TP1 ก่อน SL") และ **% ถึง TP1** (= 100 − split[0]) จากตาราง `calibration` ใน `backtest-30m.json` (สถิติ 2 ปี แยกตามคะแนน −6…+6, `INTRA.odds`)
   ระดับ: ≥57% ✅ น่าเข้า · 53–56% 🟡 พอเข้าได้ · ≤52% ⚠️ ใกล้ 50/50 — ไม้ที่ "นับสถิติ" ยังเปิดเฉพาะเมื่อ |คะแนน| ≥ 5
 - ชั่วโมงที่ประกาศไปแล้วเก็บใน `state/notify.json` ผ่าน **Actions cache** (ไม่ commit ทุกชั่วโมง → Vercel ไม่ deploy ถี่)
@@ -107,10 +107,10 @@ config.js       Clerk publishable key + ลิงก์เพิ่มเพื�
 auth.js         หน้าโหลด (SPLASH.step(text, pct) ขยับวงแหวน + นับ % + เก็บขั้นที่ผ่านแล้ว) + ล็อกอิน Google ผ่าน Clerk (clerk-js@6 + @clerk/ui@1 + ภาษาไทย thTH)
 ui.js           แท็บ (hash routing), หน้าบัญชี, แชร์ LINE
 main.js         ดึงข้อมูล investing.com จากเบราว์เซอร์, กราฟ, การ์ดสัญญาณ, หน้าสถิติ
-                หน้าแรกเรียลไทม์: refreshTick (PT1M ทุก 3 วิ) → renderLive (ราคา/กราฟเส้น/สถานะตลาด) + patchIntraCandles
+                หน้าแรกเรียลไทม์: ราคาจากสตรีม (startStream/onStreamTick ~1 วิ) + refreshTick (PT1M ทุก ~21 วิ, ทุก 3 วิเฉพาะตอนสตรีมหลุด) → renderLive (ราคา/กราฟเส้น/สถานะตลาด) + patchIntraCandles
                 (ขยับแท่ง 30m/1h/5h ที่ยังไม่ปิดตามราคาสด) → renderIntra: เกจคะแนนสด INTRA.decide(...,live=true) เทียบคะแนนแท่งปิด,
                 โดนัทฝั่งซื้อ/ขายจาก calibration.split [ไม่ถึง TP1, TP1, TP2, TP3] ตรงกลาง = จบกำไร, ไม้ที่เปิดอยู่ (แถบ SL→TP3), ไทม์ไลน์ข่าว
-                LINE ยังส่งทุก 30 นาทีเหมือนเดิม (ใช้แท่งปิดเท่านั้น) · เว็บสด
+                LINE ใช้แท่งปิดเท่านั้น (ส่งเฉพาะตอน ✅ เปลี่ยน) · เว็บสด
 indicators.js   ตัวชี้วัด (EMA/RSI/MACD/BB/ATR/Stoch/ADX) + เครื่องโหวต — ใช้ทั้งเว็บและ Node
 investing.js    แปลผลวิเคราะห์ investing.com เป็นภาษาไทย (โหมดนักเทรด)
 explain.js      horizons(): แนวโน้มระยะสั้น/กลาง/ยาว จากสรุป investing.com
@@ -123,14 +123,15 @@ backtest.json / backtest-30m.json   ผลทดสอบย้อนหลั�
 scripts/
   fetch_data.py      ดึงข้อมูล (curl_cffi ปลอมเป็น Chrome) · --m15-only = แท่ง 15m/30m/1h/5h
   morning-plan.js    งาน 07:00: ให้คะแนนสัญญาณเก่า + ออกสัญญาณรายวัน + ส่ง LINE
-  alerts.js          ทุก 5 นาที: ติดตามสัญญาณรายวัน แจ้ง TP/SL
-  intraday-run.js    ทุก 5 นาที: ติดตาม/เปิดไม้ 30 นาที แจ้ง LINE
+  check-loop.sh      วนเช็กทุก 5 นาที (~28 นาที/รอบ) เรียก alerts.js + intraday-run.js
+  alerts.js          ทุก 5 นาที (ผ่าน check-loop): ติดตามสัญญาณรายวัน บันทึก TP/SL
+  intraday-run.js    ทุก 5 นาที (ผ่าน check-loop): ติดตาม/เปิดไม้ 30 นาที แจ้ง LINE
   trade-events.js    ข้อความ LINE ของเหตุการณ์ TP/SL (ใช้ร่วมกัน)
   line.js            broadcast ไป LINE Messaging API
   backtest.js / backtest-30m.js   ทดสอบย้อนหลัง (Binance PAXG ผ่าน data-api.binance.vision)
 .github/workflows/
   morning-plan.yml   cron 00:05 UTC จ.–ศ. (= 07:05 เวลาไทย หลังตลาดเปิด)
-  price-alerts.yml   cron ทุก 5 นาที จ.–ศ. (UTC) · แจ้ง TP/SL · อัปเดตทุก 30 นาที · เปิดไม้ 30 นาที
+  price-alerts.yml   cron */15 จ.–ศ. (UTC) แต่ละรอบรัน check-loop.sh เช็กทุก 5 นาที · แจ้ง TP/SL · อัปเดตทุก 30 นาที · เปิดไม้ 30 นาที
 dev-server.js   เซิร์ฟเวอร์ทดสอบในเครื่อง (npm start → http://localhost:3000)
 vercel.json     framework: null (static) + no-cache สำหรับหน้าเว็บและไฟล์ .json
 ```
