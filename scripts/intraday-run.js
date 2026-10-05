@@ -4,8 +4,8 @@
 // rule as scripts/backtest-30m.js: one trade at a time, a new trade only in a half hour that starts
 // at least 15 minutes after the previous one closed.
 // Also, while the market is open (07:00–03:00 Thai time):
-// - every hour, one update (no skipped hours): lean direction, levels and the historical chance of
-//   reaching TP1 first (calibration table in backtest-30m.json)
+// - every half hour, one update (no skipped slots): a buy verdict and a sell verdict, each with levels and
+//   the historical chance of reaching TP1 first (calibration table in backtest-30m.json)
 // - ~30 minutes before each high-impact US release, a warning
 // What was already announced is kept in STATE_DIR (restored/saved by the workflow's Actions cache).
 // Usage: node scripts/intraday-run.js data.json
@@ -24,40 +24,37 @@ const FILE = process.env.INTRADAY_FILE || path.join(__dirname, '..', 'intraday.j
 const BACKTEST = path.join(__dirname, '..', 'backtest-30m.json');
 const STATE_DIR = process.env.STATE_DIR || path.join(__dirname, '..', 'state');
 const STATE_FILE = path.join(STATE_DIR, 'notify.json');
-const UPDATE_EVERY = 60 * 60e3; // routine update interval
+const UPDATE_EVERY = 30 * 60e3; // routine update interval
 const updateSlot = (ms) => Math.floor(ms / UPDATE_EVERY) * UPDATE_EVERY;
 const TH = INTRA.TREND_TH;
 const bars = (rows) => (rows || []).map((b) => ({ time: b[0], open: b[1], high: b[2], low: b[3], close: b[4] }));
 
-// How worthwhile the historical odds are
-const grade = (o) => (!o ? '❔ ยังไม่มีสถิติพอ'
-  : o.winRate >= 57 ? '✅ น่าเข้า'
-    : o.winRate >= 53 ? '🟡 พอเข้าได้ (ลดขนาดไม้)'
-      : '⚠️ ไม่ค่อยคุ้ม — โอกาสใกล้ 50/50');
+// One side of the half-hourly update: verdict from that side's historical odds, plus levels
+function sideLines(dir, dec, price, calib) {
+  const o = INTRA.odds(dec.score, calib, dir > 0 ? 'buy' : 'sell');
+  const lv = INTRA.levels(dir, price);
+  const v = dec.news ? { th: '⏸ งดเข้า (ช่วงข่าวแรง)' } : INTRA.verdict(o);
+  return [
+    `${dir > 0 ? '🟢 ฝั่งซื้อ' : '🔴 ฝั่งขาย'}: ${v.th} · โอกาสถึง TP1 ≈ ${o ? `${o.winRate}%` : '—'}`,
+    `   เข้า ~${money(lv.entry)} · SL ${money(lv.sl)} · TP ${lv.tps.map(money).join(' / ')}`,
+  ];
+}
 
-// The hourly message: current lean, where to enter, SL/TP and historical odds (or the open trade)
-function updateText(dec, price, odds, open, upcoming, now) {
-  const lines = [`⏱️ อัปเดตรายชั่วโมง · ${at(updateSlot(now))} น.`, `ราคาทอง ${money(price)}`];
-  const lv = INTRA.levels(dec.lean || 1, price);
-  const side = lv.side === 'BUY' ? '🟢 ซื้อ (BUY)' : '🔴 ขาย (SELL)';
-  const oddsText = odds ? `${odds.winRate}%` : '—';
+// The half-hourly message: a verdict for buying AND for selling with historical odds (and any open trade)
+function updateText(dec, price, calib, open, upcoming, now) {
+  const lines = [`⏱️ อัปเดต 30 นาที · ${at(updateSlot(now))} น.`, `ราคาทอง ${money(price)}`];
   if (open) {
     const buy = open.side === 'BUY', d = buy ? 1 : -1, hit = open.hit || 0;
     const pnl = (open.realized || 0) + ((3 - hit) / 3) * d * (price - open.entry);
     lines.push(`📌 ถือไม้${buy ? 'ซื้อ' : 'ขาย'}อยู่ที่ ${money(open.entry)} · ตอนนี้ ${signed(pnl)}/ออนซ์`
       + (hit ? ` · ถึง TP${hit} แล้ว (SL อยู่ที่ทุน)` : ` · SL ${money(open.sl)}`));
-    lines.push(`มุมมองตอนนี้: ${dec.lean ? side : 'ไม่มีทิศทาง'} · โอกาส ≈ ${oddsText}`);
-  } else if (!dec.lean) {
-    lines.push('👉 ตอนนี้ไม่มีทิศทาง (ทุกช่วงเวลาไซด์เวย์) — โอกาส ≈ 50/50 รอดูก่อนดีกว่า');
-  } else if (dec.lean < 0 && INTRA.RULE.sides === 'buy') {
-    lines.push('👉 แนวโน้มตอนนี้เป็นขาลง — ระบบเข้าเฉพาะฝั่งซื้อ แนะนำรอ');
-    lines.push(`📊 ถ้าขาย โอกาสถึง TP1 ก่อน SL ≈ ${oddsText} (สถิติ 2 ปี ฝั่งขายแทบไม่มีความได้เปรียบ)`);
-  } else {
-    lines.push(`👉 ถ้าจะเข้า: ${side} ~${money(lv.entry)}`);
-    lines.push(`🛑 SL ${money(lv.sl)} · 💰 TP ${lv.tps.map(money).join(' / ')}`);
-    lines.push(`📊 โอกาสถึง TP1 ก่อน SL ≈ ${oddsText} (สถิติย้อนหลัง คะแนน ${dec.score > 0 ? '+' : ''}${dec.score})`);
-    lines.push(`ระดับ: ${grade(odds)}`);
   }
+  lines.push(...sideLines(1, dec, price, calib), ...sideLines(-1, dec, price, calib));
+  const ob = INTRA.odds(dec.score, calib, 'buy'), os = INTRA.odds(dec.score, calib, 'sell');
+  const best = [[1, ob], [-1, os]].filter(([, o]) => o && o.winRate >= 53).sort((a, b) => b[1].winRate - a[1].winRate)[0];
+  lines.push(dec.news ? '👉 สรุป: รอให้ข่าวผ่านไปก่อน'
+    : best ? `👉 สรุป: ${best[0] > 0 ? 'ฝั่งซื้อ' : 'ฝั่งขาย'}ได้เปรียบกว่า (${best[1].winRate}%)${dec.dir ? ' · ถึงเกณฑ์เข้าจริงแล้ว' : ` · ยังไม่ถึงเกณฑ์เข้าจริง (±${INTRA.RULE.threshold}) ลดขนาดไม้`}`
+      : '👉 สรุป: ทั้งสองฝั่งยังไม่คุ้ม (โอกาสใกล้ 50/50) — รอดีกว่า');
   if (dec.news) lines.push(`📰 ช่วงข่าวแรง ${at(dec.news.time)} น. ${dec.news.title} — งดเปิดไม้ใหม่`);
   else if (upcoming) lines.push(`📰 ข่าวแรงถัดไป ${at(upcoming.time)} น. ${upcoming.title}`);
   lines.push(`แนวโน้ม 30น. ${TH[dec.keys.m30]} · 1ชม. ${TH[dec.keys.h1]} · 5ชม. ${TH[dec.keys.h5]}`);
@@ -130,12 +127,12 @@ function newsWarning(n, open) {
     console.log(`new trade ${t.id} ${t.side} ${t.entry} sl ${t.sl} tps ${t.tps.join('/')}`);
   }
 
-  // 3. Market-hours messages: hourly update + warning ~30 minutes before high-impact news
+  // 3. Market-hours messages: half-hourly update + warning ~30 minutes before high-impact news
   const open = store.trades.find((t) => !SIG.isFinal(t));
   const hour = updateSlot(now);
   const newHour = dec && !dec.stale && hour > (state.lastSlot || 0);
   const upcoming = news.find((n) => n.time > now);
-  if (newHour && !(open && open.createdAt === now)) routine.push(updateText(dec, price, odds, open, upcoming, now));
+  if (newHour && !(open && open.createdAt === now)) routine.push(updateText(dec, price, calib, open, upcoming, now));
   const warned = new Set(state.warned || []);
   const soon = INTRA.marketOpen(now) ? news.filter((n) => n.time > now && n.time - now <= 40 * 60e3 && !warned.has(n.time)) : [];
   soon.forEach((n) => { routine.push(newsWarning(n, open)); warned.add(n.time); });

@@ -56,7 +56,8 @@ function before(bars, t, n = 260) {
   console.log(`bars: 15m=${m15.length} 30m=${m30.length} 1h=${h1.length} 5h=${h5.length}`);
 
   const trades = [];
-  const calib = {}; // score → how often a trade in the lean direction hit TP1 before the stop
+  // side → score → how often a hypothetical buy / sell at that half hour hit TP1 before the stop
+  const calib = { buy: {}, sell: {} };
   let busyUntil = 0, decisions = 0;
   for (let t = INTRA.slotOf(start) + INTRA.SLOT; t < now - 864e5; t += INTRA.SLOT) {
     const wd = new Date(t).getUTCDay();
@@ -65,14 +66,13 @@ function before(bars, t, n = 260) {
     if (!dec || dec.stale) continue;
     const price = before(m15, t, 1)[0];
     if (!price) continue;
-    // Calibration: every half hour, a hypothetical trade in the lean direction
-    if (dec.lean) {
-      const hyp = INTRA.makeTrade({ ...dec, dir: dec.lean }, price.close, t);
-      const r = SIG.evaluate(hyp, before(m15, hyp.expiresAt + 1, 200).filter((x) => x.time >= t), now);
-      if (r.status === 'win' || r.status === 'loss') {
-        const c = (calib[dec.score] = calib[dec.score] || { n: 0, wins: 0, pnl: 0 });
-        c.n++; if (r.status === 'win') c.wins++; c.pnl += r.pnl;
-      }
+    // Calibration: every half hour, a hypothetical buy AND a hypothetical sell
+    const ahead = before(m15, t + 864e5, 200).filter((x) => x.time >= t);
+    for (const [side, dir] of [['buy', 1], ['sell', -1]]) {
+      const r = SIG.evaluate(INTRA.makeTrade({ ...dec, dir }, price.close, t), ahead, now);
+      if (r.status !== 'win' && r.status !== 'loss') continue;
+      const c = (calib[side][dec.score] = calib[side][dec.score] || { n: 0, wins: 0, pnl: 0 });
+      c.n++; if (r.status === 'win') c.wins++; c.pnl += r.pnl;
     }
     if (t < tradeFrom || t < busyUntil) continue;
     decisions++;
@@ -85,10 +85,14 @@ function before(bars, t, n = 260) {
 
   const s = SIG.summary(trades);
   const days = DAYS * 5 / 7;
-  const calibration = Object.fromEntries(Object.entries(calib).sort((a, b) => a[0] - b[0]).map(([k, c]) =>
+  const table = (bySide) => Object.fromEntries(Object.entries(bySide).sort((a, b) => a[0] - b[0]).map(([k, c]) =>
     [k, { n: c.n, winRate: Math.round((c.wins / c.n) * 100), avg: SIG.round(c.pnl / c.n) }]));
+  const calibration = { buy: table(calib.buy), sell: table(calib.sell) };
   const out = { generatedAt: now, days: DAYS, calibrationDays: CAL_DAYS, rule: INTRA.RULE, source: 'Binance PAXG/USDT (จำลอง)', perDay: +(trades.length / days).toFixed(1), summary: s, calibration, trades };
   fs.writeFileSync(path.join(__dirname, '..', 'backtest-30m.json'), JSON.stringify(out));
-  Object.entries(calibration).forEach(([k, c]) => console.log(`  score ${String(k).padStart(2)}: n=${String(c.n).padStart(4)} win=${c.winRate}% avg=${c.avg}`));
+  for (let k = -6; k <= 6; k++) {
+    const b = calibration.buy[k], s2 = calibration.sell[k];
+    if (b || s2) console.log(`  score ${String(k).padStart(2)}: buy win=${b ? b.winRate : '-'}% sell win=${s2 ? s2.winRate : '-'}% (n=${b ? b.n : 0})`);
+  }
   console.log(`decisions=${decisions} trades=${s.traded} (~${out.perDay}/day) win=${s.winRate}% pnl=$${s.pnl}/oz after-spread≈$${Math.round(s.pnl - 0.4 * s.traded)} TP1/2/3=${s.tp1}/${s.tp2}/${s.tp3}`);
 })().catch((e) => { console.error(e); process.exit(1); });

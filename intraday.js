@@ -5,8 +5,9 @@
   const TA = root.TA || (typeof require === 'function' ? require('./indicators.js') : null);
   const SIG = root.SIG || (typeof require === 'function' ? require('./signals.js') : null);
 
-  // sides 'buy': only buy trades — over 2 years buys at +5/+6 won ~56–58% vs ~50% for sells.
-  // newsMin: no new trades this many minutes either side of a high-impact USD news release.
+  // sides: which official (recorded) trades to open — 'buy' or 'both'. Over 2 years a hypothetical sell
+  // never beat ~53% at any score (buys reach 56–58%), so official trades are buys; the half-hourly
+  // update still rates both sides. newsMin: no new trades ± this many minutes around high-impact US news.
   const RULE = { threshold: 5, slUsd: 15, tpUsd: [15, 20, 30], maxHoldMs: 24 * 3600e3, sides: 'buy', newsMin: 30 };
   const SLOT = 30 * 60e3;
   const STRENGTH = { strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 };
@@ -70,11 +71,22 @@
     return lines;
   }
 
-  // Historical odds for a score, from the calibration table in backtest-30m.json:
-  // { "<score>": { n, winRate, avg } } — winRate = % of trades in the lean direction that hit TP1 first
-  function odds(score, calibration) {
-    const c = calibration && calibration[String(score)];
+  // Historical odds at a score, from the calibration table in backtest-30m.json:
+  // { buy: { "<score>": { n, winRate, avg } }, sell: {...} } — winRate = % of hypothetical trades on that
+  // side, opened at that score, that reached TP1 before the stop. side defaults to the score's direction.
+  function odds(score, calibration, side) {
+    if (!calibration) return null;
+    const s = side || (score < 0 ? 'sell' : 'buy');
+    const c = calibration[s] ? calibration[s][String(score)] : calibration[String(score)]; // older single table
     return c && c.n >= 30 ? c : null;
+  }
+
+  // Plain verdict for one side from its odds
+  function verdict(o) {
+    if (!o) return { key: 'unknown', th: '❔ ยังไม่มีสถิติพอ' };
+    if (o.winRate >= 57) return { key: 'good', th: '✅ ควรเข้า' };
+    if (o.winRate >= 53) return { key: 'ok', th: '🟡 เข้าได้ แต่ลดขนาดไม้' };
+    return { key: 'bad', th: '❌ ไม่ควรเข้า' };
   }
 
   // Entry / stop / targets for a direction at a price (used for the half-hourly suggestion too)
@@ -97,7 +109,7 @@
     };
   }
 
-  const INTRA = { RULE, SLOT, HOURS, slotOf, closed, marketOpen, nextClose, newsNear, decide, reasons, odds, levels, makeTrade, TREND_TH };
+  const INTRA = { RULE, SLOT, HOURS, slotOf, closed, marketOpen, nextClose, newsNear, decide, reasons, odds, verdict, levels, makeTrade, TREND_TH };
   if (typeof module !== 'undefined' && module.exports) module.exports = INTRA;
   else root.INTRA = INTRA;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -641,16 +641,18 @@ function renderIntra() {
   } else if (dec && dec.dir) {
     call = `${dec.dir > 0 ? '🟢 ซื้อ' : '🔴 ขาย'}ได้ — ระบบกำลังส่งสัญญาณ (ภายในไม่กี่นาที)`;
     cls = dec.dir > 0 ? 'buy' : 'sell';
-  } else if (dec && dec.lean < 0 && INTRA.RULE.sides === 'buy') {
-    call = '⏸ แนวโน้มลง — ระบบเข้าเฉพาะฝั่งซื้อ แนะนำรอ';
+  } else if (dec && dec.news) {
+    call = '⏸ ช่วงข่าวแรง — รอให้ข่าวผ่านไปก่อน';
     cls = 'wait';
-  } else if (dec && dec.lean) {
-    // Not strong enough for an official trade: still show which way to lean and the odds
-    const o = INTRA.odds(dec.score, state.bt30 && state.bt30.calibration);
-    call = `👉 ถ้าจะเข้า: ${dec.lean > 0 ? '🟢 ซื้อ' : '🔴 ขาย'}${o ? ` · โอกาส ≈ ${o.winRate}%` : ''}`;
+  } else if (dec) {
+    // Not an official trade: say which side (if any) has the better historical odds
+    const calib = state.bt30 && state.bt30.calibration;
+    const best = [[1, INTRA.odds(dec.score, calib, 'buy')], [-1, INTRA.odds(dec.score, calib, 'sell')]]
+      .filter(([, o]) => o && o.winRate >= 53).sort((a, b) => b[1].winRate - a[1].winRate)[0];
+    call = best ? `👉 ${best[0] > 0 ? '🟢 ฝั่งซื้อ' : '🔴 ฝั่งขาย'}ได้เปรียบกว่า · โอกาส ≈ ${best[1].winRate}%` : '⏸ ทั้งสองฝั่งยังไม่คุ้ม — โอกาสใกล้ 50/50';
     cls = 'wait';
   } else {
-    call = '⏸ ไม่มีทิศทาง — โอกาส ≈ 50/50';
+    call = 'กำลังวิเคราะห์…';
     cls = 'wait';
   }
   $('intraCard').className = `card intra ${cls}`;
@@ -681,17 +683,23 @@ function renderIntra() {
         <div class="n sl"><label>🛑 SL${hit ? ' → ทุน' : ''}</label><b class="mono">${f2(hit ? open.entry : open.sl)}</b></div>
         ${open.tps.map((tp, k) => `<div class="n tp${hit > k ? ' done' : ''}"><label>TP${k + 1}${hit > k ? ' ✓' : ''}</label><b class="mono">${f2(tp)}</b></div>`).join('')}
       </div>${lotHtml(INTRA.RULE.slUsd)}</div>`;
-  } else if (dec && state.lastPrice != null && (dec.lean > 0 || (dec.lean && INTRA.RULE.sides !== 'buy'))) {
-    const o = INTRA.odds(dec.score, state.bt30 && state.bt30.calibration);
-    const lv = INTRA.levels(dec.lean, state.lastPrice);
-    const grade = !o ? '❔ ยังไม่มีสถิติพอ' : o.winRate >= 57 ? '✅ น่าเข้า' : o.winRate >= 53 ? '🟡 พอเข้าได้ (ลดขนาดไม้)' : '⚠️ ไม่ค่อยคุ้ม — โอกาสใกล้ 50/50';
+  } else if (dec && state.lastPrice != null) {
+    // Both sides, each with its own verdict, odds and levels
+    const calib = state.bt30 && state.bt30.calibration;
+    const side = (dir) => {
+      const o = INTRA.odds(dec.score, calib, dir > 0 ? 'buy' : 'sell');
+      const v = dec.news ? { key: 'bad', th: '⏸ งดเข้า (ช่วงข่าว)' } : INTRA.verdict(o);
+      const lv = INTRA.levels(dir, state.lastPrice);
+      return `<div class="in-side ${v.key}">
+        <div class="in-row"><span>${dir > 0 ? '🟢 ฝั่งซื้อ' : '🔴 ฝั่งขาย'} <b>${v.th}</b></span><b class="mono">${o ? `${o.winRate}%` : '—'}</b></div>
+        <div class="sig-tps n3 mini">
+          <div class="n sl"><label>🛑 SL</label><b class="mono">${f2(lv.sl)}</b></div>
+          ${lv.tps.map((tp, k) => `<div class="n tp"><label>TP${k + 1}</label><b class="mono">${f2(tp)}</b></div>`).join('')}
+        </div></div>`;
+    };
     $('inTrade').innerHTML = `<div class="in-trade">
-      <div class="in-row"><span>${lv.side === 'BUY' ? '🟢 ซื้อ' : '🔴 ขาย'} ~<b class="mono">${f2(lv.entry)}</b></span><span class="muted small">${grade}</span></div>
-      <div class="sig-tps n3 mini">
-        <div class="n sl"><label>🛑 SL</label><b class="mono">${f2(lv.sl)}</b></div>
-        ${lv.tps.map((tp, k) => `<div class="n tp"><label>TP${k + 1}</label><b class="mono">${f2(tp)}</b></div>`).join('')}
-      </div>
-      <p class="muted small" style="margin:6px 0 0">โอกาสถึง TP1 ก่อน SL ≈ <b>${o ? `${o.winRate}%` : '—'}</b> จากสถิติย้อนหลังที่คะแนน ${dec.score > 0 ? '+' : ''}${dec.score} · ระบบเปิดไม้จริง (นับสถิติ) เมื่อถึง +${INTRA.RULE.threshold}</p>
+      ${side(1)}${side(-1)}
+      <p class="muted small" style="margin:6px 0 0">% = โอกาสถึง TP1 ก่อน SL จากสถิติย้อนหลัง 2 ปีที่คะแนน ${dec.score > 0 ? '+' : ''}${dec.score} · เข้าที่ราคาตอนนี้ ~${f2(state.lastPrice)} · ไม้ที่นับสถิติจริงเปิดเฉพาะฝั่งซื้อเมื่อคะแนนถึง +${INTRA.RULE.threshold}</p>
       ${lotHtml(INTRA.RULE.slUsd)}
     </div>`;
   } else $('inTrade').innerHTML = '';
