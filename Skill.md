@@ -61,6 +61,11 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 - แหล่งอื่นที่ลองแล้ว: gold-api.com อัปเดต ~1.5 นาที · Binance PAXG trade ~30/นาที, bookTicker mid เปลี่ยน ~ทุก 3 วิ · Swissquote โดน CORS · Binance Futures XAUUSDT ws ไม่มีข้อความ
 - ทดสอบแบบเวลาจริงต้องใช้ puppeteer-core (Chrome `--virtual-time-budget` เร่งเวลา ทำให้วัดความถี่ผิด)
 
+### 🧭 การ์ดแนวโน้มสด (แทนเกจเข็ม, 5 ต.ค. 2569)
+- index.html `#sm`: แถบ 13 ช่อง −6…+6 (`#smSegs`, ช่องที่ติด = `on b|s` + `peak`, `--k` = ความแรง) + เส้นประ "จุดเข้าซื้อ" ที่ +5 + เคอร์เซอร์ (`smCursor`, ตำแหน่ง calc ตาม gap 4px / 3px บนมือถือ) · คะแนนนับขึ้น/ลง (`smCount`) · ข้อความ `smMood` · 3 การ์ด `#smf-m30|h1|h5` (กราฟเล็ก 30 แท่งจาก `state.intraCandles`, จุดปลายเป็น HTML `.smf-pt` เพราะ SVG ยืด, วาดใหม่เมื่อมีแท่งใหม่, โหวต ▲▲ +2) · แถบนับถอยหลังถึงแท่ง 30 นาทีปิด (`renderCycle` ทุก 1 วิ) · โค้ด: main.js `buildMeter` / `renderMeter(dec, off)` · CSS: live.css "Trend strength meter" + theme.css
+- **ตลาดปิด vs ข้อมูลช้า**: `off = !dec.open ? "closed" : dec.stale ? "late" : ""` — "🌙 ตลาดปิด" ดูจากเวลาเท่านั้น (บอกวันด้วย `INTRA.nextOpen`) · ข้อมูลช้า → "⏳ กำลังดึงข้อมูลกราฟล่าสุด…" + ดึงใหม่ (ทุก ≥20 วิ) · `INTRA.reasons` แยกข้อความเหมือนกัน
+- **ต้นเหตุเดิม** (ผู้ใช้เห็น "ตลาดปิด" จันทร์ 23:38): `stale` = แท่ง 30m ล่าสุดเก่ากว่า 2 ชม. — แท่งไม่อัปเดตเมื่อ fetch ล้ม/แท็บหลับ (`every()` ข้ามตอนแท็บซ่อน และตอนกลับมาไม่ได้ดึงแท่ง) · แก้: `patchIntraCandles` ขึ้นแท่งใหม่จากราคาสตรีมเมื่อครบช่วง (เฉพาะสตรีมสด + ตลาดเปิด + ช่วงถัดไปช่วงเดียว) · visibilitychange เรียก `refreshIntraCandles`
+
 ### ⏱️ สัญญาณ 15 นาที — เว็บเท่านั้น (5 ต.ค. 2569)
 - `INTRA.decide15` = `decideWith(FRAMES15, RULE15, …)`: แนวโน้ม 15m/1h/5h · **ซื้ออย่างเดียวที่ +5** · SL/TP เหมือนระบบ 30 นาที · ไม่ส่ง LINE ไม่บันทึกไฟล์
 - เว็บ (main.js `run15`): จำลองย้อนหลังบนแท่ง 15m ที่อยู่บนจอ (investing 160 แท่ง ≈ 40 ชม.) ด้วยกติกาเดียวกับ backtest (ไม้เดียว, รอ 15 นาทีหลังปิด) → การ์ดหน้าแรก (กราฟแท่ง 15m + ▲ ซื้อ / ● TP / ● SL + พื้นหลังเขียว=เข้าได้ เหลือง=ข่าว) และ markers ในหน้ากราฟเมื่อเลือก 15m (ช่วง 2 วัน)
@@ -102,13 +107,13 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 index.html      หน้าเว็บ (แท็บ: สัญญาณ / สถิติ / กราฟ / วิธีใช้ / บัญชี) — asset ทุกตัวมี ?v=<เวอร์ชัน>
 style.css       โครง CSS เดิม (เดิมเป็นธีมมืด)
 theme.css       ธีมสว่าง (ค่าเริ่มต้น · <link id=themeLight> โหลดเป็นไฟล์สุดท้าย ทับสีของ style.css/live.css) · โหมดมืด = ปิดไฟล์นี้ (ปุ่ม 🌙 บนแถบบน / แท็บบัญชี, localStorage gs-theme, ui.js applyTheme → main.js applyChartTheme) — การ์ดขาว เงานุ่ม แถบสีด้านบนบอกสถานะ · สีกราฟอยู่ใน main.js (chartBase / series)
-live.css        หน้าโหลดแบบอนิเมชั่น (วงแหวน % + อนุภาค + รายการขั้น), ราคาสด, เกจแนวโน้ม, โดนัท, การเคลื่อนไหวของแท็บ
+live.css        หน้าโหลดแบบอนิเมชั่น (วงแหวน % + อนุภาค + รายการขั้น), ราคาสด, การ์ดแนวโน้มสด (แถบ −6…+6), โดนัท, การเคลื่อนไหวของแท็บ
 config.js       Clerk publishable key + ลิงก์เพิ่มเพื่อน LINE (ของสาธารณะ ไม่มีความลับ)
 auth.js         หน้าโหลด (SPLASH.step(text, pct) ขยับวงแหวน + นับ % + เก็บขั้นที่ผ่านแล้ว) + ล็อกอิน Google ผ่าน Clerk (clerk-js@6 + @clerk/ui@1 + ภาษาไทย thTH)
 ui.js           แท็บ (hash routing), หน้าบัญชี, แชร์ LINE
 main.js         ดึงข้อมูล investing.com จากเบราว์เซอร์, กราฟ, การ์ดสัญญาณ, หน้าสถิติ
                 หน้าแรกเรียลไทม์: ราคาจากสตรีม (startStream/onStreamTick ~1 วิ) + refreshTick (PT1M ทุก ~21 วิ, ทุก 3 วิเฉพาะตอนสตรีมหลุด) → renderLive (ราคา/กราฟเส้น/สถานะตลาด) + patchIntraCandles
-                (ขยับแท่ง 30m/1h/5h ที่ยังไม่ปิดตามราคาสด) → renderIntra: เกจคะแนนสด INTRA.decide(...,live=true) เทียบคะแนนแท่งปิด,
+                (ขยับแท่ง 30m/1h/5h ที่ยังไม่ปิดตามราคาสด) → renderIntra: renderMeter คะแนนสด INTRA.decide(...,live=true) เทียบคะแนนแท่งปิด,
                 โดนัทฝั่งซื้อ/ขายจาก calibration.split [ไม่ถึง TP1, TP1, TP2, TP3] ตรงกลาง = จบกำไร, ไม้ที่เปิดอยู่ (แถบ SL→TP3), ไทม์ไลน์ข่าว
                 LINE ใช้แท่งปิดเท่านั้น (ส่งเฉพาะตอน ✅ เปลี่ยน) · เว็บสด
 indicators.js   ตัวชี้วัด (EMA/RSI/MACD/BB/ATR/Stoch/ADX) + เครื่องโหวต — ใช้ทั้งเว็บและ Node
@@ -182,7 +187,7 @@ gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=fal
 
 ## 7. บทเรียน / กับดักที่เคยเจอ
 
-- **คลาส CSS ชนกัน**: style.css มี `.gauge` (ของเก่า) อยู่แล้ว เกจใหม่ใช้ `.tg` / `.tg-wrap` · เพิ่มคลาสใหม่ให้ grep ก่อนเสมอ
+- **คลาส CSS ชนกัน**: style.css มี `.gauge`, `.top` (padding 18px — ทำให้ช่องแถบสูงผิด), `.tag.s1/.s0/.s-1` อยู่แล้ว · เพิ่มคลาสใหม่ให้ grep ก่อนเสมอ (การ์ดแนวโน้มใช้ `.sm*` / `.smf*`)
 - **headless Chrome โดน investing.com บล็อก** (ตกไปแหล่งสำรอง) → ใส่ `--user-agent="Mozilla/5.0 ... Chrome/141..."` และ `--window-size` กว้าง ≥500 (headless ใหม่บังคับขั้นต่ำ ~500px)
 - **ห้ามตั้งชื่อไฟล์ราก `app.js` / `server.js` / `index.js`** — Vercel จะคิดว่าเป็น Node server แล้วเว็บพัง (500)
 - **Vercel Hobby บล็อก deploy ถ้า commit author ไม่ใช่บัญชีที่เชื่อมไว้** → workflow commit ด้วยตัวตน `tanakrthum254614-max` (noreply email) ห้ามใช้ github-actions[bot]
@@ -211,6 +216,7 @@ gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=fal
 5. สัญญาณทุกวัน (ไม่จำกัด 5 ดาว) → +$70/ปี (ปัจจุบัน)
 6. เพิ่มระบบ 30 นาที (±5) → +$603/ปี (ปัจจุบัน)
 7. (5 ต.ค. 2569) เปลี่ยนเป็นธีมสว่าง (theme.css) + หน้าโหลดค้างอย่างน้อย 4 วินาที (auth.js MIN_MS) วงแหวนเติมช้าลง
+13. (5 ต.ค. 2569) เกจเข็ม → แถบความแรง −6…+6 + การ์ด 3 กรอบเวลา + นับถอยหลัง · แก้ "ตลาดปิด" ทั้งที่ตลาดเปิด
 12. (5 ต.ค. 2569) ราคาสดจากสตรีม investing.com (~1 วินาที) + ลดการยิง REST
 11. (5 ต.ค. 2569) เพิ่มสัญญาณ 15 นาทีบนเว็บ (ไม่ส่ง LINE) + ลูกศรบนกราฟ
 10. (5 ต.ค. 2569) สัญญาณรายวันเป็นข้อมูลประกอบ (advisory) + เช็กโควตา LINE ทุกเช้า
