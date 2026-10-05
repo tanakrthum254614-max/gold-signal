@@ -10,7 +10,7 @@
   <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610051407">
+  <link rel="stylesheet" href="style.css?v=202610051415">
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -32,7 +32,7 @@
       <ul>
         <li><span>🎯</span>บอกชัด: จุดเข้า · ตัดขาดทุน · เป้าหมาย</li>
         <li><span>📊</span>บันทึกผลทุกสัญญาณ ชนะ–แพ้ ไม่ปิดบัง</li>
-        <li><span>📩</span>ส่งเข้า LINE ทุกเช้า 07:00 (จันทร์–ศุกร์)</li>
+        <li><span>🔔</span>แจ้งเตือน LINE เมื่อถึงจุดเข้า · TP · SL</li>
       </ul>
     </div>
     <div class="login-card">
@@ -92,6 +92,7 @@
               <summary>วิธีใช้สัญญาณนี้ (3 ขั้น)</summary>
               <ol class="steps" id="sgHow"></ol>
             </details>
+            <p class="hint alert-note">🔔 เพิ่มเพื่อน LINE ที่แท็บ <a href="#account">บัญชี</a> แล้วระบบจะแจ้งเตือนทันทีเมื่อราคาถึงจุดเข้า / TP / SL</p>
             <details class="fold">
               <summary>ทำไมถึงให้สัญญาณนี้</summary>
               <ul class="why" id="sgWhy"></ul>
@@ -273,7 +274,8 @@
         <section class="card">
           <h3>สัญญาณคืออะไร?</h3>
           <p>ทุกเช้าวันจันทร์–ศุกร์ เวลา 07:00 ระบบจะให้ <b>1 สัญญาณ</b> ว่าวันนี้ควร <b>ซื้อ</b> หรือ <b>ขาย</b> ทองที่ราคาเท่าไร
-            พร้อมจุด <b>ตัดขาดทุน</b> (ยอมแพ้ถ้าผิดทาง) และ <b>เป้าหมาย</b> (เก็บกำไร) สัญญาณมีอายุถึงเช้าวันถัดไป</p>
+            พร้อมจุด <b>ตัดขาดทุน</b> (ยอมแพ้ถ้าผิดทาง) และ <b>เป้าหมาย</b> (เก็บกำไร) สัญญาณมีอายุถึงเช้าวันถัดไป
+            <br>ระหว่างวันระบบเช็กราคาทุก 5 นาที และส่ง LINE ทันทีเมื่อ 🔔 ถึงจุดเข้า · ✅ ถึงเป้าหมาย · ❌ โดนตัดขาดทุน</p>
         </section>
 
         <section class="card">
@@ -321,7 +323,7 @@
 
         <section class="card">
           <h3>รับสัญญาณทุกเช้าทาง LINE 📩</h3>
-          <p class="muted">ส่งทุกวันจันทร์–ศุกร์ เวลา 07:00 น. พร้อมผลสัญญาณเมื่อวาน</p>
+          <p class="muted">ทุกวันจันทร์–ศุกร์ 07:00 น. ส่งสัญญาณใหม่ + ผลสัญญาณเมื่อวาน และ <b>แจ้งเตือนทันที</b> เมื่อราคาถึงจุดเข้า 🔔 · ถึงเป้าหมาย ✅ · โดนตัดขาดทุน ❌ (เช็กทุก 5 นาที)</p>
           <a class="btn line" id="lineAdd" target="_blank" rel="noopener" hidden>เพิ่มเพื่อน LINE เพื่อรับสัญญาณ</a>
           <p class="muted small" id="lineSoon">กำลังเตรียมบัญชี LINE — เร็ว ๆ นี้</p>
         </section>
@@ -337,21 +339,21 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610051407</p>
+        <p class="muted small center">เวอร์ชัน 202610051415</p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610051407"></script>
-  <script src="auth.js?v=202610051407"></script>
-  <script src="indicators.js?v=202610051407"></script>
-  <script src="investing.js?v=202610051407"></script>
-  <script src="explain.js?v=202610051407"></script>
-  <script src="dailyplan.js?v=202610051407"></script>
-  <script src="signals.js?v=202610051407"></script>
-  <script src="ui.js?v=202610051407"></script>
-  <script src="main.js?v=202610051407"></script>
+  <script src="config.js?v=202610051415"></script>
+  <script src="auth.js?v=202610051415"></script>
+  <script src="indicators.js?v=202610051415"></script>
+  <script src="investing.js?v=202610051415"></script>
+  <script src="explain.js?v=202610051415"></script>
+  <script src="dailyplan.js?v=202610051415"></script>
+  <script src="signals.js?v=202610051415"></script>
+  <script src="ui.js?v=202610051415"></script>
+  <script src="main.js?v=202610051415"></script>
 </body>
 </html>

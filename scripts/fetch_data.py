@@ -5,7 +5,8 @@ rejects ordinary server HTTP clients by TLS fingerprint, so we use curl_cffi to 
 If investing.com still refuses, fall back to Binance PAXG candles (via the geo-unrestricted
 data-api.binance.vision host) shifted onto the gold-api.com spot price.
 
-Usage: python scripts/fetch_data.py data.json
+Usage: python scripts/fetch_data.py data.json [--m15-only]
+  --m15-only  only the 15-minute candles (for the 5-minute price-alert check)
 """
 import json
 import sys
@@ -59,18 +60,32 @@ def from_binance(session):
     return {"source": "binance", "daily": shift(daily), "hourly": shift(hourly), "h4": shift(h4), "m15": shift(m15), "m30": shift(m30)}
 
 
-def main(out_path):
+def m15_investing(session):
+    m15 = get_json(session, f"{INVESTING}/{PAIR_ID}/historical/chart/?interval=PT15M&pointscount=160", HEADERS)["data"]
+    return {"source": "investing.com", "m15": [b[:5] for b in m15]}
+
+
+def m15_binance(session):
+    url = "https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT&interval=15m&limit=200"
+    m15 = [[k[0], float(k[1]), float(k[2]), float(k[3]), float(k[4])] for k in get_json(session, url)]
+    off = get_json(session, "https://api.gold-api.com/price/XAU")["price"] - m15[-1][4]
+    return {"source": "binance", "m15": [[r[0], r[1] + off, r[2] + off, r[3] + off, r[4] + off] for r in m15]}
+
+
+def main(out_path, m15_only=False):
     session = requests.Session(impersonate="chrome")
+    primary, backup = (m15_investing, m15_binance) if m15_only else (from_investing, from_binance)
     try:
-        data = from_investing(session)
+        data = primary(session)
     except Exception as e:  # noqa: BLE001 - any failure means "use the backup source"
         print(f"investing.com unavailable ({e}); using Binance backup", file=sys.stderr)
-        data = from_binance(session)
+        data = backup(session)
     data["fetchedAt"] = int(time.time() * 1000)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False)
-    print(f"source={data['source']} daily={len(data['daily'])} hourly={len(data['hourly'])}")
+    print(f"source={data['source']} " + " ".join(f"{k}={len(v)}" for k, v in data.items() if isinstance(v, list)))
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "data.json")
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    main(args[0] if args else "data.json", m15_only="--m15-only" in sys.argv)

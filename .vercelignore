@@ -1,6 +1,7 @@
 dev-server.js
 README.md
 package.json
+requirements.txt
 .agents
 .claude
 skills-lock.json

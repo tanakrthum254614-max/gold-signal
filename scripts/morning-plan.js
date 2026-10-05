@@ -8,6 +8,7 @@ const INV = require('../investing.js');
 const EXPLAIN = require('../explain.js');
 const PLAN = require('../dailyplan.js');
 const SIG = require('../signals.js');
+const { broadcast } = require('./line.js');
 
 const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
 const SIGNALS_FILE = path.join(__dirname, '..', 'signals.json');
@@ -126,17 +127,6 @@ function flexMessage(a, sig, prev, sum, bt) {
       },
     },
   };
-}
-
-async function broadcast(message) {
-  const token = (process.env.LINE_CHANNEL_ACCESS_TOKEN || '').trim(); // copy-paste often adds spaces/newlines
-  if (!token) throw new Error('LINE_CHANNEL_ACCESS_TOKEN is not set');
-  const r = await fetch('https://api.line.me/v2/bot/message/broadcast', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ messages: [message] }),
-  });
-  if (!r.ok) throw new Error(`LINE ${r.status}: ${await r.text()}`);
 }
 
 (async function main() {

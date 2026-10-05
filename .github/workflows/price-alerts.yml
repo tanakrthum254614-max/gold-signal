@@ -1,0 +1,57 @@
+name: Price alerts
+
+on:
+  # Every 5 minutes Mon–Fri (UTC) = Mon 07:00 – Sat 06:59 Thai time, covering every signal's window.
+  # GitHub may start scheduled runs a few minutes late.
+  schedule:
+    - cron: "*/5 * * * 1-5"
+  workflow_dispatch:
+    inputs:
+      send:
+        description: "Send alerts to LINE"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+# Shares a lock with the morning job so the two never write signals.json at the same time
+concurrency:
+  group: signals-file
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SEND: ${{ github.event_name == 'schedule' || inputs.send }}
+      RECORD: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: pip install -r requirements.txt
+      - name: Fetch 15-minute candles
+        run: python scripts/fetch_data.py data.json --m15-only
+      - name: Check today's signal and alert
+        env:
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          SITE_URL: https://gold-signal-ten.vercel.app
+        run: node scripts/alerts.js data.json
+      - name: Save results
+        # Commit as the repo owner's GitHub identity: Vercel (Hobby) only deploys commits from linked accounts
+        run: |
+          git add signals.json
+          git diff --cached --quiet && exit 0
+          git config user.name "tanakrthum254614-max"
+          git config user.email "$(gh api users/tanakrthum254614-max --jq '"\(.id)+\(.login)@users.noreply.github.com"')"
+          git commit -m "Signal alert $(TZ=Asia/Bangkok date '+%F %H:%M')"
+          git pull --rebase -q && git push
+        env:
+          GH_TOKEN: ${{ github.token }}
