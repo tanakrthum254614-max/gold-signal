@@ -10,9 +10,9 @@
   <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610051939">
-  <link rel="stylesheet" href="live.css?v=202610051939">
-  <link rel="stylesheet" href="theme.css?v=202610051939" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610051956">
+  <link rel="stylesheet" href="live.css?v=202610051956">
+  <link rel="stylesheet" href="theme.css?v=202610051956" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -376,7 +376,7 @@
 
         <section class="card">
           <h3>⏱️ สัญญาณ 30 นาที</h3>
-          <p>ระหว่างวันระบบวิเคราะห์ทุกครึ่งชั่วโมง ถ้าแนวโน้ม <b>30 นาที · 1 ชม. · 5 ชม.</b> ชี้ไปทางเดียวกันชัดเจน จะส่ง <b>“ซื้อ/ขายตอนนี้”</b> พร้อม SL $15 และ TP $15 / $20 / $30 เข้า LINE ทันที และส่ง <b>อัปเดตทุก 30 นาที</b> บอกทั้ง <b>ฝั่งซื้อ</b> และ <b>ฝั่งขาย</b> ว่า ✅ ควรเข้า / 🟡 เข้าได้แต่ลดขนาดไม้ / ❌ ไม่ควรเข้า พร้อม % “จบกำไร” และ % “ถึง TP1” จากสถิติย้อนหลัง 2 ปี — บนเว็บแสดงเป็นแผนภูมิวงกลมแบบสด
+          <p>ระหว่างวันระบบวิเคราะห์ทุกครึ่งชั่วโมง ถ้าแนวโน้ม <b>30 นาที · 1 ชม. · 5 ชม.</b> ชี้ไปทางเดียวกันชัดเจน จะส่ง <b>“ซื้อ/ขายตอนนี้”</b> พร้อม SL $15 และ TP $15 / $20 / $30 เข้า LINE ทันที · ระบบเช็กทุก 30 นาที แต่<b>ส่ง LINE เฉพาะตอนที่ฝั่งใดฝั่งหนึ่งขึ้น ✅ หรือหมดจังหวะ</b> (เฉลี่ยวันละ ~2 ครั้ง ประหยัดโควตา LINE ฟรี) บอกทั้ง <b>ฝั่งซื้อ</b> และ <b>ฝั่งขาย</b> ว่า ✅ ควรเข้า / 🟡 เข้าได้แต่ลดขนาดไม้ / ❌ ไม่ควรเข้า พร้อม % “จบกำไร” และ % “ถึง TP1” จากสถิติย้อนหลัง 2 ปี — บนเว็บแสดงเป็นแผนภูมิวงกลมแบบสด
             (ประมาณวันละ 2–4 ไม้ ครั้งละไม้เดียว) ถ้ายังไม่ชัด หน้าเว็บจะบอกว่า <b>“ยังไม่ควรเข้า”</b> พร้อมเหตุผล</p>
         </section>
 
@@ -388,6 +388,7 @@
             <li><b>📏 คำนวณขนาดไม้ให้</b> — ใส่ทุนและ % ที่ยอมเสียในแท็บ <a href="#account">บัญชี</a> ทุกสัญญาณจะบอกว่าควรเข้ากี่ lot (0.01 lot = ทอง 1 ออนซ์)</li>
             <li><b>💸 หักสเปรดของโบรกคุณ</b> — สถิติทุกหน้าคิดกำไรหลังหักสเปรดแล้ว ตั้งค่าได้ในแท็บบัญชี</li>
             <li><b>📊 สรุปผลทุกเสาร์ 07:30</b> — สัปดาห์นี้กี่ไม้ ชนะ/แพ้ กำไรสุทธิ เทียบสัปดาห์ก่อน</li>
+            <li><b>🛑 เบรกฉุกเฉิน</b> — ถ้าแพ้ติดกัน 5 ไม้ หรือขาดทุนเกิน $60/ออนซ์ ในสัปดาห์เดียว ระบบ 30 นาทีจะหยุดเปิดไม้ใหม่จนถึงจันทร์หน้า 07:00 และแจ้งทาง LINE</li>
             <li><b>🔧 แจ้งเตือนเมื่อระบบมีปัญหา</b> — ถ้าดึงข้อมูลไม่ได้หรืองานอัตโนมัติล้ม จะส่งข้อความบอก</li>
           </ul>
         </section>
@@ -479,22 +480,22 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610051939</p>
+        <p class="muted small center">เวอร์ชัน 202610051956</p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610051939"></script>
-  <script src="auth.js?v=202610051939"></script>
-  <script src="indicators.js?v=202610051939"></script>
-  <script src="investing.js?v=202610051939"></script>
-  <script src="explain.js?v=202610051939"></script>
-  <script src="dailyplan.js?v=202610051939"></script>
-  <script src="signals.js?v=202610051939"></script>
-  <script src="intraday.js?v=202610051939"></script>
-  <script src="ui.js?v=202610051939"></script>
-  <script src="main.js?v=202610051939"></script>
+  <script src="config.js?v=202610051956"></script>
+  <script src="auth.js?v=202610051956"></script>
+  <script src="indicators.js?v=202610051956"></script>
+  <script src="investing.js?v=202610051956"></script>
+  <script src="explain.js?v=202610051956"></script>
+  <script src="dailyplan.js?v=202610051956"></script>
+  <script src="signals.js?v=202610051956"></script>
+  <script src="intraday.js?v=202610051956"></script>
+  <script src="ui.js?v=202610051956"></script>
+  <script src="main.js?v=202610051956"></script>
 </body>
 </html>

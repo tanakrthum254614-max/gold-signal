@@ -872,8 +872,11 @@ function renderIntra() {
     ? `คะแนนสด (จาก ±6) · รอบล่าสุดแท่งปิด ${signedScore(official.score)}`
     : 'คะแนนสด (จาก ±6) · เข้าเมื่อถึง +5';
 
+  const pause = state.intra && INTRA.paused(state.intra, now) ? state.intra.pause : null;
   let call, cls;
-  if (open) {
+  if (pause && !open) {
+    call = `🛑 ระบบพัก — ${pause.reason}`; cls = 'wait';
+  } else if (open) {
     call = `📌 มีไม้${open.side === 'BUY' ? 'ซื้อ' : 'ขาย'}เปิดอยู่ — ถือต่อตามแผน`;
     cls = open.side === 'BUY' ? 'buy' : 'sell';
   } else if (!dec) {
@@ -896,7 +899,10 @@ function renderIntra() {
   $('intraCard').className = `card intra ${cls}`;
   $('inCall').textContent = call;
 
-  if (dec) {
+  if (pause && !open) {
+    $('inWhy').textContent = `ไม่เปิดไม้ใหม่จนถึง ${thaiTime(pause.until)} น. — เบรกฉุกเฉินเมื่อแพ้ ${INTRA.RULE.pause.streak} ไม้ติด หรือขาดทุนสัปดาห์ละ $${INTRA.RULE.pause.weekLoss}/ออนซ์`;
+    $('inParts').innerHTML = '';
+  } else if (dec) {
     const why = INTRA.reasons(dec);
     $('inWhy').textContent = why.slice(1).join(' · ') || (dec.dir ? 'ทั้ง 3 ช่วงเวลาชี้ไปทางเดียวกันชัดเจน' : '');
     $('inParts').innerHTML = [['30 นาที', dec.keys.m30], ['1 ชม.', dec.keys.h1], ['5 ชม.', dec.keys.h5]]
@@ -913,6 +919,7 @@ function renderIntra() {
   [[1, 'dnBuy', 'buy'], [-1, 'dnSell', 'sell']].forEach(([dir, id, side]) => {
     const o = dec ? INTRA.odds(dec.score, calib, side) : null;
     const v = dec && dec.stale ? { key: 'unknown', th: '🌙 ตลาดปิด' }
+      : pause ? { key: 'bad', th: '🛑 ระบบพัก' }
       : dec && dec.news ? { key: 'bad', th: '⏸ งดเข้า (ช่วงข่าว)' } : INTRA.verdict(o);
     updateDonut($(id), dir, o, v, price);
   });

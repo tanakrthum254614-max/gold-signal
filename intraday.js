@@ -8,7 +8,9 @@
   // sides: which official (recorded) trades to open — 'buy' or 'both'. Over 2 years a hypothetical sell
   // never beat ~53% at any score (buys reach 56–58%), so official trades are buys; the half-hourly
   // update still rates both sides. newsMin: no new trades ± this many minutes around high-impact US news.
-  const RULE = { threshold: 5, slUsd: 15, tpUsd: [15, 20, 30], maxHoldMs: 24 * 3600e3, sides: 'buy', newsMin: 30 };
+  // pause: stop opening trades until next Monday 07:00 after `streak` losses in a row, or when this
+  // week's result after spread reaches −weekLoss dollars per ounce (safety brake when live results go bad).
+  const RULE = { threshold: 5, slUsd: 15, tpUsd: [15, 20, 30], maxHoldMs: 24 * 3600e3, sides: 'buy', newsMin: 30, pause: { streak: 5, weekLoss: 60 } };
   const SLOT = 30 * 60e3;
   const STRENGTH = { strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 };
   const TREND_TH = { strong_buy: 'ขาขึ้นแรง', buy: 'ขาขึ้น', neutral: 'ไซด์เวย์', sell: 'ขาลง', strong_sell: 'ขาลงแรง' };
@@ -113,7 +115,29 @@
     };
   }
 
-  const INTRA = { RULE, SLOT, HOURS, slotOf, closed, marketOpen, nextClose, newsNear, decide, reasons, odds, verdict, levels, makeTrade, TREND_TH };
+  // Monday 07:00 Thai time of the week containing `now`, and of the following week
+  function weekStart(now) {
+    const th = new Date(now + 7 * 3600e3);
+    const monday = new Date(now + 7 * 3600e3 - ((th.getUTCDay() + 6) % 7) * 864e5).toISOString().slice(0, 10);
+    const t = Date.parse(`${monday}T07:00:00+07:00`);
+    return t > now ? t - 7 * 864e5 : t; // Monday before 07:00 still belongs to last week
+  }
+  const nextWeek = (now) => weekStart(now) + 7 * 864e5;
+
+  // Should the system stop opening trades? trades: recorded trades; since: ignore trades before this
+  // (the end of the previous pause). Returns { reason } or null.
+  function pauseCheck(trades, now, spread = 0, since = 0) {
+    const done = trades.filter((t) => (t.status === 'win' || t.status === 'loss') && t.createdAt >= since);
+    const P = RULE.pause;
+    const last = done.slice(-P.streak);
+    if (last.length === P.streak && last.every((t) => t.status === 'loss')) return { reason: `แพ้ติดกัน ${P.streak} ไม้` };
+    const week = done.filter((t) => t.createdAt >= weekStart(now)).reduce((a, t) => a + t.pnl - spread, 0);
+    if (week <= -P.weekLoss) return { reason: `ขาดทุนสัปดาห์นี้ −$${Math.abs(SIG.round(week))}/ออนซ์ (เกินเพดาน $${P.weekLoss})` };
+    return null;
+  }
+  const paused = (store, now) => !!(store && store.pause && now < store.pause.until);
+
+  const INTRA = { RULE, weekStart, nextWeek, pauseCheck, paused, SLOT, HOURS, slotOf, closed, marketOpen, nextClose, newsNear, decide, reasons, odds, verdict, levels, makeTrade, TREND_TH };
   if (typeof module !== 'undefined' && module.exports) module.exports = INTRA;
   else root.INTRA = INTRA;
 })(typeof window !== 'undefined' ? window : globalThis);

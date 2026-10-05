@@ -4,8 +4,11 @@
 // rule as scripts/backtest-30m.js: one trade at a time, a new trade only in a half hour that starts
 // at least 15 minutes after the previous one closed.
 // Also, while the market is open (07:00–03:00 Thai time):
-// - every half hour, one update (no skipped slots): a buy verdict and a sell verdict, each with levels and
-//   the historical chance of reaching TP1 first (calibration table in backtest-30m.json)
+// - checked every half hour, but SENT only when a side turns ✅ (good to enter) or stops being ✅ — about
+//   2 messages a day instead of ~40, so the free LINE plan lasts the month. Each update has a buy and a
+//   sell verdict with levels and historical odds (calibration table in backtest-30m.json)
+// - safety brake (INTRA.pauseCheck): after 5 losses in a row or −$60/oz this week, no new trades (and no
+//   ✅ updates) until next Monday 07:00; recorded as `pause` in intraday.json so the website shows it
 // - ~30 minutes before each high-impact US release, a warning
 // What was already announced is kept in STATE_DIR (restored/saved by the workflow's Actions cache).
 // Usage: node scripts/intraday-run.js data.json
@@ -41,8 +44,11 @@ function sideLines(dir, dec, price, calib) {
 }
 
 // The half-hourly message: a verdict for buying AND for selling with historical odds (and any open trade)
-function updateText(dec, price, calib, open, upcoming, now) {
-  const lines = [`⏱️ อัปเดต 30 นาที · ${at(updateSlot(now))} น.`, `ราคาทอง ${money(price)}`];
+function updateText(dec, price, calib, open, upcoming, now, good) {
+  const head = good.length
+    ? `✅ จังหวะเข้า${good.map((d) => (d > 0 ? 'ฝั่งซื้อ' : 'ฝั่งขาย')).join(' / ')} · ${at(updateSlot(now))} น.`
+    : `⏸ หมดจังหวะ — กลับไปรอ · ${at(updateSlot(now))} น.`;
+  const lines = [head, `ราคาทอง ${money(price)}`];
   if (open) {
     const buy = open.side === 'BUY', d = buy ? 1 : -1, hit = open.hit || 0;
     const pnl = (open.realized || 0) + ((3 - hit) / 3) * d * (price - open.entry);
@@ -92,7 +98,8 @@ function newsWarning(n, open) {
   const news = data.news || [];
   const store = fs.existsSync(FILE) ? JSON.parse(fs.readFileSync(FILE, 'utf8')) : { trades: [] };
   const state = fs.existsSync(STATE_FILE) ? JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')) : {};
-  const before = JSON.stringify(store.trades);
+  const snapshot = () => JSON.stringify([store.trades, store.pause]);
+  const before = snapshot();
   const important = [], routine = [];
   const calib = fs.existsSync(BACKTEST) ? JSON.parse(fs.readFileSync(BACKTEST, 'utf8')).calibration : null;
 
@@ -110,6 +117,24 @@ function newsWarning(n, open) {
     console.log(`open trade ${t.id} ${t.side} status=${t.status} hit=${t.hit || 0} pnl=${t.pnl}`);
   }
 
+  // Safety brake: start a pause, or announce that one ended
+  if (store.pause && now >= store.pause.until && !store.pause.ended) {
+    store.pause.ended = now;
+    important.push(`▶️ ระบบสัญญาณ 30 นาทีกลับมาทำงานแล้ว (หยุดพักเพราะ${store.pause.reason}) — นับสถิติใหม่ตั้งแต่ตอนนี้`);
+  }
+  const since = store.pause ? store.pause.until : 0;
+  if (!INTRA.paused(store, now) && !store.trades.some((t) => !SIG.isFinal(t))) {
+    const brake = INTRA.pauseCheck(store.trades, now, SPREAD, since);
+    if (brake) {
+      store.pause = { from: now, until: INTRA.nextWeek(now), reason: brake.reason };
+      important.push([`🛑 ระบบสัญญาณ 30 นาทีหยุดพัก — ${brake.reason}`,
+        `ไม่เปิดไม้ใหม่จนถึง ${at(store.pause.until)} น. (จันทร์หน้า)`,
+        'ช่วงที่ผลแย่ติดกันมักเป็นช่วงที่ตลาดไม่เข้ากับระบบ — พักก่อนดีกว่าเสียต่อ', `ดูสถิติ: ${SITE_URL}/#stats`].join('\n'));
+      console.log(`pause until ${new Date(store.pause.until).toISOString()}: ${brake.reason}`);
+    }
+  }
+  const pausedNow = INTRA.paused(store, now);
+
   // 2. New half hour: open a trade if the trends strongly agree and nothing is open
   const slot = INTRA.slotOf(now);
   const last = store.trades[store.trades.length - 1];
@@ -118,7 +143,7 @@ function newsWarning(n, open) {
   const dec = INTRA.decide({ m30: bars(data.m30), h1: bars(data.h1), h5: bars(data.h5) }, now, news);
   const odds = dec && INTRA.odds(dec.score, calib);
   if (dec) console.log(`decision score=${dec.score} dir=${dec.dir} free=${free} news=${dec.news ? dec.news.title : '-'}`);
-  if (dec && dec.dir && free) {
+  if (dec && dec.dir && free && !pausedNow) {
     const t = INTRA.makeTrade(dec, price, now);
     t.alerts = { entry: now };
     t.source = data.source;
@@ -127,12 +152,23 @@ function newsWarning(n, open) {
     console.log(`new trade ${t.id} ${t.side} ${t.entry} sl ${t.sl} tps ${t.tps.join('/')}`);
   }
 
-  // 3. Market-hours messages: half-hourly update + warning ~30 minutes before high-impact news
+  // 3. Market-hours messages: an update when a side turns ✅ or stops being ✅ (checked once per half
+  //    hour; the day starts as "not ✅") + a warning ~30 minutes before high-impact news
   const open = store.trades.find((t) => !SIG.isFinal(t));
   const hour = updateSlot(now);
   const newHour = dec && !dec.stale && hour > (state.lastSlot || 0);
   const upcoming = news.find((n) => n.time > now);
-  if (newHour && !(open && open.createdAt === now)) routine.push(updateText(dec, price, calib, open, upcoming, now));
+  const day = new Date(now).toISOString().slice(0, 10); // UTC day = trading day starting 07:00 Thai
+  const good = dec && !dec.news && !pausedNow
+    ? [1, -1].filter((d) => INTRA.verdict(INTRA.odds(dec.score, calib, d > 0 ? 'buy' : 'sell')).key === 'good') : [];
+  const goodKey = good.join(',');
+  const prevKey = state.goodDay === day ? state.goodKey || '' : '';
+  const changed = newHour && goodKey !== prevKey;
+  if (changed && !(open && open.createdAt === now)) {
+    const text = updateText(dec, price, calib, open, upcoming, now, good);
+    routine.push(pausedNow ? `${text}\n🛑 ระบบหยุดพักถึง ${at(store.pause.until)} น. วันจันทร์ — ไม่แนะนำเปิดไม้ใหม่` : text);
+  }
+  if (newHour) console.log(`half-hour check: ✅=[${goodKey}] was [${prevKey}] → ${changed ? 'send' : 'no message'}`);
   const warned = new Set(state.warned || []);
   const soon = INTRA.marketOpen(now) ? news.filter((n) => n.time > now && n.time - now <= 40 * 60e3 && !warned.has(n.time)) : [];
   soon.forEach((n) => { routine.push(newsWarning(n, open)); warned.add(n.time); });
@@ -152,9 +188,9 @@ function newsWarning(n, open) {
   if (process.env.RECORD === 'true') {
     fs.mkdirSync(STATE_DIR, { recursive: true });
     const keep = [...warned].filter((t) => t > now - 864e5); // forget old warnings
-    fs.writeFileSync(STATE_FILE, JSON.stringify({ ...next, lastSlot: newHour ? hour : state.lastSlot, warned: keep, at: now }));
+    fs.writeFileSync(STATE_FILE, JSON.stringify({ ...next, lastSlot: newHour ? hour : state.lastSlot, goodKey: newHour ? goodKey : state.goodKey, goodDay: newHour ? day : state.goodDay, warned: keep, at: now }));
   }
-  if (JSON.stringify(store.trades) === before) return console.log('trades unchanged');
+  if (snapshot() === before) return console.log('trades unchanged');
   store.summary = SIG.summary(store.trades, SPREAD);
   store.updatedAt = now;
   if (process.env.RECORD === 'true') {
