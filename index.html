@@ -3,118 +3,175 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gold Signal · XAU/USD</title>
-  <meta name="description" content="วิเคราะห์กราฟทองคำ XAU/USD แบบเรียลไทม์ อิงสถิติทางเทคนิคจาก investing.com">
+  <title>Gold Signal · วิเคราะห์ทองคำ</title>
+  <meta name="description" content="วิเคราะห์กราฟทองคำ XAU/USD แบบเรียลไทม์ อิงสถิติทางเทคนิคจาก investing.com อธิบายเป็นภาษาไทยเข้าใจง่าย">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
-  <header class="top">
-    <div class="brand">
-      <span class="coin">Au</span>
-      <div>
-        <h1>Gold Signal</h1>
-        <p>วิเคราะห์ทองคำ XAU/USD เรียลไทม์ · อิงสถิติจาก investing.com</p>
-      </div>
-    </div>
-    <div class="conn" id="conn"><span class="dot"></span><span id="connText">กำลังเชื่อมต่อ…</span></div>
-  </header>
+  <!-- Loading screen -->
+  <div id="splash" class="splash">
+    <div class="splash-coin"><span>Au</span></div>
+    <h1>Gold Signal</h1>
+    <p class="muted">วิเคราะห์ทองคำแบบเรียลไทม์ ภาษาไทยเข้าใจง่าย</p>
+    <div class="splash-bar"><div id="splashFill"></div></div>
+    <p class="splash-text" id="splashText">กำลังเริ่มต้น…</p>
+  </div>
 
-  <section class="quote">
-    <div class="quote-main">
-      <span class="sym">XAU/USD</span>
-      <span class="price mono" id="price">—</span>
-      <span class="chg mono" id="chg">—</span>
+  <!-- Sign-in page -->
+  <section id="login" class="login" hidden>
+    <div class="login-intro">
+      <div class="brand big"><span class="coin">Au</span><h1>Gold Signal</h1></div>
+      <h2>รู้ทันทองคำ ว่าควรซื้อ ขาย หรือรอ</h2>
+      <ul>
+        <li>📈 ราคาทอง XAU/USD เรียลไทม์จาก investing.com</li>
+        <li>🧭 สรุปง่าย ๆ ว่าตอนนี้ทองขึ้นหรือลง และควรทำอะไร</li>
+        <li>🎯 บอกจุดซื้อ จุดตัดขาดทุน และเป้าทำกำไร</li>
+        <li>💬 แปลศัพท์เทคนิคทุกตัวเป็นภาษาคน</li>
+      </ul>
+      <p class="muted small">เข้าสู่ระบบด้วยบัญชี Google — ใช้งานฟรี</p>
     </div>
-    <div class="quote-stats">
-      <div><label>เปิด</label><span class="mono" id="dOpen">—</span></div>
-      <div><label>สูงสุดวันนี้</label><span class="mono" id="dHigh">—</span></div>
-      <div><label>ต่ำสุดวันนี้</label><span class="mono" id="dLow">—</span></div>
-      <div><label>ปิดก่อนหน้า</label><span class="mono" id="dPrev">—</span></div>
-      <div><label>อัปเดต</label><span class="mono" id="updated">—</span></div>
-    </div>
+    <div id="signIn" class="signin-box"></div>
   </section>
 
-  <nav class="tfs" id="tfs"></nav>
-
-  <main class="layout">
-    <section class="charts card">
-      <div class="legend">
-        <span><i style="background:var(--ema20)"></i>EMA 20</span>
-        <span><i style="background:var(--ema50)"></i>EMA 50</span>
-        <span><i class="dash"></i>Bollinger</span>
-        <span><i style="background:var(--gold)"></i>Pivot (investing.com)</span>
-      </div>
-      <div id="mainChart" class="chart-main"></div>
-      <div class="sub-title">RSI (14)</div>
-      <div id="rsiChart" class="chart-sub"></div>
-      <div class="sub-title">MACD (12, 26, 9)</div>
-      <div id="macdChart" class="chart-sub"></div>
-    </section>
-
-    <aside class="side">
-      <section class="card signal" id="signalCard">
-        <div class="signal-head">
-          <span class="muted">คำแนะนำ · <span id="sigTf">—</span></span>
-          <span class="muted" id="sigSource"></span>
+  <!-- App -->
+  <div id="app" hidden>
+    <header class="top">
+      <div class="brand">
+        <span class="coin">Au</span>
+        <div>
+          <h1>Gold Signal</h1>
+          <p>วิเคราะห์ทองคำ XAU/USD เรียลไทม์ · อิงสถิติจาก investing.com</p>
         </div>
-        <div class="action" id="action">—</div>
-        <div class="action-sub" id="actionSub"></div>
-        <div class="meter"><div id="meterFill"></div></div>
-        <div class="muted small" id="confText"></div>
+      </div>
+      <div class="top-right">
+        <div class="conn" id="conn"><span class="dot"></span><span id="connText">กำลังเชื่อมต่อ…</span></div>
+        <div class="user" id="userBox" hidden><span class="muted small">สวัสดี, <b id="userName"></b></span><div id="userBtn"></div></div>
+      </div>
+    </header>
 
-        <div class="plan" id="plan"></div>
+    <section class="quote">
+      <div class="quote-main">
+        <span class="sym">ทองคำ (XAU/USD)</span>
+        <span class="price mono" id="price">—</span>
+        <span class="chg mono" id="chg">—</span>
+        <span class="muted small">ดอลลาร์ต่อออนซ์</span>
+      </div>
+      <div class="quote-stats">
+        <div><label>ราคาเปิดวันนี้</label><span class="mono" id="dOpen">—</span></div>
+        <div><label>สูงสุดวันนี้</label><span class="mono" id="dHigh">—</span></div>
+        <div><label>ต่ำสุดวันนี้</label><span class="mono" id="dLow">—</span></div>
+        <div><label>ราคาปิดเมื่อวาน</label><span class="mono" id="dPrev">—</span></div>
+        <div><label>อัปเดตล่าสุด</label><span class="mono" id="updated">—</span></div>
+      </div>
+    </section>
 
-        <h3>เหตุผล</h3>
-        <ul class="reasons" id="reasons"></ul>
-        <ul class="reasons warn" id="warns"></ul>
-      </section>
+    <!-- Plain-language summary -->
+    <section class="card brief" id="brief">
+      <div class="brief-head">
+        <span class="brief-icon" id="briefIcon">🟡</span>
+        <div>
+          <span class="eyebrow">สรุปง่าย ๆ</span>
+          <h2 id="briefTitle">กำลังวิเคราะห์…</h2>
+          <p class="muted small" id="briefBasis"></p>
+        </div>
+      </div>
+      <ul class="brief-lines" id="briefLines"></ul>
+      <div class="horizons" id="horizons"></div>
+    </section>
 
-      <section class="card">
-        <h3>Pivot Points (Classic) · <span id="pvTf">—</span></h3>
-        <ul class="levels" id="levels"></ul>
-      </section>
-    </aside>
-  </main>
-
-  <section class="card wide-card">
-    <h3>สรุปทางเทคนิคทุก Timeframe <span class="muted small">— ข้อมูลจาก investing.com · <span id="techTime">—</span></span></h3>
-    <div class="table-scroll">
-      <table class="mtf" id="mtf">
-        <thead><tr><th>Timeframe</th><th>สรุปรวม</th><th>ค่าเฉลี่ยเคลื่อนที่</th><th>ตัวชี้วัด</th></tr></thead>
-        <tbody></tbody>
-      </table>
+    <div class="tf-row">
+      <span class="muted small">เลือกกรอบเวลา — 1 แท่งเทียนแทนช่วงเวลาเท่าไร</span>
+      <nav class="tfs" id="tfs"></nav>
     </div>
-  </section>
 
-  <section class="layout2">
-    <section class="card">
-      <h3>ตัวชี้วัดทางเทคนิค · <span class="tfName">—</span> <span class="tag" id="indSum"></span></h3>
-      <table class="ind" id="ind">
-        <thead><tr><th>ชื่อ</th><th>ค่า</th><th>สัญญาณ</th></tr></thead>
-        <tbody></tbody>
-      </table>
+    <main class="layout">
+      <section class="charts card">
+        <div class="legend">
+          <span><i style="background:var(--ema20)"></i>เส้นค่าเฉลี่ย 20 แท่ง (EMA 20)</span>
+          <span><i style="background:var(--ema50)"></i>เส้นค่าเฉลี่ย 50 แท่ง (EMA 50)</span>
+          <span><i class="dash"></i>กรอบราคาปกติ (Bollinger)</span>
+          <span><i style="background:var(--gold)"></i>แนวรับ–แนวต้าน</span>
+        </div>
+        <p class="hint">🟩 แท่งเขียว = ราคาปิดสูงกว่าเปิด (ขึ้น) · 🟥 แท่งแดง = ราคาปิดต่ำกว่าเปิด (ลง) · ราคาอยู่เหนือเส้นค่าเฉลี่ย = แข็งแรง, อยู่ใต้เส้น = อ่อนแอ</p>
+        <div id="mainChart" class="chart-main"></div>
+        <div class="sub-title">RSI — วัดแรงซื้อ/ขาย <span class="muted">(เกิน 70 = ขึ้นแรงเกินไป · ต่ำกว่า 30 = ลงแรงเกินไป)</span></div>
+        <div id="rsiChart" class="chart-sub"></div>
+        <div class="sub-title">MACD — แรงส่งของราคา <span class="muted">(แท่งเขียว = แรงส่งขาขึ้น · แท่งแดง = แรงส่งขาลง)</span></div>
+        <div id="macdChart" class="chart-sub"></div>
+      </section>
+
+      <aside class="side">
+        <section class="card signal" id="signalCard">
+          <div class="signal-head">
+            <span class="muted">คำแนะนำ · กราฟ <span id="sigTf">—</span></span>
+            <span class="muted" id="sigSource"></span>
+          </div>
+          <div class="action" id="action">—</div>
+          <div class="action-sub" id="actionSub"></div>
+          <div class="meter"><div id="meterFill"></div></div>
+          <div class="muted small" id="confText"></div>
+
+          <div class="plan" id="plan"></div>
+
+          <h3>ทำไมถึงแนะนำแบบนี้</h3>
+          <ul class="reasons" id="reasons"></ul>
+          <ul class="reasons warn" id="warns"></ul>
+        </section>
+
+        <section class="card">
+          <h3>แนวรับ–แนวต้าน · <span id="pvTf">—</span></h3>
+          <p class="hint">🔴 <b>แนวต้าน</b> = ระดับที่ราคามักขึ้นไปชนแล้วถูกกดลง · 🟢 <b>แนวรับ</b> = ระดับที่ราคามักลงมาแล้วเด้งขึ้น (คำนวณแบบ Pivot Points ของ investing.com)</p>
+          <ul class="levels" id="levels"></ul>
+        </section>
+      </aside>
+    </main>
+
+    <section class="card wide-card">
+      <h3>ภาพรวมทุกกรอบเวลา <span class="muted small">— ข้อมูลจาก investing.com · <span id="techTime">—</span></span></h3>
+      <p class="hint">กรอบเวลาสั้น (นาที) เหมาะกับเทรดเร็ว · กรอบเวลายาว (วัน/สัปดาห์) บอกแนวโน้มใหญ่ ถ้าทุกกรอบไปทางเดียวกัน สัญญาณจะน่าเชื่อถือขึ้น</p>
+      <div class="table-scroll">
+        <table class="mtf" id="mtf">
+          <thead><tr><th>กรอบเวลา</th><th>สรุปรวม</th><th>เส้นค่าเฉลี่ย</th><th>ตัวชี้วัด</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </section>
-    <section class="card">
-      <h3>ค่าเฉลี่ยเคลื่อนที่ · <span class="tfName">—</span> <span class="tag" id="maSum"></span></h3>
-      <table class="ma" id="ma">
-        <thead><tr><th>ชื่อ</th><th>Simple</th><th>Exponential</th></tr></thead>
-        <tbody></tbody>
-      </table>
+
+    <section class="layout2">
+      <section class="card">
+        <h3>ตัวชี้วัดทางเทคนิค · <span class="tfName">—</span> <span class="tag" id="indSum"></span></h3>
+        <p class="hint">เครื่องมือ 12 ตัวที่นักเทรดใช้ แต่ละตัวโหวตว่า “ซื้อ” หรือ “ขาย” — บรรทัดล่างคือความหมายแบบภาษาคน</p>
+        <table class="ind" id="ind">
+          <thead><tr><th>ตัวชี้วัด / แปลว่า</th><th>ค่า</th><th>สัญญาณ</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </section>
+      <section class="card">
+        <h3>เส้นค่าเฉลี่ยราคา · <span class="tfName">—</span> <span class="tag" id="maSum"></span></h3>
+        <p class="hint">ราคาเฉลี่ยย้อนหลัง N แท่ง — ถ้าราคาตอนนี้ <b>สูงกว่า</b> ค่าเฉลี่ย = “ซื้อ” (แข็งแรง) ถ้า <b>ต่ำกว่า</b> = “ขาย” (อ่อนแอ) · แบบธรรมดา (SMA) เฉลี่ยเท่ากันทุกแท่ง แบบถ่วงน้ำหนัก (EMA) ให้น้ำหนักแท่งล่าสุดมากกว่า</p>
+        <table class="ma" id="ma">
+          <thead><tr><th>ย้อนหลัง</th><th>แบบธรรมดา (SMA)</th><th>แบบถ่วงน้ำหนัก (EMA)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </section>
     </section>
-  </section>
 
-  <footer>
-    <p><strong>ข้อมูล:</strong> ราคาแท่งเทียนและสถิติทางเทคนิค (สรุป, ตัวชี้วัด, ค่าเฉลี่ยเคลื่อนที่, Pivot) ดึงจาก
-      <a href="https://th.investing.com/currencies/xau-usd" target="_blank" rel="noopener">investing.com XAU/USD</a> อัปเดตอัตโนมัติ
-      — หาก investing.com ใช้งานไม่ได้ ระบบจะสลับไปใช้ Binance PAXG/USDT + gold-api.com สำรองให้อัตโนมัติ</p>
-    <p class="muted">⚠️ เครื่องมือนี้เป็นการวิเคราะห์ทางเทคนิคอัตโนมัติ ไม่ใช่คำแนะนำการลงทุน ทองคำมีความผันผวนสูง ควรตัดสินใจด้วยตัวเองและบริหารความเสี่ยงทุกครั้ง</p>
-  </footer>
+    <footer>
+      <p><strong>ข้อมูล:</strong> ราคาและสถิติทางเทคนิคดึงจาก
+        <a href="https://th.investing.com/currencies/xau-usd" target="_blank" rel="noopener">investing.com XAU/USD</a> อัปเดตอัตโนมัติ
+        — หาก investing.com ใช้งานไม่ได้ ระบบจะสลับไปใช้ข้อมูลสำรอง (Binance PAXG + gold-api.com) ให้เอง</p>
+      <p class="muted">⚠️ เว็บนี้เป็นการวิเคราะห์ทางเทคนิคอัตโนมัติ ไม่ใช่คำแนะนำการลงทุน ทองคำมีความผันผวนสูง ควรตัดสินใจด้วยตัวเองและบริหารความเสี่ยงทุกครั้ง</p>
+    </footer>
+  </div>
 
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
   <script src="indicators.js"></script>
   <script src="investing.js"></script>
+  <script src="explain.js"></script>
   <script src="main.js"></script>
 </body>
 </html>

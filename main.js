@@ -19,9 +19,9 @@ const POLL_PRICE = 3000, POLL_TECH = 30000, POLL_DAILY = 60000;
 const INVESTING_API = 'https://api.investing.com/api/financialdata';
 const PAIR_ID = 68; // XAU/USD
 const ACTION_TH = {
-  BUY: ['ซื้อ', 'สถิติทางเทคนิคเป็นขาขึ้น'],
-  SELL: ['ขาย', 'สถิติทางเทคนิคเป็นขาลง'],
-  WAIT: ['รอก่อน', 'ยังไม่ควรเข้าซื้อหรือขายตอนนี้'],
+  BUY: ['ซื้อ', 'สถิติส่วนใหญ่บอกว่าราคามีแนวโน้มขึ้น'],
+  SELL: ['ขาย', 'สถิติส่วนใหญ่บอกว่าราคามีแนวโน้มลง'],
+  WAIT: ['รอก่อน', 'ยังไม่ใช่จังหวะดี ไม่ควรซื้อหรือขายตอนนี้'],
 };
 
 const state = {
@@ -161,10 +161,10 @@ function setLines(store, defs) {
 function drawPlanLines(plan) {
   if (plan.action === 'WAIT' || plan.entry == null) return setLines(planLines, []);
   setLines(planLines, [
-    { price: plan.entry, color: '#e8b64c', title: 'Entry', lineStyle: LC.LineStyle.Solid },
-    { price: plan.sl, color: '#f0506e', title: 'SL', lineStyle: LC.LineStyle.Dashed },
-    { price: plan.tp1, color: '#22c58b', title: 'TP1', lineStyle: LC.LineStyle.Dashed },
-    { price: plan.tp2, color: '#22c58b', title: 'TP2', lineStyle: LC.LineStyle.Dashed },
+    { price: plan.entry, color: '#e8b64c', title: 'จุดเข้า', lineStyle: LC.LineStyle.Solid },
+    { price: plan.sl, color: '#f0506e', title: 'ตัดขาดทุน', lineStyle: LC.LineStyle.Dashed },
+    { price: plan.tp1, color: '#22c58b', title: 'เป้า 1', lineStyle: LC.LineStyle.Dashed },
+    { price: plan.tp2, color: '#22c58b', title: 'เป้า 2', lineStyle: LC.LineStyle.Dashed },
   ]);
 }
 
@@ -247,6 +247,7 @@ function render() {
   }
 
   renderSignal(plan, htfKey);
+  renderBrief(plan, price);
   document.title = `${f2(price)} · ${ACTION_TH[plan.action][0]} | Gold Signal`;
 }
 
@@ -288,19 +289,21 @@ function renderSignal(plan, htfKey) {
   const htf = htech ? ` · ${TF_LABEL[htfKey]}: ${INV.summaryTh(htech.summary)}` : '';
   $('confText').textContent = `ความมั่นใจ ${plan.confidence}%${htf}`;
 
-  const box = (label, value, cls = '') => `<div class="${cls}"><label>${label}</label><span class="mono">${value}</span></div>`;
+  const box = (label, value, cls = '', note = '') =>
+    `<div class="${cls}"><label>${label}</label><span class="mono">${value}</span>${note ? `<small>${note}</small>` : ''}</div>`;
   let html = '';
   if (plan.action !== 'WAIT') {
-    html += box(plan.action === 'BUY' ? 'ซื้อที่ราคา' : 'ขายที่ราคา', f2(plan.entry));
-    html += box('ตัดขาดทุน (SL)', f2(plan.sl), 'sl');
-    html += box(`เป้าหมาย 1${plan.tp1Name ? ` (${plan.tp1Name})` : ''}`, f2(plan.tp1), 'tp');
-    html += box(`เป้าหมาย 2${plan.tp2Name ? ` (${plan.tp2Name})` : ''}`, f2(plan.tp2), 'tp');
-    html += box('ความเสี่ยงต่อ 1 ออนซ์', `$${Math.abs(plan.entry - plan.sl).toFixed(2)}`, 'wide');
+    const buy = plan.action === 'BUY';
+    html += box(buy ? 'ซื้อที่ราคา' : 'ขายที่ราคา', f2(plan.entry), '', 'ราคาที่แนะนำให้เข้า');
+    html += box('จุดตัดขาดทุน (SL)', f2(plan.sl), 'sl', buy ? 'ถ้าราคาลงถึงจุดนี้ ให้ขายออกทันที' : 'ถ้าราคาขึ้นถึงจุดนี้ ให้ปิดออเดอร์ทันที');
+    html += box('เป้ากำไร 1 (TP1)', f2(plan.tp1), 'tp', plan.tp1Name ? `ที่${plan.tp1Name}` : '');
+    html += box('เป้ากำไร 2 (TP2)', f2(plan.tp2), 'tp', plan.tp2Name ? `ที่${plan.tp2Name}` : '');
+    html += box('ถ้าผิดทาง จะเสียสูงสุด', `${Math.abs(plan.entry - plan.sl).toFixed(2)} / ออนซ์`, 'wide', 'ตั้งจุดตัดขาดทุนไว้เสมอ เพื่อไม่ให้ขาดทุนบานปลาย');
   } else {
-    if (plan.buyZone) html += box(`รอซื้อแถว ${plan.buyZone.name}`, f2(plan.buyZone.price), 'tp');
-    if (plan.sellZone) html += box(`รอขายแถว ${plan.sellZone.name}`, f2(plan.sellZone.price), 'sl');
+    if (plan.buyZone) html += box('จุดรอซื้อ', f2(plan.buyZone.price), 'tp', `${plan.buyZone.name}: ราคามักเด้งขึ้นแถวนี้`);
+    if (plan.sellZone) html += box('จุดรอขาย', f2(plan.sellZone.price), 'sl', `${plan.sellZone.name}: ราคามักถูกกดลงแถวนี้`);
   }
-  if (plan.atr) html += box('ความผันผวน (ATR)', `±${f2(plan.atr)}`, plan.since ? '' : 'wide');
+  if (plan.atr) html += box('ราคาแกว่งเฉลี่ย (ATR)', `±${f2(plan.atr)}`, plan.since ? '' : 'wide', 'ต่อ 1 แท่งเทียน');
   if (plan.since) html += box('สัญญาณนี้เริ่มเมื่อ', new Date(plan.since).toLocaleTimeString('th-TH'));
   $('plan').innerHTML = html;
 
@@ -309,10 +312,21 @@ function renderSignal(plan, htfKey) {
   $('warns').innerHTML = plan.warn.map((r) => `<li>${r}</li>`).join('');
 }
 
+function renderBrief(plan, price) {
+  const horizon = state.tech ? EXPLAIN.horizons(state.tech, INV) : null;
+  const b = EXPLAIN.brief({ plan, price, daily: state.daily, tfLabel: TF_LABEL[state.tf], horizon });
+  $('briefIcon').textContent = b.icon;
+  $('briefTitle').textContent = b.title;
+  $('briefBasis').textContent = b.basis;
+  $('briefLines').innerHTML = b.lines.map((l) => `<li>${l}</li>`).join('');
+  $('horizons').innerHTML = horizon ? horizon.map((h) =>
+    `<div class="horizon"><label>${h.name} (${h.hint})</label>${tag(h.key, h.th)}</div>`).join('') : '';
+}
+
 function renderLevels(lv, price) {
   $('pvTf').textContent = TF_LABEL[state.tf];
   const items = lv.slice().sort((a, b) => b.price - a.price);
-  const rows = items.map((x) => `<li class="${x.price > price ? 'res' : 'sup'}"><span>${x.name}</span><span class="mono">${f2(x.price)}</span></li>`);
+  const rows = items.map((x) => `<li class="${x.price > price ? 'res' : 'sup'}"><span>${x.label || x.name}</span><span class="mono">${f2(x.price)}</span></li>`);
   const nowIdx = items.findIndex((x) => x.price < price);
   rows.splice(nowIdx < 0 ? rows.length : nowIdx, 0, `<li class="now"><span>ราคาปัจจุบัน</span><span class="mono">${f2(price)}</span></li>`);
   $('levels').innerHTML = rows.join('');
@@ -347,9 +361,9 @@ function renderTechTables() {
   $('indSum').className = `tag ${tagCls(o.ind.key)}`; $('indSum').textContent = o.ind.th;
   $('maSum').className = `tag ${tagCls(o.ma.key)}`; $('maSum').textContent = o.ma.th;
   $('ind').querySelector('tbody').innerHTML = INV.indicators(t).map((x) =>
-    `<tr><td>${x.name}</td><td class="mono">${x.value}</td><td>${actTag(x.action)}</td></tr>`).join('');
+    `<tr><td><b>${x.name}</b> <span class="muted small">${x.about}</span><span class="why">→ ${x.meaning}</span></td><td class="mono">${x.value}</td><td>${actTag(x.action)}</td></tr>`).join('');
   $('ma').querySelector('tbody').innerHTML = INV.movingAverages(t).map((m) =>
-    `<tr><td>${m.period}</td><td><span class="mono">${m.sma}</span><small>${actTag(m.smaAction)}</small></td>
+    `<tr><td>${m.period} แท่ง</td><td><span class="mono">${m.sma}</span><small>${actTag(m.smaAction)}</small></td>
       <td><span class="mono">${m.ema}</span><small>${actTag(m.emaAction)}</small></td></tr>`).join('');
 }
 
@@ -377,8 +391,13 @@ function every(ms, fn) {
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { refreshTech(); refreshPrice(); } });
 
 (async function init() {
+  await AUTH.ready;
   renderTechTables();
-  await Promise.all([refreshDaily(), refreshTech(), refreshPrice()]);
+  SPLASH.step('กำลังดึงราคาทองจาก investing.com…', 45);
+  const pending = [refreshDaily(), refreshTech().then(() => SPLASH.step('กำลังวิเคราะห์สถิติทุกกรอบเวลา…', 75)), refreshPrice()];
+  await Promise.all(pending);
+  render();
+  SPLASH.hide();
   every(POLL_PRICE, refreshPrice);
   every(POLL_TECH, refreshTech);
   every(POLL_DAILY, refreshDaily);

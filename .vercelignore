@@ -1,3 +1,7 @@
 dev-server.js
 README.md
 package.json
+.agents
+.claude
+skills-lock.json
+.env*
