@@ -417,9 +417,19 @@ function renderSignalHome() {
   const final = SIG.isFinal(s);
   const isToday = s.id === SIG.thaiDate(Date.now());
   $('sgDate').textContent = `${isToday ? 'สัญญาณวันนี้' : 'สัญญาณล่าสุด'} · ${thaiDay(s.id)}`;
+  if (s.status === 'skip') {
+    $('sigCard').className = 'card sig skip';
+    $('sgStars').textContent = '';
+    $('sgSide').innerHTML = '⏸ วันนี้ไม่มีสัญญาณ';
+    $('sgStatus').textContent = `แนวโน้มระยะกลางกับระยะยาวไม่ไปทางเดียวกัน — ไม่เทรดดีกว่า · สัญญาณถัดไป ${thaiTime(nextSignalTime())}`;
+    $('sgHow').innerHTML = '<li>วันที่ตลาดไม่ชัด การ “ไม่เทรด” ก็คือการรักษาเงินทุน</li><li>รอสัญญาณใหม่เช้าวันทำการถัดไป 07:00</li>';
+    $('sgWhy').innerHTML = (s.why || []).map((l) => `<li>${l}</li>`).join('');
+    renderMiniRecord();
+    return;
+  }
   $('sgStars').textContent = '★'.repeat(s.stars) + '☆'.repeat(5 - s.stars);
   $('sigCard').className = `card sig ${buy ? 'buy' : 'sell'} st-${s.status}`;
-  $('sgSide').innerHTML = `${buy ? '🟢 ซื้อ' : '🔴 ขาย'} <small>${buy ? 'BUY' : 'SELL'}</small>`;
+  $('sgSide').innerHTML = `${buy ? '🟢 ซื้อ' : '🔴 ขาย'}${s.market && !final ? 'ตอนนี้' : ''} <small>${buy ? 'BUY' : 'SELL'}</small>`;
   $('sgEntry').textContent = f2(s.entry);
   $('sgSl').textContent = f2(s.sl);
   $('sgTp').textContent = f2(s.tp);
@@ -427,7 +437,9 @@ function renderSignalHome() {
   const away = price != null ? Math.abs(price - s.entry) : null;
   const status = {
     pending: `${SIG.STATUS_TH.pending} — ต้อง${buy ? 'ลง' : 'ขึ้น'}อีก $${f2(away)} · หมดอายุ ${thaiTime(s.expiresAt)}`,
-    active: `${SIG.STATUS_TH.active} — เข้าที่ ${f2(s.entry)} แล้ว`,
+    active: s.market
+      ? `🟦 เข้าแล้วที่ ${f2(s.entry)} (${thaiTime(s.createdAt)}) · ปิดเองถ้าถึง ${thaiTime(s.expiresAt)}`
+      : `${SIG.STATUS_TH.active} — เข้าที่ ${f2(s.entry)} แล้ว`,
     win: `${SIG.STATUS_TH.win} — ราคาถึงเป้าหมาย${s.closedBy === 'eod' ? ' (ปิดสิ้นวันมีกำไร)' : ''}`,
     loss: `${SIG.STATUS_TH.loss} — ${s.closedBy === 'eod' ? 'ปิดสิ้นวันขาดทุน' : 'โดนตัดขาดทุน'}`,
     expired: `${SIG.STATUS_TH.expired} — วันนั้นไม่ได้เทรด`,
@@ -448,28 +460,34 @@ function renderSignalHome() {
   $('trLeft').textContent = `🛑 ${f2(s.sl)}`;
   $('trRight').textContent = `💰 ${f2(s.tp)}`;
 
-  if (s.status === 'active') $('sgPnl').textContent = `กำไร/ขาดทุนตอนนี้: ${money(s.pnl)} ต่อ 1 ออนซ์`;
-  else if (s.status === 'win' || s.status === 'loss') $('sgPnl').textContent = `ผลลัพธ์: ${money(s.pnl)} ต่อ 1 ออนซ์`;
+  // Open trade: profit/loss from the live price (the 15-minute candles can lag a few minutes)
+  const pnl = s.status === 'active' && price != null ? SIG.round(buy ? price - s.entry : s.entry - price) : s.pnl;
+  if (s.status === 'active') $('sgPnl').textContent = `กำไร/ขาดทุนตอนนี้: ${money(pnl)} ต่อ 1 ออนซ์`;
+  else if (s.status === 'win' || s.status === 'loss') $('sgPnl').textContent = `ผลลัพธ์: ${money(pnl)} ต่อ 1 ออนซ์`;
   else $('sgPnl').textContent = `ถ้าถึงเป้า ได้ ${money(Math.abs(s.tp - s.entry))} · ถ้าโดนตัดขาดทุน เสีย ${money(-Math.abs(s.entry - s.sl))} (ต่อ 1 ออนซ์)`;
-  $('sgPnl').className = `sig-pnl ${s.pnl > 0 ? 'up' : s.pnl < 0 ? 'down' : ''}`;
+  $('sgPnl').className = `sig-pnl ${pnl > 0 ? 'up' : pnl < 0 ? 'down' : ''}`;
 
-  const order = buy ? 'Buy Limit' : 'Sell Limit';
+  const order = s.market ? `${buy ? 'Buy' : 'Sell'} ทันที (Market)` : `${buy ? 'Buy' : 'Sell'} Limit`;
+  const late = s.market && !final && price != null ? ` — ราคาตอนนี้ ${f2(price)} (ห่างจากจุดเข้า $${f2(Math.abs(price - s.entry))})` : '';
   $('sgHow').innerHTML = [
-    `ตั้งคำสั่ง <b>${order}</b> ที่ <b class="mono">${f2(s.entry)}</b>`,
+    `เปิดออเดอร์ <b>${order}</b>${s.market ? ' ที่ราคาประมาณ' : ' ที่'} <b class="mono">${f2(s.entry)}</b>${late}`,
     `ตั้ง <b>Stop Loss</b> ที่ <b class="mono">${f2(s.sl)}</b> — เสียไม่เกิน $${f2(Math.abs(s.entry - s.sl))}/ออนซ์`,
-    `ตั้ง <b>Take Profit</b> ที่ <b class="mono">${f2(s.tp)}</b> — ถ้าถึง ${thaiTime(s.expiresAt)} ยังไม่เข้า ให้ยกเลิกคำสั่ง`,
+    `ตั้ง <b>Take Profit</b> ที่ <b class="mono">${f2(s.tp)}</b> — ${s.market ? `ถ้าถึง ${thaiTime(s.expiresAt)} ยังไม่ปิด ให้ปิดเอง` : `ถ้าถึง ${thaiTime(s.expiresAt)} ยังไม่เข้า ให้ยกเลิกคำสั่ง`}`,
   ].map((l) => `<li>${l}</li>`).join('');
   $('sgWhy').innerHTML = (s.why || []).map((l) => `<li>${l}</li>`).join('') || '<li class="muted">—</li>';
 
-  // Mini record
+  renderMiniRecord();
+  drawSignalLines(s);
+}
+
+function renderMiniRecord() {
   const sum = SIG.summary(liveSignals());
   $('msWin').textContent = sum.wins;
   $('msLoss').textContent = sum.losses;
   $('msLine').textContent = sum.traded
-    ? `อัตราชนะ ${sum.winRate}% · กำไรสะสม ${money(sum.pnl)}/ออนซ์ · ไม่เข้า ${sum.expired}`
+    ? `อัตราชนะ ${sum.winRate}% · กำไรสะสม ${money(sum.pnl)}/ออนซ์`
     : 'เพิ่งเริ่มบันทึก — ผลจะขึ้นเมื่อสัญญาณแรกจบ';
   $('msDots').innerHTML = sum.last.map(dot).join('');
-  drawSignalLines(s);
 }
 
 const dot = (s) => `<span class="dot-r ${s.status}" title="${s.id} ${SIG.STATUS_TH[s.status]}">${s.status === 'win' ? '✓' : s.status === 'loss' ? '✕' : '–'}</span>`;
@@ -526,7 +544,7 @@ function tilesHtml(s) {
     t('อัตราชนะ', s.winRate == null ? '—' : `${s.winRate}%`),
     t('กำไรสะสม', s.traded ? money(s.pnl) : '—', s.pnl > 0 ? 'up' : s.pnl < 0 ? 'down' : '', 'ต่อ 1 ออนซ์'),
     t('เฉลี่ยต่อครั้ง', s.avg == null ? '—' : money(s.avg), '', 'ต่อ 1 ออนซ์'),
-    t('ไม่เข้า', s.expired, '', `จาก ${s.total} สัญญาณ`),
+    t('เทรดทั้งหมด', s.traded, '', 'ครั้ง'),
   ].join('');
 }
 
@@ -537,6 +555,9 @@ function renderStats() {
   if (list.length) $('liveSince').textContent = `บันทึกทุกสัญญาณตั้งแต่ ${thaiDay(list[0].id)} — ไม่ตัดทิ้ง ไม่แก้ย้อนหลัง`;
   plotEquity('liveChart', list);
   $('history').innerHTML = list.length ? list.slice().reverse().map((s) => {
+    if (s.status === 'skip') {
+      return `<div class="h-row skip"><span class="h-date">${thaiDay(s.id)}</span><span class="h-side">—</span><span class="h-px"></span><span class="h-st">${SIG.STATUS_TH.skip}</span><b class="h-pnl"></b></div>`;
+    }
     const buy = s.side === 'BUY';
     const res = s.status === 'win' || s.status === 'loss' ? money(s.pnl) : '';
     return `<div class="h-row ${s.status}">
@@ -552,7 +573,7 @@ function renderStats() {
   if (bt) {
     $('btTiles').innerHTML = tilesHtml(bt.summary);
     $('btNote').innerHTML = bt.summary.pnl < 0
-      ? `⚠️ ผลย้อนหลัง 1 ปี <b>ยังขาดทุน ${money(bt.summary.pnl)}</b>/ออนซ์ (ชนะ ${bt.summary.winRate}%) — สัญญาณจึงยังอยู่ใน <b>โหมดทดลอง</b> และเรากำลังปรับปรุงสูตรต่อ`
+      ? `⚠️ ผลย้อนหลัง 1 ปี <b>ขาดทุน ${money(bt.summary.pnl)}</b>/ออนซ์ (ชนะ ${bt.summary.winRate}%) — ไม่มีระบบไหนชนะทุกช่วง ควรบริหารความเสี่ยงทุกครั้ง`
       : `ผลย้อนหลัง 1 ปี กำไร ${money(bt.summary.pnl)}/ออนซ์ (ชนะ ${bt.summary.winRate}%) — ผลในอดีตไม่รับประกันอนาคต`;
     $('btNote').className = `bt-note ${bt.summary.pnl < 0 ? 'down' : 'up'}`;
     plotEquity('btChart', bt.signals);

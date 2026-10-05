@@ -496,3 +496,7 @@ h3 .tag { margin-left: 6px; vertical-align: 1px; }
 
 .alert-note { margin: 4px 0 0; }
 .alert-note a { color: var(--gold); }
+
+.sig.skip { border-color: var(--wait); background: linear-gradient(160deg, rgba(242,169,59,.12), var(--panel) 45%); }
+.sig.skip .sig-side { color: var(--wait); font-size: 34px; }
+.sig.skip .sig-nums, .sig.skip .track, .sig.skip .sig-pnl { display: none; }

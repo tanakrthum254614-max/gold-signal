@@ -6,14 +6,13 @@ const path = require('path');
 const TA = require('../indicators.js');
 const INV = require('../investing.js');
 const EXPLAIN = require('../explain.js');
-const PLAN = require('../dailyplan.js');
+const { money } = require('../dailyplan.js');
 const SIG = require('../signals.js');
 const { broadcast } = require('./line.js');
 
 const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
-const SIGNALS_FILE = path.join(__dirname, '..', 'signals.json');
+const SIGNALS_FILE = process.env.SIGNALS_FILE || path.join(__dirname, '..', 'signals.json');
 const BACKTEST_FILE = path.join(__dirname, '..', 'backtest.json');
-const money = PLAN.money;
 const signed = (v) => `${v >= 0 ? '+' : '−'}$${money(Math.abs(v))}`;
 const bars = (rows) => (rows || []).map((b) => ({ time: b[0], open: b[1], high: b[2], low: b[3], close: b[4] }));
 const TREND_TH = { strong_buy: 'ขาขึ้นแรง', buy: 'ขาขึ้น', neutral: 'ไซด์เวย์', sell: 'ขาลง', strong_sell: 'ขาลงแรง' };
@@ -38,11 +37,9 @@ function analyse(data) {
     const key = (cs) => TA.analyze(cs).label.key.replace('-', '_');
     out.bias = { short: key(hourly), mid: key(bars(data.h4)), long: key(daily) };
   }
-  // Pivots from the last full weekday session (investing.com's daily pivots can come from the
-  // short Sunday-evening bar, which makes the levels far too tight)
-  const lv = PLAN.levelsFromDaily(daily);
-  out.session = lv.from;
-  out.plan = PLAN.build({ price, levels: lv.levels, bias: out.bias });
+  // Daily ATR from weekday sessions only (investing.com adds a short Sunday-evening bar)
+  const weekdays = daily.filter((b) => ![0, 6].includes(new Date(b.time).getUTCDay()));
+  out.atr = TA.computeAll(weekdays).atr[weekdays.length - 1];
   return out;
 }
 
@@ -51,8 +48,7 @@ function whyLines(a) {
   const lines = [];
   if (a.votes) lines.push(`investing.com วิเคราะห์ ${a.votes.total} ช่วงเวลา: บอก “ลง” ${a.votes.down} · “ขึ้น” ${a.votes.up}`);
   lines.push(`แนวโน้ม ระยะสั้น ${TREND_TH[a.bias.short]} · ระยะกลาง ${TREND_TH[a.bias.mid]} · ระยะยาว ${TREND_TH[a.bias.long]}`);
-  const p = a.plan.primary;
-  lines.push(`จุดเข้าคือ${p.label} คำนวณจากราคาวัน${a.session.dayTh} (สูง ${money(a.session.high)} · ต่ำ ${money(a.session.low)} · ปิด ${money(a.session.close)})`);
+  if (a.atr) lines.push(`ทองแกว่งเฉลี่ยวันละ ~$${money(a.atr)} → ตัดขาดทุน ${SIG.RULE.sl}× · เป้าหมาย ${SIG.RULE.tp}× ของระยะนี้`);
   return lines;
 }
 
@@ -69,6 +65,7 @@ function thaiDay(ms = Date.now()) {
 const thaiTime = (ms) => new Date(ms).toLocaleString('th-TH', { weekday: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
 
 function resultText(s) {
+  if (s.status === 'skip') return '⏸ ไม่มีสัญญาณ (ตลาดไม่ชัด)';
   if (s.status === 'expired') return '⏹ ราคาไม่ถึงจุดเข้า (ไม่ได้เทรด)';
   const how = s.closedBy === 'tp' ? 'ถึงเป้า' : s.closedBy === 'sl' ? 'โดนตัดขาดทุน' : 'ปิดสิ้นวัน';
   return `${s.status === 'win' ? '✅ ชนะ' : '❌ แพ้'} ${signed(s.pnl)}/ออนซ์ (${how})`;
@@ -87,30 +84,35 @@ const title = (text) => txt(text, { weight: 'bold', size: 'sm', margin: 'lg' });
 function flexMessage(a, sig, prev, sum, bt) {
   const buy = sig.side === 'BUY';
   const color = buy ? C.up : C.down;
+  const signalRows = sig.status === 'skip' ? [
+    txt('⏸ วันนี้ไม่มีสัญญาณ', { size: 'xxl', weight: 'bold', color: C.wait, margin: 'lg' }),
+    txt(`แนวโน้มระยะกลางกับระยะยาวไม่ไปทางเดียวกัน — ไม่เทรดดีกว่า รอสัญญาณใหม่ ${thaiTime(sig.expiresAt + 15 * 60e3)}`, { size: 'xs', color: C.muted }),
+  ] : [
+    txt(`${buy ? '🟢 ซื้อตอนนี้' : '🔴 ขายตอนนี้'} (${buy ? 'BUY' : 'SELL'})`, { size: 'xxl', weight: 'bold', color, margin: 'lg' }),
+    txt(`ความมั่นใจ ${'★'.repeat(sig.stars)}${'☆'.repeat(5 - sig.stars)}`, { size: 'xs', color: C.muted }),
+    row('🎯 เข้าที่ราคา', money(sig.entry), C.text),
+    row('🛑 ตัดขาดทุน (SL)', money(sig.sl), C.down),
+    row('💰 เป้าหมาย (TP)', money(sig.tp), C.up),
+    txt(`เปิดออเดอร์ ${buy ? 'Buy' : 'Sell'} ทันที (Market) · ตั้ง SL ${money(sig.sl)} · TP ${money(sig.tp)} — ถ้าถึง ${thaiTime(sig.expiresAt)} ยังไม่ปิด ให้ปิดเอง`, { size: 'xs', color: C.blue, margin: 'md' }),
+  ];
   const body = [
-    txt('🧪 โหมดทดลอง — ดูผลสะสมก่อนใช้เงินจริง', { size: 'xxs', color: C.wait }),
-    ...(prev ? [txt(`ผลสัญญาณครั้งก่อน (${prev.id}): ${resultText(prev)}`, { size: 'xs', margin: 'md' })] : []),
+    ...(prev ? [txt(`ผลสัญญาณครั้งก่อน (${prev.id}): ${resultText(prev)}`, { size: 'xs' })] : []),
     sep(),
-    txt(`${buy ? '🟢' : '🔴'} ${SIDE_TH[sig.side]}`, { size: 'xxl', weight: 'bold', color, margin: 'lg' }),
-    txt(`ความมั่นใจ ${'★'.repeat(sig.stars)}${'☆'.repeat(5 - sig.stars)} · ราคาตอนนี้ ${money(a.price)}`, { size: 'xs', color: C.muted }),
-    row('🎯 จุดเข้า', money(sig.entry), C.text),
-    row('🛑 ตัดขาดทุน', money(sig.sl), C.down),
-    row('💰 เป้าหมาย', money(sig.tp), C.up),
-    txt(`ตั้งคำสั่ง ${buy ? 'Buy' : 'Sell'} Limit ที่ ${money(sig.entry)} · SL ${money(sig.sl)} · TP ${money(sig.tp)} — ถ้าราคาไม่ถึงจุดเข้าภายใน ${thaiTime(sig.expiresAt)} ให้ยกเลิกคำสั่ง`, { size: 'xs', color: C.blue, margin: 'md' }),
+    ...signalRows,
     sep(),
     title('ทำไม'),
     ...sig.why.map((l) => txt(`• ${l}`, { size: 'xs' })),
     sep(),
     title('📊 ผลงานสัญญาณจริง'),
     txt(sum.traded
-      ? `ชนะ ${sum.wins} · แพ้ ${sum.losses} (ชนะ ${sum.winRate}%) · กำไรสะสม ${signed(sum.pnl)}/ออนซ์ · ไม่เข้า ${sum.expired}`
+      ? `ชนะ ${sum.wins} · แพ้ ${sum.losses} (ชนะ ${sum.winRate}%) · กำไรสะสม ${signed(sum.pnl)}/ออนซ์`
       : 'เพิ่งเริ่มบันทึก — ยังไม่มีผลที่ปิดแล้ว', { size: 'xs' }),
     ...(bt ? [txt(`ทดสอบย้อนหลัง ${bt.days} วัน (จำลอง): ชนะ ${bt.summary.winRate}% · ${signed(bt.summary.pnl)}/ออนซ์`, { size: 'xxs', color: C.muted })] : []),
     txt(`ข้อมูล: ${a.source} · ไม่ใช่คำแนะนำการลงทุน`, { size: 'xxs', color: C.muted, margin: 'lg' }),
   ];
   return {
     type: 'flex',
-    altText: `🎯 สัญญาณทอง: ${SIDE_TH[sig.side]} ที่ ${money(sig.entry)} · SL ${money(sig.sl)} · TP ${money(sig.tp)}`,
+    altText: sig.status === 'skip' ? '⏸ สัญญาณทองวันนี้: ไม่มีสัญญาณ (ตลาดไม่ชัด)' : `🎯 สัญญาณทอง: ${SIDE_TH[sig.side]} ตอนนี้ที่ ${money(sig.entry)} · SL ${money(sig.sl)} · TP ${money(sig.tp)}`,
     contents: {
       type: 'bubble', size: 'mega',
       header: {
@@ -146,7 +148,9 @@ function flexMessage(a, sig, prev, sum, bt) {
   const todayId = SIG.thaiDate(now);
   let sig = store.signals.find((s) => s.id === todayId);
   if (!sig) {
-    sig = SIG.make(a.plan, now, a.price, { why: whyLines(a), source: a.source });
+    // Market signals are filled at once: the morning message itself is the entry alert
+    sig = SIG.makeMarket({ bias: a.bias, price: a.price, atr: a.atr, createdAt: now,
+      extra: { why: whyLines(a), source: a.source, alerts: { entry: now } } });
     store.signals.push(sig);
   }
   const prev = store.signals.filter((s) => s.id !== todayId && SIG.isFinal(s)).slice(-1)[0];
@@ -154,9 +158,9 @@ function flexMessage(a, sig, prev, sum, bt) {
   store.updatedAt = now;
   store.summary = sum;
 
-  console.log(`signal ${sig.id}: ${sig.side} entry ${sig.entry} sl ${sig.sl} tp ${sig.tp} stars ${sig.stars}`);
+  console.log(sig.status === 'skip' ? `signal ${sig.id}: no trade (trend ${sig.trendScore})` : `signal ${sig.id}: ${sig.side} now ${sig.entry} sl ${sig.sl} tp ${sig.tp} stars ${sig.stars}`);
   if (prev) console.log(`previous ${prev.id}: ${resultText(prev)}`);
-  console.log(`record: win ${sum.wins} loss ${sum.losses} noentry ${sum.expired} pnl ${sum.pnl}`);
+  console.log(`record: win ${sum.wins} loss ${sum.losses} pnl ${sum.pnl}`);
 
   if (process.env.RECORD === 'true') {
     fs.writeFileSync(SIGNALS_FILE, `${JSON.stringify(store, null, 1)}\n`);

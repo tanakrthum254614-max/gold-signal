@@ -10,7 +10,7 @@
   <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610051415">
+  <link rel="stylesheet" href="style.css?v=202610051429">
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -63,7 +63,6 @@
     <main class="content">
       <!-- 🎯 Signal -->
       <section id="tab-home" class="tab">
-        <div class="trial">🧪 <b>โหมดทดลอง</b> — ระบบกำลังเก็บสถิติจริง ดูผลที่แท็บ <a href="#stats">สถิติ</a> ก่อนใช้เงินจริง</div>
 
         <div class="home-cols">
           <div class="card sig" id="sigCard">
@@ -135,7 +134,7 @@
 
         <section class="card bt">
           <h3>ทดสอบย้อนหลัง 1 ปี <span class="tag neutral">จำลอง</span></h3>
-          <p class="hint">ใช้กติกาเดียวกันกับสัญญาณจริง ย้อนหลังทุกวันทำการ 1 ปี (ข้อมูลราคาจาก Binance PAXG และทิศทางจากเครื่องมือของเราเอง เพราะ investing.com ไม่เก็บผลวิเคราะห์ย้อนหลัง) ยังไม่หักค่าธรรมเนียม/สเปรด</p>
+          <p class="hint">ใช้กติกาเดียวกันกับสัญญาณจริง (เข้าตอน 07:00 ตามแนวโน้ม · SL 0.5 · TP 0.75 เท่าของระยะแกว่งรายวัน) ย้อนหลังทุกวันทำการ 1 ปี (ข้อมูลราคาจาก Binance PAXG และทิศทางจากเครื่องมือของเราเอง เพราะ investing.com ไม่เก็บผลวิเคราะห์ย้อนหลัง) ยังไม่หักค่าธรรมเนียม/สเปรด</p>
           <div class="tiles" id="btTiles"></div>
           <p class="bt-note" id="btNote"></p>
           <div id="btChart" class="chart-eq"></div>
@@ -146,7 +145,7 @@
           <ul class="why">
             <li><b>✅ ชนะ</b> — ราคาถึงจุดเข้าแล้ว วิ่งไปถึง <b>เป้าหมาย</b> ก่อน</li>
             <li><b>❌ แพ้</b> — ราคาถึงจุดเข้าแล้ว วิ่งไปโดน <b>ตัดขาดทุน</b> ก่อน (ถ้าแท่ง 15 นาทีเดียวโดนทั้งคู่ นับเป็นแพ้)</li>
-            <li><b>⏹ ไม่เข้า</b> — วันนั้นราคาไม่ถึงจุดเข้าเลย ไม่ได้เทรด ไม่นับชนะหรือแพ้</li>
+            <li><b>⏸ ไม่มีสัญญาณ</b> — วันที่ตลาดไม่ชัด ระบบไม่ให้เทรด ไม่นับชนะหรือแพ้</li>
             <li><b>ปิดสิ้นวัน</b> — เข้าแล้วแต่ไม่ถึงทั้งเป้าและตัดขาดทุน ปิดที่ราคาเช้าวันถัดไป กำไร = ชนะ ขาดทุน = แพ้</li>
             <li>กำไร/ขาดทุนคิดเป็น <b>ดอลลาร์ต่อทอง 1 ออนซ์</b></li>
           </ul>
@@ -273,17 +272,17 @@
       <section id="tab-learn" class="tab" hidden>
         <section class="card">
           <h3>สัญญาณคืออะไร?</h3>
-          <p>ทุกเช้าวันจันทร์–ศุกร์ เวลา 07:00 ระบบจะให้ <b>1 สัญญาณ</b> ว่าวันนี้ควร <b>ซื้อ</b> หรือ <b>ขาย</b> ทองที่ราคาเท่าไร
-            พร้อมจุด <b>ตัดขาดทุน</b> (ยอมแพ้ถ้าผิดทาง) และ <b>เป้าหมาย</b> (เก็บกำไร) สัญญาณมีอายุถึงเช้าวันถัดไป
+          <p>ทุกเช้าวันจันทร์–ศุกร์ เวลา 07:00 ระบบจะบอกว่าวันนี้ให้ <b>ซื้อตอนนี้</b> หรือ <b>ขายตอนนี้</b> ตามแนวโน้มของตลาด
+            พร้อมจุด <b>ตัดขาดทุน</b> (ยอมแพ้ถ้าผิดทาง) และ <b>เป้าหมาย</b> (เก็บกำไร) — วันไหนตลาดไม่ชัด ระบบจะบอกว่า <b>“ไม่มีสัญญาณ”</b> ไม่ฝืนเทรด
             <br>ระหว่างวันระบบเช็กราคาทุก 5 นาที และส่ง LINE ทันทีเมื่อ 🔔 ถึงจุดเข้า · ✅ ถึงเป้าหมาย · ❌ โดนตัดขาดทุน</p>
         </section>
 
         <section class="card">
           <h3>ใช้สัญญาณใน 3 ขั้น</h3>
           <ol class="steps">
-            <li><b>ตั้งคำสั่งรอ (Limit)</b> ที่ “จุดเข้า” — ไม่ต้องนั่งเฝ้า ถ้าราคามาถึง คำสั่งจะทำงานเอง</li>
+            <li><b>เปิดออเดอร์ทันที (Market)</b> ตามสัญญาณ ซื้อ หรือ ขาย เมื่อได้รับสัญญาณตอน 07:00</li>
             <li><b>ตั้งตัดขาดทุน (Stop Loss)</b> ทุกครั้ง — กันขาดทุนบานปลายถ้าผิดทาง</li>
-            <li><b>ตั้งเป้าหมาย (Take Profit)</b> — ถึงแล้วปิดเก็บกำไรอัตโนมัติ ถ้าถึงเช้าวันถัดไปยังไม่เข้า ให้ยกเลิกคำสั่ง</li>
+            <li><b>ตั้งเป้าหมาย (Take Profit)</b> — ถึงแล้วปิดเก็บกำไรอัตโนมัติ ถ้าถึง 06:45 เช้าวันถัดไปยังไม่ปิด ให้ปิดเอง</li>
           </ol>
         </section>
 
@@ -309,8 +308,7 @@
         <section class="card">
           <h3>ข้อควรระวัง ⚠️</h3>
           <p>สัญญาณเป็นการวิเคราะห์ทางเทคนิคอัตโนมัติ <b>ไม่ใช่คำแนะนำการลงทุน</b> ไม่มีระบบไหนชนะทุกครั้ง
-            ผลทดสอบย้อนหลังยังไม่ได้กำไร จึงยังเป็นโหมดทดลอง แนะนำให้ <b>ดูผลจริงสะสมอย่างน้อย 1–2 เดือน</b> หรือลองกับบัญชีทดลอง (Demo) ก่อนใช้เงินจริง
-            และอย่าเสี่ยงเกิน 1–2% ของเงินทุนต่อครั้ง</p>
+            ดูผลจริงสะสมที่แท็บสถิติประกอบการตัดสินใจ และ <b>อย่าเสี่ยงเกิน 1–2% ของเงินทุนต่อครั้ง</b></p>
         </section>
       </section>
 
@@ -339,21 +337,21 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610051415</p>
+        <p class="muted small center">เวอร์ชัน 202610051429</p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610051415"></script>
-  <script src="auth.js?v=202610051415"></script>
-  <script src="indicators.js?v=202610051415"></script>
-  <script src="investing.js?v=202610051415"></script>
-  <script src="explain.js?v=202610051415"></script>
-  <script src="dailyplan.js?v=202610051415"></script>
-  <script src="signals.js?v=202610051415"></script>
-  <script src="ui.js?v=202610051415"></script>
-  <script src="main.js?v=202610051415"></script>
+  <script src="config.js?v=202610051429"></script>
+  <script src="auth.js?v=202610051429"></script>
+  <script src="indicators.js?v=202610051429"></script>
+  <script src="investing.js?v=202610051429"></script>
+  <script src="explain.js?v=202610051429"></script>
+  <script src="dailyplan.js?v=202610051429"></script>
+  <script src="signals.js?v=202610051429"></script>
+  <script src="ui.js?v=202610051429"></script>
+  <script src="main.js?v=202610051429"></script>
 </body>
 </html>

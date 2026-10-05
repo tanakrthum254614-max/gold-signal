@@ -21,7 +21,7 @@ function entryText(s, price) {
     `🛑 SL ${money(s.sl)} · 💰 TP ${money(s.tp)}`,
     `ราคาตอนนี้ ${money(price)}`,
     `ถ้าตั้ง ${buy ? 'Buy' : 'Sell'} Limit ไว้ คำสั่งทำงานแล้ว — อย่าลืมตั้ง SL/TP`,
-    '🧪 โหมดทดลอง · ไม่ใช่คำแนะนำการลงทุน',
+    'ไม่ใช่คำแนะนำการลงทุน',
   ].join('\n');
 }
 
