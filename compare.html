@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gold Signal · เทียบก่อน–หลัง</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #f3f5f9; --panel: #fff; --line: #e2e7ef; --text: #1c2433; --muted: #697386; --old: #e0424f; --new: #0f9f6e; --gold: #b9800c; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) { --bg: #0d1016; --panel: #151a23; --line: #262e3b; --text: #e6e9ef; --muted: #8a93a3; --gold: #e8b64c; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans Thai", system-ui, sans-serif; line-height: 1.6; }
+    main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+    h1 { font-size: 26px; margin: 0 0 4px; }
+    .lead { color: var(--muted); margin: 0 0 24px; }
+    section { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 18px; margin-bottom: 18px; }
+    h2 { font-size: 19px; margin: 0 0 4px; }
+    .date { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 720px) { .pair { grid-template-columns: 1fr; } }
+    .side { border-radius: 14px; border: 2px solid var(--line); overflow: hidden; }
+    .side.old { border-color: rgba(224,66,79,.45); } .side.new { border-color: rgba(15,159,110,.5); }
+    .side h3 { margin: 0; padding: 8px 12px; font-size: 15px; }
+    .side.old h3 { background: rgba(224,66,79,.1); color: var(--old); } .side.new h3 { background: rgba(15,159,110,.1); color: var(--new); }
+    .side img { display: block; width: 100%; height: auto; }
+    .side ul { margin: 0; padding: 10px 14px 12px 30px; font-size: 14px; }
+    .side.text { padding-bottom: 4px; }
+    a { color: var(--gold); }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🕰️ แบบเก่า vs ✨ แบบใหม่</h1>
+  <p class="lead">สิ่งที่เปลี่ยนในแต่ละรอบของ Gold Signal · <a href="./">กลับไปที่เว็บ</a></p>
+
+  <section>
+    <h2>🔔 แจ้งเตือน TP / SL / ✅ ตรงเวลาทุก 5 นาที</h2>
+    <p class="date">5 ต.ค. 2569</p>
+    <div class="pair">
+      <div class="side old text"><h3>🕰️ แบบเก่า</h3>
+        <ul><li>ตั้งเวลา "ทุก 5 นาที" ไว้กับ GitHub แต่ GitHub เริ่มงานจริงห่างกัน 10–20 นาที</li>
+          <li>ราคาถึง TP / SL แล้วบางครั้งได้ข้อความช้า 15 นาที</li></ul></div>
+      <div class="side new text"><h3>✨ แบบใหม่</h3>
+        <ul><li>งานแต่ละรอบอยู่ต่อ ~28 นาที และเช็กเองตรงทุก 5 นาที</li>
+          <li>มีรอบถัดไปรอคิวทุก 15 นาที → ต่อกันไม่มีช่องว่าง · ไม่ต้องสมัครบริการเพิ่ม (ฟรี)</li></ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>👀 ดูตัวอย่างได้โดยไม่ต้องล็อกอิน</h2>
+    <p class="date">5 ต.ค. 2569 · ลิงก์: <a href="./?demo=1">gold-signal-ten.vercel.app/?demo=1</a> (ใช้ในหน้า Portfolio)</p>
+    <div class="pair">
+      <div class="side old"><h3>🕰️ แบบเก่า — ต้องล็อกอินก่อนถึงจะเห็นอะไร</h3><img src="compare/login-old.png" alt="หน้าล็อกอินแบบเก่า" loading="lazy"></div>
+      <div class="side new"><h3>✨ แบบใหม่ — มีปุ่ม "ดูตัวอย่างก่อน"</h3><img src="compare/login-new.png" alt="หน้าล็อกอินแบบใหม่" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>⚡ ราคาตรงกันทั้งเว็บ · ขยับทุกวินาที</h2>
+    <p class="date">5 ต.ค. 2569</p>
+    <div class="pair">
+      <div class="side old"><h3>🕰️ แบบเก่า — หัวเว็บ 4,141.07 แต่หน้ากราฟ 4,141.70 · "สำรอง · Binance PAXG"</h3><img src="compare/price-old.png" alt="ราคาไม่ตรงกัน" loading="lazy"></div>
+      <div class="side new"><h3>✨ แบบใหม่ — ทุกจุดเท่ากัน · "เรียลไทม์ · investing.com"</h3><img src="compare/price-new.png" alt="ราคาตรงกัน" loading="lazy"></div>
+    </div>
+  </section>
+</main>
+</body>
+</html>
