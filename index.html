@@ -8,11 +8,13 @@
   <meta name="description" content="สัญญาณเทรดทองคำ XAU/USD วันละ 1 สัญญาณ พร้อมจุดเข้า ตัดขาดทุน เป้าหมาย และสถิติชนะ–แพ้ที่บันทึกจริง">
   <meta property="og:title" content="Gold Signal · สัญญาณเทรดทองคำ">
   <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610051652">
-  <link rel="stylesheet" href="live.css?v=202610051652">
-  <link rel="stylesheet" href="theme.css?v=202610051652" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610060000">
+  <link rel="stylesheet" href="live.css?v=202610060000">
+  <link rel="stylesheet" href="theme.css?v=202610060000" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -20,6 +22,12 @@
   <!-- Loading screen -->
   <div id="splash" class="splash">
     <div class="sp-glow"></div>
+    <!-- background lightning that strikes together with the logo's bolt -->
+    <svg class="sp-sky" viewBox="0 0 400 300" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+      <path d="M352 -5 L336 38 L350 42 L326 88 L341 92 L318 140 M336 38 L312 56 M326 88 L352 108"/>
+      <path class="b2" d="M44 -5 L56 34 L42 39 L62 80 L50 85 L70 122 M56 34 L82 50"/>
+    </svg>
+    <div class="sp-flash" aria-hidden="true"></div>
     <div class="sp-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="sp-ring">
       <svg viewBox="0 0 160 160" aria-hidden="true">
@@ -28,7 +36,26 @@
         <circle class="sp-orbit" cx="80" cy="80" r="62"/>
         <circle class="sp-prog" id="splashFill" cx="80" cy="80" r="72"/>
       </svg>
-      <div class="splash-coin"><span>Au</span></div>
+      <!-- Logo (same drawing as logo.svg), animated: rim draws in, gold bars rise, lightning strikes -->
+      <svg class="sp-logo" viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+          <linearGradient id="lgRim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1c2"/><stop offset=".35" stop-color="#f0b429"/><stop offset=".7" stop-color="#b9800c"/><stop offset="1" stop-color="#f6d47a"/></linearGradient>
+          <radialGradient id="lgCore" cx=".5" cy=".38" r=".7"><stop offset="0" stop-color="#2a2414"/><stop offset=".6" stop-color="#151a23"/><stop offset="1" stop-color="#0d1016"/></radialGradient>
+          <linearGradient id="lgBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#b9800c"/></linearGradient>
+          <linearGradient id="lgBolt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#ffe9a8"/><stop offset="1" stop-color="#f0b429"/></linearGradient>
+        </defs>
+        <g class="lg-rays" stroke="#ffe9a8" stroke-width="2.5" stroke-linecap="round">
+          <path d="M50 -2 V-12"/><path d="M95 24 L104 19"/><path d="M95 76 L104 81"/><path d="M50 102 V112"/><path d="M5 76 L-4 81"/><path d="M5 24 L-4 19"/>
+        </g>
+        <path class="lg-rim" pathLength="1" d="M50 3 L91 26.5 V73.5 L50 97 L9 73.5 V26.5 Z" fill="url(#lgRim)" stroke="url(#lgRim)" stroke-width="2" stroke-linejoin="round"/>
+        <path class="lg-core" d="M50 11 L84 30.5 V69.5 L50 89 L16 69.5 V30.5 Z" fill="url(#lgCore)"/>
+        <g fill="url(#lgBar)">
+          <rect class="lg-bar" x="22" y="58" width="9" height="14" rx="1.5"/>
+          <rect class="lg-bar" x="34" y="49" width="9" height="23" rx="1.5"/>
+          <rect class="lg-bar" x="67" y="40" width="9" height="32" rx="1.5"/>
+        </g>
+        <path class="lg-bolt" d="M60 16 L33 53 H48 L41 84 L70 45 H55 L63 16 Z" fill="url(#lgBolt)" stroke="#151a23" stroke-width="3" stroke-linejoin="round" paint-order="stroke"/>
+      </svg>
     </div>
     <h1 class="sp-title">Gold Signal</h1>
     <p class="muted">สัญญาณเทรดทองคำ XAU/USD · เรียลไทม์</p>
@@ -40,7 +67,7 @@
   <!-- Sign-in page -->
   <section id="login" class="login" hidden>
     <div class="login-intro">
-      <div class="brand big"><span class="coin">Au</span><h1>Gold Signal</h1></div>
+      <div class="brand big"><img class="logo" src="logo.svg" alt=""><h1>Gold Signal</h1></div>
       <h2>อยากเทรดทองคำ<br>แต่ยังไม่มั่นใจ?</h2>
       <p class="login-lead">ราคาทองสดทุกวินาที · สัญญาณเข้าซื้อ–ขายทุก 15 / 30 นาที พร้อมสถิติจริงว่าชนะกี่ครั้ง แพ้กี่ครั้ง</p>
       <ul>
@@ -59,7 +86,7 @@
   <!-- App -->
   <div id="app" hidden>
     <header class="appbar">
-      <a class="brand" href="#home"><span class="coin">Au</span><b>Gold Signal</b></a>
+      <a class="brand" href="#home"><img class="logo" src="logo.svg" alt=""><b>Gold Signal</b></a>
       <div class="appbar-right">
         <span class="hdr-price mono" id="hdrPrice">—</span>
         <button class="theme-btn" id="themeBtn" type="button" title="สลับโหมดสว่าง/มืด" aria-label="สลับโหมดสว่าง/มืด">🌙</button>
@@ -512,22 +539,22 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610051652 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610060000 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610051652"></script>
-  <script src="auth.js?v=202610051652"></script>
-  <script src="indicators.js?v=202610051652"></script>
-  <script src="investing.js?v=202610051652"></script>
-  <script src="explain.js?v=202610051652"></script>
-  <script src="dailyplan.js?v=202610051652"></script>
-  <script src="signals.js?v=202610051652"></script>
-  <script src="intraday.js?v=202610051652"></script>
-  <script src="ui.js?v=202610051652"></script>
-  <script src="main.js?v=202610051652"></script>
+  <script src="config.js?v=202610060000"></script>
+  <script src="auth.js?v=202610060000"></script>
+  <script src="indicators.js?v=202610060000"></script>
+  <script src="investing.js?v=202610060000"></script>
+  <script src="explain.js?v=202610060000"></script>
+  <script src="dailyplan.js?v=202610060000"></script>
+  <script src="signals.js?v=202610060000"></script>
+  <script src="intraday.js?v=202610060000"></script>
+  <script src="ui.js?v=202610060000"></script>
+  <script src="main.js?v=202610060000"></script>
 </body>
 </html>
