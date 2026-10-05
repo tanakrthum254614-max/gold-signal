@@ -937,9 +937,8 @@ function buildMeter() {
   $('smSegs').innerHTML = Array.from({ length: 13 }, (_, i) => `<i${i === 6 ? ' class="mid"' : ''}></i>`).join('');
   $('inParts').innerHTML = SM_FRAMES.map(([k, label]) => `<div class="smf" id="smf-${k}">
     <div class="smf-top"><span>${label}</span><span class="smf-vote"></span></div>
-    <div class="smf-chart"><svg class="smf-spark" viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true">
-      <path class="ar"/><path class="ln"/></svg><i class="smf-pt"></i></div>
-    <div class="smf-trend"><span class="tag neutral">—</span></div></div>`).join('');
+    <svg class="smf-candles" viewBox="0 0 240 44" preserveAspectRatio="none" aria-hidden="true"><g class="cs"></g><line class="lp"/></svg>
+    <div class="smf-foot"><span class="smf-trend"><span class="tag neutral">—</span></span><span class="smf-chg mono" title="ราคาแท่งนี้เทียบราคาเปิดแท่ง"></span></div></div>`).join('');
 }
 
 // Count the big number up/down to the new score so changes are easy to follow
@@ -976,7 +975,7 @@ function renderMeter(dec, off) {
   const gap = innerWidth <= 520 ? 3 : 4, i = score + 6;
   $('smCursor').style.left = `calc((100% - ${12 * gap}px) / 13 * ${i + 0.5} + ${gap * i}px)`;
 
-  // One card per voting timeframe: last 30 candles as a sparkline + its trend and vote
+  // One card per voting timeframe: mini candlestick chart + its trend and vote
   const C = state.intraCandles;
   SM_FRAMES.forEach(([k]) => {
     const card = $(`smf-${k}`), trend = dec && dec.keys[k];
@@ -984,19 +983,35 @@ function renderMeter(dec, off) {
     card.className = `smf ${v > 0 ? 'up' : v < 0 ? 'down' : ''}`;
     card.querySelector('.smf-vote').innerHTML = !trend ? '' : v > 0 ? `${'▲'.repeat(v)} <b>+${v}</b>` : v < 0 ? `${'▼'.repeat(-v)} <b>${v}</b>` : '— <b>0</b>';
     card.querySelector('.smf-trend').innerHTML = trend ? tag(trend, INTRA.TREND_TH[trend]) : '<span class="tag neutral">—</span>';
-    const bars = ((C && C[k]) || []).filter((b) => b.time <= Date.now()).slice(-30);
+    // Mini candlestick chart: the last 30 candles (14 on phones), the last one still forming with the live price
+    const bars = ((C && C[k]) || []).filter((b) => b.time <= Date.now()).slice(innerWidth <= 520 ? -14 : -30);
     if (bars.length < 2) return;
-    const lo = Math.min(...bars.map((b) => b.close)), hi = Math.max(...bars.map((b) => b.close)), span = hi - lo || 1;
-    const pts = bars.map((b, j) => [(j / (bars.length - 1)) * 100, 31 - ((b.close - lo) / span) * 28]);
-    const line = pts.map(([x, y], j) => `${j ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join('');
-    const svg = card.querySelector('svg'), [lx, ly] = pts[pts.length - 1];
-    svg.querySelector('.ln').setAttribute('d', line);
-    svg.querySelector('.ar').setAttribute('d', `${line}L100 34L0 34Z`);
-    const pt = card.querySelector('.smf-pt'); // HTML dot: the stretched SVG would turn a circle into an oval
-    pt.style.left = `${lx}%`; pt.style.top = `${(ly / 34) * 100}%`;
-    // redraw the line from left to right whenever a new candle starts
-    const key = `${k}:${bars[bars.length - 1].time}`;
-    if (svg.dataset.key !== key) { svg.dataset.key = key; svg.classList.remove('draw'); void svg.getBoundingClientRect(); svg.classList.add('draw'); }
+    const svg = card.querySelector('svg'), cs = svg.querySelector('.cs'), W = 10;
+    // rebuild (and replay the grow-in) only when a new candle starts; otherwise just move the shapes
+    const key = `${k}:${bars[bars.length - 1].time}:${bars.length}`;
+    if (svg.dataset.key !== key) {
+      svg.dataset.key = key;
+      svg.setAttribute('viewBox', `0 0 ${bars.length * W} 44`);
+      cs.innerHTML = bars.map((_, j) => `<g style="--i:${j}"><line/><rect/></g>`).join('');
+      svg.classList.remove('draw'); void svg.getBoundingClientRect(); svg.classList.add('draw');
+    }
+    const lo = Math.min(...bars.map((b) => b.low)), hi = Math.max(...bars.map((b) => b.high)), span = hi - lo || 1;
+    const y = (p) => 3 + (1 - (p - lo) / span) * 38;
+    [...cs.children].forEach((g, j) => {
+      const b = bars[j], x = j * W, [wick, body] = g.children;
+      g.setAttribute('class', `${b.close >= b.open ? 'cu' : 'cd'}${j === bars.length - 1 ? ' live' : ''}`);
+      wick.setAttribute('x1', x + W / 2); wick.setAttribute('x2', x + W / 2);
+      wick.setAttribute('y1', y(b.high).toFixed(2)); wick.setAttribute('y2', y(b.low).toFixed(2));
+      body.setAttribute('x', x + 1.8); body.setAttribute('width', W - 3.6);
+      body.setAttribute('y', y(Math.max(b.open, b.close)).toFixed(2));
+      body.setAttribute('height', Math.max(0.8, Math.abs(y(b.open) - y(b.close))).toFixed(2));
+    });
+    const last = bars[bars.length - 1], ly = y(last.close).toFixed(2), chg = last.close - last.open;
+    const lp = svg.querySelector('.lp');
+    lp.setAttribute('x1', 0); lp.setAttribute('x2', bars.length * W); lp.setAttribute('y1', ly); lp.setAttribute('y2', ly);
+    const ce = card.querySelector('.smf-chg');
+    ce.textContent = `${chg >= 0 ? '+' : ''}${chg.toFixed(2)}`;
+    ce.className = `smf-chg mono ${chg >= 0 ? 'up' : 'down'}`;
   });
   renderCycle();
 }

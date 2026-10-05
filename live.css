@@ -153,15 +153,21 @@
 .smf.up, .smf.down { border-color: color-mix(in srgb, var(--fc) 35%, var(--line)); }
 .smf-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; }
 .smf-vote { font-size: 11px; letter-spacing: -1px; color: var(--fc); }
-.smf-spark { display: block; width: 100%; height: 34px; margin: 6px 0; overflow: visible; }
-.smf-spark .ln { fill: none; stroke: var(--fc); stroke-width: 1.8; stroke-linejoin: round; vector-effect: non-scaling-stroke; transition: stroke .6s; }
-.smf-spark.draw .ln, .smf-spark.draw .ar { animation: smDraw 1.4s cubic-bezier(.3,.7,.3,1) both; }
-@keyframes smDraw { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
-.smf-spark .ar { fill: var(--fc); opacity: .12; transition: fill .6s; }
-.smf-chart { position: relative; }
-.smf-pt { position: absolute; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--fc); transition: top .6s, background .6s; }
-.smf-pt::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--fc); animation: smHalo 1.8s ease-out infinite; }
-@keyframes smHalo { from { transform: scale(1); opacity: .6; } to { transform: scale(3.4); opacity: 0; } }
+.smf-candles { display: block; width: 100%; height: 72px; margin: 8px 0 6px; overflow: visible; }
+@media (max-width: 520px) { .smf-candles { height: 56px; } }
+.smf-candles g { --cc: var(--up); } .smf-candles g.cd { --cc: var(--down); }
+.smf-candles line { stroke: var(--cc); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.smf-candles rect { fill: var(--cc); rx: .6; }
+/* candles grow in one after another when a new candle starts */
+.smf-candles.draw g { transform-box: fill-box; transform-origin: 50% 50%; animation: smCandle .45s cubic-bezier(.2,1.4,.4,1) both; animation-delay: calc(var(--i) * 30ms); }
+@keyframes smCandle { from { opacity: 0; transform: scaleY(.15); } }
+/* the forming candle breathes with the live price */
+.smf-candles g.live { filter: drop-shadow(0 0 3px var(--cc)); }
+.smf-candles g.live rect { animation: smLive 1.6s ease-in-out infinite; }
+@keyframes smLive { 50% { opacity: .55; } }
+.smf-candles .lp { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; opacity: .7; }
+.smf-foot { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.smf-chg { font-size: 12px; font-weight: 700; } .smf-chg.up { color: var(--up); } .smf-chg.down { color: var(--down); }
 .smf .tag { font-size: 12px; padding: 1px 8px; }
 
 .sm-cycle { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 12px; color: var(--muted); }
@@ -175,6 +181,7 @@
   .sm-score b { font-size: 38px; } .sm-mood b { font-size: 17px; }
   .sm-segs { gap: 3px; } .sm-frames { gap: 6px; } .smf { padding: 8px; }
   .sm-entry { left: calc((100% - 36px) / 13 * 11 + 33px - 2px); }
+  .smf-chg { display: none; }
   .smf-top { font-size: 12px; white-space: nowrap; } .smf-vote b { display: none; } .smf .tag { font-size: 11px; padding: 1px 6px; }
   #inNext { display: none; } /* the progress bar under the meter shows the same */
 }
