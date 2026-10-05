@@ -153,7 +153,7 @@ function flexMessage(a) {
 }
 
 async function broadcast(message) {
-  const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+  const token = (process.env.LINE_CHANNEL_ACCESS_TOKEN || '').trim(); // copy-paste often adds spaces/newlines
   if (!token) throw new Error('LINE_CHANNEL_ACCESS_TOKEN is not set');
   const r = await fetch('https://api.line.me/v2/bot/message/broadcast', {
     method: 'POST',
