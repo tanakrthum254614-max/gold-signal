@@ -5,5 +5,8 @@
   "private": true,
   "scripts": {
     "start": "node dev-server.js"
+  },
+  "dependencies": {
+    "web-push": "^3.6.7"
   }
 }

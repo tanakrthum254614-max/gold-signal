@@ -170,3 +170,8 @@ th { color: var(--muted); }
 .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .tile b { font-size: 22px; }
 @media (max-width: 600px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tile b { font-size: 20px; } }
+
+/* ---------- Install as app ---------- */
+.install-bar { background: linear-gradient(135deg, #fff8e6, #fff); box-shadow: var(--shadow); }
+.install-bar b { color: var(--gold); }
+.pwa-how { background: #f6f8fb; }

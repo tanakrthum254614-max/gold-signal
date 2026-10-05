@@ -1,9 +1,10 @@
-// Sends messages to LINE. Failures are logged, never thrown, so results keep being recorded
+// Sends messages to LINE, and the same texts as push notifications to the app (scripts/push.js). Failures are logged, never thrown, so results keep being recorded
 // (e.g. when the monthly LINE quota runs out). Env: LINE_CHANNEL_ACCESS_TOKEN, SEND=true
 // OUTBOX=<file>: queue texts there instead; scripts/flush.js then sends everything from one run as ONE
 // LINE request (the free plan counts requests × friends, not bubbles).
 const fs = require('fs');
 const { broadcast } = require('./line.js');
+const { push } = require('./push.js');
 
 // Pack texts into at most 5 LINE text bubbles (≤ 5000 characters each)
 function pack(texts, max = 4800) {
@@ -32,12 +33,14 @@ async function send(texts) {
   }
   if (process.env.SEND !== 'true') { texts.forEach((t) => console.log(`(dry run)\n${t}`)); return; }
   await attempt(() => broadcast(...pack(texts).map((text) => ({ type: 'text', text }))));
+  await push(texts);
 }
 
 // Rich LINE message (flex)
 async function sendFlex(flex) {
   if (process.env.SEND !== 'true') { console.log(`(dry run) flex ${JSON.stringify(flex).length} bytes`); return; }
   await attempt(() => broadcast(flex));
+  if (flex.altText) await push([flex.altText]);
 }
 
 module.exports = { send, sendFlex, pack };

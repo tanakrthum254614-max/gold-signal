@@ -28,6 +28,10 @@ jobs:
       STATE_DIR: state
       SPREAD_USD: ${{ vars.SPREAD_USD || '0.4' }}
       LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+      # Web push to the app (scripts/push.js) — skipped while these are empty
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+      VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+      VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
       SITE_URL: https://gold-signal-ten.vercel.app
     steps:
       - uses: actions/checkout@v4
@@ -38,6 +42,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Install web-push
+        run: npm install --omit=dev --no-audit --no-fund --no-package-lock
       - run: pip install -r requirements.txt
       - name: Fetch candles
         run: python scripts/fetch_data.py data.json --m15-only

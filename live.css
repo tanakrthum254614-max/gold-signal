@@ -287,3 +287,23 @@
   background: rgba(47,111,237,.10); border: 1px solid rgba(47,111,237,.3); color: var(--text); }
 @media (max-width: 1212px) { .demo-bar { margin: 10px 16px 0; } }
 #accSignIn { margin-top: 8px; }
+
+/* ================= Install as app + notifications ================= */
+.btn[hidden], .install-bar[hidden] { display: none; }
+.btn.gold { background: linear-gradient(180deg, #f6d47a, #e0a21a); border-color: #d99a10; color: #1a1205; font-weight: 700; }
+.btn.gold:hover { filter: brightness(1.05); }
+.btn:disabled { opacity: .6; cursor: wait; }
+.pwa-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.pwa-row:first-of-type { border-top: 0; }
+.pwa-row > div { min-width: 0; }
+.pwa-row p { margin: 2px 0 0; }
+.pwa-row .btn { flex: none; }
+.pwa-how { margin: 0 0 8px; padding: 10px 14px; border-radius: 12px; background: var(--panel-2); font-size: 14px; animation: fadeUp .3s both; }
+.pwa-how ol { margin: 0; padding-left: 20px; } .pwa-how li { margin: 3px 0; }
+#pwaTest { margin-top: 4px; }
+.install-bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px; margin: 8px 12px 0; padding: 10px 12px; border-radius: 16px;
+  background: linear-gradient(135deg, #1d1a12, #151a23); border: 1px solid rgba(232,182,76,.45); box-shadow: 0 8px 24px rgba(0,0,0,.25); animation: fadeUp .4s both; }
+.install-bar > div { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.install-bar b { font-size: 14px; color: #f6d47a; } .install-bar small { font-size: 12px; color: var(--muted); }
+.install-bar .btn { padding: 6px 14px; }
+.install-x { background: none; border: 0; color: var(--muted); font-size: 16px; padding: 4px 6px; cursor: pointer; }

@@ -9,12 +9,17 @@
   <meta property="og:title" content="Gold Signal · สัญญาณเทรดทองคำ">
   <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="logo.svg">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Gold Signal">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610060023">
-  <link rel="stylesheet" href="live.css?v=202610060023">
-  <link rel="stylesheet" href="theme.css?v=202610060023" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610060047">
+  <link rel="stylesheet" href="live.css?v=202610060047">
+  <link rel="stylesheet" href="theme.css?v=202610060047" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -103,6 +108,12 @@
       <a href="#account" data-tab="account"><span>👤</span>บัญชี</a>
     </nav>
 
+    <div class="install-bar" id="installBar" hidden>
+      <img src="logo.svg" alt="" width="34" height="34">
+      <div><b>ติดตั้ง Gold Signal เป็นแอป</b><small>เปิดเร็ว เต็มจอ · รับแจ้งเตือนได้</small></div>
+      <button class="btn gold" id="installBarBtn" type="button">ติดตั้ง</button>
+      <button class="install-x" id="installBarClose" type="button" aria-label="ปิด">✕</button>
+    </div>
     <div class="demo-bar" id="demoBar" hidden>👀 <b>โหมดดูตัวอย่าง</b> — ราคาและสัญญาณเป็นข้อมูลสดจริงทั้งหมด · <a href="./">ล็อกอินด้วย Google</a> เพื่อบันทึกการตั้งค่าไว้กับบัญชี</div>
 
     <main class="content">
@@ -503,6 +514,23 @@
           </div>
         </section>
 
+        <section class="card pwa" id="pwaCard">
+          <h3>แอปบนมือถือ + แจ้งเตือน 📲</h3>
+          <div class="pwa-row">
+            <div><b>ติดตั้งเป็นแอป</b><p class="muted small" id="pwaInstallTx"></p></div>
+            <button class="btn gold" id="pwaInstall" type="button">📲 ติดตั้ง</button>
+          </div>
+          <div class="pwa-how" id="pwaHow" hidden>
+            <ol id="pwaHowIos"><li>เปิดเว็บนี้ใน <b>Safari</b></li><li>กดปุ่ม <b>แชร์</b> <span class="mono">⬆︎</span> ด้านล่าง</li><li>เลือก <b>เพิ่มไปยังหน้าจอโฮม</b> แล้วกด <b>เพิ่ม</b></li><li>เปิด Gold Signal จากหน้าจอโฮม แล้วกลับมาเปิดแจ้งเตือนที่นี่</li></ol>
+            <ol id="pwaHowOther"><li>กดเมนู <b>⋮</b> ของเบราว์เซอร์ (Chrome / Edge)</li><li>เลือก <b>ติดตั้งแอป</b> หรือ <b>เพิ่มลงในหน้าจอหลัก</b></li><li>เปิด Gold Signal จากไอคอนบนหน้าจอได้เลย</li></ol>
+          </div>
+          <div class="pwa-row">
+            <div><b>แจ้งเตือนบนเครื่องนี้</b><p class="muted small" id="pwaPushTx">กำลังตรวจสอบ…</p></div>
+            <button class="btn" id="pwaPush" type="button" hidden>🔔 เปิดแจ้งเตือน</button>
+          </div>
+          <button class="btn" id="pwaTest" type="button" hidden>🧪 ส่งแจ้งเตือนทดสอบ</button>
+        </section>
+
         <section class="card">
           <h3>ตั้งค่าการเทรดของฉัน ⚙️</h3>
           <p class="muted small">ใช้คำนวณขนาดไม้ (lot) ในทุกสัญญาณ และหักสเปรดในหน้าสถิติ — บันทึกไว้กับบัญชีของคุณ</p>
@@ -540,22 +568,23 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610060023 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610060047 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610060023"></script>
-  <script src="auth.js?v=202610060023"></script>
-  <script src="indicators.js?v=202610060023"></script>
-  <script src="investing.js?v=202610060023"></script>
-  <script src="explain.js?v=202610060023"></script>
-  <script src="dailyplan.js?v=202610060023"></script>
-  <script src="signals.js?v=202610060023"></script>
-  <script src="intraday.js?v=202610060023"></script>
-  <script src="ui.js?v=202610060023"></script>
-  <script src="main.js?v=202610060023"></script>
+  <script src="config.js?v=202610060047"></script>
+  <script src="auth.js?v=202610060047"></script>
+  <script src="indicators.js?v=202610060047"></script>
+  <script src="investing.js?v=202610060047"></script>
+  <script src="explain.js?v=202610060047"></script>
+  <script src="dailyplan.js?v=202610060047"></script>
+  <script src="signals.js?v=202610060047"></script>
+  <script src="intraday.js?v=202610060047"></script>
+  <script src="pwa.js?v=202610060047"></script>
+  <script src="ui.js?v=202610060047"></script>
+  <script src="main.js?v=202610060047"></script>
 </body>
 </html>

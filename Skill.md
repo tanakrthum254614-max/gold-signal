@@ -61,6 +61,14 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 - แหล่งอื่นที่ลองแล้ว: gold-api.com อัปเดต ~1.5 นาที · Binance PAXG trade ~30/นาที, bookTicker mid เปลี่ยน ~ทุก 3 วิ · Swissquote โดน CORS · Binance Futures XAUUSDT ws ไม่มีข้อความ
 - ทดสอบแบบเวลาจริงต้องใช้ puppeteer-core (Chrome `--virtual-time-budget` เร่งเวลา ทำให้วัดความถี่ผิด)
 
+### 📲 แอป (PWA) + แจ้งเตือนบนเครื่อง (6 ต.ค. 2569)
+- `manifest.webmanifest` + `icons/` (192/512/maskable/apple-touch 180/badge-96 สร้างจาก logo.svg ด้วย puppeteer) + `sw.js` (ไม่แคชข้อมูล มีหน้า offline · รับ push → showNotification · แตะ → โฟกัสแอป) · vercel.json: sw.js no-cache
+- `pwa.js`: ปุ่มติดตั้ง (`beforeinstallprompt`; iPhone = วิธีทำผ่าน Safari) ในการ์ด `#pwaCard` แท็บบัญชี + แถบ `#installBar` บนมือถือ (ปิดได้ จำใน localStorage) · เปิดแจ้งเตือน: ต้องล็อกอิน (โหมด demo ไม่ได้) → `pushManager.subscribe` (timeout 20 วิ) → เก็บใน Clerk `unsafeMetadata.push` (ไม่เกิน 5 เครื่อง, เก็บ goldSettings ไว้ด้วย)
+- เซิร์ฟเวอร์: `scripts/push.js` — `notify.send()`/`sendFlex()` ส่ง LINE แล้ว push ข้อความเดียวกัน (บรรทัดแรก = หัวเรื่อง) ไปทุกเครื่องจาก Clerk Backend API (`GET /users`) · 404/410 → ลบเครื่องออก (PATCH metadata) · ไม่มีคีย์ → ข้าม (log)
+- คีย์: secret `VAPID_PRIVATE_KEY`, `CLERK_SECRET_KEY` + variable `VAPID_PUBLIC_KEY` + `config.js vapidPublicKey` (ว่าง = การ์ดขึ้น "กำลังเตรียม") — ตั้งด้วย `node scripts/setup-push.js` (**ผู้ใช้ต้องรันเอง** — Claude ไม่มีสิทธิ์เขียน secret) แล้ว commit config.js · workflow ทั้ง 3 ติดตั้ง `web-push` (package.json dependencies; Vercel ไม่ install เพราะ installCommand ว่าง)
+- ทดสอบ: puppeteer + `ServiceWorker.deliverPushMessage` / คลิกปุ่มด้วย JS (แถบแท็บล่างบังปุ่ม) / subscribe ผ่าน FCM จริงใน headless ได้ + push.js กับ Clerk ปลอม → แจ้งเตือนขึ้นจริง
+- กับดัก: `.btn { display: inline-flex }` ทับ attribute `hidden` → เพิ่ม `.btn[hidden] { display: none }` · dev-server เสิร์ฟโฟลเดอร์ย่อยได้แล้ว (icons/, compare/)
+
 ### 🕐 เวลาตลาดตามเวลานิวยอร์ก (6 ต.ค. 2569)
 - ตลาดทองเดินตามเวลานิวยอร์ก → เวลาไทย **กลาง มี.ค.–ต้น พ.ย. 07:00–03:00 · ต้น พ.ย.–กลาง มี.ค. 08:00–04:00** · โค้ดเขียนเวลาแบบ "หน้าร้อน" แล้วเลื่อนด้วย `SIG.marketShift(ms)` (0 หรือ 1 ชม., `SIG.usDst` = อาทิตย์ที่ 2 มี.ค. 07:00 UTC → อาทิตย์แรก พ.ย. 06:00 UTC) · ข้อความ: `SIG.mt(ms, "07:00")` → "08:00" หน้าหนาว
 - ที่ใช้: `INTRA.marketOpen/nextClose/lastHour/weekStart/nextWeek` (นาฬิกา `mkt()`), `SIG.expiry` (02:45→03:45), weekly.js, backtest.js (เข้าตอนเปิด), check-loop.sh (ช่วง 30 นาทีแรกหลังเปิดเป็นของงานเช้า), main.js ข้อความ, index.html วิธีใช้
@@ -124,6 +132,7 @@ live.css        หน้าโหลดแบบอนิเมชั่น (�
 config.js       Clerk publishable key + ลิงก์เพิ่มเพื่อน LINE (ของสาธารณะ ไม่มีความลับ)
 logo.svg        โลโก้ (ตราหกเหลี่ยมทอง + แท่งทอง + สายฟ้า) — แถบบน, หน้าล็อกอิน, favicon
 auth.js         หน้าโหลด (SPLASH.step(text, pct) ขยับวงแหวน + นับ % + เก็บขั้นที่ผ่านแล้ว) + ล็อกอิน Google ผ่าน Clerk (clerk-js@6 + @clerk/ui@1 + ภาษาไทย thTH)
+pwa.js          ติดตั้งเป็นแอป + เปิด/ปิดแจ้งเตือน (sw.js, manifest.webmanifest, icons/)
 ui.js           แท็บ (hash routing), หน้าบัญชี, แชร์ LINE
 main.js         ดึงข้อมูล investing.com จากเบราว์เซอร์, กราฟ, การ์ดสัญญาณ, หน้าสถิติ
                 หน้าแรกเรียลไทม์: ราคาจากสตรีม (startStream/onStreamTick ~1 วิ) + refreshTick (PT1M ทุก ~21 วิ, ทุก 3 วิเฉพาะตอนสตรีมหลุด) → renderLive (ราคา/กราฟเส้น/สถานะตลาด) + patchIntraCandles
@@ -230,6 +239,7 @@ gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=fal
 5. สัญญาณทุกวัน (ไม่จำกัด 5 ดาว) → +$70/ปี (ปัจจุบัน)
 6. เพิ่มระบบ 30 นาที (±5) → +$603/ปี (ปัจจุบัน)
 7. (5 ต.ค. 2569) เปลี่ยนเป็นธีมสว่าง (theme.css) + หน้าโหลดค้างอย่างน้อย 4 วินาที (auth.js MIN_MS) วงแหวนเติมช้าลง
+17. (6 ต.ค. 2569) ติดตั้งเป็นแอป (PWA) + แจ้งเตือนบนเครื่องผ่าน web push (ข้อความเดียวกับ LINE ไม่กินโควตา)
 16. (6 ต.ค. 2569) เวลาตลาดเลื่อนตามเวลาออมแสงสหรัฐ (08:00–04:00 ช่วงหน้าหนาว) + งานเช้า 2 รอบผ่าน market-gate
 15. (6 ต.ค. 2569) การ์ด 3 กรอบเวลาเปลี่ยนจากเส้นราคาเป็นแท่งเทียน
 14. (6 ต.ค. 2569) โลโก้ใหม่ ทองคำ + สายฟ้า (logo.svg, favicon) + หน้าโหลดแบบฟ้าผ่า
