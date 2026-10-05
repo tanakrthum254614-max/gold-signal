@@ -1,7 +1,7 @@
 // Replays the daily-signal system over past weekdays and writes backtest.json.
 // investing.com's technical summaries have no history, so the trend bias here comes from our own
 // indicator engine on Binance PAXG candles; entry/stop/target and scoring are the live rules
-// (SIG.makeMarket: 5-star days only, enter at 07:00 Thai, fixed $ stop and target).
+// (SIG.makeMarket: a signal every weekday at 07:00 Thai, fixed $ stop and three targets).
 // Usage: node scripts/backtest.js [days=120]
 const fs = require('fs');
 const path = require('path');

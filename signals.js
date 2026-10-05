@@ -30,22 +30,25 @@
   const round = (v) => Math.round(v * 100) / 100;
   const expiry = (id) => Date.parse(`${id}T00:00:00+07:00`) + DAY + (6 * 60 + 45) * 60e3;
 
-  // "Enter now" short-trade rule: only 5-star days (medium- and long-term trends both strongly the
-  // same way), trade at the current price with a $15 stop and three targets at $15 / $20 / $30.
-  // A third of the position closes at each target; after TP1 the stop moves to the entry price.
-  const RULE = { minTrend: 4, slUsd: 15, tpUsd: [15, 20, 30] };
+  // "Enter now" short-trade rule: a signal every weekday in the direction of the short + medium +
+  // long-term trend (ties go to the medium term), at the current price with a $15 stop and three
+  // targets at $15 / $20 / $30. A third closes at each target; after TP1 the stop moves to entry.
+  // Stars show how strongly the three timeframes agree (|trend| 0–6).
+  const RULE = { minTrend: 0, slUsd: 15, tpUsd: [15, 20, 30] };
+  const STARS = [1, 2, 3, 3, 4, 5, 5];
   const STRENGTH = { strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 };
   function makeMarket({ bias, price, createdAt, extra = {} }) {
     const id = thaiDate(createdAt);
-    const trend = (STRENGTH[bias.mid] || 0) + (STRENGTH[bias.long] || 0);
+    const mid = STRENGTH[bias.mid] || 0;
+    const trend = (STRENGTH[bias.short] || 0) + mid + (STRENGTH[bias.long] || 0);
     const base = { id, createdAt, expiresAt: expiry(id), rule: 'market-trend', trendScore: trend, priceAtSignal: round(price), ...extra };
     if (Math.abs(trend) < RULE.minTrend) return { ...base, status: 'skip' };
-    const buy = trend > 0, d = buy ? 1 : -1;
+    const buy = trend > 0 || (trend === 0 && mid >= 0), d = buy ? 1 : -1;
     return {
       ...base, market: true, side: buy ? 'BUY' : 'SELL',
       entry: round(price), sl: round(price - d * RULE.slUsd),
       tps: RULE.tpUsd.map((u) => round(price + d * u)), tp: round(price + d * RULE.tpUsd[0]),
-      stars: 5, status: 'active', entryAt: createdAt,
+      stars: STARS[Math.min(6, Math.abs(trend))], status: 'active', entryAt: createdAt,
     };
   }
 

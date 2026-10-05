@@ -48,7 +48,7 @@ function whyLines(a) {
   const lines = [];
   if (a.votes) lines.push(`investing.com วิเคราะห์ ${a.votes.total} ช่วงเวลา: บอก “ลง” ${a.votes.down} · “ขึ้น” ${a.votes.up}`);
   lines.push(`แนวโน้ม ระยะสั้น ${TREND_TH[a.bias.short]} · ระยะกลาง ${TREND_TH[a.bias.mid]} · ระยะยาว ${TREND_TH[a.bias.long]}`);
-  lines.push(`เทรดสั้น: TP ${SIG.RULE.tpUsd.map((u) => `$${u}`).join(' / ')} · SL $${SIG.RULE.slUsd} · ให้สัญญาณเฉพาะวันที่มั่นใจ 5 ดาว`);
+  lines.push(`เทรดสั้น: TP ${SIG.RULE.tpUsd.map((u) => `$${u}`).join(' / ')} · SL $${SIG.RULE.slUsd} · ให้สัญญาณทุกวันทำการ`);
   if (a.atr) lines.push(`ทองแกว่งเฉลี่ยวันละ ~$${money(a.atr)}`);
   return lines;
 }
@@ -88,7 +88,7 @@ function flexMessage(a, sig, prev, sum, bt) {
   const buy = sig.side === 'BUY';
   const color = buy ? C.up : C.down;
   const signalRows = sig.status === 'skip' ? [
-    txt('⏸ วันนี้ไม่มีสัญญาณ 5 ดาว', { size: 'xl', weight: 'bold', color: C.wait, margin: 'lg' }),
+    txt('⏸ วันนี้ไม่มีสัญญาณ', { size: 'xl', weight: 'bold', color: C.wait, margin: 'lg' }),
     txt(`ตลาดยังไม่ชัดพอ — ไม่เทรดดีกว่า รอสัญญาณใหม่ ${thaiTime(sig.expiresAt + 15 * 60e3)}`, { size: 'xs', color: C.muted }),
   ] : [
     txt(`${buy ? '🟢 ซื้อตอนนี้' : '🔴 ขายตอนนี้'} (${buy ? 'BUY' : 'SELL'})`, { size: 'xxl', weight: 'bold', color, margin: 'lg' }),

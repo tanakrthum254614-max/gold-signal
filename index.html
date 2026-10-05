@@ -10,7 +10,7 @@
   <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610051443">
+  <link rel="stylesheet" href="style.css?v=202610051451">
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -135,7 +135,7 @@
 
         <section class="card bt">
           <h3>ทดสอบย้อนหลัง 1 ปี <span class="tag neutral">จำลอง</span></h3>
-          <p class="hint">ใช้กติกาเดียวกันกับสัญญาณจริง (เฉพาะวัน 5 ดาว · เข้าตอน 07:00 · SL $15 · ปิด ⅓ ที่ TP $15 / $20 / $30 · ถึง TP1 แล้วเลื่อน SL ไปที่ทุน) ย้อนหลังทุกวันทำการ 1 ปี (ข้อมูลราคาจาก Binance PAXG และทิศทางจากเครื่องมือของเราเอง เพราะ investing.com ไม่เก็บผลวิเคราะห์ย้อนหลัง) ยังไม่หักค่าธรรมเนียม/สเปรด</p>
+          <p class="hint">ใช้กติกาเดียวกันกับสัญญาณจริง (ทุกวันทำการ · เข้าตอน 07:00 · SL $15 · ปิด ⅓ ที่ TP $15 / $20 / $30 · ถึง TP1 แล้วเลื่อน SL ไปที่ทุน) ย้อนหลังทุกวันทำการ 1 ปี (ข้อมูลราคาจาก Binance PAXG และทิศทางจากเครื่องมือของเราเอง เพราะ investing.com ไม่เก็บผลวิเคราะห์ย้อนหลัง) ยังไม่หักค่าธรรมเนียม/สเปรด</p>
           <div class="tiles" id="btTiles"></div>
           <p class="bt-note" id="btNote"></p>
           <div id="btChart" class="chart-eq"></div>
@@ -274,7 +274,7 @@
         <section class="card">
           <h3>สัญญาณคืออะไร?</h3>
           <p>ทุกเช้าวันจันทร์–ศุกร์ เวลา 07:00 ระบบจะบอกว่าวันนี้ให้ <b>ซื้อตอนนี้</b> หรือ <b>ขายตอนนี้</b> แบบ<b>เทรดสั้น</b>
-            เป้าหมาย <b>TP1 $15 · TP2 $20 · TP3 $30</b> · ตัดขาดทุน <b>$15</b> — ให้สัญญาณเฉพาะวันที่ <b>มั่นใจ 5 ดาว</b> (แนวโน้มระยะกลางและระยะยาวชี้ทางเดียวกันชัดเจน) วันอื่นจะบอกว่า <b>“ไม่มีสัญญาณ”</b> ไม่ฝืนเทรด
+            เป้าหมาย <b>TP1 $15 · TP2 $20 · TP3 $30</b> · ตัดขาดทุน <b>$15</b> — <b>มีสัญญาณทุกวันทำการ</b> ทิศทางตามแนวโน้มระยะสั้น กลาง และยาวรวมกัน
             <br>ระหว่างวันระบบเช็กราคาทุก 5 นาที และส่ง LINE ทันทีเมื่อ 🔔 ถึงจุดเข้า · ✅ ถึงเป้าหมาย · ❌ โดนตัดขาดทุน</p>
         </section>
 
@@ -288,8 +288,8 @@
         </section>
 
         <section class="card">
-          <h3>ทำไมต้อง 5 ดาว ★★★★★</h3>
-          <p>ระบบให้สัญญาณเฉพาะวันที่แนวโน้มระยะกลางและระยะยาว “แรง” ไปทางเดียวกันทั้งคู่ ประมาณสัปดาห์ละ 1 ครั้ง วันอื่นจะไม่ฝืนเทรด
+          <h3>ดาวความมั่นใจ ★</h3>
+          <p>★★★★★ = แนวโน้มระยะสั้น กลาง และยาว ชี้ไปทางเดียวกันชัดเจน · ★ น้อย = แต่ละช่วงเวลาขัดกัน ควรลดขนาดออเดอร์หรือข้ามได้
             <br><span class="muted small">ดาวไม่ได้รับประกันผล — ดูสถิติจริงประกอบเสมอ</span></p>
         </section>
 
@@ -338,21 +338,21 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610051443</p>
+        <p class="muted small center">เวอร์ชัน 202610051451</p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610051443"></script>
-  <script src="auth.js?v=202610051443"></script>
-  <script src="indicators.js?v=202610051443"></script>
-  <script src="investing.js?v=202610051443"></script>
-  <script src="explain.js?v=202610051443"></script>
-  <script src="dailyplan.js?v=202610051443"></script>
-  <script src="signals.js?v=202610051443"></script>
-  <script src="ui.js?v=202610051443"></script>
-  <script src="main.js?v=202610051443"></script>
+  <script src="config.js?v=202610051451"></script>
+  <script src="auth.js?v=202610051451"></script>
+  <script src="indicators.js?v=202610051451"></script>
+  <script src="investing.js?v=202610051451"></script>
+  <script src="explain.js?v=202610051451"></script>
+  <script src="dailyplan.js?v=202610051451"></script>
+  <script src="signals.js?v=202610051451"></script>
+  <script src="ui.js?v=202610051451"></script>
+  <script src="main.js?v=202610051451"></script>
 </body>
 </html>
