@@ -52,13 +52,6 @@ def from_binance(session):
     return {"source": "binance", "daily": shift(daily), "hourly": shift(hourly), "h4": shift(h4)}
 
 
-def thb_rate(session):
-    try:
-        return get_json(session, "https://open.er-api.com/v6/latest/USD")["rates"]["THB"]
-    except Exception:
-        return None
-
-
 def main(out_path):
     session = requests.Session(impersonate="chrome")
     try:
@@ -66,7 +59,6 @@ def main(out_path):
     except Exception as e:  # noqa: BLE001 - any failure means "use the backup source"
         print(f"investing.com unavailable ({e}); using Binance backup", file=sys.stderr)
         data = from_binance(session)
-    data["thb"] = thb_rate(session)
     data["fetchedAt"] = int(time.time() * 1000)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False)

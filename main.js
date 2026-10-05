@@ -26,7 +26,7 @@ const ACTION_TH = {
 
 const state = {
   tf: '1h', bars: [], daily: [], tech: null, techAt: null, source: null,
-  locked: null, lastPrice: null, chartKey: '', pivotKey: '', busy: false, thb: null, zoneKey: '',
+  locked: null, lastPrice: null, chartKey: '', pivotKey: '', busy: false, zoneKey: '',
 };
 // Simple-mode history ranges map onto chart timeframes (160 bars each)
 const RANGES = [
@@ -112,13 +112,6 @@ async function refreshTech() {
   }
   renderTechTables();
   render();
-}
-
-async function refreshThb() {
-  try {
-    const j = await getJson('https://open.er-api.com/v6/latest/USD');
-    if (j.rates && j.rates.THB) state.thb = j.rates.THB;
-  } catch (e) { /* baht estimate is optional */ }
 }
 
 async function refreshDaily() {
@@ -384,7 +377,7 @@ function renderHome(plan, price) {
   $('hUpdated').textContent = new Date().toLocaleTimeString('th-TH');
   if (!horizon) return;
   const s = SIMPLE.analyze({
-    tech: state.tech, plan, price, daily: state.daily, thb: state.thb, horizons: horizon, INV, tfLabel: TF_LABEL[state.tf],
+    tech: state.tech, plan, price, daily: state.daily, horizons: horizon, INV, tfLabel: TF_LABEL[state.tf],
   });
   const dp = tradePlan(price, horizon);
   if (dp && dp.primary) {
@@ -395,14 +388,12 @@ function renderHome(plan, price) {
       text: `${dp.headline} · ตัดขาดทุน ${f2(dp.primary.sl)} · เป้า ${f2(dp.primary.tp1)} (ดูรายละเอียดที่ “แผนเทรดวันนี้”)`,
     };
   }
-  const thb = (usd) => (state.thb ? `≈ ${(Math.round(SIMPLE.toThaiGold(usd, state.thb) / 50) * 50).toLocaleString('en-US')} บาท/บาททองคำ` : '');
 
   $('hero').className = `card hero ${s.mood}`;
   $('hLight').textContent = s.light;
   $('hTrend').textContent = s.trend;
-  $('hThb').textContent = s.thaiPrice ? (Math.round(s.thaiPrice / 50) * 50).toLocaleString('en-US') : '—';
   if (s.today) {
-    $('hToday').textContent = s.today.text + (s.today.thbText ? ` (${s.today.thbText})` : '');
+    $('hToday').textContent = s.today.text;
     $('hToday').className = `today ${s.today.chg >= 0 ? 'up' : 'down'}`;
   }
 
@@ -421,7 +412,7 @@ function renderHome(plan, price) {
   $('gMarker').style.left = `${Math.max(2, Math.min(98, s.gauge))}%`;
   $('sSure').textContent = s.sure;
   $('hWhy').innerHTML = s.why.map((w) => `<li>${w}</li>`).join('');
-  if (dp) renderTradePlan(dp, thb);
+  if (dp) renderTradePlan(dp);
 }
 
 // Today's day-trading plan (same logic as the 07:00 LINE message)
@@ -433,7 +424,7 @@ function tradePlan(price, horizon) {
   return dp;
 }
 
-function renderTradePlan(dp, thb) {
+function renderTradePlan(dp) {
   $('tplan').className = `card tplan ${dp.trend}`;
   $('tpDate').textContent = new Date().toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'short' });
   $('tpHead').textContent = `${dp.icon} ${dp.headline}`;
@@ -443,7 +434,7 @@ function renderTradePlan(dp, thb) {
     const r = (label, v, cls = '', note = '') => `<div class="tp-row ${cls}"><span>${label}</span><b class="mono">${v}</b>${note ? `<small>${note}</small>` : ''}</div>`;
     return `<div class="tp-side ${buy ? 'buy' : 'sell'}">
       <p class="tp-title">${heading}: <b>${buy ? 'ซื้อ' : 'ขาย'}</b>${p.note ? ` <small>(${p.note})</small>` : ''}</p>
-      ${r(buy ? '🎯 จุดซื้อ' : '🎯 จุดขาย', f2(p.entry), 'entry', `${p.label}${thb(p.entry) ? ` · ${thb(p.entry)}` : ''}`)}
+      ${r(buy ? '🎯 จุดซื้อ' : '🎯 จุดขาย', f2(p.entry), 'entry', p.label)}
       ${r('🛑 ตัดขาดทุน', f2(p.sl), 'sl', buy ? 'ถ้าลงถึงจุดนี้ ปิดทันที' : 'ถ้าขึ้นถึงจุดนี้ ปิดทันที')}
       ${r('💰 เป้า 1', f2(p.tp1), 'tp')}
       ${r('💰 เป้า 2', f2(p.tp2), 'tp')}
@@ -556,7 +547,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { re
   await AUTH.ready;
   renderTechTables();
   SPLASH.step('กำลังดึงราคาทองจาก investing.com…', 45);
-  const pending = [refreshThb(), refreshDaily(), refreshTech().then(() => SPLASH.step('กำลังวิเคราะห์สถิติทุกกรอบเวลา…', 75)), refreshPrice()];
+  const pending = [refreshDaily(), refreshTech().then(() => SPLASH.step('กำลังวิเคราะห์สถิติทุกกรอบเวลา…', 75)), refreshPrice()];
   await Promise.all(pending);
   render();
   UI.start();
@@ -564,5 +555,4 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { re
   every(POLL_PRICE, refreshPrice);
   every(POLL_TECH, refreshTech);
   every(POLL_DAILY, refreshDaily);
-  every(60 * 60e3, refreshThb);
 })();

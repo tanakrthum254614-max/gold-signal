@@ -12,8 +12,6 @@ const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
 const money = PLAN.money;
 const signed = (v) => `${v >= 0 ? '+' : '−'}${money(Math.abs(v))}`;
 const bars = (rows) => rows.map((b) => ({ time: b[0], open: b[1], high: b[2], low: b[3], close: b[4] }));
-// Thai gold bar (96.5%) per baht-weight
-const toThb = (usd, thb) => usd * thb * ((15.244 * 0.965) / 31.1035);
 const TREND_TH = { strong_buy: 'ขาขึ้นแรง', buy: 'ขาขึ้น', neutral: 'ไซด์เวย์', sell: 'ขาลง', strong_sell: 'ขาลงแรง' };
 
 function analyse(data) {
@@ -50,7 +48,6 @@ function analyse(data) {
   out.plan = PLAN.build({ price, levels: out.levels, bias: out.bias });
   out.chg24 = hourly.length > 24 ? price - hourly[hourly.length - 25].close : null;
   out.chg5d = daily.length > 6 ? price - daily[daily.length - 6].close : null;
-  out.thb = data.thb;
   return out;
 }
 
@@ -76,7 +73,7 @@ function textMessage(a) {
   const p = a.plan;
   const out = [
     `🥇 แผนเทรดทองคำ ${thaiDate()}`,
-    `ราคา ${money(a.price)} ดอลลาร์/ออนซ์${a.thb ? ` (≈ ${Math.round(toThb(a.price, a.thb) / 50) * 50} บาท/บาททองคำ)` : ''}`,
+    `ราคาทองคำสหรัฐ (XAU/USD) ${money(a.price)} ดอลลาร์/ออนซ์`,
     `${p.icon} วันนี้: ${p.headline}`,
     '',
     `แผนหลัก: ${PLAN.describe(p.primary)}`,
@@ -117,7 +114,7 @@ function flexMessage(a) {
     .map((l) => row(l.name === 'P' ? 'จุดกึ่งกลาง (P)' : `${l.name[0] === 'R' ? 'แนวต้าน' : 'แนวรับ'} ${l.name}`, money(l.price), l.name[0] === 'R' ? C.down : l.name[0] === 'S' ? C.up : C.text));
   const body = [
     txt(`${money(a.price)}`, { size: 'xxl', weight: 'bold' }),
-    txt(`ดอลลาร์/ออนซ์${a.thb ? ` · ≈ ${(Math.round(toThb(a.price, a.thb) / 50) * 50).toLocaleString('en-US')} บาท/บาททองคำ` : ''}`, { size: 'xs', color: C.muted }),
+    txt('ดอลลาร์/ออนซ์ · ทองคำสหรัฐ (XAU/USD)', { size: 'xs', color: C.muted }),
     txt(`${p.icon} ${p.headline}`, { weight: 'bold', size: 'md', color, margin: 'md' }),
     sep(),
     ...planRows(p.primary, 'แผนหลัก'),

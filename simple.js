@@ -1,13 +1,9 @@
 // "Simple mode": answers in everyday Thai with no trading jargon
 (function (root) {
   const STRENGTH = { strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 };
-  // Thai gold bar (96.5%) per baht-weight = USD/oz x THB x (15.244 g x 0.965 / 31.1035 g)
-  const BAHT_WEIGHT_FACTOR = (15.244 * 0.965) / 31.1035;
   const money = (v, d = 2) => Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
 
-  const toThaiGold = (usd, thb) => (thb ? usd * thb * BAHT_WEIGHT_FACTOR : null);
-
-  function analyze({ tech, plan, price, daily, thb, horizons, INV, tfLabel }) {
+  function analyze({ tech, plan, price, daily, horizons, INV, tfLabel }) {
     const [sh, mid, long] = horizons.map((h) => STRENGTH[h.key] || 0);
     const score = (sh + mid * 2 + long * 2) / 5; // -2 … +2
 
@@ -35,12 +31,11 @@
     if (daily && daily.length >= 6) {
       const n = daily.length;
       const wk = price - daily[n - 6].close;
-      why.push(`สัปดาห์นี้ราคา${wk >= 0 ? 'ขึ้น' : 'ลง'}มา ${money(Math.abs(wk))} ดอลลาร์${thb ? ` (ประมาณ ${money(Math.abs(toThaiGold(wk, thb)), 0)} บาทต่อทอง 1 บาท)` : ''}`);
+      why.push(`สัปดาห์นี้ราคา${wk >= 0 ? 'ขึ้น' : 'ลง'}มา ${money(Math.abs(wk))} ดอลลาร์`);
       const chg = price - daily[n - 2].close;
       const pct = (chg / daily[n - 2].close) * 100;
       const size = Math.abs(pct) < 0.3 ? 'นิดหน่อย' : Math.abs(pct) < 1 ? 'พอสมควร' : 'ค่อนข้างแรง';
       today = { chg, pct, text: `วันนี้${chg >= 0 ? 'ขึ้น' : 'ลง'} ${money(Math.abs(chg))} ดอลลาร์ (${Math.abs(pct).toFixed(2)}%) — ${chg >= 0 ? 'ขึ้น' : 'ลง'}${size}` };
-      if (thb) today.thbText = `≈ ${chg >= 0 ? '+' : '−'}${money(Math.abs(toThaiGold(chg, thb)), 0)} บาท ต่อทอง 1 บาท`;
     }
 
     // Daily support/resistance are the meaningful levels for people buying or holding gold
@@ -76,13 +71,12 @@
     return {
       trend, light, mood, sure, why, today,
       gauge: ((score + 2) / 4) * 100,
-      thaiPrice: toThaiGold(price, thb),
       sup, res,
       personas: { buy, hold, trade },
     };
   }
 
-  const SIMPLE = { analyze, toThaiGold };
+  const SIMPLE = { analyze };
   if (typeof module !== 'undefined' && module.exports) module.exports = SIMPLE;
   else root.SIMPLE = SIMPLE;
 })(typeof window !== 'undefined' ? window : globalThis);

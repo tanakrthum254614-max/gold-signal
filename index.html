@@ -10,7 +10,7 @@
   <meta property="og:description" content="สรุปราคาทองแบบเข้าใจง่าย อิงสถิติจาก investing.com แบบเรียลไทม์">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610051325">
+  <link rel="stylesheet" href="style.css?v=202610051349">
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -80,8 +80,8 @@
             <p class="eyebrow">ทองคำตอนนี้</p>
             <div class="hero-row"><span class="hero-light" id="hLight">🟡</span><h1 id="hTrend">กำลังวิเคราะห์…</h1></div>
             <div class="hero-price">
-              <div><span class="big-num mono" id="hThb">—</span> <span>บาท</span> <small class="muted">ทองคำแท่ง 1 บาท (ประมาณ)</small></div>
-              <div class="muted"><span class="mono" id="hUsd">—</span> ดอลลาร์/ออนซ์ (ราคาโลก)</div>
+              <div><span class="big-num mono" id="hUsd">—</span> <span>ดอลลาร์/ออนซ์</span></div>
+              <small class="muted">ราคาทองคำสหรัฐ (XAU/USD) จาก investing.com</small>
             </div>
             <p class="today" id="hToday"></p>
           </div>
@@ -266,8 +266,8 @@
         <section class="card glossary">
           <h3>คำศัพท์ที่ควรรู้</h3>
           <dl>
-            <dt>ออนซ์</dt><dd>หน่วยน้ำหนักทองสากล 1 ออนซ์ ≈ 31.1 กรัม (ทองไทย 1 บาท ≈ 15.2 กรัม)</dd>
-            <dt>ราคาโลก (XAU/USD)</dt><dd>ราคาทองคำโลก เป็นดอลลาร์ต่อออนซ์ ราคาทองไทยขึ้นลงตามราคานี้และค่าเงินบาท</dd>
+            <dt>ออนซ์</dt><dd>หน่วยน้ำหนักทองสากล 1 ออนซ์ ≈ 31.1 กรัม</dd>
+            <dt>XAU/USD</dt><dd>ราคาทองคำในตลาดโลก คิดเป็นดอลลาร์สหรัฐต่อออนซ์</dd>
             <dt>ขาขึ้น / ขาลง</dt><dd>ช่วงที่ราคามีแนวโน้มสูงขึ้นเรื่อย ๆ / ต่ำลงเรื่อย ๆ</dd>
             <dt>แนวรับ</dt><dd>ราคาที่ลงมาแล้วมักเด้งขึ้น เหมือน “พื้น”</dd>
             <dt>แนวต้าน</dt><dd>ราคาที่ขึ้นไปแล้วมักถูกกดลง เหมือน “เพดาน”</dd>
@@ -280,8 +280,7 @@
 
         <section class="card">
           <h3>ข้อควรระวัง ⚠️</h3>
-          <p>เว็บนี้เป็นการวิเคราะห์ทางเทคนิคอัตโนมัติ <b>ไม่ใช่คำแนะนำการลงทุน</b> ราคาทองอาจเปลี่ยนเร็วจากข่าวที่ไม่มีใครคาดได้
-            ราคาเป็นเงินบาทคำนวณจากราคาโลกและค่าเงินบาท อาจต่างจากราคาประกาศของสมาคมค้าทองคำเล็กน้อย ควรตัดสินใจด้วยตัวเองทุกครั้ง</p>
+          <p>เว็บนี้เป็นการวิเคราะห์ทางเทคนิคอัตโนมัติ <b>ไม่ใช่คำแนะนำการลงทุน</b> ราคาทองอาจเปลี่ยนเร็วจากข่าวที่ไม่มีใครคาดได้ ควรตัดสินใจด้วยตัวเองทุกครั้ง</p>
         </section>
       </section>
 
@@ -319,21 +318,21 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610051325</p>
+        <p class="muted small center">เวอร์ชัน 202610051349</p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610051325"></script>
-  <script src="auth.js?v=202610051325"></script>
-  <script src="indicators.js?v=202610051325"></script>
-  <script src="investing.js?v=202610051325"></script>
-  <script src="explain.js?v=202610051325"></script>
-  <script src="dailyplan.js?v=202610051325"></script>
-  <script src="simple.js?v=202610051325"></script>
-  <script src="ui.js?v=202610051325"></script>
-  <script src="main.js?v=202610051325"></script>
+  <script src="config.js?v=202610051349"></script>
+  <script src="auth.js?v=202610051349"></script>
+  <script src="indicators.js?v=202610051349"></script>
+  <script src="investing.js?v=202610051349"></script>
+  <script src="explain.js?v=202610051349"></script>
+  <script src="dailyplan.js?v=202610051349"></script>
+  <script src="simple.js?v=202610051349"></script>
+  <script src="ui.js?v=202610051349"></script>
+  <script src="main.js?v=202610051349"></script>
 </body>
 </html>
