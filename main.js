@@ -204,7 +204,8 @@ function setLines(store, defs) {
 }
 
 function drawPlanLines(plan) {
-  if (plan.action === 'WAIT' || plan.entry == null) return setLines(planLines, []);
+  // The investing.com plan is not backtested: its entry lines stay off the chart (chartzones.js draws the tested system)
+  if (window.renderChartZones || plan.action === 'WAIT' || plan.entry == null) return setLines(planLines, []);
   setLines(planLines, [
     { price: plan.entry, color: '#d99a10', title: 'จุดเข้า', lineStyle: LC.LineStyle.Solid },
     { price: plan.sl, color: '#e0424f', title: 'ตัดขาดทุน', lineStyle: LC.LineStyle.Dashed },
@@ -1525,7 +1526,9 @@ function refresh15() {
 }
 
 // Chart tab: show the same entry / exit markers when the 15-minute view is open
+// Chart tab markers / entry zones / trade lines come from chartzones.js (every timeframe)
 function markChart15() {
+  if (window.renderChartZones) return renderChartZones();
   const s = state.s15;
   const on = state.tf === '15m' && s && state.bars.length;
   const from = on ? state.bars[0].time * 1000 : 0;

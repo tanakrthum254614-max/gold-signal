@@ -487,3 +487,15 @@
 .tp-grid > div { min-width: 0; }
 .lv-bt { overflow-x: auto; }
 @media (max-width: 520px) { .lv-bt td:first-child { min-width: 110px; } }
+
+/* ================= Chart tab: entry zones of the tested system ================= */
+.cz-box { display: flex; flex-direction: column; gap: 3px; padding: 9px 12px; border-radius: 12px; margin: 8px 0 4px; background: var(--panel-2); border-left: 4px solid var(--muted); font-size: 13px; }
+.cz-box b { font-size: 14.5px; } .cz-box span { color: var(--muted); }
+.cz-box i { font-style: normal; font-weight: 700; font-size: 12px; } .cz-ok { color: var(--up); } .cz-warn { color: var(--wait); }
+.cz-box.go { border-left-color: var(--up); background: color-mix(in srgb, var(--up) 9%, var(--panel-2)); } .cz-box.go b { color: var(--up); }
+.cz-box.near { border-left-color: var(--wait); } .cz-box.hold { border-left-color: #2f6fed; } .cz-box.hold b { color: #2f6fed; }
+.cz-box.no { border-left-color: var(--down); } .cz-box.no b { color: var(--down); }
+.cz-box.none { border-left-color: var(--line); }
+.cz-legend { margin: 4px 0 6px; }
+.s15-legend i.zone.near { background: rgba(15,159,110,.08); border-color: rgba(15,159,110,.3); }
+.s15-legend i.zone.bad { background: rgba(224,66,79,.08); border-color: rgba(224,66,79,.3); }
