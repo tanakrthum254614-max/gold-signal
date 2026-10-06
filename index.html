@@ -16,12 +16,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610061920">
-  <link rel="stylesheet" href="live.css?v=202610061920">
-  <link rel="stylesheet" href="theme.css?v=202610061920" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610070005">
+  <link rel="stylesheet" href="live.css?v=202610070005">
+  <link rel="stylesheet" href="theme.css?v=202610070005" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
-<link rel="stylesheet" href="simple.css?v=202610061920"></head>
+<link rel="stylesheet" href="simple.css?v=202610070005"></head>
 <body class="simplified">
   <!-- Loading screen -->
   <div id="splash" class="splash">
@@ -278,8 +278,8 @@
               <h3>ราคาทองย้อนหลัง</h3>
               <nav class="tfs" id="sRange"></nav>
             </div>
-            <div class="cz-box" id="czBoxS">กำลังคำนวณโซนเข้า…</div>
-            <ul class="s15-legend cz-legend compact-legend"><li><i class="zone ok"></i>โซนเข้าซื้อ</li><li><i class="zone near"></i>ใกล้โซน</li><li><i class="zone bad"></i>ขาลง ไม่ซื้อ</li><li><i class="zone news"></i>ข่าว งดเข้า</li><li><i class="up">▲</i>จุดเข้า</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul>
+            <div class="cz-box" id="czBoxS">กำลังตรวจสัญญาณล่าสุด…</div>
+            <ul class="s15-legend cz-legend compact-legend"><li><i class="zone ok"></i>คะแนนผ่านในอดีต</li><li><i class="zone news"></i>ข่าว งดเข้า</li><li><i class="up">▲</i>จุดซื้อจำลอง + เวลา</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul>
             <div id="simpleChart" class="chart-simple"></div>
             <p class="hint">เส้นสีทอง = ราคาทอง · 🎯 จุดเข้า · 🛑 ตัดขาดทุน · 💰 เป้าหมาย ของสัญญาณล่าสุด</p>
           </section>
@@ -311,7 +311,7 @@
       <section class="charts card">
 
 
-        <div class="cz-box" id="czBox">กำลังคำนวณโซนเข้า…</div>
+        <div class="cz-box" id="czBox">กำลังตรวจสัญญาณล่าสุด…</div>
 
         <div id="mainChart" class="chart-main"></div>
 
@@ -323,7 +323,7 @@
           <span><i style="background:var(--ema50)"></i>เส้นค่าเฉลี่ย 50 แท่ง (EMA 50)</span>
           <span><i class="dash"></i>กรอบราคาปกติ (Bollinger)</span>
           <span><i style="background:var(--gold)"></i>แนวรับ–แนวต้าน</span>
-        </div><p class="hint">🟩 แท่งเขียว = ราคาปิดสูงกว่าเปิด (ขึ้น) · 🟥 แท่งแดง = ราคาปิดต่ำกว่าเปิด (ลง) · ราคาอยู่เหนือเส้นค่าเฉลี่ย = แข็งแรง, อยู่ใต้เส้น = อ่อนแอ</p><ul class="s15-legend cz-legend compact-legend"><li><i class="zone ok"></i>โซนเข้าซื้อ (ระบบที่ทดสอบแล้ว)</li><li><i class="zone near"></i>ใกล้โซน (คะแนน +3/+4)</li><li><i class="zone bad"></i>แนวโน้มลง ไม่ซื้อ</li><li><i class="zone news"></i>ช่วงข่าว งดเข้า</li><li><i class="up">▲</i>จุดเข้า</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul></details></section>
+        </div><p class="hint">🟩 แท่งเขียว = ราคาปิดสูงกว่าเปิด (ขึ้น) · 🟥 แท่งแดง = ราคาปิดต่ำกว่าเปิด (ลง) · ราคาอยู่เหนือเส้นค่าเฉลี่ย = แข็งแรง, อยู่ใต้เส้น = อ่อนแอ</p><ul class="s15-legend cz-legend compact-legend"><li><i class="zone ok"></i>คะแนนผ่านในอดีต</li><li><i class="zone news"></i>ช่วงข่าว งดเข้า</li><li><i class="up">▲</i>จุดซื้อจำลอง + เวลา</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul></details></section>
 
 
     </div>
@@ -415,7 +415,7 @@
           </div>
           <p class="muted small s15-hint">ลากเพื่อเลื่อนดูย้อนหลัง · ลากที่แกนราคา/แกนเวลา หรือถ่างสองนิ้วเพื่อซูม · ชี้/แตะแท่งเพื่อดูราคาและคะแนนตอนนั้น</p>
           <ul class="s15-legend">
-            <li><i class="up">▲</i>จุดเข้าซื้อ</li><li><i class="tp">●</i>ถึง TP</li><li><i class="sl">●</i>โดน SL</li>
+            <li><i class="up">▲</i>จุดซื้อจำลอง + เวลาซื้อ</li><li><i class="tp">●</i>ถึง TP</li><li><i class="sl">●</i>โดน SL</li>
             <li><i class="zone ok"></i>ช่วงที่เข้าได้</li><li><i class="zone news"></i>ช่วงข่าว งดเข้า</li><li><i class="zone"></i>ไม่เข้า</li>
           </ul>
           <div id="s15Today"></div>
@@ -535,26 +535,27 @@
             <button class="btn" id="shareCopy">คัดลอกลิงก์</button>
             <button class="btn" id="shareNative" hidden="">แชร์…</button>
           </div>
-        </section><button class="btn danger wide" id="signOut">ออกจากระบบ</button></details><p class="muted small center">เวอร์ชัน 202610061920 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p></section>
+        </section><button class="btn danger wide" id="signOut">ออกจากระบบ</button></details><p class="muted small center">เวอร์ชัน 202610070005 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p></section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden=""></div>
 
-  <script src="config.js?v=202610061920"></script>
-  <script src="auth.js?v=202610061920"></script>
-  <script src="indicators.js?v=202610061920"></script>
-  <script src="investing.js?v=202610061920"></script>
-  <script src="explain.js?v=202610061920"></script>
-  <script src="dailyplan.js?v=202610061920"></script>
-  <script src="signals.js?v=202610061920"></script>
-  <script src="intraday.js?v=202610061920"></script>
-  <script src="pwa.js?v=202610061920"></script>
-  <script src="ui.js?v=202610061920"></script>
-  <script src="status.js?v=202610061920"></script>
-  <script src="main.js?v=202610061920"></script>
-  <script src="tradeplan.js?v=202610061920"></script>
-  <script src="chartzones.js?v=202610061920"></script>
+  <script src="config.js?v=202610070005"></script>
+  <script src="auth.js?v=202610070005"></script>
+  <script src="indicators.js?v=202610070005"></script>
+  <script src="investing.js?v=202610070005"></script>
+  <script src="explain.js?v=202610070005"></script>
+  <script src="dailyplan.js?v=202610070005"></script>
+  <script src="signals.js?v=202610070005"></script>
+  <script src="intraday.js?v=202610070005"></script>
+  <script src="pwa.js?v=202610070005"></script>
+  <script src="ui.js?v=202610070005"></script>
+  <script src="status.js?v=202610070005"></script>
+  <script src="main.js?v=202610070005"></script>
+  <script src="tradeplan.js?v=202610070005"></script>
+  <script src="chartentry.js?v=202610070005"></script>
+  <script src="chartzones.js?v=202610070005"></script>
 
 
 </body></html>

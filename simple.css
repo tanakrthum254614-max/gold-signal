@@ -77,6 +77,35 @@
 .simplified .cz-box { font-size: 13px; line-height: 1.6; }
 .simplified .cz-detail { margin-top: 7px; }
 .simplified .cz-detail > summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+.simplified .cz-box { padding: 16px; gap: 12px; }
+.ce-now { display: grid; gap: 4px; }
+.cz-box .ce-now > b { font-size: 21px; line-height: 1.4; color: var(--text); }
+.cz-box.go .ce-now > b { color: var(--up); }
+.ce-eyebrow, .ce-now small, .ce-note { color: var(--muted); font-size: 12px; }
+.ce-eyebrow { font-weight: 700; }
+.ce-last { border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: var(--panel); }
+.ce-last-head, .ce-last-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ce-last-head strong { font-size: 13px; }
+.ce-last-head > span, .ce-last-foot { font-size: 12px; }
+.ce-levels { display: grid; grid-template-columns: 1fr 1fr 1.8fr; gap: 12px; padding: 12px 0; }
+.ce-levels > div { display: grid; gap: 2px; min-width: 0; }
+.ce-levels span { font-size: 12px; }
+.cz-box .ce-levels b { color: var(--text); font: 600 15px 'JetBrains Mono', monospace; line-height: 1.6; }
+.ce-focus { border: 1px solid var(--line); border-radius: 7px; background: var(--panel-2); color: var(--text); padding: 6px 10px; font: inherit; cursor: pointer; }
+.ce-focus:hover { border-color: var(--gold); }
+.ce-focus:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.ce-note, .ce-empty { margin: 0; }
+.ce-history { display: grid; gap: 5px; margin: 12px 0; }
+.ptag.entry.historical { background: var(--panel); color: var(--text); border: 1px solid #b9800c; box-shadow: none; }
+.pentry.historical { animation: none; box-shadow: none; border-top-width: 2px; border-top-style: dashed; }
+@media (max-width: 600px) {
+  .simplified .cz-box { padding: 12px; }
+  .cz-box .ce-now > b { font-size: 18px; }
+  .ce-levels { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ce-levels > div:last-child { grid-column: 1 / -1; }
+  .cz-box .ce-levels b { font-size: 13px; }
+  .ce-last { padding: 10px; }
+}
 .simplified .compact-legend { font-size: 11px; }
 .simplified #analysisMore aside.side { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
 .simplified .position-tools { margin-top: 20px; }

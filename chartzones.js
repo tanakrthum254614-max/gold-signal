@@ -59,7 +59,8 @@
       trades.push(r);
       busy = SIG.isFinal(r) ? (r.exitAt || r.expiresAt) + dur : Infinity;
     }
-    return { decs, trades, current: INTRA.decideWith(sys.frames, sys.rule, data, now, state.news, true) };
+    return { decs, trades, cooldown: busy, closed: INTRA.decideWith(sys.frames, sys.rule, data, now, state.news),
+      current: INTRA.decideWith(sys.frames, sys.rule, data, now, state.news, true) };
   }
 
   // Drawn on both chart views: trader (candles) and simple (price area)
@@ -82,16 +83,26 @@
       v.html = html; el.innerHTML = html;
       if (el.querySelector('details')) el.querySelector('details').open = !!opened;
       el.querySelectorAll('[data-tf]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); setTf(a.dataset.tf); }));
+      el.querySelectorAll('[data-entry-at]').forEach((a) => a.addEventListener('click', () => {
+        const at = Number(a.dataset.entryAt) / 1000;
+        const i = state.bars.findIndex((bar) => bar.time >= at);
+        if (i < 0) return;
+        [mainChart, simpleChart].forEach((chart) => chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, i - 15), to: i + 18 }));
+      }));
     });
   }
   const sec = (t) => Math.floor(t / 1000) + TZ;
   const usd = (v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US')}`;
+  const when = (t) => new Intl.DateTimeFormat('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(t);
+  const clock = (t) => new Intl.DateTimeFormat('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(t);
+  const ago = (t) => { const m = Math.max(0, Math.floor((Date.now() - t) / M)); return m < 60 ? `${m} นาทีที่แล้ว` : `${Math.floor(m / 60)} ชม. ${m % 60} นาทีที่แล้ว`; };
+  const escape = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   function markers(trades, from) {
     const out = [];
     trades.forEach((r) => {
       if (r.createdAt < from) return;
-      out.push({ time: sec(r.createdAt), position: 'belowBar', color: '#0f9f6e', shape: 'arrowUp', text: 'ซื้อ' });
+      out.push({ time: sec(r.createdAt), position: 'belowBar', color: '#b9800c', shape: 'arrowUp', text: `ซื้อ ${clock(r.createdAt)}` });
       if (SIG.isFinal(r) && r.exitAt) {
         const win = r.pnl > 0;
         out.push({ time: sec(r.exitAt), position: win ? 'aboveBar' : 'belowBar', color: win ? '#0f9f6e' : '#e0424f', shape: 'circle',
@@ -114,6 +125,8 @@
       const zd = state.bars.map((b) => ({ time: b.time + TZ, value: 1, color: tint }));
       each((v) => { v.zone.setData(zd); v.series.setMarkers([]); });
       window.CZ_OPEN = null;
+      window.CZ_RECENT = false;
+      if (state.locked) drawPlanLines(state.locked);
       if (window.drawPositionBoxes) drawPositionBoxes();
       setBox('none', `<b>🧭 กรอบ ${TF_LABEL[tf]}: ใช้ดูทิศทางเท่านั้น — ไม่มีจุดเข้า</b>
         <span>ตอนนี้ภาพรวม${an.label.th} (พื้นหลัง${k.includes('buy') ? 'เขียว' : k.includes('sell') ? 'แดง' : 'ใส'}) · ${sys && sys.note ? sys.note : 'ระบบจุดเข้ายังไม่ผ่านการทดสอบในกรอบนี้'} · ดูจุดเข้าที่ทดสอบแล้วในกรอบ <a href="#" data-tf="15m">15 นาที</a> / <a href="#" data-tf="30m">30 นาที</a> / <a href="#" data-tf="1h">1 ชม.</a></span>`);
@@ -123,37 +136,47 @@
     const byT = new Map(s.decs.map((d) => [d.t, d.dec]));
     const zd = state.bars.map((b) => {
       const d = byT.get(b.time * 1000);
-      const color = !d || d.stale ? 'rgba(0,0,0,0)' : d.news ? 'rgba(240,180,41,.20)' : d.dir > 0 ? 'rgba(15,159,110,.20)'
-        : d.score >= 3 ? 'rgba(15,159,110,.07)' : d.score <= -3 ? 'rgba(224,66,79,.06)' : 'rgba(0,0,0,0)';
+      const color = !d || d.stale ? 'rgba(0,0,0,0)' : d.news ? 'rgba(240,180,41,.06)' : d.dir > 0 ? 'rgba(15,159,110,.05)' : 'rgba(0,0,0,0)';
       return { time: b.time + TZ, value: 1, color };
     });
     const mk = markers(s.trades, chart[0].time);
     each((v) => { v.zone.setData(zd); v.series.setMarkers(mk); });
     const open = s.trades.find((r) => r.status === 'active');
+    const now = Date.now(), duration = sys.frames[0][1];
+    const latest = s.trades[s.trades.length - 1];
+    const framesFresh = sys.frames.every(([k, dur]) => {
+      const bars = k === sys.frames[0][0] ? chart : frameBars(k, chart);
+      return bars?.length && now - bars[bars.length - 1].time < dur + 2 * M;
+    });
+    const fresh = !!state.tickAt && now - state.tickAt < 20e3 && !!state.newsAt && !state.newsError
+      && now - state.newsAt < 60 * M && framesFresh;
+    const m = CHART_ENTRY.model({ now, duration, open, latest, closed: s.closed, live: s.current,
+      fresh, marketOpen: INTRA.marketOpen(now), paused: tf === '30m' && INTRA.paused(state.intra, now), cooldown: s.cooldown });
     window.CZ_OPEN = open || null;
+    window.CZ_RECENT = m.recent && m.key === 'go';
+    // One set of entry/SL/TP lines at a time; retain the analysis lines when no replay is open.
+    if (open) setLines(planLines, []);
+    else if (state.locked) drawPlanLines(state.locked);
     if (window.drawPositionBoxes) drawPositionBoxes();
     const line = (price, color, title, style) => each((v) => v.lines.push(v.series.createPriceLine({ price, color, title, lineStyle: style, lineWidth: 2, axisLabelVisible: true })));
     if (open) {
-      line(open.entry, '#d99a10', 'เข้าซื้อ', LC.LineStyle.Solid);
-      line(open.hit ? open.entry : open.sl, '#e0424f', open.hit ? 'SL→ทุน' : 'SL', LC.LineStyle.Dashed);
-      open.tps.forEach((tp, k) => line(tp, '#0f9f6e', `TP${k + 1}`, LC.LineStyle.Dashed));
+      line(open.entry, '#d99a10', '', LC.LineStyle.Solid);
+      if (!open.hit) line(open.sl, '#e0424f', '', LC.LineStyle.Dashed);
+      open.tps.forEach((tp) => line(tp, '#0f9f6e', '', LC.LineStyle.Dashed));
     }
-    // Status box: what to do now on this timeframe
-    const d = s.current, price = state.bars[state.bars.length - 1].close;
-    const need = d ? sys.rule.threshold - d.score : null;
-    let head, cls;
-    if (open) { head = `จุดซื้อในแบบจำลอง — เข้า ${f2(open.entry)} · SL ${f2(open.hit ? open.entry : open.sl)} · TP ${open.tps.map(f2).join(' / ')}`; cls = 'hold'; }
-    else if (!d) { head = 'กำลังคำนวณ…'; cls = 'wait'; }
-    else if (d.stale) { head = '🌙 ตลาดปิด — ไม่มีจุดเข้า'; cls = 'wait'; }
-    else if (d.dir > 0) { const L = levelsFor(sys, price); head = `✅ โซนเข้าซื้อ (พื้นหลังเขียวเข้ม) — ถ้าแท่งนี้ปิดแล้วยังได้ ${signedScore(d.score)} เข้าที่ ~${f2(price)} · SL ${f2(L.sl)} · TP ${L.tps.map(f2).join(' / ')}`; cls = 'go'; }
-    else if (d.stretched) { head = `⏸ คะแนนถึง ${signedScore(d.score)} แต่ราคายืดเกินขอบบน Bollinger — รอราคาย่อกลับเข้ากรอบ แล้วจะเป็นโซนเข้า`; cls = 'near'; }
-    else if (d.news) { head = '⏸ ช่วงข่าวแรง — งดเข้า (พื้นหลังเหลือง)'; cls = 'wait'; }
-    else if (d.score >= 3) { head = `⏳ ใกล้โซนเข้า — คะแนน ${signedScore(d.score)} ขาดอีก ${need} (พื้นหลังเขียวอ่อน)`; cls = 'near'; }
-    else if (d.score <= -3) { head = `❌ ไม่ใช่โซนซื้อ — แนวโน้มลง ${signedScore(d.score)} (ระบบไม่เข้าฝั่งขาย สถิติขายแพ้มากกว่า)`; cls = 'no'; }
-    else { head = `⏸ ยังไม่มีโซนเข้า — คะแนน ${signedScore(d.score)} ต้อง +${sys.rule.threshold}`; cls = 'wait'; }
+    const price = state.bars[state.bars.length - 1].close;
+    const entry = open || latest;
+    const entryPanel = entry ? `<div class="ce-last">
+      <div class="ce-last-head"><strong>${m.recent ? 'จุดซื้อรอบล่าสุด' : 'จุดซื้อก่อนหน้า'} · ${when(entry.createdAt)} น.</strong><span>${ago(entry.createdAt)} · ${SIG.isFinal(entry) ? 'จบแล้ว' : 'จำลอง: ยังติดตามไม้เดิม'}</span></div>
+      <div class="ce-levels"><div><span>ราคาที่เกิดสัญญาณ</span><b>${f2(entry.entry)}</b></div><div><span>${entry.hit ? 'SL เลื่อนไปทุน' : 'ตัดขาดทุน (SL)'}</span><b>${f2(entry.hit ? entry.entry : entry.sl)}</b></div><div><span>เป้ากำไร TP1 / 2 / 3</span><b>${entry.tps.map(f2).join(' / ')}</b></div></div>
+      <div class="ce-last-foot"><span>ราคากราฟ ${f2(price)} · ห่างจุดเดิม ${usd(SIG.round(price - entry.entry))}/ออนซ์</span><button type="button" class="ce-focus" data-entry-at="${entry.createdAt}">ดูแท่งที่เกิดสัญญาณ ↗</button></div>
+      </div>` : '<p class="ce-empty">ยังไม่พบจุดซื้อในช่วงกราฟที่โหลด · เมื่อมีสัญญาณจะแสดงลูกศรพร้อมเวลาและราคา</p>';
     const fin = s.trades.filter((r) => SIG.isFinal(r)), pnl = fin.reduce((a, r) => a + r.pnl, 0);
-    setBox(cls, `<b>${head}</b>
+    setBox(m.key, `<div class="ce-now"><span class="ce-eyebrow">ตอนนี้ · กรอบ ${TF_LABEL[tf]}</span><b>${m.title}</b><span>${m.detail}</span><small>เช็กแท่งปิดรอบถัดไป ${clock(m.next)} น. · เวลาไทย</small></div>
+      ${entryPanel}<p class="ce-note">ลูกศรและจุดซื้อบนกราฟเป็นแบบจำลองย้อนหลัง · สัญญาณระบบที่บันทึกอยู่หน้า “เทรด”</p>
       <details class="cz-detail"><summary>รายละเอียดระบบกรอบ ${TF_LABEL[tf]}</summary>
+      <span>${s.closed ? INTRA.reasons(s.closed).map(escape).join('<br>') : 'รอข้อมูลกราฟครบทุกกรอบเวลา'}</span>
+      <div class="ce-history"><strong>จุดก่อนหน้าในช่วงที่โหลด</strong>${s.trades.slice(-5).reverse().map((r) => `<span>${when(r.createdAt)} · ซื้อ ${f2(r.entry)} · ${SIG.isFinal(r) ? (r.closedBy === 'sl' ? 'ตัดขาดทุน' : r.closedBy === 'be' ? 'ปิดที่ทุน' : 'ปิดแล้ว') : 'ยังติดตาม'}</span>`).join('') || '<span>ยังไม่มีจุดซื้อ</span>'}</div>
       ${sys.bt.every((v) => v > 0) ? '<i class="cz-ok">✅ กำไรทุกครึ่งปีในการทดสอบ</i>' : '<i class="cz-warn">⚠️ ครึ่งปีล่าสุดขาดทุนในการทดสอบ</i>'}
       <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} ชี้ขึ้นพร้อมกัน (คะแนน ≥ +${sys.rule.threshold}) · SL $${INTRA.RULE.slUsd * sys.mult} · TP $${INTRA.RULE.tpUsd.map((u) => u * sys.mult).join('/')} · บนกราฟนี้ ${fin.length} ไม้ ${fin.length ? `รวม ${usd(SIG.round(pnl))}` : ''}
       · <b>ทดสอบ 2 ปี</b> ${sys.bt.map(usd).join(' / ')} (ครึ่งปี เก่า→ใหม่, หลังสเปรด)</span></details>`);
@@ -174,18 +197,18 @@
     el.className = 'pbox-layer';
     host.appendChild(el);
     const b = { chart, series, el, plan: null };
-    chart.timeScale().subscribeVisibleLogicalRangeChange(() => draw(b));
-    new ResizeObserver(() => draw(b)).observe(host);
+    chart.timeScale().subscribeVisibleLogicalRangeChange(() => redraw(b));
+    new ResizeObserver(() => redraw(b)).observe(host);
     boxes.push(b);
     return b;
   }
   // The trade to show: the tested system's open trade first, else the investing.com plan's entry
   function currentPlan() {
     const t = window.CZ_OPEN;
-    if (t) return { side: 1, entry: t.entry, sl: t.hit ? t.entry : t.sl, tps: t.tps, since: t.createdAt, who: 'แบบจำลองบนกราฟ' };
+    if (t) return { side: 1, entry: t.entry, sl: t.hit ? t.entry : t.sl, tps: t.tps, since: t.createdAt, who: 'จำลอง', historical: !window.CZ_RECENT };
     const L = state.locked;
     if (!L || L.action === 'WAIT' || L.entry == null) return null;
-    return { side: L.action === 'BUY' ? 1 : -1, entry: L.entry, sl: L.sl, tps: [L.tp1, L.tp2].filter((v) => v != null), since: L.since, who: 'บทวิเคราะห์ investing.com' };
+    return { side: L.action === 'BUY' ? 1 : -1, entry: L.entry, sl: L.sl, tps: [L.tp1, L.tp2].filter((v) => v != null), since: L.since, who: 'แผนประกอบ', historical: true };
   }
   function draw(b) {
     const p = currentPlan();
@@ -207,23 +230,32 @@
     const rect = (ya, yb, cls) => `<div class="pbox ${cls}" style="left:${x0}px;width:${W - x0}px;top:${Math.min(ya, yb)}px;height:${Math.max(2, Math.abs(ya - yb))}px"></div>`;
     const buy = p.side > 0, risk = Math.abs(p.entry - p.sl);
     // Tags sit at the right edge next to the price scale; spread apart vertically when prices are close
+    const stamp = new Intl.DateTimeFormat('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(p.since);
     const tags = [
-      { y: ye, cls: `entry ${buy ? 'buy' : 'sell'}`, h: 30, html: `🎯 ${buy ? 'ซื้อ' : 'ขาย'} <b>${f2(p.entry)}</b> <small>${p.who}</small>` },
-      { y: ys, cls: 'sl', h: 20, html: `SL ${f2(p.sl)} · −$${f2(risk)}` },
+      { y: ye, cls: `entry ${p.historical ? 'historical' : buy ? 'buy' : 'sell'}`, h: 30, html: `${p.who === 'แผนประกอบ' ? 'แผน' : p.historical ? 'จุดเดิม' : 'จุดซื้อ'} ${stamp} · <b>${f2(p.entry)}</b> <small>${p.who}${risk ? '' : ' · SL ทุน'}</small>` },
+      ...(risk ? [{ y: ys, cls: 'sl', h: 20, html: `SL ${f2(p.sl)}` }] : []),
       ...p.tps.map((tp, i) => ({ y: y(tp), cls: 'tp', h: 20, html: `${p.tps.length > 1 ? `TP${i + 1}` : 'TP'} ${f2(tp)} · +$${f2(Math.abs(tp - p.entry))}${risk ? ` · ${(Math.abs(tp - p.entry) / risk).toFixed(1)}R` : ''}` })),
-    ].filter((t) => t.y != null).sort((a, b2) => a.y - b2.y);
+    // Off-screen targets must not push the visible entry label away from its actual price.
+    ].filter((t) => t.y != null && t.y >= 0 && t.y <= b.el.clientHeight - 28).sort((a, b2) => a.y - b2.y);
     for (let i = 1; i < tags.length; i++) {
       const prev = tags[i - 1], min = prev.y + (prev.h + tags[i].h) / 2 + 2;
       if (tags[i].y < min) tags[i].y = min;
     }
     const html = rect(ye, ys, 'loss') + rect(ye, yt, 'win')
-      + `<div class="pentry" style="left:${x0}px;width:${W - x0}px;top:${ye}px"></div>`
+      + `<div class="pentry${p.historical ? ' historical' : ''}" style="left:${x0}px;width:${W - x0}px;top:${ye}px"></div>`
       + (x0 > 0 ? `<div class="pstart" style="left:${x0}px;top:${ye}px">${buy ? '▲' : '▼'}</div>` : '')
       + tags.map((t) => `<div class="ptag ${t.cls}" style="right:${right + 6}px;top:${t.y}px">${t.html}</div>`).join('');
     if (html !== b.html) { b.html = html; b.el.innerHTML = html; } // only when something moved: no flicker
   }
+  function redraw(b) {
+    draw(b);
+    if (b.pending) return;
+    b.pending = true;
+    // The chart recalculates its price scale on its own animation frame after a zoom/resize.
+    requestAnimationFrame(() => requestAnimationFrame(() => { b.pending = false; draw(b); }));
+  }
   window.drawPositionBoxes = function () {
     if (!boxes.length && typeof mainChart !== 'undefined') { overlay(mainChart, candles, 'mainChart'); overlay(simpleChart, areaS, 'simpleChart'); }
-    boxes.forEach(draw);
+    boxes.forEach(redraw);
   };
 })();
