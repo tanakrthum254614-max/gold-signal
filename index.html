@@ -17,9 +17,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610060928">
-  <link rel="stylesheet" href="live.css?v=202610060928">
-  <link rel="stylesheet" href="theme.css?v=202610060928" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610061208">
+  <link rel="stylesheet" href="live.css?v=202610061208">
+  <link rel="stylesheet" href="theme.css?v=202610061208" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -27,10 +27,6 @@
   <!-- Loading screen -->
   <div id="splash" class="splash">
     <div class="sp-glow"></div>
-    <!-- extra show: perspective gold grid floor, falling spinning coins, marquee tape -->
-    <div class="sp-grid" aria-hidden="true"></div>
-    <div class="sp-coins" aria-hidden="true"><i style="--x:0%;--bx:-700px;--d:0.00s;--s:3.20s;--z:0.55;--r:-200deg"></i><i style="--x:53%;--bx:42px;--d:0.37s;--s:4.95s;--z:0.70;--r:237deg"></i><i style="--x:6%;--bx:-616px;--d:0.74s;--s:4.20s;--z:0.85;--r:-274deg"></i><i style="--x:59%;--bx:126px;--d:1.11s;--s:3.45s;--z:1.00;--r:311deg"></i><i style="--x:12%;--bx:-532px;--d:1.48s;--s:5.20s;--z:0.65;--r:-348deg"></i><i style="--x:65%;--bx:210px;--d:1.85s;--s:4.45s;--z:0.80;--r:385deg"></i><i style="--x:18%;--bx:-448px;--d:2.22s;--s:3.70s;--z:0.95;--r:-422deg"></i><i style="--x:71%;--bx:294px;--d:2.59s;--s:5.45s;--z:0.60;--r:459deg"></i><i style="--x:24%;--bx:-364px;--d:2.96s;--s:4.70s;--z:0.75;--r:-496deg"></i><i style="--x:77%;--bx:378px;--d:3.33s;--s:3.95s;--z:0.90;--r:233deg"></i><i style="--x:30%;--bx:-280px;--d:3.70s;--s:3.20s;--z:0.55;--r:-270deg"></i><i style="--x:83%;--bx:462px;--d:0.07s;--s:4.95s;--z:0.70;--r:307deg"></i><i style="--x:36%;--bx:-196px;--d:0.44s;--s:4.20s;--z:0.85;--r:-344deg"></i><i style="--x:89%;--bx:546px;--d:0.81s;--s:3.45s;--z:1.00;--r:381deg"></i><i style="--x:42%;--bx:-112px;--d:1.18s;--s:5.20s;--z:0.65;--r:-418deg"></i><i style="--x:95%;--bx:630px;--d:1.55s;--s:4.45s;--z:0.80;--r:455deg"></i><i style="--x:48%;--bx:-28px;--d:1.92s;--s:3.70s;--z:0.95;--r:-492deg"></i><i style="--x:1%;--bx:-686px;--d:2.29s;--s:5.45s;--z:0.60;--r:229deg"></i></div>
-    <div class="sp-tape" aria-hidden="true"><div><span>★ GOLD SIGNAL ★ XAU/USD ★ สัญญาณทองคำเรียลไทม์ ★ ซื้อ · ขาย · SL · TP ★ ⚡ THUNDER GOLD ★ </span><span>★ GOLD SIGNAL ★ XAU/USD ★ สัญญาณทองคำเรียลไทม์ ★ ซื้อ · ขาย · SL · TP ★ ⚡ THUNDER GOLD ★ </span></div></div>
     <!-- background lightning that strikes together with the logo's bolt -->
     <svg class="sp-sky" viewBox="0 0 400 300" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
       <path d="M352 -5 L336 38 L350 42 L326 88 L341 92 L318 140 M336 38 L312 56 M326 88 L352 108"/>
@@ -45,7 +41,6 @@
     <div class="sp-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="sp-ring">
       <div class="sp-beams" aria-hidden="true"></div>
-      <div class="sp-tr" aria-hidden="true"><svg viewBox="0 0 200 200"><defs><path id="spTrPath" d="M100,100 m-93,0 a93,93 0 1,1 186,0 a93,93 0 1,1 -186,0"/></defs><text><textPath href="#spTrPath" textLength="578">GOLD SIGNAL ✦ XAU/USD ✦ REAL-TIME ✦ GOLD SIGNAL ✦ XAU/USD ✦ REAL-TIME ✦</textPath></text></svg></div>
       <i class="sp-wave" aria-hidden="true"></i><i class="sp-wave w2" aria-hidden="true"></i>
       <svg viewBox="0 0 160 160" aria-hidden="true">
         <defs><linearGradient id="spGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#d99a10"/></linearGradient></defs>
@@ -612,24 +607,24 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610060928 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610061208 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610060928"></script>
-  <script src="auth.js?v=202610060928"></script>
-  <script src="indicators.js?v=202610060928"></script>
-  <script src="investing.js?v=202610060928"></script>
-  <script src="explain.js?v=202610060928"></script>
-  <script src="dailyplan.js?v=202610060928"></script>
-  <script src="signals.js?v=202610060928"></script>
-  <script src="intraday.js?v=202610060928"></script>
-  <script src="pwa.js?v=202610060928"></script>
-  <script src="ui.js?v=202610060928"></script>
-  <script src="main.js?v=202610060928"></script>
-  <script src="tradeplan.js?v=202610060928"></script>
+  <script src="config.js?v=202610061208"></script>
+  <script src="auth.js?v=202610061208"></script>
+  <script src="indicators.js?v=202610061208"></script>
+  <script src="investing.js?v=202610061208"></script>
+  <script src="explain.js?v=202610061208"></script>
+  <script src="dailyplan.js?v=202610061208"></script>
+  <script src="signals.js?v=202610061208"></script>
+  <script src="intraday.js?v=202610061208"></script>
+  <script src="pwa.js?v=202610061208"></script>
+  <script src="ui.js?v=202610061208"></script>
+  <script src="main.js?v=202610061208"></script>
+  <script src="tradeplan.js?v=202610061208"></script>
 </body>
 </html>
