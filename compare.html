@@ -29,12 +29,68 @@
     .side ul { margin: 0; padding: 10px 14px 12px 30px; font-size: 14px; }
     .side.text { padding-bottom: 4px; }
     a { color: var(--gold); }
+    .page-compare { border-top: 1px solid var(--line); padding: 14px 0; }
+    .page-compare > summary { cursor: pointer; font-size: 15px; font-weight: 600; margin-bottom: 12px; }
   </style>
 </head>
 <body>
 <main>
   <h1>🕰️ แบบเก่า vs ✨ แบบใหม่</h1>
   <p class="lead">สิ่งที่เปลี่ยนในแต่ละรอบของ Gold Signal · <a href="./">กลับไปที่เว็บ</a></p>
+
+  <section>
+    <h2>โครงสร้างใหม่ทั้ง 5 หน้า · อ่านง่ายขึ้น</h2>
+    <p class="date">6 ต.ค. 2569 · นำการ์ด “สถานะตอนนี้” ออกตามคำขอ</p>
+    <p>หน้าเทรดเหลือราคา สัญญาณหลัก ไม้ที่เปิดอยู่ และข่าวสำคัญ ส่วนตัวชี้วัด ผลทดสอบ และระบบเสริมย้ายไปอยู่ในหัวข้อที่กดเปิดได้ในหน้าที่เกี่ยวข้อง</p>
+    <p class="date">ภาพทั้งหมดใช้ข้อมูลทดสอบชุดเดียวกันทั้งก่อนและหลัง ตัวเลขและไม้ในภาพไม่ใช่ผลเทรดจริง</p>
+    <details class="page-compare" open>
+      <summary>หน้าเทรด — ราคา สัญญาณหลัก จุดเข้า / SL / TP และข่าว</summary>
+      <div class="pair">
+        <div class="side old"><h3>🕰️ แบบเก่า · คอม</h3><img src="compare/simple-before-home-desktop.png" alt="หน้าเทรดก่อนปรับโครงสร้างบนคอม" loading="lazy"></div>
+        <div class="side new"><h3>✨ แบบใหม่ · คอม</h3><img src="compare/simple-after-home-desktop.png" alt="หน้าเทรดหลังปรับโครงสร้างบนคอม" loading="lazy"></div>
+        <div class="side old"><h3>🕰️ แบบเก่า · มือถือ</h3><img src="compare/simple-before-home-mobile.png" alt="หน้าเทรดก่อนปรับโครงสร้างบนมือถือ" loading="lazy"></div>
+        <div class="side new"><h3>✨ แบบใหม่ · มือถือ</h3><img src="compare/simple-after-home-mobile.png" alt="หน้าเทรดหลังปรับโครงสร้างบนมือถือ" loading="lazy"></div>
+      </div>
+    </details>
+    <details class="page-compare">
+      <summary>หน้ากราฟ — กราฟและเครื่องคำนวณเป็นหลัก รายละเอียดกดเปิดได้</summary>
+      <div class="pair">
+        <div class="side old"><h3>🕰️ แบบเก่า · คอม</h3><img src="compare/simple-before-chart-desktop.png" alt="หน้ากราฟก่อนปรับโครงสร้างบนคอม" loading="lazy"></div>
+        <div class="side new"><h3>✨ แบบใหม่ · คอม</h3><img src="compare/simple-after-chart-desktop.png" alt="หน้ากราฟหลังปรับโครงสร้างบนคอม" loading="lazy"></div>
+        <div class="side old"><h3>🕰️ แบบเก่า · มือถือ</h3><img src="compare/simple-before-chart-mobile.png" alt="หน้ากราฟก่อนปรับโครงสร้างบนมือถือ" loading="lazy"></div>
+        <div class="side new"><h3>✨ แบบใหม่ · มือถือ</h3><img src="compare/simple-after-chart-mobile.png" alt="หน้ากราฟหลังปรับโครงสร้างบนมือถือ" loading="lazy"></div>
+      </div>
+    </details>
+    <details class="page-compare">
+      <summary>หน้าผลเทรด — ผลสัญญาณที่บันทึกจริงก่อน ผลทดสอบอยู่ในรายละเอียด</summary>
+      <div class="pair">
+        <div class="side old"><h3>🕰️ แบบเก่า · คอม</h3><img src="compare/simple-before-stats-desktop.png" alt="หน้าผลเทรดก่อนปรับโครงสร้างบนคอม" loading="lazy"></div>
+        <div class="side new"><h3>✨ แบบใหม่ · คอม</h3><img src="compare/simple-after-stats-desktop.png" alt="หน้าผลเทรดหลังปรับโครงสร้างบนคอม" loading="lazy"></div>
+        <div class="side old"><h3>🕰️ แบบเก่า · มือถือ</h3><img src="compare/simple-before-stats-mobile.png" alt="หน้าผลเทรดก่อนปรับโครงสร้างบนมือถือ" loading="lazy"></div>
+        <div class="side new"><h3>✨ แบบใหม่ · มือถือ</h3><img src="compare/simple-after-stats-mobile.png" alt="หน้าผลเทรดหลังปรับโครงสร้างบนมือถือ" loading="lazy"></div>
+      </div>
+    </details>
+    <details class="page-compare">
+      <summary>หน้าวิธีใช้ — 3 ขั้นตอนและคำศัพท์ที่ใช้บ่อย</summary>
+      <div class="pair">
+        <div class="side old"><h3>🕰️ แบบเก่า · คอม</h3><img src="compare/simple-before-learn-desktop.png" alt="หน้าวิธีใช้ก่อนปรับโครงสร้างบนคอม" loading="lazy"></div>
+        <div class="side new"><h3>✨ แบบใหม่ · คอม</h3><img src="compare/simple-after-learn-desktop.png" alt="หน้าวิธีใช้หลังปรับโครงสร้างบนคอม" loading="lazy"></div>
+        <div class="side old"><h3>🕰️ แบบเก่า · มือถือ</h3><img src="compare/simple-before-learn-mobile.png" alt="หน้าวิธีใช้ก่อนปรับโครงสร้างบนมือถือ" loading="lazy"></div>
+        <div class="side new"><h3>✨ แบบใหม่ · มือถือ</h3><img src="compare/simple-after-learn-mobile.png" alt="หน้าวิธีใช้หลังปรับโครงสร้างบนมือถือ" loading="lazy"></div>
+      </div>
+    </details>
+    <details class="page-compare">
+      <summary>หน้าตั้งค่า — ทุนและความเสี่ยงก่อน การแจ้งเตือนและบัญชีอยู่ด้านล่าง</summary>
+      <div class="pair">
+        <div class="side old"><h3>🕰️ แบบเก่า · คอม</h3><img src="compare/simple-before-account-desktop.png" alt="หน้าตั้งค่าก่อนปรับโครงสร้างบนคอม" loading="lazy"></div>
+        <div class="side new"><h3>✨ แบบใหม่ · คอม</h3><img src="compare/simple-after-account-desktop.png" alt="หน้าตั้งค่าหลังปรับโครงสร้างบนคอม" loading="lazy"></div>
+        <div class="side old"><h3>🕰️ แบบเก่า · มือถือ</h3><img src="compare/simple-before-account-mobile.png" alt="หน้าตั้งค่าก่อนปรับโครงสร้างบนมือถือ" loading="lazy"></div>
+        <div class="side new"><h3>✨ แบบใหม่ · มือถือ</h3><img src="compare/simple-after-account-mobile.png" alt="หน้าตั้งค่าหลังปรับโครงสร้างบนมือถือ" loading="lazy"></div>
+      </div>
+    </details>
+    <details class="page-compare"><summary>ตัวอย่างธีมมืดและกรณียังไม่มีสัญญาณ</summary><div class="pair"><div class="side new"><h3>มีไม้ที่เปิดอยู่</h3><img src="compare/simple-after-home-dark.png" alt="หน้าเทรดธีมมืด" loading="lazy"></div><div class="side new"><h3>ยังไม่มีไม้ที่เปิดอยู่</h3><img src="compare/simple-after-empty-mobile.png" alt="หน้าเทรดเมื่อยังไม่มีสัญญาณยืนยัน" loading="lazy"></div></div></details>
+  </section>
+
 
   <section>
     <h2>สถานะตอนนี้ + ความสดของข้อมูล</h2>

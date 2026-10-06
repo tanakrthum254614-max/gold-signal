@@ -86,13 +86,15 @@
       ? `🛡️ SL ของระบบ (−$${S}) อยู่ <b>ใต้แนวรับ</b> ${sup.name} ${f2(sup.price)} — ราคาต้องหลุดแนวรับก่อนถึงจะโดน SL (ดี)`
       : `⚠️ แนวรับแรก ${f2(sup.price)} อยู่ต่ำกว่า SL ของระบบ (−$${S}) — SL จะโดนก่อนราคาถึงแนวรับ`) : '';
     const body = `<div class="lv-use"><p>${tpLine}</p><p>${slLine}</p></div>
-      <div class="lv-bt"><p class="lv-bt-h">❌ ทดสอบย้อนหลัง 2 ปีแล้ว: <b>เข้าเพราะราคาแตะแนวอย่างเดียว ขาดทุน</b> — จึงไม่แนะนำจุดเข้าจากแนวรับ–ต้าน</p>
+      <details class="simple-fold lv-bt" id="levelResearch"><summary>ผลทดสอบการเข้าเมื่อราคาแตะแนว</summary><p class="lv-bt-h">ทดสอบย้อนหลัง 2 ปีแล้ว: <b>เข้าเพราะราคาแตะแนวอย่างเดียว ขาดทุน</b></p>
         <table><tr><th>วิธีเข้า</th><th>ต.ค.67–เม.ย.68</th><th>–ต.ค.68</th><th>–เม.ย.69</th><th>–ต.ค.69</th><th>ชนะ</th></tr>
         ${LEVEL_BT.map(([n, v, w]) => `<tr><td>${n}</td>${v.map((x) => `<td class="mono ${x >= 0 ? 'up' : 'down'}">${usd(x)}</td>`).join('')}<td class="mono">${w}</td></tr>`).join('')}</table>
-        <p class="muted small">ต่อ 1 ออนซ์ หลังหักสเปรด $0.4 · จำลองทุกชั่วโมง ตั้งคำสั่งรอ 60 นาที SL เลยแนว TP ที่แนวถัดไป — <b>จุดเข้าให้ใช้สัญญาณ 30/15 นาทีด้านบน</b> (ผ่านการทดสอบ) แล้วใช้แนวเหล่านี้ดูว่าเป้า/SL มีอะไรขวาง</p></div>
+        <p class="muted small">ต่อ 1 ออนซ์ หลังหักสเปรด $0.4 · จำลองทุกชั่วโมง ตั้งคำสั่งรอ 60 นาที SL เลยแนว TP ที่แนวถัดไป · แนวรับ–แนวต้านเป็นข้อมูลประกอบ ไม่ใช่สัญญาณเข้า</p></details>
       <button type="button" class="btn" id="tpUseSys">🧮 คำนวณไม้ตามระบบ (SL $${S} · TP $${T})</button>`;
     if (body !== renderZones.last) {
+      const researchOpen = $('levelResearch') && $('levelResearch').open;
       renderZones.last = body; $('tpZones').innerHTML = body;
+      $('levelResearch').open = !!researchOpen;
       $('tpUseSys').addEventListener('click', () => { const p = nowPrice(); if (p == null) return; calc.fill(1, r2(p), r2(p - S), r2(p + T)); $('tpCalc').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
     }
   }
@@ -159,6 +161,14 @@
     calc.fill(d, r2(p), r2(p - d * s), r2(p + d * s));
   });
 
+  window.renderCalculator = function () {
+    const price = nowPrice();
+    if (!calc.touched && price != null) {
+      const s = INTRA.RULE.slUsd;
+      calc.fill(1, r2(price), r2(price - s), r2(price + s)); calc.touched = false;
+    } else calc.out();
+  };
+
   // ----- Render (main.js calls this at most once a second) -----
   window.renderPlan = function () {
     const now = Date.now(), price = nowPrice();
@@ -170,6 +180,6 @@
     renderLevels(price, lv);
     renderZones(price, lv);
     renderRadar(price, score, lv, now);
-    if (!calc.touched) { const s = INTRA.RULE.slUsd; calc.fill(1, r2(price), r2(price - s), r2(price + s)); calc.touched = false; }
+    renderCalculator();
   };
 })();

@@ -1,0 +1,137 @@
+/* Focused five-page layout. Colours follow the existing light/dark theme. */
+.simplified [hidden] { display: none !important; }
+.simplified .content { max-width: 1180px; padding-top: 24px; }
+.page-intro { margin: 0 0 22px; }
+.page-intro h1 { margin: 0 0 5px; font-size: 27px; letter-spacing: -.5px; }
+.page-intro p { margin: 0; color: var(--muted); font-size: 14px; }
+.simplified .demo-bar { padding: 8px 16px; font-size: 12px; border-radius: 10px; }
+.simplified .card { border-radius: 16px; padding: 22px; }
+.trade-dashboard { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.trade-dashboard > .card { margin: 0; min-width: 0; }
+.simplified .trade-dashboard .lv { box-shadow: none; }
+.simplified .lv-price { color: var(--text); font-size: 46px; }
+.simplified .lv-stats { gap: 8px; }
+.simplified .lv-stats > div { padding: 10px; }
+.simplified .lv-stats b { font-size: 14px; }
+.simplified .lv-foot { font-size: 11px; line-height: 1.6; margin-bottom: 0; }
+.trade-card-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.trade-card-head h2 { margin: 0; font-size: 17px; }
+.trade-card-head > a { font-size: 13px; }
+.section-kicker { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; }
+.simple-tag { font-size: 11px; padding: 4px 8px; border-radius: 6px; background: var(--panel-2); color: var(--muted); }
+.simplified #intraCard .intra-call { text-align: left; margin: 0 0 10px; font-size: 23px; line-height: 1.45; color: var(--text); }
+.simplified #intraCard .intra-why { text-align: left; font-size: 14px; line-height: 1.7; margin: 0; }
+.trade-trend { font-size: 13px; color: var(--muted); margin: 16px 0 5px; }
+.simplified #inNext { display: block; font-size: 12px; color: var(--muted); }
+.trade-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
+.trade-actions .btn { flex: 1; font-size: 13px; min-height: 42px; text-decoration: none; white-space: nowrap; }
+.simplified .btn.gold { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+.simplified #inDetail { margin-bottom: 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 12px 0 0; }
+.simplified #inDetail > summary { font-size: 13px; color: var(--muted); padding: 0; }
+.simplified #inDetail[open] .sm { margin-top: 16px; }
+.simplified #inDetail[open] .sm-frames { grid-template-columns: 1fr; }
+.simplified #inDetail[open] .why-grid { grid-template-columns: 1fr; }
+.simplified #inTrade:empty { display: none; }
+.simplified #inTrade > .card { margin-top: 20px; }
+.trade-numbers { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 18px 0; }
+.trade-numbers > div { background: var(--panel-2); padding: 12px; border-radius: 10px; min-width: 0; }
+.trade-numbers label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.trade-numbers b { font-size: 19px; overflow-wrap: anywhere; }
+.trade-numbers .stop b { color: var(--down); }
+.trade-numbers .target b { color: var(--up); }
+.position-progress { margin-top: 12px; }
+.position-progress > summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+.essential-news { margin-top: 20px; }
+.essential-news .trade-card-head { margin-bottom: 8px; }
+#homeNews { margin: 0; font-size: 14px; line-height: 1.7; }
+.page-note { font-size: 12px; color: var(--muted); margin: 18px 2px; }
+.simple-fold { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); margin-top: 16px; padding: 0 18px; min-width: 0; }
+.simple-fold > summary { list-style: none; display: flex; align-items: center; flex-wrap: wrap; gap: 5px 16px; cursor: pointer; padding: 17px 0; font-size: 14px; font-weight: 600; }
+.simple-fold > summary::-webkit-details-marker { display: none; }
+.simple-fold > summary::after { content: '+'; margin-left: auto; font-size: 20px; font-weight: 400; color: var(--muted); }
+.simple-fold[open] > summary::after { content: '−'; }
+.simple-fold > summary small { color: var(--muted); font-size: 12px; font-weight: 400; }
+.simple-fold[open] { padding-bottom: 18px; }
+.simple-fold > .card { box-shadow: none; margin-top: 12px; }
+.simple-fold > summary + .card { margin-top: 0; }
+.simple-fold .simple-fold { background: var(--panel-2); }
+.essential-news .simple-fold { border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 0; margin-top: 12px; }
+.essential-news .simple-fold > summary { color: var(--muted); font-size: 12px; padding: 10px 0 0; }
+.simplified #inLiveTiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.simplified #inLiveTiles .tile { padding: 18px; border: 1px solid var(--line); border-radius: 12px; }
+.simplified #inLiveTiles .tile b { font-size: 29px; }
+.stats-breakdown { font-size: 13px; color: var(--muted); margin: 14px 0; }
+.simplified #tradeHistory { border: 0; border-top: 1px solid var(--line); padding-left: 0; padding-right: 0; border-radius: 0; }
+.simplified #tradeHistory h4 { font-size: 14px; margin-top: 0; }
+.simplified #tab-chart > .seg { display: inline-flex; margin-bottom: 18px; }
+.simplified #chartPro .quote { padding: 16px 20px; }
+.simplified #chartPro .quote .price { font-size: 28px; }
+.simplified #priceInfo { border: 0; padding: 0; margin: 0; background: none; }
+.simplified #priceInfo > summary { font-size: 12px; padding: 8px 0; color: var(--muted); }
+.simplified #chartPro .layout { display: block; margin-top: 12px; }
+.simplified #mainChart { height: 460px; }
+.simplified #chartPro .charts { overflow: hidden; }
+.simplified .tf-row { margin: 12px 0; flex-wrap: wrap; }
+.simplified .tfs { flex-wrap: wrap; }
+.simplified .tfs button { min-height: 36px; }
+.simplified .cz-box { font-size: 13px; line-height: 1.6; }
+.simplified .cz-detail { margin-top: 7px; }
+.simplified .cz-detail > summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+.simplified .compact-legend { font-size: 11px; }
+.simplified #analysisMore aside.side { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.simplified .position-tools { margin-top: 20px; }
+.simplified .tp-calc { margin-top: 12px; }
+.simplified #tpCard { border: 0; padding: 0; background: transparent; }
+.simplified #tpCard .tp-grid { grid-template-columns: 1fr; }
+.simplified .position-tools #tpCalc { border: 0; padding: 0; }
+.simplified .position-tools input { min-height: 42px; }
+.quick-guide ol { list-style: none; padding: 0; margin: 0; }
+.quick-guide li { display: flex; gap: 18px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.quick-guide li:first-child { padding-top: 0; }
+.quick-guide li:last-child { padding-bottom: 0; border-bottom: 0; }
+.quick-guide li > span { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--gold-soft); color: var(--gold); font-weight: 700; }
+.quick-guide h2 { font-size: 18px; margin: 3px 0 8px; }
+.quick-guide p { font-size: 14px; color: var(--muted); margin: 0; line-height: 1.8; }
+.simplified #tab-learn > .glossary { margin-top: 20px; }
+.simplified #tab-learn .glossary dl { font-size: 14px; }
+.simplified #tab-account .settings { gap: 18px; }
+.simplified #tab-account .settings label { min-width: 0; }
+.simplified #tab-account .settings input, .simplified #tab-account .settings select { width: 100%; max-width: 100%; }
+.simplified #tab-account .settings .row > * { width: 0; }
+.simplified #tab-account #setSave { min-width: 160px; margin-top: 10px; background: var(--gold); color: var(--bg); }
+.simplified .table-scroll { overflow-x: auto; }
+.simple-fold table { max-width: 100%; }
+.simple-fold .lv-bt { overflow-x: auto; }
+@media (max-width: 760px) {
+  .simplified #tab-account .settings .row { flex-direction: column; }
+  .simplified #tab-account .settings .row > * { width: 100%; }
+  .simplified .content { padding: 18px 14px 100px; }
+  .page-intro { margin-bottom: 18px; }
+  .page-intro h1 { font-size: 23px; }
+  .page-intro p { font-size: 12px; }
+  .trade-dashboard { grid-template-columns: 1fr; gap: 14px; }
+  .simplified .card { padding: 18px; }
+  .simplified #intraCard .intra-call { font-size: 21px; }
+  .simplified .lv-price { font-size: 39px; }
+  .simplified .lv-main { margin: 10px 0; }
+  .simplified .lv-stats > div { padding: 8px; }
+  .simplified .lv-stats label { font-size: 10px; }
+  .simplified .lv-stats b { font-size: 12px; }
+  .simplified #inLiveTiles { gap: 7px; }
+  .simplified #inLiveTiles .tile { padding: 10px 8px; }
+  .simplified #inLiveTiles .tile b { font-size: 20px; }
+  .simplified #inLiveTiles .tile label { font-size: 11px; }
+  .simple-fold { padding: 0 13px; }
+  .simple-fold > summary { font-size: 13px; }
+  .simple-fold > summary small { flex-basis: 100%; order: 2; font-size: 11px; }
+  .simplified #analysisMore aside.side { grid-template-columns: 1fr; }
+  .simplified #mainChart { height: 360px; }
+  .simplified #chartPro .quote .price { font-size: 23px; }
+  .trade-numbers { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .trade-numbers > div:first-child { grid-column: span 2; }
+  .trade-numbers b { font-size: 16px; }
+  .quick-guide li { gap: 12px; }
+  .quick-guide h2 { font-size: 16px; }
+  .simplified #tab-learn .glossary dl { grid-template-columns: 1fr; gap: 4px; }
+  .simplified #tab-learn .glossary dd { margin: 0 0 12px; color: var(--muted); }
+}

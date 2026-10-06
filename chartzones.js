@@ -76,7 +76,11 @@
   function setBox(cls, html) {
     each((v) => {
       const el = $(v.box); if (!el) return;
-      el.className = `cz-box ${cls}`; el.innerHTML = html;
+      el.className = `cz-box ${cls}`;
+      if (v.html === html) return;
+      const opened = el.querySelector('details')?.open;
+      v.html = html; el.innerHTML = html;
+      if (el.querySelector('details')) el.querySelector('details').open = !!opened;
       el.querySelectorAll('[data-tf]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); setTf(a.dataset.tf); }));
     });
   }
@@ -138,7 +142,7 @@
     const d = s.current, price = state.bars[state.bars.length - 1].close;
     const need = d ? sys.rule.threshold - d.score : null;
     let head, cls;
-    if (open) { head = `📌 อยู่ในไม้ซื้อ — เข้า ${f2(open.entry)} · SL ${f2(open.hit ? open.entry : open.sl)} · TP ${open.tps.map(f2).join(' / ')}`; cls = 'hold'; }
+    if (open) { head = `จุดซื้อในแบบจำลอง — เข้า ${f2(open.entry)} · SL ${f2(open.hit ? open.entry : open.sl)} · TP ${open.tps.map(f2).join(' / ')}`; cls = 'hold'; }
     else if (!d) { head = 'กำลังคำนวณ…'; cls = 'wait'; }
     else if (d.stale) { head = '🌙 ตลาดปิด — ไม่มีจุดเข้า'; cls = 'wait'; }
     else if (d.dir > 0) { const L = levelsFor(sys, price); head = `✅ โซนเข้าซื้อ (พื้นหลังเขียวเข้ม) — ถ้าแท่งนี้ปิดแล้วยังได้ ${signedScore(d.score)} เข้าที่ ~${f2(price)} · SL ${f2(L.sl)} · TP ${L.tps.map(f2).join(' / ')}`; cls = 'go'; }
@@ -149,9 +153,10 @@
     else { head = `⏸ ยังไม่มีโซนเข้า — คะแนน ${signedScore(d.score)} ต้อง +${sys.rule.threshold}`; cls = 'wait'; }
     const fin = s.trades.filter((r) => SIG.isFinal(r)), pnl = fin.reduce((a, r) => a + r.pnl, 0);
     setBox(cls, `<b>${head}</b>
+      <details class="cz-detail"><summary>รายละเอียดระบบกรอบ ${TF_LABEL[tf]}</summary>
       ${sys.bt.every((v) => v > 0) ? '<i class="cz-ok">✅ กำไรทุกครึ่งปีในการทดสอบ</i>' : '<i class="cz-warn">⚠️ ครึ่งปีล่าสุดขาดทุนในการทดสอบ</i>'}
       <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} ชี้ขึ้นพร้อมกัน (คะแนน ≥ +${sys.rule.threshold}) · SL $${INTRA.RULE.slUsd * sys.mult} · TP $${INTRA.RULE.tpUsd.map((u) => u * sys.mult).join('/')} · บนกราฟนี้ ${fin.length} ไม้ ${fin.length ? `รวม ${usd(SIG.round(pnl))}` : ''}
-      · <b>ทดสอบ 2 ปี</b> ${sys.bt.map(usd).join(' / ')} (ครึ่งปี เก่า→ใหม่, หลังสเปรด)</span>`);
+      · <b>ทดสอบ 2 ปี</b> ${sys.bt.map(usd).join(' / ')} (ครึ่งปี เก่า→ใหม่, หลังสเปรด)</span></details>`);
   };
 })();
 
@@ -177,7 +182,7 @@
   // The trade to show: the tested system's open trade first, else the investing.com plan's entry
   function currentPlan() {
     const t = window.CZ_OPEN;
-    if (t) return { side: 1, entry: t.entry, sl: t.hit ? t.entry : t.sl, tps: t.tps, since: t.createdAt, who: 'ระบบที่ทดสอบแล้ว' };
+    if (t) return { side: 1, entry: t.entry, sl: t.hit ? t.entry : t.sl, tps: t.tps, since: t.createdAt, who: 'แบบจำลองบนกราฟ' };
     const L = state.locked;
     if (!L || L.action === 'WAIT' || L.entry == null) return null;
     return { side: L.action === 'BUY' ? 1 : -1, entry: L.entry, sl: L.sl, tps: [L.tp1, L.tp2].filter((v) => v != null), since: L.since, who: 'บทวิเคราะห์ investing.com' };

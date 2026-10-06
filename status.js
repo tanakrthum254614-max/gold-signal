@@ -66,29 +66,7 @@
       warning: [market && priceOld ? 'ราคาล่าช้า' : '', market && barsOld ? 'ข้อมูลกราฟยังไม่พร้อม' : '', recordOld ? 'รอโหลดบันทึกล่าสุด' : '', calendarOld ? 'ข่าวยังไม่ยืนยัน' : ''].filter(Boolean).join(' · ') };
   }
 
-  function render(s, now, official, current) {
-    const el = document.getElementById('nowCard');
-    if (!el) return;
-    const m = model(s, now, official, current);
-    const put = (id, value) => { const n = document.getElementById(id); if (n.textContent !== value) n.textContent = value; };
-    el.dataset.state = m.key;
-    put('nowTitle', m.title); put('nowReason', m.detail);
-    put('nowOfficial', m.official); put('nowLive', m.current);
-    const remaining = Math.max(0, Math.ceil((m.next - now) / 1000));
-    put('nowNextLabel', m.market ? 'แท่ง 30 นาทีปิดใน' : 'ตลาดเปิดอีกครั้ง');
-    put('nowCountdown', m.market ? `${String(Math.floor(remaining / 60)).padStart(2, '0')}:${String(remaining % 60).padStart(2, '0')}` : time(m.next));
-    put('nowNews', m.news); put('nowWarning', m.warning);
-    document.getElementById('nowWarning').hidden = !m.warning;
-    put('nowHealth', !m.market ? 'ตลาดปิด · ดูเวลาข้อมูลด้านล่าง' : m.warning ? 'มีข้อมูลที่ต้องรออัปเดต' : 'ข้อมูลบนเว็บพร้อม');
-    put('nowPriceSource', s.tickSrc === 'stream' ? 'investing.com · สตรีม' : s.tickSrc === 'investing' ? 'investing.com · แท่ง 1 นาที' : s.tickSrc === 'backup' ? 'Binance PAXG · ราคาสำรอง' : 'กำลังเชื่อมต่อ');
-    put('nowPriceAge', s.tickSrc === 'stream' ? `รับราคาล่าสุด ${age(s.tickAt, now)}ที่แล้ว` : `ดึงสำเร็จ: ${age(s.tickAt, now)} · อายุแท่งราคา: ${age(s.priceBarAt, now)}`);
-    put('nowBarSource', s.intraMeta ? `${s.intraMeta.source === 'investing' ? 'investing.com' : 'Binance PAXG · สำรอง'} · ดึงสำเร็จ ${age(s.intraMeta.at, now)}ที่แล้ว` : 'ยังโหลดกราฟไม่ครบ');
-    put('nowBarAge', m.frames.map((f) => `${f.label}: ${f.end ? `ปิด ${time(f.end)} น. (${age(f.end, now)})` : 'รอข้อมูล'}`).join(' · '));
-    put('nowChecked', s.summaryAt ? `${time(s.summaryAt)} น. · คำนวณบนเว็บ` : 'กำลังคำนวณบนเว็บ');
-    put('nowRecorded', s.intra && s.intra.updatedAt ? `บันทึกเปลี่ยนล่าสุด ${time(s.intra.updatedAt)} น.` : 'ยังไม่มีเวลาเปลี่ยนบันทึกจากระบบ');
-    put('nowFetched', `โหลดบันทึกสำเร็จ: ${age(s.signalsAt, now)} · ปฏิทินข่าว: ${age(s.newsAt, now)}`);
-  }
-  const api = { model, age, render };
+  const api = { model, age };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.HOME_STATUS = api;
 })(typeof window !== 'undefined' ? window : globalThis);

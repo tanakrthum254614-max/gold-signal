@@ -139,7 +139,7 @@ const chartBase = (showTime, logo = false) => ({
   crosshair: { mode: LC.CrosshairMode.Normal, vertLine: { color: '#9aa4b5', labelBackgroundColor: '#1c2433' }, horzLine: { color: '#9aa4b5', labelBackgroundColor: '#1c2433' } },
 });
 
-const mainChart = LC.createChart($('mainChart'), chartBase(false, true));
+const mainChart = LC.createChart($('mainChart'), chartBase(true, true));
 const rsiChart = LC.createChart($('rsiChart'), chartBase(false));
 const macdChart = LC.createChart($('macdChart'), chartBase(true));
 
@@ -613,8 +613,13 @@ function plotEquity(id, signals) {
   chart.timeScale().fitContent();
 }
 
-function tilesHtml(s) {
+function tilesHtml(s, compact = false) {
   const t = (label, value, cls = '', note = '') => `<div class="tile ${cls}"><label>${label}</label><b class="mono">${value}</b>${note ? `<small>${note}</small>` : ''}</div>`;
+  if (compact) return [
+    t('กำไร / ขาดทุน', s.traded ? money(s.pnl) : '—', s.pnl > 0 ? 'up' : s.pnl < 0 ? 'down' : ''),
+    t('อัตราชนะ', s.winRate == null ? '—' : `${s.winRate}%`),
+    t('ปิดแล้ว', s.traded, '', 'สัญญาณ'),
+  ].join('');
   return [
     t('ชนะ', s.wins, 'up'),
     t('แพ้', s.losses, 'down'),
@@ -816,6 +821,9 @@ function onStreamTick(p) {
 function onScreen(id) {
   const el = $(id);
   if (!el || document.hidden || el.closest('.tab[hidden]')) return false;
+  for (let parent = el.parentElement; parent; parent = parent.parentElement) {
+    if (parent.tagName === 'DETAILS' && !parent.open) return false;
+  }
   const r = el.getBoundingClientRect();
   return r.bottom > -200 && r.top < innerHeight + 200;
 }
@@ -1187,12 +1195,19 @@ function renderOpenTrade(open, price) {
       <div class="sig-top"><span class="muted">📌 ไม้ที่เปิดอยู่ · ระบบ 30 นาที <span class="lv-tag">สด</span></span><span class="muted small">เข้า ${hhmm(open.createdAt)} น. · ปิดเองไม่เกิน ${hhmm(open.expiresAt)} น.</span></div>
       <div class="lt-head"><b style="font-size:20px">${buy ? '🟢 ซื้อ' : '🔴 ขาย'}ที่ <span class="mono">${f2(open.entry)}</span></b><span class="lt-pnl mono" id="ltPnl">—</span></div>
       <small class="muted">กำไร/ขาดทุนตอนนี้ ต่อทอง 1 ออนซ์ (0.01 lot)${hit ? ` · ถึง TP${hit} แล้ว SL เลื่อนมาที่ทุน` : ''}</small>
+      <div class="trade-numbers">
+        <div><label>จุดเข้า</label><b class="mono">${f2(open.entry)}</b></div>
+        <div class="stop"><label>ตัดขาดทุน · SL</label><b class="mono">${f2(hit ? open.entry : open.sl)}</b></div>
+        ${open.tps.map((tp, k) => `<div class="target"><label>เป้าหมาย · TP${k + 1}${hit > k ? ' ✓' : ''}</label><b class="mono">${f2(tp)}</b></div>`).join('')}
+      </div>
+      <details class="position-progress"><summary>ดูตำแหน่งราคาระหว่าง SL และ TP</summary>
       <div class="lt-bar" style="--entry:${pct(open.entry)}%">
         <i class="mk" style="left:0"><span>🛑 ${f2(hit ? open.entry : open.sl)}</span></i>
         <i class="mk" style="left:${pct(open.entry)}%"><span>เข้า</span></i>
         ${open.tps.map((tp, k) => `<i class="mk${hit > k ? ' done' : ''}" style="left:${pct(tp)}%"><span>TP${k + 1}${hit > k ? '✓' : ''}</span></i>`).join('')}
         <i class="now" id="ltNow"><span id="ltNowTx"></span></i>
       </div>
+      </details>
       ${lotHtml(INTRA.RULE.slUsd)}
     </div>`;
   }
@@ -1204,6 +1219,16 @@ function renderOpenTrade(open, price) {
   $('ltNowTx').textContent = f2(price);
 }
 
+function renderTradeSummary(now, official, dec) {
+  const overview = HOME_STATUS.model(state, now, official, dec);
+  $('intraCard').className = `card intra ${overview.active ? (overview.active.side === 'BUY' ? 'buy' : 'sell') : 'wait'}`;
+  $('inCall').textContent = overview.key === 'candidate' ? 'รอสัญญาณยืนยัน' : overview.key === 'data' ? 'กำลังอัปเดตข้อมูล' : overview.title;
+  $('inWhy').textContent = overview.key === 'candidate' ? 'คะแนนแท่งปิดผ่านเกณฑ์แล้ว รอระบบบันทึกสัญญาณ' : overview.key === 'data' ? 'รอข้อมูลล่าสุดก่อนใช้สัญญาณ' : overview.detail;
+  $('tradeTrend').textContent = dec ? `แนวโน้มสด: ${dec.score >= 3 ? 'เอนขึ้น' : dec.score <= -3 ? 'เอนลง' : 'ยังไม่ชัดเจน'} · รอยืนยันจากแท่งปิด` : 'กำลังอ่านแนวโน้ม';
+  $('homeNews').textContent = overview.news;
+  if (window.renderCalculator && onScreen('positionTools')) renderCalculator();
+}
+
 function renderIntra() {
   const now = Date.now();
   const trades = intraTrades();
@@ -1213,7 +1238,7 @@ function renderIntra() {
   const official = C ? INTRA.decide(C, now, state.news) : null; // what the half-hourly check sees
   state.summaryAt = now;
   state.summaryDecisions = { official, current: dec };
-  HOME_STATUS.render(state, now, official, dec);
+  renderTradeSummary(now, official, dec);
   const price = nowPrice();
   const next = INTRA.slotOf(now) + INTRA.SLOT;
   $('inNext').textContent = `แท่ง 30 นาทีปิดรอบถัดไป ${hhmm(next)} น.`;
@@ -1227,10 +1252,6 @@ function renderIntra() {
     : `คะแนนสดจาก 3 กรอบเวลา · ระบบเข้าซื้อเมื่อแท่งปิดได้ +${INTRA.RULE.threshold}`;
 
   const pause = state.intra && INTRA.paused(state.intra, now) ? state.intra.pause : null;
-  const overview = HOME_STATUS.model(state, now, official, dec);
-  $('intraCard').className = `card intra ${overview.active ? (overview.active.side === 'BUY' ? 'buy' : 'sell') : 'wait'}`;
-  $('inCall').textContent = overview.title;
-  $('inWhy').textContent = overview.detail;
   if (dec) renderWhy('in', dec, 'คะแนนสด: รวมแท่งที่ยังไม่ปิด ขยับตามราคาทุกวินาที (สัญญาณจริงใช้แท่งที่ปิดแล้ว)');
 
   renderOpenTrade(open, price);
@@ -1256,10 +1277,10 @@ function renderIntra() {
   const todayId = SIG.thaiDate(now);
   const today = trades.filter((t) => t.id.startsWith(todayId));
   const done = today.filter((t) => t.status === 'win' || t.status === 'loss');
-  const sum = done.reduce((a, t) => a + (t.pnl || 0), 0);
+  const sum = done.reduce((a, t) => a + (t.pnl || 0) - userSpread(), 0);
   $('inToday').innerHTML = `<h4>⏱️ ไม้วันนี้ (ระบบ 30 นาที)</h4>` + (today.length
-    ? `<p class="muted small">${today.length} ไม้ · ปิดแล้ว ${done.length} · ${money(SIG.round(sum))}/ออนซ์</p>
-       <div class="in-chips">${today.map((t) => `<span class="chip-r ${t.status}">${hhmm(t.createdAt)} ${t.side === 'BUY' ? 'ซื้อ' : 'ขาย'} ${t.status === 'active' ? '…' : money(t.pnl)}</span>`).join('')}</div>`
+    ? `<p class="muted small">${today.length} ไม้ · ปิดแล้ว ${done.length} · ${money(SIG.round(sum))}/ออนซ์ หลังสเปรด</p>
+       <div class="in-chips">${today.map((t) => `<span class="chip-r ${t.status}">${hhmm(t.createdAt)} ${t.side === 'BUY' ? 'ซื้อ' : 'ขาย'} ${t.status === 'active' ? '…' : money(t.pnl - userSpread())}</span>`).join('')}</div>`
     : '<p class="muted small">ยังไม่มีไม้ — ระบบจะเข้าเมื่อทั้ง 3 ช่วงเวลาชี้ขึ้นชัดเจน (คะแนน +5)</p>');
 }
 
@@ -1297,7 +1318,8 @@ function renderWhy(prefix, dec, note) {
   const d = whyDetail(dec, note), box = $(`${prefix}Detail`);
   box.hidden = !d;
   if (!d) return;
-  if ($(`${prefix}DetailSum`).innerHTML !== d.sum) $(`${prefix}DetailSum`).innerHTML = d.sum;
+  const heading = prefix === 'in' ? 'ดูแนวโน้มและเหตุผล' : 'ดูเหตุผลของสัญญาณ';
+  if ($(`${prefix}DetailSum`).textContent !== heading) $(`${prefix}DetailSum`).textContent = heading;
   if (renderWhy[prefix] !== d.body) { renderWhy[prefix] = d.body; $(`${prefix}DetailBody`).innerHTML = d.body; }
 }
 
@@ -1517,11 +1539,12 @@ function markChart15() {
 function renderIntraStats() {
   const trades = intraTrades();
   const sum = SIG.summary(trades, userSpread());
-  $('inLiveTiles').innerHTML = tilesHtml(sum);
+  $('inLiveTiles').innerHTML = tilesHtml(sum, true);
+  $('statsBreakdown').textContent = `ชนะ ${sum.wins} · แพ้ ${sum.losses} · ถึง TP1 / TP2 / TP3: ${sum.tp1 || 0} / ${sum.tp2 || 0} / ${sum.tp3 || 0} ครั้ง`;
   plotEquity('inLiveChart', trades);
   $('inHistory').innerHTML = trades.length ? trades.slice().reverse().slice(0, 50).map((t) => {
     const buy = t.side === 'BUY';
-    const res = t.status === 'win' || t.status === 'loss' ? money(t.pnl) : '';
+    const res = t.status === 'win' || t.status === 'loss' ? money(t.pnl - userSpread()) : '';
     return `<div class="h-row ${t.status}">
       <span class="h-date">${thaiDay(t.id.slice(0, 10))} ${hhmm(t.createdAt)}</span>
       <span class="h-side ${buy ? 'buy' : 'sell'}">${buy ? 'ซื้อ' : 'ขาย'}</span>
@@ -1707,10 +1730,22 @@ applyChartTheme();
 UI.on('tab:stats', () => setTimeout(renderStats, 50));
 UI.on('settings', () => { renderSignalHome(); renderIntra(); renderStats(); });
 UI.on('tab:chart', () => setTimeout(() => {
+  if (window.renderCalculator) renderCalculator();
   simpleChart.timeScale().fitContent();
   const n = state.bars.length;
   if (n) mainChart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 120), to: n + 6 });
 }, 50));
+
+// Charts and tools inside a closed section get their first visible render when opened.
+document.addEventListener('toggle', (event) => {
+  if (event.target.tagName !== 'DETAILS' || !event.target.open) return;
+  requestAnimationFrame(() => {
+    if (event.target.contains($('s15Card'))) renderS15();
+    if (event.target.contains($('tpCard')) && window.renderPlan) renderPlan();
+    if (!$('tab-stats').hidden) renderStats();
+    window.dispatchEvent(new Event('resize'));
+  });
+}, true);
 
 // Poll only while the tab is visible; catch up immediately when it becomes visible again
 function every(ms, fn) {
@@ -1748,7 +1783,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { st
     renderCycle();
     // Recompute once at each half-hour boundary; between checks only update ages/countdown.
     if (INTRA.slotOf(Date.now()) !== INTRA.slotOf(state.summaryAt || 0)) renderIntra();
-    else if (state.summaryDecisions) HOME_STATUS.render(state, Date.now(), state.summaryDecisions.official, state.summaryDecisions.current);
+    else if (state.summaryDecisions) renderTradeSummary(Date.now(), state.summaryDecisions.official, state.summaryDecisions.current);
   }, 1000);
   every(POLL_TECH, refreshTech);
   every(POLL_DAILY, refreshDaily);
