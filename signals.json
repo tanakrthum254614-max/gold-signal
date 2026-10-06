@@ -44,7 +44,11 @@
    ],
    "source": "investing.com",
    "alerts": {
-    "entry": 1791246609506
+    "entry": 1791246609506,
+    "tp1": 1791254421005,
+    "tp2": 1791254421005,
+    "tp3": 1791254421005,
+    "exit": 1791254421005
    },
    "market": true,
    "side": "SELL",
@@ -57,23 +61,34 @@
    ],
    "tp": 4125.67,
    "stars": 4,
-   "status": "active",
-   "entryAt": 1791246609506
+   "status": "win",
+   "entryAt": 1791246609506,
+   "closedBy": "tp",
+   "exitPrice": 4110.67,
+   "exitAt": 1791253800000,
+   "hit": 3,
+   "hitAt": [
+    1791253800000,
+    1791253800000,
+    1791253800000
+   ],
+   "stop": 4140.67,
+   "pnl": 21.67
   }
  ],
- "updatedAt": 1791246609506,
+ "updatedAt": 1791254421005,
  "summary": {
-  "total": 1,
-  "traded": 1,
-  "wins": 1,
+  "total": 2,
+  "traded": 2,
+  "wins": 2,
   "losses": 0,
   "expired": 0,
   "winRate": 100,
-  "pnl": 17.24,
-  "gross": 17.64,
+  "pnl": 38.51,
+  "gross": 39.31,
   "spread": 0.4,
-  "avg": 17.24,
-  "bestWin": 17.64,
+  "avg": 19.26,
+  "bestWin": 21.67,
   "worstLoss": 0,
   "last": [
    {
@@ -104,10 +119,56 @@
     "exitPrice": 4137.16,
     "exitAt": 1791243000000,
     "pnl": 17.64
+   },
+   {
+    "id": "2026-10-06",
+    "createdAt": 1791246609506,
+    "expiresAt": 1791315900000,
+    "rule": "market-trend",
+    "trendScore": -4,
+    "priceAtSignal": 4140.67,
+    "advisory": true,
+    "why": [
+     "investing.com วิเคราะห์ 8 ช่วงเวลา: บอก “ลง” 5 · “ขึ้น” 2",
+     "แนวโน้ม ระยะสั้น ไซด์เวย์ · ระยะกลาง ขาลงแรง · ระยะยาว ขาลงแรง",
+     "ทองแกว่งเฉลี่ยวันละ ~$83.90"
+    ],
+    "source": "investing.com",
+    "alerts": {
+     "entry": 1791246609506,
+     "tp1": 1791254421005,
+     "tp2": 1791254421005,
+     "tp3": 1791254421005,
+     "exit": 1791254421005
+    },
+    "market": true,
+    "side": "SELL",
+    "entry": 4140.67,
+    "sl": 4155.67,
+    "tps": [
+     4125.67,
+     4120.67,
+     4110.67
+    ],
+    "tp": 4125.67,
+    "stars": 4,
+    "status": "win",
+    "entryAt": 1791246609506,
+    "closedBy": "tp",
+    "exitPrice": 4110.67,
+    "exitAt": 1791253800000,
+    "hit": 3,
+    "hitAt": [
+     1791253800000,
+     1791253800000,
+     1791253800000
+    ],
+    "stop": 4140.67,
+    "pnl": 21.67
    }
   ],
-  "tp1": 0,
-  "tp2": 0,
-  "tp3": 0
+  "tp1": 1,
+  "tp2": 1,
+  "tp3": 1
  }
 }
