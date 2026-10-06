@@ -17,9 +17,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610060047">
-  <link rel="stylesheet" href="live.css?v=202610060047">
-  <link rel="stylesheet" href="theme.css?v=202610060047" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610060837">
+  <link rel="stylesheet" href="live.css?v=202610060837">
+  <link rel="stylesheet" href="theme.css?v=202610060837" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -32,14 +32,22 @@
       <path d="M352 -5 L336 38 L350 42 L326 88 L341 92 L318 140 M336 38 L312 56 M326 88 L352 108"/>
       <path class="b2" d="M44 -5 L56 34 L42 39 L62 80 L50 85 L70 122 M56 34 L82 50"/>
     </svg>
+    <!-- gold market chart rising in the background: candles pop up one by one, the price line draws across -->
+    <svg class="sp-market" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true">
+      <g class="mk-c up" style="--i:0"><line x1="12" x2="12" y1="81.3" y2="96.1"/><rect x="6" y="89.1" width="12" height="5.4" rx="1.5"/></g><g class="mk-c dn" style="--i:1"><line x1="34" x2="34" y1="83.0" y2="98.6"/><rect x="28" y="89.1" width="12" height="2.4" rx="1.5"/></g><g class="mk-c dn" style="--i:2"><line x1="56" x2="56" y1="79.3" y2="107.3"/><rect x="50" y="91.5" width="12" height="7.6" rx="1.5"/></g><g class="mk-c up" style="--i:3"><line x1="78" x2="78" y1="92.3" y2="110.0"/><rect x="72" y="96.3" width="12" height="2.8" rx="1.5"/></g><g class="mk-c up" style="--i:4"><line x1="100" x2="100" y1="84.6" y2="103.2"/><rect x="94" y="85.7" width="12" height="10.6" rx="1.5"/></g><g class="mk-c dn" style="--i:5"><line x1="122" x2="122" y1="76.3" y2="90.5"/><rect x="116" y="85.7" width="12" height="2.6" rx="1.5"/></g><g class="mk-c up" style="--i:6"><line x1="144" x2="144" y1="74.0" y2="90.8"/><rect x="138" y="80.8" width="12" height="7.5" rx="1.5"/></g><g class="mk-c dn" style="--i:7"><line x1="166" x2="166" y1="67.7" y2="102.8"/><rect x="160" y="80.8" width="12" height="8.5" rx="1.5"/></g><g class="mk-c dn" style="--i:8"><line x1="188" x2="188" y1="83.1" y2="108.8"/><rect x="182" y="89.3" width="12" height="6.2" rx="1.5"/></g><g class="mk-c dn" style="--i:9"><line x1="210" x2="210" y1="89.7" y2="107.3"/><rect x="204" y="95.5" width="12" height="4.1" rx="1.5"/></g><g class="mk-c up" style="--i:10"><line x1="232" x2="232" y1="84.7" y2="102.0"/><rect x="226" y="88.6" width="12" height="11.0" rx="1.5"/></g><g class="mk-c up" style="--i:11"><line x1="254" x2="254" y1="61.5" y2="91.8"/><rect x="248" y="67.7" width="12" height="20.9" rx="1.5"/></g><g class="mk-c up" style="--i:12"><line x1="276" x2="276" y1="56.0" y2="69.8"/><rect x="270" y="60.6" width="12" height="7.1" rx="1.5"/></g><g class="mk-c up" style="--i:13"><line x1="298" x2="298" y1="41.5" y2="65.5"/><rect x="292" y="46.4" width="12" height="14.2" rx="1.5"/></g><g class="mk-c dn" style="--i:14"><line x1="320" x2="320" y1="33.5" y2="57.2"/><rect x="314" y="46.4" width="12" height="7.5" rx="1.5"/></g><g class="mk-c up" style="--i:15"><line x1="342" x2="342" y1="29.7" y2="57.2"/><rect x="336" y="36.2" width="12" height="17.7" rx="1.5"/></g><g class="mk-c up" style="--i:16"><line x1="364" x2="364" y1="21.7" y2="46.8"/><rect x="358" y="27.3" width="12" height="8.9" rx="1.5"/></g><g class="mk-c up" style="--i:17"><line x1="386" x2="386" y1="15.0" y2="30.5"/><rect x="380" y="16.9" width="12" height="10.4" rx="1.5"/></g>
+      <path class="mk-line" pathLength="1" d="M12,89.1 L34,91.5 L56,99.1 L78,96.3 L100,85.7 L122,88.3 L144,80.8 L166,89.3 L188,95.5 L210,99.6 L232,88.6 L254,67.7 L276,60.6 L298,46.4 L320,53.9 L342,36.2 L364,27.3 L386,16.9"/>
+    </svg>
     <div class="sp-flash" aria-hidden="true"></div>
     <div class="sp-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="sp-ring">
+      <div class="sp-beams" aria-hidden="true"></div>
+      <i class="sp-wave" aria-hidden="true"></i><i class="sp-wave w2" aria-hidden="true"></i>
       <svg viewBox="0 0 160 160" aria-hidden="true">
         <defs><linearGradient id="spGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#d99a10"/></linearGradient></defs>
         <circle class="sp-track" cx="80" cy="80" r="72"/>
         <circle class="sp-orbit" cx="80" cy="80" r="62"/>
         <circle class="sp-prog" id="splashFill" cx="80" cy="80" r="72"/>
+        <circle class="sp-head" id="splashHead" cx="152" cy="80" r="4.5"/>
       </svg>
       <!-- Logo (same drawing as logo.svg), animated: rim draws in, gold bars rise, lightning strikes -->
       <svg class="sp-logo" viewBox="0 0 100 100" aria-hidden="true">
@@ -61,9 +69,10 @@
         </g>
         <path class="lg-bolt" d="M60 16 L33 53 H48 L41 84 L70 45 H55 L63 16 Z" fill="url(#lgBolt)" stroke="#151a23" stroke-width="3" stroke-linejoin="round" paint-order="stroke"/>
       </svg>
+      <div class="sp-sparks" aria-hidden="true"><i style="--a:0deg;--d:84px"></i><i style="--a:50deg;--d:62px"></i><i style="--a:72deg;--d:84px"></i><i style="--a:122deg;--d:62px"></i><i style="--a:144deg;--d:84px"></i><i style="--a:194deg;--d:62px"></i><i style="--a:216deg;--d:84px"></i><i style="--a:266deg;--d:62px"></i><i style="--a:288deg;--d:84px"></i><i style="--a:338deg;--d:62px"></i></div>
     </div>
-    <h1 class="sp-title">Gold Signal</h1>
-    <p class="muted">สัญญาณเทรดทองคำ XAU/USD · เรียลไทม์</p>
+    <h1 class="sp-title" aria-label="Gold Signal"><span style="--i:0">G</span><span style="--i:1">o</span><span style="--i:2">l</span><span style="--i:3">d</span><span class="sp" style="--i:4"> </span><span style="--i:5">S</span><span style="--i:6">i</span><span style="--i:7">g</span><span style="--i:8">n</span><span style="--i:9">a</span><span style="--i:10">l</span></h1>
+    <p class="muted sp-sub">สัญญาณเทรดทองคำ XAU/USD · เรียลไทม์</p>
     <div class="sp-pct mono" id="splashPct">0%</div>
     <p class="splash-text" id="splashText">กำลังเริ่มต้น…</p>
     <ul class="sp-steps" id="splashSteps"></ul>
@@ -568,23 +577,23 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610060047 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610060837 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610060047"></script>
-  <script src="auth.js?v=202610060047"></script>
-  <script src="indicators.js?v=202610060047"></script>
-  <script src="investing.js?v=202610060047"></script>
-  <script src="explain.js?v=202610060047"></script>
-  <script src="dailyplan.js?v=202610060047"></script>
-  <script src="signals.js?v=202610060047"></script>
-  <script src="intraday.js?v=202610060047"></script>
-  <script src="pwa.js?v=202610060047"></script>
-  <script src="ui.js?v=202610060047"></script>
-  <script src="main.js?v=202610060047"></script>
+  <script src="config.js?v=202610060837"></script>
+  <script src="auth.js?v=202610060837"></script>
+  <script src="indicators.js?v=202610060837"></script>
+  <script src="investing.js?v=202610060837"></script>
+  <script src="explain.js?v=202610060837"></script>
+  <script src="dailyplan.js?v=202610060837"></script>
+  <script src="signals.js?v=202610060837"></script>
+  <script src="intraday.js?v=202610060837"></script>
+  <script src="pwa.js?v=202610060837"></script>
+  <script src="ui.js?v=202610060837"></script>
+  <script src="main.js?v=202610060837"></script>
 </body>
 </html>

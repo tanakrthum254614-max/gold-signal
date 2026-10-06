@@ -10,8 +10,18 @@
   function count() {
     shown += Math.max(0.25, (target - shown) * 0.035);
     if (shown >= target) shown = target;
-    $('splashPct').textContent = `${Math.round(shown)}%`;
+    const pct = Math.round(shown), el = $('splashPct');
+    // Bump the number every 25%
+    if (Math.floor(pct / 25) > Math.floor(parseInt(el.textContent, 10) / 25)) {
+      el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+    }
+    el.textContent = `${pct}%`;
     $('splashFill').style.strokeDashoffset = RING * (1 - shown / 100);
+    // Comet head at the tip of the ring (the svg is rotated −90°, so 0 rad = top)
+    const a = 2 * Math.PI * shown / 100, head = $('splashHead');
+    head.setAttribute('cx', (80 + 72 * Math.cos(a)).toFixed(2));
+    head.setAttribute('cy', (80 + 72 * Math.sin(a)).toFixed(2));
+    head.classList.toggle('on', shown > 0.5 && shown < 100);
     raf = shown < target ? requestAnimationFrame(count) : 0;
   }
   window.SPLASH = {

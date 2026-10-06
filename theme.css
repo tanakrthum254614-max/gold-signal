@@ -156,6 +156,14 @@ body::before { /* soft warm glow at the top of the page */
 .sp-particles i { background: #f0b429; box-shadow: 0 0 8px rgba(240,180,41,.7); }
 .sp-particles i:nth-child(odd) { background: #ffd56b; }
 .sp-title { background-image: linear-gradient(90deg, #a8720a, #f0b429, #a8720a); }
+.sp-market { opacity: .38; }
+.mk-line { stroke: #e0a21a; filter: drop-shadow(0 0 3px rgba(240,180,41,.6)); }
+.mk-c.up line { stroke: #f0b429; } .mk-c.up rect { fill: #f0b429; }
+.mk-c.dn line { stroke: #b4bccb; } .mk-c.dn rect { fill: #b4bccb; }
+.sp-beams { background: repeating-conic-gradient(from 0deg, rgba(240,180,41,.2) 0deg 7deg, transparent 7deg 30deg); }
+.sp-wave { border-color: #f0b429; box-shadow: 0 0 16px rgba(240,180,41,.5), inset 0 0 10px rgba(240,180,41,.35); }
+.sp-sparks i { background: #f5a500; box-shadow: 0 0 8px #f0b429, 0 0 2px #c27c00; }
+.sp-head { fill: #fff; filter: drop-shadow(0 0 5px #f0b429) drop-shadow(0 0 2px #e0a21a); }
 
 /* ---------- Sign-in page ---------- */
 .login-intro h2 { color: var(--text); }
