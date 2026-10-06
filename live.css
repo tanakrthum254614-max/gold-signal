@@ -499,3 +499,20 @@
 .cz-legend { margin: 4px 0 6px; }
 .s15-legend i.zone.near { background: rgba(15,159,110,.08); border-color: rgba(15,159,110,.3); }
 .s15-legend i.zone.bad { background: rgba(224,66,79,.08); border-color: rgba(224,66,79,.3); }
+
+/* ================= Position box on the chart (entry → SL red, entry → targets green) ================= */
+.pbox-layer { position: absolute; inset: 0; pointer-events: none; z-index: 3; overflow: hidden; }
+.pbox { position: absolute; }
+.pbox.loss { background: rgba(224,66,79,.14); border-top: 1px solid rgba(224,66,79,.35); border-bottom: 1px solid rgba(224,66,79,.35); }
+.pbox.win { background: rgba(15,159,110,.13); border-top: 1px solid rgba(15,159,110,.35); border-bottom: 1px solid rgba(15,159,110,.35); }
+.pentry { position: absolute; height: 0; border-top: 3px solid #d99a10; box-shadow: 0 0 8px rgba(217,154,16,.8); margin-top: -1.5px; animation: pentryPulse 1.6s ease-in-out infinite; }
+@keyframes pentryPulse { 50% { box-shadow: 0 0 16px rgba(217,154,16,1); } }
+.ptag { position: absolute; transform: translateY(-50%); white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,.2); font-size: 11.5px; font-weight: 700; padding: 1px 7px; border-radius: 6px; color: #fff; font-family: 'JetBrains Mono', monospace; }
+.ptag.sl { background: #e0424f; } .ptag.tp { background: #0f9f6e; }
+.ptag.entry { font-size: 14px; padding: 4px 10px; border-radius: 9px; background: #d99a10; color: #1c1400; box-shadow: 0 3px 12px rgba(0,0,0,.25); font-family: inherit; }
+.ptag.entry.buy { background: linear-gradient(90deg, #0f9f6e, #d99a10); color: #fff; } .ptag.entry.sell { background: linear-gradient(90deg, #e0424f, #d99a10); color: #fff; }
+.ptag.entry b { font-family: 'JetBrains Mono', monospace; font-size: 15px; } .ptag.entry small { font-weight: 500; opacity: .85; font-size: 10.5px; margin-left: 4px; }
+@keyframes ptagPop { from { transform: translateY(-50%) scale(.6); opacity: 0; } }
+@media (max-width: 520px) { .ptag.entry { font-size: 12px; padding: 3px 8px; } .ptag.entry b { font-size: 13px; } .ptag.entry small { display: none; } .ptag { font-size: 10.5px; } }
+.pstart { position: absolute; transform: translate(-50%, -50%); font-size: 18px; color: #d99a10; text-shadow: 0 0 6px rgba(217,154,16,.8); line-height: 1; }
+@keyframes ptagPop { from { opacity: 0; } }

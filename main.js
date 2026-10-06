@@ -206,7 +206,7 @@ function setLines(store, defs) {
 function drawPlanLines(plan) {
   if (plan.action === 'WAIT' || plan.entry == null) return setLines(planLines, []);
   setLines(planLines, [
-    { price: plan.entry, color: '#d99a10', title: 'จุดเข้า', lineStyle: LC.LineStyle.Solid },
+    { price: plan.entry, color: '#d99a10', title: 'จุดเข้า', lineStyle: LC.LineStyle.Solid, lineWidth: 3 },
     { price: plan.sl, color: '#e0424f', title: 'ตัดขาดทุน', lineStyle: LC.LineStyle.Dashed },
     { price: plan.tp1, color: '#0f9f6e', title: 'เป้า 1', lineStyle: LC.LineStyle.Dashed },
     { price: plan.tp2, color: '#0f9f6e', title: 'เป้า 2', lineStyle: LC.LineStyle.Dashed },
