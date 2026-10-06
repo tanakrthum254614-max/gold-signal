@@ -17,9 +17,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610061208">
-  <link rel="stylesheet" href="live.css?v=202610061208">
-  <link rel="stylesheet" href="theme.css?v=202610061208" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610061221">
+  <link rel="stylesheet" href="live.css?v=202610061221">
+  <link rel="stylesheet" href="theme.css?v=202610061221" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -180,6 +180,7 @@
         </div>
 
         <div id="inTrade"></div>
+        <a class="lv-strip" id="lvStrip" href="#stats" hidden></a>
 
         <!-- 15-minute signal: website only (no LINE) -->
         <div class="card s15" id="s15Card">
@@ -205,13 +206,13 @@
         <!-- Trader toolkit: session, key levels with buy/sell zones, short-term radar, position calculator -->
         <h3 class="sec-title">🧭 แผนเทรดวันนี้ — จุดเข้า · แนวรับแนวต้าน · สายสั้น <span class="lv-tag">สด</span></h3>
         <div class="card tp" id="tpCard">
-          <ol class="tp-steps"><li><b>ดูช่วงตลาด</b> — รู้ว่าตอนนี้แกว่งแรงหรือเบา</li><li><b>เลือกจุดเข้าที่ "เข้ากับเทรนด์"</b> — ตั้งคำสั่งรอที่ราคานั้น พร้อม SL/TP</li><li><b>กด "คำนวณไม้นี้"</b> — ได้ขนาดไม้ที่ไม่เสี่ยงเกินทุน</li></ol>
+          <ol class="tp-steps"><li><b>ดูช่วงตลาด</b> — รู้ว่าตอนนี้แกว่งแรงหรือเบา</li><li><b>รอสัญญาณ 30/15 นาที</b> แล้วดูว่าเป้า/SL มีแนวขวางไหม</li><li><b>คำนวณขนาดไม้</b> — ไม่เสี่ยงเกินทุน</li></ol>
           <div class="tp-session" id="tpSession"></div>
           <div class="tp-grid">
             <div class="tp-ladder"><div class="tp-h">📐 แนวรับ–แนวต้าน (ราคาสดอยู่ตรงไหน)</div><div id="tpLadder"></div></div>
-            <div class="tp-zones"><div class="tp-h">🎯 จุดเข้าอ้างอิง</div><div id="tpZones"></div></div>
+            <div class="tp-zones"><div class="tp-h">🎯 ใช้แนวรับ–ต้านกับสัญญาณของระบบ</div><div id="tpZones"></div></div>
           </div>
-          <div class="tp-h">⚡ เรดาร์เก็งกำไรสั้น (กราฟ 1 นาที)</div>
+          <div class="tp-h">⚡ เรดาร์แรงสั้น (กราฟ 1 นาที) — ข้อมูลประกอบ</div>
           <div class="tp-radar" id="tpRadar"></div>
           <div class="tp-h">🧮 คำนวณขนาดไม้ก่อนเข้า</div>
           <div class="tp-calc" id="tpCalc">
@@ -222,7 +223,7 @@
             <button type="button" class="btn" id="cNow">ใช้ราคาตอนนี้</button>
             <div class="tp-calc-out" id="cOut"></div>
           </div>
-          <p class="muted small tp-note">⚠️ จุดเข้าในส่วนนี้คำนวณจากแนวรับ–แนวต้านและโมเมนตัม <b>ยังไม่ผ่านการทดสอบย้อนหลัง</b> (ต่างจากสัญญาณ 30/15 นาทีด้านบน) — ใช้เป็นแผนประกอบ ตั้ง SL ทุกครั้ง และไม่เสี่ยงเกิน 1–2% ของทุนต่อไม้</p>
+          <p class="muted small tp-note">⚠️ จุดเข้าที่ผ่านการทดสอบย้อนหลังคือสัญญาณ 30/15 นาทีด้านบน — ส่วนนี้เป็นข้อมูลประกอบ ตั้ง SL ทุกครั้ง และไม่เสี่ยงเกิน 1–2% ของทุนต่อไม้</p>
         </div>
 
         <!-- Odds for each side, as donuts -->
@@ -298,6 +299,15 @@
 
       <!-- 📊 Stats -->
       <section id="tab-stats" class="tab" hidden>
+
+        <!-- Live record vs what the backtest promised: is the system still working? -->
+        <section class="card lv-card" id="lvCard">
+          <h3>🧪 ผลจริงเทียบกับที่ทดสอบไว้ — ระบบ 30 นาที</h3>
+          <p class="hint">ถ้าระบบยังใช้ได้ ผลจริงสะสมควรอยู่ในแถบสีเทา (ช่วงปกติจากผลทดสอบ 1 ปี) · หลุดใต้แถบ = ระบบอาจใช้ไม่ได้แล้ว ควรหยุดหรือลดขนาดไม้</p>
+          <div class="lv-status" id="lvStatus"></div>
+          <div class="lv-grid"><div id="lvTiles" class="lv-tiles"></div><svg id="lvChart" class="lv-chart" viewBox="0 0 600 220" preserveAspectRatio="none"></svg></div>
+          <div id="lvRecent"></div>
+        </section>
 
         <section class="card">
           <h3>⏱️ สัญญาณ 30 นาที — ผลจริง</h3>
@@ -607,24 +617,24 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610061208 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610061221 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610061208"></script>
-  <script src="auth.js?v=202610061208"></script>
-  <script src="indicators.js?v=202610061208"></script>
-  <script src="investing.js?v=202610061208"></script>
-  <script src="explain.js?v=202610061208"></script>
-  <script src="dailyplan.js?v=202610061208"></script>
-  <script src="signals.js?v=202610061208"></script>
-  <script src="intraday.js?v=202610061208"></script>
-  <script src="pwa.js?v=202610061208"></script>
-  <script src="ui.js?v=202610061208"></script>
-  <script src="main.js?v=202610061208"></script>
-  <script src="tradeplan.js?v=202610061208"></script>
+  <script src="config.js?v=202610061221"></script>
+  <script src="auth.js?v=202610061221"></script>
+  <script src="indicators.js?v=202610061221"></script>
+  <script src="investing.js?v=202610061221"></script>
+  <script src="explain.js?v=202610061221"></script>
+  <script src="dailyplan.js?v=202610061221"></script>
+  <script src="signals.js?v=202610061221"></script>
+  <script src="intraday.js?v=202610061221"></script>
+  <script src="pwa.js?v=202610061221"></script>
+  <script src="ui.js?v=202610061221"></script>
+  <script src="main.js?v=202610061221"></script>
+  <script src="tradeplan.js?v=202610061221"></script>
 </body>
 </html>

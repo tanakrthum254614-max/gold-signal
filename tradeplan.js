@@ -55,33 +55,18 @@
     out.sort((a, b) => (a.kind === 's') - (b.kind === 's')).forEach((l) => { if (!kept.some((k) => Math.abs(k.price - l.price) < 1.5)) kept.push(l); });
     return kept.sort((a, b) => b.price - a.price);
   }
-  const atr15 = () => { const m = state.m15; if (m.length < 20) return 5; const a = TA.atr(m.map((b) => b.high), m.map((b) => b.low), m.map((b) => b.close)); return a[a.length - 1] || 5; };
 
-  // ----- Reference entries: buy the dip at support, sell the rally at resistance, breakout -----
-  function zones(price, lv, atr, score) {
-    const pad = Math.max(5, r2(atr * 0.8)); // beyond the level by ~a 15-minute candle range: tighter stops get wicked out
-    const minGap = Math.max(1, atr * 0.25);
-    // nearest first: lv is sorted high → low
-    const above = lv.filter((l) => l.price > price + minGap).reverse(), below = lv.filter((l) => l.price < price - minGap);
-    // Targets: the first level at least 1R away, then the next one at least ½R further (else 1.5R / +1R)
-    const plan = (side, entry, sl, why) => {
-      const risk = Math.abs(entry - sl), d = side;
-      const cand = lv.map((l) => l.price).filter((p) => (p - entry) * d > 0).sort((a, b) => (a - b) * d);
-      const tp1 = cand.find((p) => (p - entry) * d >= risk) ?? entry + d * risk * 1.5;
-      const tp2 = cand.find((p) => (p - tp1) * d >= risk / 2) ?? tp1 + d * risk;
-      return { side, entry: r2(entry), sl: r2(sl), tp1: r2(tp1), tp2: r2(tp2), rr: r2(Math.abs(tp1 - entry) / risk), why, dist: r2(entry - price) };
-    };
-    const res = [];
-    if (below[0]) res.push({ key: 'dip', title: '🟢 ซื้อเมื่อย่อ (แนวรับ)', ...plan(1, below[0].price + 0.5, below[0].price - pad, `${below[0].name} ${f2(below[0].price)}`) });
-    if (above[0]) res.push({ key: 'rally', title: '🔴 ขายเมื่อเด้ง (แนวต้าน)', ...plan(-1, above[0].price - 0.5, above[0].price + pad, `${above[0].name} ${f2(above[0].price)}`) });
-    if (above[0]) res.push({ key: 'break', title: '🚀 ซื้อตามเบรก (ทะลุแนวต้าน)', ...plan(1, above[0].price + 1, above[0].price - pad, `แท่ง 15 นาทีปิดเหนือ ${f2(above[0].price)}`) });
-    // Which one fits the 30-minute trend right now
-    const fav = score >= 3 ? ['dip', 'break'] : score <= -3 ? ['rally'] : ['dip', 'rally'];
-    res.forEach((z) => { z.fit = fav.includes(z.key); });
-    return res;
-  }
-
-  function renderLevels(price, lv, zs) {
+  // ----- Entries at support / resistance: backtested 6 Oct 2026 and they LOSE, so the card shows the results
+  // instead of entry calls (scratchpad research: every hour, orders kept 60 min, 5-minute candles, after $0.4 spread).
+  // Columns = half-years, oldest → newest (Oct 2024 – Oct 2026), $ per ounce.
+  const LEVEL_BT = [
+    ['🟢 ซื้อที่แนวรับ (ทุกครั้ง)', [147, 71, -441, -587], '37–47%'],
+    ['🟢 ซื้อที่แนวรับ (เฉพาะตอนเทรนด์ขึ้น)', [176, 94, -126, -179], '32–51%'],
+    ['🔴 ขายที่แนวต้าน', [-422, -623, -705, -25], '32–39%'],
+    ['🚀 ซื้อตามเบรกแนวต้าน', [-1213, -94, -359, -864], '26–33%'],
+  ];
+  const usd = (v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US')}`;
+  function renderLevels(price, lv) {
     const near = lv.filter((l) => Math.abs(l.price - price) < 80);
     const rows = [...near, { price, now: true }].sort((a, b) => b.price - a.price);
     $('tpLadder').innerHTML = rows.map((l) => l.now
@@ -90,19 +75,26 @@
       || '<p class="muted small">กำลังโหลดข้อมูลรายวัน…</p>';
   }
 
-  function renderZones(zs, score) {
-    const trend = score >= 3 ? 'แนวโน้ม 30 นาทีเป็นขาขึ้น → เน้นฝั่งซื้อ' : score <= -3 ? 'แนวโน้ม 30 นาทีเป็นขาลง → ฝั่งขายเข้ากว่า (แต่สถิติฝั่งขายของระบบอ่อน ลดขนาดไม้)' : 'แนวโน้มยังไม่ชัด → เล่นในกรอบ: ซื้อแนวรับ ขายแนวต้าน';
-    $('tpZones').innerHTML = `<p class="tp-trend">${trend} <span class="muted">(คะแนนสด ${signedScore(score)})</span></p>` + zs.map((z, i) => `
-      <div class="zn ${z.side > 0 ? 'b' : 's'}${z.fit ? ' fit' : ''}">
-        <div class="zn-top"><b>${z.title}</b>${z.fit ? '<span class="tag">เข้ากับเทรนด์</span>' : '<span class="tag neutral">สวนเทรนด์ ระวัง</span>'}</div>
-        <div class="zn-why muted small">${z.key === 'break' ? 'รอ' : 'ตั้งรอที่'} ${z.why} · ห่างจากราคาตอนนี้ ${sgn(z.dist)}</div>
-        <div class="zn-lv mono"><span>เข้า <b>${f2(z.entry)}</b></span><span class="sl">SL ${f2(z.sl)}</span><span class="tp">TP1 ${f2(z.tp1)}</span><span class="tp">TP2 ${f2(z.tp2)}</span></div>
-        <div class="zn-foot small"><span>เสี่ยง $${f2(Math.abs(z.entry - z.sl))} · ได้ $${f2(Math.abs(z.tp1 - z.entry))} ที่ TP1 · <b>R:R 1:${z.rr}</b></span><button type="button" class="btn zn-use" data-i="${i}">คำนวณไม้นี้</button></div>
-      </div>`).join('');
-    $('tpZones').querySelectorAll('.zn-use').forEach((b) => b.addEventListener('click', () => {
-      const z = zs[+b.dataset.i]; calc.fill(z.side, z.entry, z.sl, z.tp1);
-      $('tpCalc').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }));
+  // What the levels are good for: does the system's fixed $15 stop / TP1 sit beyond the nearest level?
+  function renderZones(price, lv) {
+    const S = INTRA.RULE.slUsd, T = INTRA.RULE.tpUsd[0];
+    const res = lv.filter((l) => l.price > price + 0.5).pop(), sup = lv.find((l) => l.price < price - 0.5);
+    const tpLine = res ? (res.price - price < T
+      ? `⚠️ ถ้าซื้อตอนนี้ แนวต้าน <b>${res.name} ${f2(res.price)}</b> อยู่ก่อน TP1 ของระบบ (+$${T}) — ห่างแค่ ${sgn(res.price - price)} ราคาอาจชนแนวแล้วกลับก่อนถึงเป้า`
+      : `✅ ทางขึ้นถึง TP1 ของระบบ (+$${T}) ยังไม่มีแนวต้านขวาง — แนวต้านแรก ${f2(res.price)} (${sgn(res.price - price)})`) : '';
+    const slLine = sup ? (price - sup.price < S
+      ? `🛡️ SL ของระบบ (−$${S}) อยู่ <b>ใต้แนวรับ</b> ${sup.name} ${f2(sup.price)} — ราคาต้องหลุดแนวรับก่อนถึงจะโดน SL (ดี)`
+      : `⚠️ แนวรับแรก ${f2(sup.price)} อยู่ต่ำกว่า SL ของระบบ (−$${S}) — SL จะโดนก่อนราคาถึงแนวรับ`) : '';
+    const body = `<div class="lv-use"><p>${tpLine}</p><p>${slLine}</p></div>
+      <div class="lv-bt"><p class="lv-bt-h">❌ ทดสอบย้อนหลัง 2 ปีแล้ว: <b>เข้าเพราะราคาแตะแนวอย่างเดียว ขาดทุน</b> — จึงไม่แนะนำจุดเข้าจากแนวรับ–ต้าน</p>
+        <table><tr><th>วิธีเข้า</th><th>ต.ค.67–เม.ย.68</th><th>–ต.ค.68</th><th>–เม.ย.69</th><th>–ต.ค.69</th><th>ชนะ</th></tr>
+        ${LEVEL_BT.map(([n, v, w]) => `<tr><td>${n}</td>${v.map((x) => `<td class="mono ${x >= 0 ? 'up' : 'down'}">${usd(x)}</td>`).join('')}<td class="mono">${w}</td></tr>`).join('')}</table>
+        <p class="muted small">ต่อ 1 ออนซ์ หลังหักสเปรด $0.4 · จำลองทุกชั่วโมง ตั้งคำสั่งรอ 60 นาที SL เลยแนว TP ที่แนวถัดไป — <b>จุดเข้าให้ใช้สัญญาณ 30/15 นาทีด้านบน</b> (ผ่านการทดสอบ) แล้วใช้แนวเหล่านี้ดูว่าเป้า/SL มีอะไรขวาง</p></div>
+      <button type="button" class="btn" id="tpUseSys">🧮 คำนวณไม้ตามระบบ (SL $${S} · TP $${T})</button>`;
+    if (body !== renderZones.last) {
+      renderZones.last = body; $('tpZones').innerHTML = body;
+      $('tpUseSys').addEventListener('click', () => { const p = nowPrice(); if (p == null) return; calc.fill(1, r2(p), r2(p - S), r2(p + T)); $('tpCalc').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+    }
   }
 
   // ----- Short-term radar on 1-minute candles -----
@@ -115,20 +107,22 @@
     const mom = e9 > e21 && roc5 > 0 ? 1 : e9 < e21 && roc5 < 0 ? -1 : 0;
     const up = lv.filter((l) => l.price > price).pop(), dn = lv.find((l) => l.price < price);
     const news = INTRA.newsNear(state.news, now);
-    const sl = Math.max(4, r2(atr1 * 2)), tp = r2(sl * 1.5);
+    // Information only: as entries (limit at EMA9, SL max($4, 2×ATR1m), TP 1.5×SL) this lost over 2 years —
+    // ~10,000 trades, 40–43% wins, −$1,811/oz after a $0.4 spread (half-years −$870 / −$387 / +$591 / −$1,145).
     let verdict, cls;
     if (!INTRA.marketOpen(now)) { verdict = '🌙 ตลาดปิด'; cls = 'wait'; }
-    else if (news) { verdict = `📰 ใกล้ข่าวแรง (${news.title}) — สายสั้นงดเข้า ราคากระชากได้หลายสิบดอลลาร์`; cls = 'wait'; }
-    else if (mom > 0 && score >= 0 && rsi < 75) { verdict = `เอียงซื้อสั้น: รอย่อใกล้ EMA9 ${f2(e9)} → SL ${f2(e9 - sl)} (−$${f2(sl)}) · TP ${f2(e9 + tp)} (+$${f2(tp)})`; cls = 'b'; }
-    else if (mom < 0 && score <= 0 && rsi > 25) { verdict = `เอียงขายสั้น: รอเด้งใกล้ EMA9 ${f2(e9)} → SL ${f2(e9 + sl)} (+$${f2(sl)}) · TP ${f2(e9 - tp)} (−$${f2(tp)})`; cls = 's'; }
-    else { verdict = mom ? 'โมเมนตัม 1 นาทีสวนกับเทรนด์ 30 นาที — ยังไม่เข้า รอให้ไปทางเดียวกัน' : 'ไม่มีแรงชัด (ไซด์เวย์สั้น) — รอ'; cls = 'wait'; }
+    else if (news) { verdict = `📰 ใกล้ข่าวแรง (${news.title}) — ราคากระชากได้หลายสิบดอลลาร์ใน 1–2 นาที`; cls = 'wait'; }
+    else if (mom && Math.sign(score) === mom) { verdict = `แรงสั้น${mom > 0 ? 'ขึ้น' : 'ลง'} ไปทางเดียวกับเทรนด์ 30 นาที (${signedScore(score)})`; cls = mom > 0 ? 'b' : 's'; }
+    else if (mom) { verdict = `แรงสั้น${mom > 0 ? 'ขึ้น' : 'ลง'} สวนเทรนด์ 30 นาที (${signedScore(score)}) — มักเป็นแค่การย่อ/เด้งระยะสั้น`; cls = 'wait'; }
+    else { verdict = 'ไม่มีแรงชัด (ไซด์เวย์สั้น)'; cls = 'wait'; }
     const tile = (label, val, sub, k = '') => `<div class="rd ${k}"><span>${label}</span><b class="mono">${val}</b><small>${sub}</small></div>`;
     $('tpRadar').innerHTML = `<div class="rd-tiles">
       ${tile('โมเมนตัม 1 นาที', mom > 0 ? '▲ ขึ้น' : mom < 0 ? '▼ ลง' : '• นิ่ง', `EMA9 ${mom >= 0 ? (e9 > e21 ? 'เหนือ' : 'ใต้') : 'ใต้'} EMA21 · 5 นาที ${sgn(roc5)}`, mom > 0 ? 'up' : mom < 0 ? 'down' : '')}
       ${tile('RSI 1 นาที', rsi.toFixed(0), rsi > 70 ? 'ซื้อมากเกิน ระวังย่อ' : rsi < 30 ? 'ขายมากเกิน ระวังเด้ง' : 'ปกติ', rsi > 70 ? 'down' : rsi < 30 ? 'up' : '')}
       ${tile('แกว่ง 15 นาทีล่าสุด', `$${f2(rng)}`, `เฉลี่ยต่อนาที $${f2(atr1)}`)}
       ${tile('ระยะถึงแนวใกล้สุด', `${up ? '↑ ' + sgn(up.price - price) : '—'}`, `${dn ? '↓ ' + sgn(dn.price - price) : ''}${up ? ` · ต้าน ${f2(up.price)}` : ''}`)}
-    </div><p class="rd-verdict ${cls}">${verdict}</p>`;
+    </div><p class="rd-verdict ${cls}">${verdict}</p>
+      <p class="muted small rd-bt">❌ ทดสอบ 2 ปีแล้ว: เข้าไม้สั้นตามโมเมนตัม 1 นาที (SL ~$4 · TP ~$6) ~10,000 ไม้ ชนะ 40–43% <b>ขาดทุน −$1,811/ออนซ์ หลังหักสเปรด</b> — สเปรดกินกำไรสายสั้นเกือบหมด ส่วนนี้จึงเป็นข้อมูลประกอบ ไม่ใช่สัญญาณเข้า</p>`;
   }
 
   // ----- Position calculator -----
@@ -172,12 +166,9 @@
     if (price == null) return;
     const dec = state.intraCandles ? INTRA.decide(state.intraCandles, now, state.news, true) : null;
     const score = dec ? dec.score : 0;
-    const lv = levels(price, now), atr = atr15(), zs = zones(price, lv, atr, score);
-    renderLevels(price, lv, zs);
-    // Zones only re-render when the plan changes (buttons keep working, no flicker)
-    const key = JSON.stringify(zs.map((z) => [z.entry, z.sl, z.tp1, z.tp2, z.fit])) + score;
-    if (key !== renderPlan.key) { renderPlan.key = key; renderZones(zs, score); }
-    else $('tpZones').querySelectorAll('.zn-why').forEach((el, i) => { const z = zs[i]; el.textContent = `${z.key === 'break' ? 'รอ' : 'ตั้งรอที่'} ${z.why} · ห่างจากราคาตอนนี้ ${sgn(r2(z.entry - price))}`; });
+    const lv = levels(price, now);
+    renderLevels(price, lv);
+    renderZones(price, lv);
     renderRadar(price, score, lv, now);
     if (!calc.touched) { const s = INTRA.RULE.slUsd; calc.fill(1, r2(price), r2(price - s), r2(price + s)); calc.touched = false; }
   };

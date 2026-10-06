@@ -624,7 +624,61 @@ function tilesHtml(s) {
   ].join('');
 }
 
+// ---------- Live record vs backtest: expected cumulative result after n trades ± 2 standard deviations ----------
+function renderLiveCheck() {
+  const bt = state.bt30;
+  if (!bt || !bt.trades) return;
+  const sp = userSpread();
+  const fin = (t) => t.status === 'win' || t.status === 'loss' || t.status === 'expired';
+  const B = bt.trades.filter(fin).map((t) => t.pnl - sp);
+  const avg = B.reduce((a, v) => a + v, 0) / B.length;
+  const sd = Math.sqrt(B.reduce((a, v) => a + (v - avg) ** 2, 0) / B.length);
+  const L = intraTrades().filter(fin).sort((x, y) => x.createdAt - y.createdAt);
+  const n = L.length, act = L.reduce((a, t) => a + t.pnl - sp, 0), wins = L.filter((t) => t.pnl > 0).length;
+  const exp = n * avg, band = 2 * sd * Math.sqrt(n), MIN = 20;
+  let st, cls;
+  if (n < MIN) { st = `⏳ ผลจริงยังมี ${n} ไม้ — ต้องมีอย่างน้อย ${MIN} ไม้ถึงจะบอกได้ว่าระบบยังใช้ได้ไหม (ระบบเข้าประมาณ ${bt.perDay} ไม้/วัน)`; cls = 'wait'; }
+  else if (act < exp - band) { st = `🔴 ผลจริงแย่กว่าที่ทดสอบไว้ชัดเจน (${money(act)} vs คาด ${money(exp)}) — ระบบอาจใช้ไม่ได้ในตลาดตอนนี้ ควรหยุดหรือลดขนาดไม้`; cls = 'bad'; }
+  else if (act > exp + band) { st = `🟢 ผลจริงดีกว่าที่ทดสอบไว้ (${money(act)} vs คาด ${money(exp)}) — อย่าเพิ่มขนาดไม้เพราะโชคช่วงสั้น`; cls = 'good'; }
+  else { st = `🟡 ผลจริงอยู่ในช่วงปกติของผลทดสอบ (${money(act)} vs คาด ${money(exp)}) — ระบบยังทำงานตามที่คาด`; cls = 'ok'; }
+  $('lvStatus').className = `lv-status ${cls}`;
+  $('lvStatus').textContent = st;
+  const btWin = Math.round((B.filter((v) => v + sp > 0).length / B.length) * 100);
+  const tile = (k, v, s) => `<div><span>${k}</span><b class="mono">${v}</b><small>${s}</small></div>`;
+  $('lvTiles').innerHTML = tile('ไม้จริง', n, n ? `ตั้งแต่ ${thaiDay(L[0].id.slice(0, 10))}` : 'ยังไม่มี')
+    + tile('ชนะจริง', n ? `${Math.round((wins / n) * 100)}%` : '—', `ทดสอบ ${btWin}%`)
+    + tile('ต่อไม้จริง', n ? money(act / n) : '—', `ทดสอบ ${money(avg)}`)
+    + tile('รวมจริง', n ? money(act) : '—', n ? `ช่วงปกติ ${money(exp - band)} ถึง ${money(exp + band)}` : `หลัง 20 ไม้ ช่วงปกติ ${money(20 * avg - 2 * sd * Math.sqrt(20))} ถึง ${money(20 * avg + 2 * sd * Math.sqrt(20))}`);
+  // Chart: expected line + ±2σ band over the next trades, live cumulative on top
+  const N = Math.max(40, Math.ceil(n * 1.25)), W = 600, H = 220;
+  const lo = Math.min(avg * N - 2 * sd * Math.sqrt(N), 0, act) - 5, hi = Math.max(avg * N + 2 * sd * Math.sqrt(N), 0, act) + 5;
+  const X = (i) => (i / N) * W, Y = (v) => H - ((v - lo) / (hi - lo)) * H;
+  const up = [], dn = [];
+  for (let i = 0; i <= N; i++) { up.push(`${X(i).toFixed(1)},${Y(i * avg + 2 * sd * Math.sqrt(i)).toFixed(1)}`); dn.unshift(`${X(i).toFixed(1)},${Y(i * avg - 2 * sd * Math.sqrt(i)).toFixed(1)}`); }
+  let cum = 0; const live = [`${X(0)},${Y(0)}`, ...L.map((t, i) => { cum += t.pnl - sp; return `${X(i + 1).toFixed(1)},${Y(cum).toFixed(1)}`; })];
+  $('lvChart').innerHTML = `<polygon class="band" points="${up.join(' ')} ${dn.join(' ')}"/>
+    <line class="zero" x1="0" x2="${W}" y1="${Y(0)}" y2="${Y(0)}"/>
+    <line class="exp" x1="0" y1="${Y(0)}" x2="${W}" y2="${Y(N * avg)}"/>
+    ${n ? `<polyline class="live" points="${live.join(' ')}"/><circle class="live-dot" r="4" cx="${X(n)}" cy="${Y(act)}"/>` : ''}`;
+  $('lvChart').setAttribute('aria-label', `ไม้ที่ 0 ถึง ${N}: เส้นประ = คาด ${money(avg)} ต่อไม้, แถบ = ช่วงปกติ 95%`);
+  // The market lately, in the backtest itself: the best warning we have before live data builds up
+  const recent = (days) => { const from = Date.now() - days * 864e5, a = bt.trades.filter((t) => fin(t) && t.createdAt >= from);
+    return { n: a.length, win: a.length ? Math.round((a.filter((t) => t.pnl > 0).length / a.length) * 100) : 0, pnl: a.reduce((s, t) => s + t.pnl - sp, 0) }; };
+  const r30 = recent(30), r90 = recent(90);
+  let streak = 0, worst = 0;
+  bt.trades.filter(fin).forEach((t) => { streak = t.pnl < 0 ? streak + 1 : 0; worst = Math.max(worst, streak); });
+  const cl = (v) => (v >= 0 ? 'up' : 'down');
+  $('lvRecent').innerHTML = `<p class="muted small lv-legend">กราฟ: แกนนอน = ไม้ที่ 0 → ${N} · เส้นประ = คาด ${money(avg)}/ไม้ · แถบเทา = ช่วงปกติ (95%) · เส้นทอง = ผลจริงสะสม</p>
+    <p class="lv-rec">📉 <b>ช่วงล่าสุดในผลทดสอบ</b> (ตลาดช่วงเดียวกัน): 30 วัน ${r30.n} ไม้ · ชนะ ${r30.win}% · <b class="${cl(r30.pnl)}">${money(r30.pnl)}</b> · 90 วัน ${r90.n} ไม้ · ชนะ ${r90.win}% · <b class="${cl(r90.pnl)}">${money(r90.pnl)}</b> · แพ้ติดกันยาวสุดในรอบปี ${worst} ไม้
+    ${r90.pnl < 0 ? '<br>⚠️ ช่วง 90 วันล่าสุดระบบขาดทุนในการทดสอบ — ตลาดตอนนี้ไม่เข้าทางระบบ ถ้าจะเทรดตาม ใช้ขนาดไม้เล็กกว่าปกติ' : ''}</p>`;
+  // Home: one line that links here
+  $('lvStrip').hidden = false;
+  $('lvStrip').className = `lv-strip ${cls}`;
+  $('lvStrip').innerHTML = `🧪 <b>ระบบยังใช้ได้ไหม?</b> ${n < MIN ? `ผลจริง ${n}/${MIN} ไม้ — ยังสรุปไม่ได้` : cls === 'bad' ? 'แย่กว่าที่ทดสอบไว้ — ระวัง' : cls === 'good' ? 'ดีกว่าที่ทดสอบไว้' : 'อยู่ในช่วงปกติ'} · 90 วันล่าสุดในการทดสอบ <b class="${cl(r90.pnl)}">${money(r90.pnl)}</b> <span>ดูรายละเอียด →</span>`;
+}
+
 function renderStats() {
+  renderLiveCheck();
   const list = liveSignals();
   const sum = SIG.summary(list, userSpread());
   $('liveTiles').innerHTML = tilesHtml(sum);
@@ -753,9 +807,16 @@ function onStreamTick(p) {
     onStreamTick.heavy = now;
     if (patched) render();
     else { renderIntra(); renderSignalHome(); }
-    renderS15();
-    if (window.renderPlan) renderPlan();
+    // Panels below the fold only while visible (saves battery on phones); they catch up as soon as they scroll in
+    if (onScreen('s15Card')) renderS15();
+    if (window.renderPlan && onScreen('tpCard')) renderPlan();
   }
+}
+function onScreen(id) {
+  const el = $(id);
+  if (!el || document.hidden || el.closest('.tab[hidden]')) return false;
+  const r = el.getBoundingClientRect();
+  return r.bottom > -200 && r.top < innerHeight + 200;
 }
 
 // ---------- Live price fallback / history (1-minute candles) ----------

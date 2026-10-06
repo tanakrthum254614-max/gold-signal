@@ -452,3 +452,38 @@
 .tp-steps { margin: 0; padding: 8px 12px 8px 30px; background: var(--panel-2); border-radius: 12px; font-size: 13.5px; display: flex; gap: 4px 22px; flex-wrap: wrap; }
 .tp-steps li { padding-left: 2px; }
 @media (max-width: 640px) { .tp-sbar i:not(.on) span { display: none; } .tp-steps { flex-direction: column; } }
+.lv-use p { margin: 0 0 6px; font-size: 13.5px; }
+.lv-bt { background: var(--panel-2); border-radius: 12px; padding: 9px 11px; margin: 6px 0 8px; }
+.lv-bt-h { margin: 0 0 6px; font-size: 13.5px; }
+.lv-bt table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.lv-bt th { text-align: right; font-weight: 600; color: var(--muted); padding: 2px 4px; white-space: nowrap; } .lv-bt th:first-child { text-align: left; }
+.lv-bt td { text-align: right; padding: 3px 4px; border-top: 1px solid var(--line); white-space: nowrap; } .lv-bt td:first-child { text-align: left; white-space: normal; }
+.lv-bt td.up { color: var(--up); } .lv-bt td.down { color: var(--down); }
+.lv-bt .small { margin: 6px 0 0; }
+@media (max-width: 520px) { .lv-bt table { font-size: 10.5px; } .lv-bt th, .lv-bt td { padding: 2px 2px; } }
+
+/* ================= Live record vs backtest ================= */
+.lv-status { padding: 9px 12px; border-radius: 12px; font-weight: 600; font-size: 14px; background: var(--panel-2); margin: 6px 0 10px; }
+.lv-status.bad, .lv-strip.bad { color: var(--down); background: color-mix(in srgb, var(--down) 10%, var(--panel-2)); }
+.lv-status.good, .lv-strip.good { color: var(--up); background: color-mix(in srgb, var(--up) 10%, var(--panel-2)); }
+.lv-status.ok { color: var(--wait); }
+.lv-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 12px; align-items: stretch; }
+@media (max-width: 720px) { .lv-grid { grid-template-columns: 1fr; } }
+.lv-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.lv-tiles > div { background: var(--panel-2); border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; min-width: 0; }
+.lv-tiles span { font-size: 12px; color: var(--muted); } .lv-tiles b { font-size: 19px; } .lv-tiles small { font-size: 11.5px; color: var(--muted); }
+.lv-chart { width: 100%; height: 200px; background: var(--panel-2); border-radius: 12px; }
+.lv-chart .band { fill: color-mix(in srgb, var(--muted) 18%, transparent); }
+.lv-chart .zero { stroke: var(--muted); stroke-width: 1; vector-effect: non-scaling-stroke; opacity: .5; }
+.lv-chart .exp { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; }
+.lv-chart .live { fill: none; stroke: var(--gold); stroke-width: 2.5; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.lv-chart .live-dot { fill: var(--gold); }
+.lv-legend { margin: 6px 0 0; }
+.lv-rec { margin: 8px 0 0; font-size: 13.5px; line-height: 1.6; } .lv-rec .up { color: var(--up); } .lv-rec .down { color: var(--down); }
+.lv-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; padding: 9px 13px; border-radius: 14px; margin: 0 0 14px; background: var(--panel-2); color: var(--text); text-decoration: none; font-size: 13.5px; border: 1px solid var(--line); }
+.lv-strip span { margin-left: auto; color: var(--gold); font-weight: 600; }
+.lv-strip b.up { color: var(--up); } .lv-strip b.down { color: var(--down); }
+.rd-bt { margin: 6px 0 0; }
+.tp-grid > div { min-width: 0; }
+.lv-bt { overflow-x: auto; }
+@media (max-width: 520px) { .lv-bt td:first-child { min-width: 110px; } }
