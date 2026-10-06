@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f3f5f9">
   <title>Gold Signal · สัญญาณเทรดทองคำ</title>
-  <meta name="description" content="สัญญาณเทรดทองคำ XAU/USD วันละ 1 สัญญาณ พร้อมจุดเข้า ตัดขาดทุน เป้าหมาย และสถิติชนะ–แพ้ที่บันทึกจริง">
+  <meta name="description" content="ราคาทองคำ XAU/USD สัญญาณซื้อระบบ 30 นาที พร้อมสถานะล่าสุด จุดเข้า ตัดขาดทุน เป้าหมาย และสถิติสัญญาณที่บันทึกจริง">
   <meta property="og:title" content="Gold Signal · สัญญาณเทรดทองคำ">
-  <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
+  <meta property="og:description" content="ราคาทองสด · สถานะสัญญาณ 30 นาที · ความสดของข้อมูล · สถิติสัญญาณที่บันทึกจริง">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
@@ -17,9 +17,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610061722">
-  <link rel="stylesheet" href="live.css?v=202610061722">
-  <link rel="stylesheet" href="theme.css?v=202610061722" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610061850">
+  <link rel="stylesheet" href="live.css?v=202610061850">
+  <link rel="stylesheet" href="theme.css?v=202610061850" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -83,7 +83,7 @@
     <div class="login-intro">
       <div class="brand big"><img class="logo" src="logo.svg" alt=""><h1>Gold Signal</h1></div>
       <h2>อยากเทรดทองคำ<br>แต่ยังไม่มั่นใจ?</h2>
-      <p class="login-lead">ราคาทองสดทุกวินาที · สัญญาณเข้าซื้อ–ขายทุก 15 / 30 นาที พร้อมสถิติจริงว่าชนะกี่ครั้ง แพ้กี่ครั้ง</p>
+      <p class="login-lead">ราคาทองสด · สัญญาณซื้อเมื่อเข้าเงื่อนไขระบบ 15 / 30 นาที พร้อมสถิติผลสัญญาณที่บันทึกจริง</p>
       <ul>
         <li><span>🎯</span>บอกชัด: จุดเข้า · ตัดขาดทุน · เป้าหมาย</li>
         <li><span>📊</span>บันทึกผลทุกสัญญาณ ชนะ–แพ้ ไม่ปิดบัง</li>
@@ -155,6 +155,31 @@
           </div>
           <p class="lv-foot muted small" id="lvAgo">กำลังดึงราคาสด…</p>
         </div>
+
+        <section class="card now-card" id="nowCard" data-state="data" aria-labelledby="nowHeading">
+          <div class="now-head"><h2 id="nowHeading">สถานะตอนนี้</h2><span class="now-system">ระบบ 30 นาที · ซื้ออย่างเดียว</span></div>
+          <div class="now-decision" role="status" aria-live="polite" aria-atomic="true">
+            <h3 id="nowTitle">กำลังตรวจข้อมูลล่าสุด…</h3>
+            <p id="nowReason">รอราคา กราฟ และบันทึกสัญญาณจากระบบ</p>
+          </div>
+          <div class="now-metrics">
+            <div><span>คะแนนแท่งปิด</span><strong class="mono" id="nowOfficial">—</strong><small>เว็บคำนวณจากแท่งที่ปิดแล้ว</small></div>
+            <div><span>คะแนนสด</span><strong class="mono" id="nowLive">—</strong><small>แท่งยังวิ่ง · คะแนนเปลี่ยนได้</small></div>
+            <div><span id="nowNextLabel">แท่ง 30 นาทีปิดใน</span><strong class="mono" id="nowCountdown">—</strong><small>เวลาไทย · ระบบอาจตรวจหลังแท่งปิด</small></div>
+          </div>
+          <p class="now-news"><b>ข่าวแรง</b><span id="nowNews">กำลังโหลดปฏิทิน…</span></p>
+          <p class="now-warning" id="nowWarning" hidden></p>
+          <details class="now-data" open>
+            <summary>ความสดของข้อมูล <span id="nowHealth">กำลังตรวจสอบ</span></summary>
+            <dl>
+              <div><dt>ราคา</dt><dd><b id="nowPriceSource">กำลังเชื่อมต่อ</b><small id="nowPriceAge">ยังไม่มีข้อมูล</small></dd></div>
+              <div><dt>กราฟที่ใช้คำนวณ</dt><dd><b id="nowBarSource">กำลังโหลด</b><small id="nowBarAge">30 นาที · 1 ชม. · 5 ชม.</small></dd></div>
+              <div><dt>ตรวจคะแนนล่าสุด</dt><dd id="nowChecked">กำลังคำนวณบนเว็บ</dd></div>
+              <div><dt>บันทึกสัญญาณ</dt><dd><b id="nowRecorded">กำลังโหลด</b><small id="nowFetched">ยังไม่มีข้อมูล</small></dd></div>
+            </dl>
+            <p class="now-footnote">เวลาบันทึกเปลี่ยนจะขยับเมื่อผลในระบบเปลี่ยนเท่านั้น ยังไม่มีเวลาตรวจทุกครั้งจากระบบส่งสัญญาณ</p>
+          </details>
+        </section>
 
         <!-- Live trend gauge -->
         <div class="card intra" id="intraCard">
@@ -311,7 +336,7 @@
 
         <section class="card">
           <h3>⏱️ สัญญาณ 30 นาที — ผลจริง</h3>
-          <p class="hint">วิเคราะห์ทุกครึ่งชั่วโมง เข้าเมื่อแนวโน้ม 30 นาที · 1 ชม. · 5 ชม. ชี้ทางเดียวกันชัดเจน (คะแนน ±5 ขึ้นไป) · ครั้งละ 1 ไม้ · SL $15 · TP $15 / $20 / $30</p>
+          <p class="hint">วิเคราะห์ทุกครึ่งชั่วโมง เข้าซื้อเมื่อคะแนนแท่งปิดจาก 30 นาที · 1 ชม. · 5 ชม. ได้ +5 ขึ้นไป และผ่านตัวกรองข่าว/ไม่ไล่ราคา/การพักระบบ · ครั้งละ 1 ไม้ · SL $15 · TP $15 / $20 / $30</p>
           <div class="tiles" id="inLiveTiles"></div>
           <div id="inLiveChart" class="chart-eq"></div>
           <div class="history" id="inHistory"></div>
@@ -352,7 +377,7 @@
             <li><b>✅ ชนะ</b> — ราคาถึง <b>TP1</b> ก่อน SL (จากนั้นนับต่อว่าไปถึง TP2 / TP3 หรือไม่)</li>
             <li><b>❌ แพ้</b> — ราคาโดน <b>SL</b> ก่อนถึง TP1 (ถ้าแท่ง 15 นาทีเดียวโดนทั้งคู่ นับเป็นแพ้)</li>
             <li><b>⏸ ไม่มีสัญญาณ</b> — วันที่ตลาดไม่ชัด ระบบไม่ให้เทรด ไม่นับชนะหรือแพ้</li>
-            <li><b>ปิดสิ้นวัน</b> — เข้าแล้วแต่ไม่ถึงทั้งเป้าและตัดขาดทุน ปิดที่ราคาเช้าวันถัดไป กำไร = ชนะ ขาดทุน = แพ้</li>
+            <li><b>ปิดเมื่อครบเวลา</b> — ปิดส่วนที่เหลือภายใน 02:45 น. (03:45 น. ช่วงเวลาหน้าหนาวสหรัฐ) ก่อนตลาดปิด · ผลกำไร/ขาดทุนรวมส่วนที่ปิดที่ TP ไปแล้วด้วย</li>
             <li>กำไร/ขาดทุนคิดเป็น <b>ดอลลาร์ต่อทอง 1 ออนซ์</b> โดยปิด ⅓ ที่แต่ละ TP — ครบ 3 เป้า = <b>+$21.67</b> · โดน SL = <b>−$15</b></li>
           </ul>
         </section>
@@ -489,8 +514,8 @@
 
         <section class="card">
           <h3>⏱️ สัญญาณ 30 นาที</h3>
-          <p>ระหว่างวันระบบวิเคราะห์ทุกครึ่งชั่วโมง ถ้าแนวโน้ม <b>30 นาที · 1 ชม. · 5 ชม.</b> ชี้ไปทางเดียวกันชัดเจน จะส่ง <b>“ซื้อ/ขายตอนนี้”</b> พร้อม SL $15 และ TP $15 / $20 / $30 เข้า LINE ทันที · ระบบเช็กทุก 30 นาที แต่<b>ส่ง LINE เฉพาะตอนที่ฝั่งใดฝั่งหนึ่งขึ้น ✅ หรือหมดจังหวะ</b> (เฉลี่ยวันละ ~2 ครั้ง ประหยัดโควตา LINE ฟรี) บอกทั้ง <b>ฝั่งซื้อ</b> และ <b>ฝั่งขาย</b> ว่า ✅ ควรเข้า / 🟡 เข้าได้แต่ลดขนาดไม้ / ❌ ไม่ควรเข้า พร้อม % “จบกำไร” และ % “ถึง TP1” จากสถิติย้อนหลัง 2 ปี — บนเว็บแสดงเป็นแผนภูมิวงกลมแบบสด
-            (ประมาณวันละ 2–4 ไม้ ครั้งละไม้เดียว) ถ้ายังไม่ชัด หน้าเว็บจะบอกว่า <b>“ยังไม่ควรเข้า”</b> พร้อมเหตุผล</p>
+          <p>ระบบใช้แท่งที่ปิดแล้วของ <b>30 นาที · 1 ชม. · 5 ชม.</b> เปิดสัญญาณ<b>ซื้ออย่างเดียวเมื่อคะแนน +5 ขึ้นไป</b> และผ่านเงื่อนไขข่าว ไม่ไล่ราคา และการพักระบบ · ครั้งละไม้เดียว พร้อม SL $15 และ TP $15 / $20 / $30 · หลังไม้ก่อนปิด ต้องรอรอบครึ่งชั่วโมงที่เริ่มอย่างน้อย 15 นาทีหลังปิด</p>
+          <p>LINE แจ้งเมื่อมีสัญญาณใหม่หรือเกิด TP/SL ส่วนข้อความประเมินฝั่งซื้อ–ขายส่งเมื่อสถานะ ✅ เปลี่ยน · <b>คะแนนสดและเปอร์เซ็นต์บนเว็บเป็นข้อมูลประกอบ</b> คะแนนแท่งปิดที่เว็บคำนวณผ่านยังต้องรอยืนยันจากบันทึกระบบ และไม่ใช่หลักฐานว่าแจ้งเตือนถูกส่งแล้ว</p>
         </section>
 
         <section class="card">
@@ -518,7 +543,7 @@
         <section class="card">
           <h3>ใช้สัญญาณใน 3 ขั้น</h3>
           <ol class="steps">
-            <li><b>เปิดออเดอร์ทันที (Market)</b> ตามสัญญาณ ซื้อ หรือ ขาย เมื่อได้รับสัญญาณตอนตลาดเปิด</li>
+            <li><b>ตรวจสัญญาณซื้อที่ระบบบันทึกแล้ว</b> พร้อมเวลา จุดเข้า และความสดของข้อมูล · แยกจากคะแนนสดและภาพรวมรายวันซึ่งเป็นข้อมูลประกอบ</li>
             <li><b>ตั้งตัดขาดทุน (Stop Loss)</b> ทุกครั้ง — กันขาดทุนบานปลายถ้าผิดทาง</li>
             <li><b>แบ่งปิด 3 ส่วน</b> ที่ TP1 · TP2 · TP3 — พอถึง TP1 ให้<b>เลื่อน SL ไปที่ราคาเข้า</b> (ไม้นั้นจะไม่ขาดทุนแล้ว) ถ้าถึง 02:45 น. (ต้น พ.ย.–กลาง มี.ค. 03:45 น.) ก่อนตลาดปิด ยังไม่ปิด ให้ปิดเอง</li>
           </ol>
@@ -621,25 +646,26 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610061722 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610061850 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610061722"></script>
-  <script src="auth.js?v=202610061722"></script>
-  <script src="indicators.js?v=202610061722"></script>
-  <script src="investing.js?v=202610061722"></script>
-  <script src="explain.js?v=202610061722"></script>
-  <script src="dailyplan.js?v=202610061722"></script>
-  <script src="signals.js?v=202610061722"></script>
-  <script src="intraday.js?v=202610061722"></script>
-  <script src="pwa.js?v=202610061722"></script>
-  <script src="ui.js?v=202610061722"></script>
-  <script src="main.js?v=202610061722"></script>
-  <script src="tradeplan.js?v=202610061722"></script>
-  <script src="chartzones.js?v=202610061722"></script>
+  <script src="config.js?v=202610061850"></script>
+  <script src="auth.js?v=202610061850"></script>
+  <script src="indicators.js?v=202610061850"></script>
+  <script src="investing.js?v=202610061850"></script>
+  <script src="explain.js?v=202610061850"></script>
+  <script src="dailyplan.js?v=202610061850"></script>
+  <script src="signals.js?v=202610061850"></script>
+  <script src="intraday.js?v=202610061850"></script>
+  <script src="pwa.js?v=202610061850"></script>
+  <script src="ui.js?v=202610061850"></script>
+  <script src="status.js?v=202610061850"></script>
+  <script src="main.js?v=202610061850"></script>
+  <script src="tradeplan.js?v=202610061850"></script>
+  <script src="chartzones.js?v=202610061850"></script>
 </body>
 </html>
