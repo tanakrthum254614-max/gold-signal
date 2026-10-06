@@ -10,7 +10,10 @@
   // update still rates both sides. newsMin: no new trades ± this many minutes around high-impact US news.
   // pause: stop opening trades until next Monday 07:00 after `streak` losses in a row, or when this
   // week's result after spread reaches −weekLoss dollars per ounce (safety brake when live results go bad).
-  const RULE = { threshold: 5, slUsd: 15, tpUsd: [15, 20, 30], maxHoldMs: 24 * 3600e3, sides: 'buy', newsMin: 30, pause: { streak: 5, weekLoss: 60 } };
+  // noChase: no entry while the fast frame closes outside its Bollinger band in the trade direction (price
+  // stretched). 2-year test, four half-years after spread — 30m: +$128/+$455/+$302/−$159 → +$135/+$429/+$218/−$31,
+  // 15m: +$28/+$543/+$366/−$175 → +$61/+$480/+$305/−$53 (smaller losses in the weak latest half-year, total ≈ same).
+  const RULE = { threshold: 5, slUsd: 15, tpUsd: [15, 20, 30], maxHoldMs: 24 * 3600e3, sides: 'buy', newsMin: 30, noChase: true, pause: { streak: 5, weekLoss: 60 } };
   const SLOT = 30 * 60e3;
   const STRENGTH = { strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 };
   const TREND_TH = { strong_buy: 'ขาขึ้นแรง', buy: 'ขาขึ้น', neutral: 'ไซด์เวย์', sell: 'ขาลง', strong_sell: 'ขาลงแรง' };
@@ -45,7 +48,7 @@
   const slotOf = (ms) => Math.floor(ms / SLOT) * SLOT;
   // Only candles that have finished by `now`
   const closed = (bars, durMs, now) => bars.filter((b) => b.time + durMs <= now).slice(-200);
-  const trendKey = (bars) => TA.analyze(bars).label.key.replace('-', '_');
+  const trendKey = (a) => a.label.key.replace('-', '_');
 
   // High-impact news within RULE.newsMin minutes of `now` (news: [{ time (ms), title }])
   function newsNear(news, now) {
@@ -64,7 +67,8 @@
     const pick = (bars, dur) => (live ? bars.filter((b) => b.time <= now).slice(-200) : closed(bars, dur, now));
     const cs = frames.map(([k, dur]) => pick(candles[k] || [], dur));
     if (cs.some((c, i) => c.length < frames[i][2])) return null;
-    const keys = Object.fromEntries(frames.map(([k], i) => [k, trendKey(cs[i])]));
+    const an = cs.map((c) => TA.analyze(c));
+    const keys = Object.fromEntries(frames.map(([k], i) => [k, trendKey(an[i])]));
     const v = frames.map(([k]) => STRENGTH[keys[k]]);
     const score = v.reduce((a, b) => a + b, 0);
     // Direction to lean even when the score is too weak for a trade: middle, then slow, then fast frame
@@ -75,11 +79,17 @@
     const stale = !open || now - fast[fast.length - 1].time > 2 * 3600e3; // market closed / no prices
     const event = newsNear(news, now);
     const sideOk = rule.sides !== 'buy' || score > 0;
+    // Where the fast frame closed inside its Bollinger band: 0 = lower band, 1 = upper band
+    const fi = an[0].ind, li = fi.close.length - 1, bbU = fi.bb.upper[li], bbL = fi.bb.lower[li];
+    const bbPos = bbU > bbL ? (fi.close[li] - bbL) / (bbU - bbL) : 0.5;
+    const stretched = !!rule.noChase && Math.abs(score) >= rule.threshold && sideOk && (score > 0 ? bbPos >= 1 : bbPos <= 0);
     return {
       slot: slotOf(now), score, keys, lean, rule,
-      frames: frames.map(([k, , , label]) => ({ key: k, label, trend: keys[k] })),
-      dir: Math.abs(score) >= rule.threshold && sideOk && !lastHour && !stale && !event ? Math.sign(score) : 0,
-      lastHour, stale, open, news: event, sellSkipped: Math.abs(score) >= rule.threshold && !sideOk,
+      // per frame: the indicator votes behind its trend (avg = mean vote −1…+1; ≥.5 strong, ≥.15 normal)
+      frames: frames.map(([k, , , label], i) => ({ key: k, label, trend: keys[k], avg: an[i].score,
+        votes: an[i].votes.map(({ name, value, signal, why }) => ({ name, value, signal, why })) })),
+      dir: Math.abs(score) >= rule.threshold && sideOk && !lastHour && !stale && !event && !stretched ? Math.sign(score) : 0,
+      lastHour, stale, open, news: event, bbPos, stretched, sellSkipped: Math.abs(score) >= rule.threshold && !sideOk,
     };
   }
   // The 30-minute system (LINE + recorded trades)
@@ -102,6 +112,7 @@
     else if (dec.stale) lines.push('ข้อมูลกราฟล่าช้า — ไม่เปิดไม้ใหม่จนกว่าข้อมูลจะกลับมา');
     else if (dec.lastHour) lines.push(`ใกล้ปิดตลาด ${SIG.mt(dec.slot, '03:00')} น. — ไม่เปิดไม้ใหม่ในชั่วโมงสุดท้าย`);
     else if (dec.news) lines.push(`📰 ช่วงข่าวแรง: ${dec.news.title} — ไม่เปิดไม้ใหม่ ±${RULE.newsMin} นาทีรอบข่าว`);
+    else if (dec.stretched) lines.push(`ราคาทะลุขอบ${dec.score > 0 ? 'บน' : 'ล่าง'} Bollinger ของกรอบ ${dec.frames[0].label} (ยืดเกินไป) — ไม่ไล่${dec.score > 0 ? 'ซื้อ' : 'ขาย'} รอราคาย่อกลับเข้ากรอบก่อน`);
     else if (dec.sellSkipped) lines.push('แนวโน้มลงชัด แต่ระบบเข้าเฉพาะฝั่งซื้อ (สถิติ 2 ปี ฝั่งขายชนะแค่ ~50%) — แนะนำรอ');
     else if (!dec.dir) lines.push(`ต้องได้คะแนน ${rule.sides === 'buy' ? '+' : '±'}${rule.threshold} ขึ้นไปถึงจะเข้า (ทั้ง 3 ช่วงเวลาต้องชี้ทางเดียวกันชัดเจน)`);
     return lines;

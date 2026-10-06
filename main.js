@@ -1188,6 +1188,7 @@ function renderIntra() {
   } else if (dec) {
     const why = INTRA.reasons(dec);
     $('inWhy').textContent = why.slice(1).join(' · ') || (dec.dir ? 'ทั้ง 3 ช่วงเวลาชี้ไปทางเดียวกันชัดเจน' : '');
+    renderWhy('in', dec, 'คะแนนสด: รวมแท่งที่ยังไม่ปิด ขยับตามราคาทุกวินาที (สัญญาณจริงใช้แท่งที่ปิดแล้ว)');
   } else {
     $('inWhy').textContent = 'กำลังโหลดข้อมูลกราฟ…';
   }
@@ -1220,6 +1221,44 @@ function renderIntra() {
     ? `<p class="muted small">${today.length} ไม้ · ปิดแล้ว ${done.length} · ${money(SIG.round(sum))}/ออนซ์</p>
        <div class="in-chips">${today.map((t) => `<span class="chip-r ${t.status}">${hhmm(t.createdAt)} ${t.side === 'BUY' ? 'ซื้อ' : 'ขาย'} ${t.status === 'active' ? '…' : money(t.pnl)}</span>`).join('')}</div>`
     : '<p class="muted small">ยังไม่มีไม้ — ระบบจะเข้าเมื่อทั้ง 3 ช่วงเวลาชี้ขึ้นชัดเจน (คะแนน +5)</p>');
+}
+
+// ---------- Detailed reasons: every indicator vote in every timeframe behind a score ----------
+const LEVELS = [[-0.5, 'ขาลง'], [-0.15, 'ไซด์เวย์'], [0.15, 'ขาขึ้น'], [0.5, 'ขาขึ้นแรง']]; // avg needed for the next level up
+const voteTag = (s) => (s > 0 ? '<i class="vb">▲ ซื้อ</i>' : s < 0 ? '<i class="vs">▼ ขาย</i>' : '<i class="vn">• กลาง</i>');
+function whyDetail(dec, note) {
+  if (!dec || !dec.frames || !dec.frames[0].votes) return null;
+  const rule = dec.rule || INTRA.RULE;
+  let buys = 0, sells = 0, neutral = 0;
+  const cols = dec.frames.map((f) => {
+    const n = f.votes.length, sum = f.votes.reduce((a, v) => a + v.signal, 0);
+    const b = f.votes.filter((v) => v.signal > 0).length, s = f.votes.filter((v) => v.signal < 0).length;
+    buys += b; sells += s; neutral += n - b - s;
+    const pts = SM_VOTE[f.trend];
+    const up = LEVELS.find(([th]) => f.avg < th);
+    const need = up ? Math.ceil(up[0] * n - sum - 1e-9) : 0;
+    const next = !up ? 'อยู่ระดับสูงสุดแล้ว'
+      : `ขึ้นเป็น "${up[1]}" ต้องได้เพิ่มอีก ${need} แต้ม (≈ ตัวชี้วัดขายเปลี่ยนเป็นซื้อ ${Math.ceil(need / 2)} ตัว)`;
+    return `<div class="why-col ${pts > 0 ? 'up' : pts < 0 ? 'down' : ''}">
+      <div class="why-head"><b>${f.label}</b><span>${INTRA.TREND_TH[f.trend]} · <b class="mono">${pts > 0 ? '+' : ''}${pts}</b> คะแนน</span></div>
+      <div class="why-bar" title="ซื้อ ${b} · กลาง ${n - b - s} · ขาย ${s}"><i class="vb" style="flex:${b}"></i><i class="vn" style="flex:${n - b - s}"></i><i class="vs" style="flex:${s}"></i></div>
+      <div class="why-avg muted small">ซื้อ ${b} · กลาง ${n - b - s} · ขาย ${s} จาก ${n} ตัว → ค่าเฉลี่ย <b class="mono">${f.avg >= 0 ? '+' : ''}${f.avg.toFixed(2)}</b></div>
+      <table class="why-tbl">${f.votes.map((v) => `<tr><td>${v.name}</td><td class="mono">${v.value}</td><td>${voteTag(v.signal)}</td></tr><tr class="w"><td colspan="3">${v.why}</td></tr>`).join('')}</table>
+      <p class="why-next small">${next}</p></div>`;
+  });
+  const gap = rule.threshold - dec.score;
+  const body = `<div class="why-grid">${cols.join('')}</div>
+    <p class="why-sum">รวม 3 กรอบเวลา = <b class="mono">${signedScore(dec.score)}</b> จาก ±6 · ${gap > 0 ? `ยังขาดอีก <b>${gap}</b> คะแนนถึงจุดเข้าซื้อ +${rule.threshold}` : `<b>ถึงเกณฑ์เข้าซื้อ +${rule.threshold} แล้ว</b>`}</p>
+    <p class="muted small why-how">วิธีคิด: ในแต่ละกรอบเวลา ตัวชี้วัดทุกตัวโหวต (ซื้อ +1 · กลาง 0 · ขาย −1) แล้วเฉลี่ย → ≥ +0.50 ขาขึ้นแรง (+2) · ≥ +0.15 ขาขึ้น (+1) · −0.15…+0.15 ไซด์เวย์ (0) · ≤ −0.15 ขาลง (−1) · ≤ −0.50 ขาลงแรง (−2) · รวม 3 กรอบเวลาเป็นคะแนน −6…+6${note ? ` · ${note}` : ''}</p>`;
+  return { sum: `🔍 ดูเหตุผลละเอียด — ตัวชี้วัด ${buys + sells + neutral} ตัวใน 3 กรอบเวลา: <b class="up">ซื้อ ${buys}</b> · <b class="down">ขาย ${sells}</b> · กลาง ${neutral}`, body };
+}
+// Only touch the DOM when the text changed, so an open panel keeps its place
+function renderWhy(prefix, dec, note) {
+  const d = whyDetail(dec, note), box = $(`${prefix}Detail`);
+  box.hidden = !d;
+  if (!d) return;
+  if ($(`${prefix}DetailSum`).innerHTML !== d.sum) $(`${prefix}DetailSum`).innerHTML = d.sum;
+  if (renderWhy[prefix] !== d.body) { renderWhy[prefix] = d.body; $(`${prefix}DetailBody`).innerHTML = d.body; }
 }
 
 // ---------- 15-minute signal (website only, nothing sent to LINE) ----------
@@ -1257,14 +1296,22 @@ function run15(now = Date.now()) {
 let s15Chart = null;
 function s15ChartParts() {
   if (s15Chart) return s15Chart;
-  const chart = LC.createChart($('s15Chart'), { ...chartBase(true), handleScroll: false, handleScale: false });
+  // Drag to scroll back, drag an axis / pinch to zoom (the mouse wheel stays with the page)
+  const chart = LC.createChart($('s15Chart'), { ...chartBase(true),
+    handleScroll: { mouseWheel: false, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
+    handleScale: { mouseWheel: false, pinch: true, axisPressedMouseMove: true, axisDoubleClickReset: true } });
   const zone = chart.addHistogramSeries({ priceScaleId: 'zone', priceLineVisible: false, lastValueVisible: false, base: 0 });
   chart.priceScale('zone').applyOptions({ scaleMargins: { top: 0, bottom: 0 }, visible: false });
   const candles15 = chart.addCandlestickSeries({
     upColor: '#0f9f6e', downColor: '#e0424f', borderVisible: false, wickUpColor: '#0f9f6e', wickDownColor: '#e0424f',
   });
-  fitWhenSized($('s15Chart'), () => chart.timeScale().fitContent());
-  s15Chart = { chart, zone, candles15, lines: [] };
+  fitWhenSized($('s15Chart'), () => s15View());
+  s15Chart = { chart, zone, candles15, lines: [], user: false, hover: null, decAt: new Map() };
+  // Once the viewer moves the chart, redraws keep their view until "ดูล่าสุด"
+  const touched = () => { s15Chart.user = true; $('s15Reset').hidden = false; };
+  ['pointerdown', 'touchstart'].forEach((ev) => $('s15Chart').addEventListener(ev, touched, { passive: true }));
+  $('s15Reset').addEventListener('click', () => { s15Chart.user = false; $('s15Reset').hidden = true; s15View(); });
+  chart.subscribeCrosshairMove((p) => { s15Chart.hover = p && p.time != null ? p.time : null; s15Ohlc(); });
   applyChartTheme();
   return s15Chart;
 }
@@ -1285,10 +1332,33 @@ function s15Markers(trades, from = 0) {
   return out.sort((a, b) => a.time - b.time);
 }
 
+// The latest 24 hours (96 candles) unless the viewer has scrolled / zoomed
+const S15_VIEW = 96;
+function s15View() {
+  if (!s15Chart || s15Chart.user) return;
+  const n = state.m15.length;
+  s15Chart.chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - S15_VIEW) - 0.5, to: n + 2 });
+}
+
+// Open / high / low / close of the candle under the pointer (or the newest one), and the score when it closed
+function s15Ohlc() {
+  if (!s15Chart) return;
+  const bars = state.m15;
+  const t = s15Chart.hover, b = t != null ? bars.find((x) => Math.floor(x.time / 1000) + TZ === t) : bars[bars.length - 1];
+  if (!b) { $('s15Ohlc').innerHTML = ''; return; }
+  const forming = b === bars[bars.length - 1] && Date.now() < b.time + M15;
+  const chg = b.close - b.open, pct = (chg / b.open) * 100, cls = chg >= 0 ? 'up' : 'down';
+  const dec = s15Chart.decAt.get(b.time + M15);
+  $('s15Ohlc').innerHTML = `<b>${hhmm(b.time)}–${hhmm(b.time + M15)}</b>${forming ? ' <span class="lv-tag">กำลังวิ่ง</span>' : ''}
+    <span>เปิด ${f2(b.open)}</span><span class="up">สูง ${f2(b.high)}</span><span class="down">ต่ำ ${f2(b.low)}</span><span>ปิด <b>${f2(b.close)}</b></span>
+    <span class="${cls}">${chg >= 0 ? '+' : ''}${f2(chg)} (${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%)</span><span>ช่วงแกว่ง ${f2(b.high - b.low)}</span>${dec ? `<span>คะแนนตอนปิด <b>${signedScore(dec.score)}</b>${dec.dir > 0 ? ' ✅ เข้าได้' : dec.stretched ? ' · ยืดเกิน BB' : ''}</span>` : ''}`;
+}
+
 function drawS15Chart(s) {
   const P = s15ChartParts();
   const sec = (ms) => Math.floor(ms / 1000) + TZ;
-  const bars = state.m15.slice(-96); // last 24 hours
+  const bars = state.m15; // every downloaded candle (~40 hours): the last 24 hours are shown, drag to see more
+  P.decAt = new Map(s.decs.map((d) => [d.t, d.dec]));
   P.candles15.setData(bars.map((b) => ({ time: sec(b.time), open: b.open, high: b.high, low: b.low, close: b.close })));
   // Background: the decision made when each candle closed applies to the next candle
   const byT = new Map(s.decs.map((d) => [d.t, d.dec]));
@@ -1307,7 +1377,8 @@ function drawS15Chart(s) {
     line(open.hit ? open.entry : open.sl, '#e0424f', open.hit ? 'SL→ทุน' : 'SL', LC.LineStyle.Dashed);
     open.tps.forEach((tp, k) => line(tp, '#0f9f6e', `TP${k + 1}`, LC.LineStyle.Dashed));
   }
-  P.chart.timeScale().fitContent();
+  s15View();
+  s15Ohlc();
 }
 
 // Every stream tick: the forming candle on the card chart follows the live price (a new candle when one opens)
@@ -1316,6 +1387,7 @@ function s15Tick() {
   if (!s15Chart || !b || renderS15.drawn == null) return;
   try {
     s15Chart.candles15.update({ time: Math.floor(b.time / 1000) + TZ, open: b.open, high: b.high, low: b.low, close: b.close });
+    if (s15Chart.hover == null) s15Ohlc();
   } catch (e) { renderS15.drawn = null; } // out of order (data replaced): full redraw on the next render
 }
 
@@ -1341,12 +1413,15 @@ function renderS15() {
     call = '⏸ เพิ่งปิดไม้ — รอแท่งถัดไป'; cls = 'wait';
   } else if (dec.news) {
     call = '⏸ ไม่เข้า — ช่วงข่าวแรง'; cls = 'wait';
+  } else if (dec.stretched) {
+    call = '⏸ ไม่เข้า — คะแนนถึงแล้ว แต่ราคายืดเกินขอบบน Bollinger (รอย่อ)'; cls = 'wait';
   } else {
     call = `⏸ ไม่เข้า — คะแนน ${signedScore(dec.score)} (ต้อง +${INTRA.RULE15.threshold})`; cls = 'wait';
   }
   $('s15Card').className = `card s15 ${cls}`;
   $('s15Call').textContent = call;
   $('s15Why').textContent = dec ? INTRA.reasons(dec).join(' · ') : '';
+  renderWhy('s15', dec, dec ? `คิดจากแท่งที่ปิดแล้วเมื่อ ${hhmm(s.at)} น. (คิดใหม่ทุกครั้งที่แท่ง 15 นาทีปิด)` : '');
 
   const calib = state.bt15 && state.bt15.calibration;
   const side = (dir) => {
