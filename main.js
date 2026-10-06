@@ -754,6 +754,7 @@ function onStreamTick(p) {
     if (patched) render();
     else { renderIntra(); renderSignalHome(); }
     renderS15();
+    if (window.renderPlan) renderPlan();
   }
 }
 
