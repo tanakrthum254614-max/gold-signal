@@ -204,8 +204,7 @@ function setLines(store, defs) {
 }
 
 function drawPlanLines(plan) {
-  // The investing.com plan is not backtested: its entry lines stay off the chart (chartzones.js draws the tested system)
-  if (window.renderChartZones || plan.action === 'WAIT' || plan.entry == null) return setLines(planLines, []);
+  if (plan.action === 'WAIT' || plan.entry == null) return setLines(planLines, []);
   setLines(planLines, [
     { price: plan.entry, color: '#d99a10', title: 'จุดเข้า', lineStyle: LC.LineStyle.Solid },
     { price: plan.sl, color: '#e0424f', title: 'ตัดขาดทุน', lineStyle: LC.LineStyle.Dashed },

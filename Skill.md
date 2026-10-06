@@ -122,7 +122,7 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 - ระบบเดียวกัน (3 กรอบชี้ขึ้น ซื้อที่ +5, noChase) ใช้กรอบกราฟเป็นกรอบเร็ว · `SYS` ใน chartzones.js: 5m [5m,30m,1h] · 15m FRAMES15 · 30m FRAMES · **1h [1h,4h,5h] SL×2 ($30, TP 30/40/60)** · 5h/1d/1w ไม่มีจุดเข้า (ทิศทางอย่างเดียว)
 - ผลทดสอบ 2 ปี (4 ครึ่งปี หลังสเปรด): 1h +166/+145/+383/+57 (**กำไรทุกช่วง**, ×1.5 ก็ +194/+220/+101/+58; ×1 −194 ครึ่งปีล่าสุด) · 5m +90/+342/+352/−417 · 15m +61/+480/+305/−53 · 30m +135/+429/+218/−31 · ลอง 1h ด้วย [1h,5h,1d] แล้วครึ่งปีล่าสุดขาดทุน จึงใช้ 4h
 - แท่ง 4h ไม่มีใน investing → `state.h4` จาก backupBars('4h', 200) (Binance PAXG เลื่อนเป็นราคา spot เหมือน backtest) ทุก 10 นาที
-- วาดบนทั้ง 2 มุมมอง (mainChart/candles + simpleChart/areaS): histogram `priceScaleId: 'cz'` เป็นพื้นหลัง, markers, price lines, กล่อง `#czBox` / `#czBoxS` · main.js markChart15 → renderChartZones · drawPlanLines (investing) ไม่วาดแล้ว
+- วาดบนทั้ง 2 มุมมอง (mainChart/candles + simpleChart/areaS): histogram `priceScaleId: 'cz'` เป็นพื้นหลัง, markers, price lines, กล่อง `#czBox` / `#czBoxS` · main.js markChart15 → renderChartZones · drawPlanLines (เส้นจุดเข้า/ตัดขาดทุน/เป้า จาก investing.com) **ผู้ใช้ขอให้คงไว้บนกราฟ** — ลองเอาออกแล้วผู้ใช้สั่งเอากลับ (6 ต.ค. 2569)
 - **กับดัก**: replay cache ห้ามเก็บผลที่เป็น null (ข้อมูลยังโหลดไม่ครบ) — เคยทำให้กรอบ 1h คำนวณไม่ได้ 99/100 จุดถาวร
 - ทดสอบภาพตอนไม่มีสัญญาณจริง: override INTRA.decideWith ในหน้า (กลับเครื่องหมายคะแนน) เฉพาะใน puppeteer
 
