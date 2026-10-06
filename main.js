@@ -416,6 +416,8 @@ async function refreshM15() {
     // investing.com unreachable: Binance PAXG (shifted to spot), times in ms like investing's
     try { state.m15 = msBars(await backupBars('15m', 160)); } catch (e2) { /* keep last */ }
   }
+  if (streamFresh()) patchIntraCandles();
+  renderS15.drawn = null; // redraw the card chart with the downloaded candles
   renderSignalHome();
   refresh15();
 }
@@ -740,6 +742,7 @@ function onStreamTick(p) {
     if (bars.length > 90) bars.shift();
   }
   patchIntraCandles(now);
+  s15Tick();
   renderLive();
   // Every tick: the chart's newest candle and the trader-view price, so every number on the page matches
   const patched = patchChartBars(now);
@@ -905,10 +908,16 @@ async function refreshIntraCandles() {
 function patchIntraCandles(now = Date.now()) {
   const price = state.livePrice, C = state.intraCandles;
   if (price == null) return;
-  const f = state.m15[state.m15.length - 1]; // the forming 15-minute candle too (15-minute card / open trade)
-  if (f && now < f.time + 15 * 60e3) { f.close = price; f.high = Math.max(f.high, price); f.low = Math.min(f.low, price); }
-  if (!C) return;
   const fresh = streamFresh() && INTRA.marketOpen(now);
+  // The forming 15-minute candle too (15-minute card / open trade); a new one opens from the stream at :00/:15/:30/:45
+  let f = state.m15[state.m15.length - 1];
+  if (f && fresh && now >= f.time + M15 && now < f.time + 2 * M15) {
+    f = { time: f.time + M15, open: f.close, high: Math.max(f.close, price), low: Math.min(f.close, price), close: price };
+    state.m15.push(f);
+    if (state.m15.length > 200) state.m15.shift();
+  }
+  if (f && now < f.time + M15) { f.close = price; f.high = Math.max(f.high, price); f.low = Math.min(f.low, price); }
+  if (!C) return;
   Object.entries(INTRA_DUR).forEach(([k, dur]) => {
     let last = C[k] && C[k][C[k].length - 1];
     if (!last) return;
@@ -1299,6 +1308,15 @@ function drawS15Chart(s) {
     open.tps.forEach((tp, k) => line(tp, '#0f9f6e', `TP${k + 1}`, LC.LineStyle.Dashed));
   }
   P.chart.timeScale().fitContent();
+}
+
+// Every stream tick: the forming candle on the card chart follows the live price (a new candle when one opens)
+function s15Tick() {
+  const b = state.m15[state.m15.length - 1];
+  if (!s15Chart || !b || renderS15.drawn == null) return;
+  try {
+    s15Chart.candles15.update({ time: Math.floor(b.time / 1000) + TZ, open: b.open, high: b.high, low: b.low, close: b.close });
+  } catch (e) { renderS15.drawn = null; } // out of order (data replaced): full redraw on the next render
 }
 
 // Light update (every tick): countdown, call, live profit; the chart only when a candle closed
