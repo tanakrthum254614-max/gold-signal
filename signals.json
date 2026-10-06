@@ -22,25 +22,90 @@
    "sl": 4199.28,
    "tp": 4088.08,
    "stars": 4,
+   "status": "win",
+   "entryAt": 1791185390481,
+   "closedBy": "eod",
+   "exitPrice": 4137.16,
+   "exitAt": 1791243000000,
+   "pnl": 17.64
+  },
+  {
+   "id": "2026-10-06",
+   "createdAt": 1791246609506,
+   "expiresAt": 1791315900000,
+   "rule": "market-trend",
+   "trendScore": -4,
+   "priceAtSignal": 4140.67,
+   "advisory": true,
+   "why": [
+    "investing.com วิเคราะห์ 8 ช่วงเวลา: บอก “ลง” 5 · “ขึ้น” 2",
+    "แนวโน้ม ระยะสั้น ไซด์เวย์ · ระยะกลาง ขาลงแรง · ระยะยาว ขาลงแรง",
+    "ทองแกว่งเฉลี่ยวันละ ~$83.90"
+   ],
+   "source": "investing.com",
+   "alerts": {
+    "entry": 1791246609506
+   },
+   "market": true,
+   "side": "SELL",
+   "entry": 4140.67,
+   "sl": 4155.67,
+   "tps": [
+    4125.67,
+    4120.67,
+    4110.67
+   ],
+   "tp": 4125.67,
+   "stars": 4,
    "status": "active",
-   "entryAt": 1791185390481
+   "entryAt": 1791246609506
   }
  ],
- "updatedAt": 1791244521413,
+ "updatedAt": 1791246609506,
  "summary": {
-  "total": 0,
-  "traded": 0,
-  "wins": 0,
+  "total": 1,
+  "traded": 1,
+  "wins": 1,
   "losses": 0,
   "expired": 0,
-  "winRate": null,
-  "pnl": 0,
-  "gross": 0,
+  "winRate": 100,
+  "pnl": 17.24,
+  "gross": 17.64,
   "spread": 0.4,
-  "avg": null,
-  "bestWin": 0,
+  "avg": 17.24,
+  "bestWin": 17.64,
   "worstLoss": 0,
-  "last": [],
+  "last": [
+   {
+    "id": "2026-10-05",
+    "createdAt": 1791185390481,
+    "expiresAt": 1791243900000,
+    "rule": "market-trend",
+    "trendScore": -3,
+    "priceAtSignal": 4154.8,
+    "why": [
+     "investing.com วิเคราะห์ 8 ช่วงเวลา: บอก “ลง” 3 · “ขึ้น” 5",
+     "แนวโน้ม ระยะสั้น ขาขึ้นแรง · ระยะกลาง ขาลง · ระยะยาว ขาลงแรง",
+     "ทองแกว่งเฉลี่ยวันละ ~$88.96 → ตัดขาดทุน 0.5× · เป้าหมาย 0.75× ของระยะนี้"
+    ],
+    "source": "investing.com",
+    "alerts": {
+     "entry": 1791185390481
+    },
+    "market": true,
+    "side": "SELL",
+    "entry": 4154.8,
+    "sl": 4199.28,
+    "tp": 4088.08,
+    "stars": 4,
+    "status": "win",
+    "entryAt": 1791185390481,
+    "closedBy": "eod",
+    "exitPrice": 4137.16,
+    "exitAt": 1791243000000,
+    "pnl": 17.64
+   }
+  ],
   "tp1": 0,
   "tp2": 0,
   "tp3": 0
