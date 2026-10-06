@@ -183,3 +183,5 @@ th { color: var(--muted); }
 .install-bar { background: linear-gradient(135deg, #fff8e6, #fff); box-shadow: var(--shadow); }
 .install-bar b { color: var(--gold); }
 .pwa-how { background: #f6f8fb; }
+.sp-grid { background-image: linear-gradient(rgba(224,162,26,.55) 2px, transparent 2px), linear-gradient(90deg, rgba(224,162,26,.55) 2px, transparent 2px); }
+.sp-tr text { fill: #b9800c; }
