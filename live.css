@@ -520,3 +520,5 @@
 .cz-box.no.sell { background: color-mix(in srgb, var(--down) 9%, var(--panel-2)); }
 .cz-box b a { color: inherit; }
 .s15-legend i.zone.sell { background: rgba(224,66,79,.22); border-color: transparent; } .s15-legend i.sell-mk { color: var(--down); }
+.sig-note { margin: 6px 0 4px; padding: 6px 9px; border-radius: 8px; background: var(--panel-2); color: var(--muted); }
+.sig-note b { color: var(--text); }

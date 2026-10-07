@@ -123,6 +123,7 @@ function ago(ms) {
       const zd = state.bars.map((b) => ({ time: b.time + TZ, value: 1, color: tint }));
       each((v) => { v.zone.setData(zd); v.series.setMarkers([]); });
       window.CZ_OPEN = null;
+      if ($('sigNote')) $('sigNote').textContent = 'การ์ดนี้คือบทวิเคราะห์ภาพรวม — กรอบนี้ไม่มีระบบจุดเข้าบนกราฟ';
       if (window.drawPositionBoxes) drawPositionBoxes();
       setBox('none', `<b>🧭 กรอบ ${TF_LABEL[tf]}: ใช้ดูทิศทางเท่านั้น — ไม่มีจุดเข้า</b>
         <span>ตอนนี้ภาพรวม${an.label.th} (พื้นหลัง${k.includes('buy') ? 'เขียว' : k.includes('sell') ? 'แดง' : 'ใส'}) · ${sys && sys.note ? sys.note : 'ระบบจุดเข้ายังไม่ผ่านการทดสอบในกรอบนี้'} · ดูจุดเข้าที่ทดสอบแล้วในกรอบ <a href="#" data-tf="15m">15 นาที</a> / <a href="#" data-tf="30m">30 นาที</a> / <a href="#" data-tf="1h">1 ชม.</a></span>`);
@@ -164,10 +165,14 @@ function ago(ms) {
     else if (d.score >= 3) { head = `⏳ ใกล้สัญญาณ BUY — คะแนน ${signedScore(d.score)} ขาดอีก ${sys.rule.threshold - d.score} (พื้นหลังเขียวอ่อน)`; cls = 'near'; }
     else if (d.score <= -3) { head = sells ? `⏳ ใกล้สัญญาณ SELL — คะแนน ${signedScore(d.score)} ขาดอีก ${sys.rule.threshold + d.score} (พื้นหลังแดงอ่อน)` : `❌ ไม่ใช่โซนซื้อ — แนวโน้มลง ${signedScore(d.score)} (กรอบนี้ไม่เข้าฝั่งขาย)`; cls = sells ? 'near' : 'no'; }
     else { head = `⏸ รอก่อน — คะแนน ${signedScore(d.score)} ต้อง +${sys.rule.threshold} (BUY)${sells ? ` หรือ −${sys.rule.threshold} (SELL)` : ''}`; cls = 'wait'; }
+    const note = $('sigNote');
+    if (note) note.innerHTML = open
+      ? `📌 <b>ระบบบนกราฟถือไม้${open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}อยู่</b> ตั้งแต่ ${clock(open.createdAt)} — ไม่ต้องเปิดไม้ใหม่ · การ์ดนี้คือบทวิเคราะห์ภาพรวม คนละระบบกับจุดเข้าบนกราฟ`
+      : 'การ์ดนี้คือบทวิเคราะห์ภาพรวม — คนละระบบกับจุดเข้าบนกราฟ (กล่องด้านซ้าย)';
     const fin = s.trades.filter((r) => SIG.isFinal(r)), pnl = fin.reduce((a, r) => a + r.pnl, 0);
     setBox(cls, `<b>${head}</b>
       ${sys.bt.every((v) => v > 0) ? '<i class="cz-ok">✅ BUY กำไรทุกครึ่งปีในการทดสอบ</i>' : '<i class="cz-warn">⚠️ BUY ครึ่งปีล่าสุดขาดทุนในการทดสอบ</i>'}${sells ? ` <i class="cz-warn">⚠️ SELL 2 ปีรวม ${usd(sys.sbt.reduce((a, v) => a + v, 0))} — กำไรเฉพาะช่วงหลังที่ทองลง</i>` : ''}
-      <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} ชี้ทางเดียวกัน (BUY ≥ +${sys.rule.threshold}${sells ? ` · SELL ≤ −${sys.rule.threshold}` : ''}) · SL $${INTRA.RULE.slUsd * sys.mult} · TP $${INTRA.RULE.tpUsd.map((u) => u * sys.mult).join('/')} · บนกราฟนี้ ${fin.length} ไม้ ${fin.length ? `รวม ${usd(SIG.round(pnl))}` : ''}
+      <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} ชี้ทางเดียวกัน (BUY ≥ +${sys.rule.threshold}${sells ? ` · SELL ≤ −${sys.rule.threshold}` : ''}) · SL $${INTRA.RULE.slUsd * sys.mult} · TP $${INTRA.RULE.tpUsd.map((u) => u * sys.mult).join('/')} · บนกราฟนี้ ${fin.length} ไม้ปิดแล้ว${fin.length ? ` รวม ${usd(SIG.round(pnl))}` : ''}${open ? ` + 1 ไม้ที่ถืออยู่` : ''}
       · <b>ทดสอบ 2 ปี BUY</b> ${sys.bt.map(usd).join(' / ')}${sells ? ` · <b>SELL</b> ${sys.sbt.map(usd).join(' / ')}` : ''} (ครึ่งปี เก่า→ใหม่, หลังสเปรด)</span>`);
   };
 })();
@@ -194,7 +199,7 @@ function ago(ms) {
   // The trade to show: the tested system's open trade first, else the investing.com plan's entry
   function currentPlan() {
     const t = window.CZ_OPEN;
-    if (t) return { side: t.side === 'SELL' ? -1 : 1, entry: t.entry, sl: t.hit ? t.entry : t.sl, tps: t.tps, since: t.createdAt, who: 'ระบบที่ทดสอบแล้ว' };
+    if (t) return { be: !!t.hit, side: t.side === 'SELL' ? -1 : 1, entry: t.entry, sl: t.hit ? t.entry : t.sl, tps: t.tps, since: t.createdAt, who: 'ระบบที่ทดสอบแล้ว' };
     const L = state.locked;
     if (!L || L.action === 'WAIT' || L.entry == null) return null;
     return { side: L.action === 'BUY' ? 1 : -1, entry: L.entry, sl: L.sl, tps: [L.tp1, L.tp2].filter((v) => v != null), since: L.since, who: 'บทวิเคราะห์ investing.com' };
@@ -202,7 +207,7 @@ function ago(ms) {
   function draw(b) {
     const p = currentPlan();
     // Room on the right for the box while there is an entry (like a platform's position tool)
-    const off = p ? 16 : 6;
+    const off = p ? 8 : 6;
     if (b.off !== off) { b.off = off; b.chart.timeScale().applyOptions({ rightOffset: off }); }
     if (!p || !state.bars.length) { b.html = b.el.innerHTML = ''; return; }
     const ts = b.chart.timeScale(), y = (v) => b.series.priceToCoordinate(v);
@@ -221,7 +226,7 @@ function ago(ms) {
     // Tags sit at the right edge next to the price scale; spread apart vertically when prices are close
     const tags = [
       { y: ye, cls: `entry ${buy ? 'buy' : 'sell'}`, h: 30, html: `🎯 ${buy ? 'ซื้อ' : 'ขาย'} <b>${f2(p.entry)}</b> <small>${p.who}${p.since ? ` · ตั้งแต่ ${clock(p.since)} (${ago(p.since)})` : ''}</small>` },
-      { y: ys, cls: 'sl', h: 20, html: `SL ${f2(p.sl)} · −$${f2(risk)}` },
+      { y: ys, cls: 'sl', h: 20, html: p.be ? `SL ที่ทุน ${f2(p.sl)} · ถึง TP1 แล้ว ไม่มีทางขาดทุน` : `SL ${f2(p.sl)} · −${f2(risk)}` },
       ...p.tps.map((tp, i) => ({ y: y(tp), cls: 'tp', h: 20, html: `${p.tps.length > 1 ? `TP${i + 1}` : 'TP'} ${f2(tp)} · +$${f2(Math.abs(tp - p.entry))}${risk ? ` · ${(Math.abs(tp - p.entry) / risk).toFixed(1)}R` : ''}` })),
     ].filter((t) => t.y != null).sort((a, b2) => a.y - b2.y);
     for (let i = 1; i < tags.length; i++) {
