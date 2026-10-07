@@ -516,3 +516,7 @@
 @media (max-width: 520px) { .ptag.entry { font-size: 12px; padding: 3px 8px; } .ptag.entry b { font-size: 13px; } .ptag.entry small { display: none; } .ptag { font-size: 10.5px; } }
 .pstart { position: absolute; transform: translate(-50%, -50%); font-size: 18px; color: #d99a10; text-shadow: 0 0 6px rgba(217,154,16,.8); line-height: 1; }
 @keyframes ptagPop { from { opacity: 0; } }
+.cz-box.hold.sell { border-left-color: var(--down); } .cz-box.hold.sell b { color: var(--down); }
+.cz-box.no.sell { background: color-mix(in srgb, var(--down) 9%, var(--panel-2)); }
+.cz-box b a { color: inherit; }
+.s15-legend i.zone.sell { background: rgba(224,66,79,.22); border-color: transparent; } .s15-legend i.sell-mk { color: var(--down); }
