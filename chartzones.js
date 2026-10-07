@@ -22,7 +22,9 @@ function ago(ms) {
   // same format as bt (scratchpad research 7 Oct 2026): over 2 years about break-even, profitable only lately.
   const BOTH5 = { ...BUY5, sides: 'both' };
   const SYS = {
-    '5m': { frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', 60 * M, 60, '1 ชม.']], rule: BOTH5, mult: 1, bt: [90, 342, 352, -417], sbt: [-72, -71, 169, 261] },
+    // 5m: an up/down arrow on every closed candle (user request 7 Oct) and trades with TP1 only. every = 2-year result of
+    // taking every arrow one at a time (SL/TP1 $15) — shown so nobody mistakes the small arrows for a tested system.
+    '5m': { frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', 60 * M, 60, '1 ชม.']], rule: BOTH5, mult: 1, tp1: true, bt: [312, 448, 99, -466], sbt: [6, -117, -9, 212], every: [-89, 389, -977, -803] },
     '15m': { frames: INTRA.FRAMES15, rule: BOTH5, mult: 1, bt: [61, 480, 305, -53], sbt: [-3, -139, -293, 150] },
     '30m': { frames: INTRA.FRAMES, rule: BOTH5, mult: 1, bt: [135, 429, 218, -31], sbt: [-55, -50, -14, 124] },
     // the only one that made money in all four half-years (also with a 1.5× stop: +194/+220/+101/+58)
@@ -36,7 +38,8 @@ function ago(ms) {
     try { state.h4 = msBars(await backupBars('4h', 200)); } catch (e) { /* keep last */ }
   }
   refreshH4(); setInterval(refreshH4, 10 * 60e3);
-  const levelsFor = (sys, price, d = 1) => ({ sl: price - d * INTRA.RULE.slUsd * sys.mult, tps: INTRA.RULE.tpUsd.map((u) => price + d * u * sys.mult) });
+  const tpsUsd = (sys) => (sys.tp1 ? INTRA.RULE.tpUsd.slice(0, 1) : INTRA.RULE.tpUsd).map((u) => u * sys.mult);
+  const levelsFor = (sys, price, d = 1) => ({ sl: price - d * INTRA.RULE.slUsd * sys.mult, tps: tpsUsd(sys).map((u) => price + d * u) });
   const ms = (bars) => bars.map((b) => ({ ...b, time: b.time < 1e12 ? b.time * 1000 : b.time }));
   // Candles for a frame key, all with times in ms
   function frameBars(key, chart) {
@@ -67,6 +70,7 @@ function ago(ms) {
       if (!dec || !dec.dir || t < busy) continue;
       const tr = INTRA.makeTrade(dec, chart[i - 1].close, t);
       if (sys.mult !== 1) { const L = levelsFor(sys, tr.entry, dec.dir); tr.sl = SIG.round(L.sl); tr.tps = L.tps.map(SIG.round); tr.tp = tr.tps[0]; }
+      if (sys.tp1) { tr.tps = tr.tps.slice(0, 1); tr.tp = tr.tps[0]; }
       const r = SIG.evaluate(tr, chart.slice(i), now);
       trades.push(r);
       busy = SIG.isFinal(r) ? (r.exitAt || r.expiresAt) + dur : Infinity;
@@ -95,8 +99,18 @@ function ago(ms) {
   const sec = (t) => Math.floor(t / 1000) + TZ;
   const usd = (v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US')}`;
 
-  function markers(trades, from) {
+  function markers(trades, from, decs) {
     const out = [];
+    // every closed candle: small up / down arrow from the score's lean (no text; trades get the big labelled ones)
+    if (decs) {
+      const taken = new Set(trades.map((r) => r.createdAt));
+      decs.forEach(({ t, dec }) => {
+        if (t < from || !dec || dec.stale || !dec.lean || taken.has(t)) return;
+        const up = dec.lean > 0;
+        out.push({ time: sec(t), position: up ? 'belowBar' : 'aboveBar', shape: up ? 'arrowUp' : 'arrowDown', size: 0.5,
+          color: up ? 'rgba(15,159,110,.55)' : 'rgba(224,66,79,.55)' });
+      });
+    }
     trades.forEach((r) => {
       if (r.createdAt < from) return;
       const buy = r.side !== 'SELL';
@@ -137,7 +151,7 @@ function ago(ms) {
         : d.score >= 3 ? 'rgba(15,159,110,.07)' : d.score <= -3 ? 'rgba(224,66,79,.06)' : 'rgba(0,0,0,0)';
       return { time: b.time + TZ, value: 1, color };
     });
-    const mk = markers(s.trades, chart[0].time);
+    const mk = markers(s.trades, chart[0].time, sys.tp1 ? s.decs : null);
     each((v) => { v.zone.setData(zd); v.series.setMarkers(mk); });
     const open = s.trades.find((r) => r.status === 'active');
     window.CZ_OPEN = open || null;
@@ -169,11 +183,18 @@ function ago(ms) {
     if (note) note.innerHTML = open
       ? `📌 <b>ระบบบนกราฟถือไม้${open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}อยู่</b> ตั้งแต่ ${clock(open.createdAt)} — ไม่ต้องเปิดไม้ใหม่ · การ์ดนี้คือบทวิเคราะห์ภาพรวม คนละระบบกับจุดเข้าบนกราฟ`
       : 'การ์ดนี้คือบทวิเคราะห์ภาพรวม — คนละระบบกับจุดเข้าบนกราฟ (กล่องด้านซ้าย)';
+    if (sys.tp1) {
+      const lastC = s.decs.slice().reverse().find((x) => x.dec && !x.dec.stale);
+      if (lastC && !(d && d.stale)) {
+        const up = lastC.dec.lean > 0, L = levelsFor(sys, price, up ? 1 : -1), nextAt = Math.floor(Date.now() / (5 * M)) * 5 * M + 5 * M;
+        head = `<span class="cz-5m ${up ? 'up' : 'down'}">${up ? '▲ ขึ้น' : '▼ ลง'}</span> สัญญาณ 5 นาที (แท่ง ${clock(lastC.t - 5 * M)} ปิดแล้ว · คะแนน ${signedScore(lastC.dec.score)}) · ${up ? 'ซื้อ' : 'ขาย'}ที่ ~${f2(price)} · SL ${f2(L.sl)} · TP1 ${f2(L.tps[0])} · รอบถัดไป ${clock(nextAt)}<br><small>${head}</small>`;
+      }
+    }
     const fin = s.trades.filter((r) => SIG.isFinal(r)), pnl = fin.reduce((a, r) => a + r.pnl, 0);
     setBox(cls, `<b>${head}</b>
       ${sys.bt.every((v) => v > 0) ? '<i class="cz-ok">✅ BUY กำไรทุกครึ่งปีในการทดสอบ</i>' : '<i class="cz-warn">⚠️ BUY ครึ่งปีล่าสุดขาดทุนในการทดสอบ</i>'}${sells ? ` <i class="cz-warn">⚠️ SELL 2 ปีรวม ${usd(sys.sbt.reduce((a, v) => a + v, 0))} — กำไรเฉพาะช่วงหลังที่ทองลง</i>` : ''}
-      <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} ชี้ทางเดียวกัน (BUY ≥ +${sys.rule.threshold}${sells ? ` · SELL ≤ −${sys.rule.threshold}` : ''}) · SL $${INTRA.RULE.slUsd * sys.mult} · TP $${INTRA.RULE.tpUsd.map((u) => u * sys.mult).join('/')} · บนกราฟนี้ ${fin.length} ไม้ปิดแล้ว${fin.length ? ` รวม ${usd(SIG.round(pnl))}` : ''}${open ? ` + 1 ไม้ที่ถืออยู่` : ''}
-      · <b>ทดสอบ 2 ปี BUY</b> ${sys.bt.map(usd).join(' / ')}${sells ? ` · <b>SELL</b> ${sys.sbt.map(usd).join(' / ')}` : ''} (ครึ่งปี เก่า→ใหม่, หลังสเปรด)</span>`);
+      <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} ชี้ทางเดียวกัน (BUY ≥ +${sys.rule.threshold}${sells ? ` · SELL ≤ −${sys.rule.threshold}` : ''}) · SL ${INTRA.RULE.slUsd * sys.mult} · ${sys.tp1 ? 'TP1' : 'TP'} ${tpsUsd(sys).join('/')} · บนกราฟนี้ ${fin.length} ไม้ปิดแล้ว${fin.length ? ` รวม ${usd(SIG.round(pnl))}` : ''}${open ? ` + 1 ไม้ที่ถืออยู่` : ''}
+      · <b>ทดสอบ 2 ปี BUY</b> ${sys.bt.map(usd).join(' / ')}${sells ? ` · <b>SELL</b> ${sys.sbt.map(usd).join(' / ')}` : ''} (ครึ่งปี เก่า→ใหม่, หลังสเปรด)${sys.every ? ` · <b>ลูกศรเล็ก</b> = ทิศทุก 5 นาที — ถ้าเข้าทุกลูกศร 2 ปี ${usd(sys.every.reduce((a, v) => a + v, 0))} (ชนะ ~50%) ใช้ดูทิศเท่านั้น · ลูกศรใหญ่มีคำว่าซื้อ/ขาย = คะแนน ±5` : ''}</span>`);
   };
 })();
 
@@ -202,7 +223,7 @@ function ago(ms) {
     if (t) return { be: !!t.hit, side: t.side === 'SELL' ? -1 : 1, entry: t.entry, sl: t.hit ? t.entry : t.sl, tps: t.tps, since: t.createdAt, who: 'ระบบที่ทดสอบแล้ว' };
     const L = state.locked;
     if (!L || L.action === 'WAIT' || L.entry == null) return null;
-    return { side: L.action === 'BUY' ? 1 : -1, entry: L.entry, sl: L.sl, tps: [L.tp1, L.tp2].filter((v) => v != null), since: L.since, who: 'บทวิเคราะห์ investing.com' };
+    return { side: L.action === 'BUY' ? 1 : -1, entry: L.entry, sl: L.sl, tps: [L.tp1].filter((v) => v != null), since: L.since, who: 'บทวิเคราะห์ investing.com' };
   }
   function draw(b) {
     const p = currentPlan();
@@ -227,7 +248,7 @@ function ago(ms) {
     const tags = [
       { y: ye, cls: `entry ${buy ? 'buy' : 'sell'}`, h: 30, html: `🎯 ${buy ? 'ซื้อ' : 'ขาย'} <b>${f2(p.entry)}</b> <small>${p.who}${p.since ? ` · ตั้งแต่ ${clock(p.since)} (${ago(p.since)})` : ''}</small>` },
       { y: ys, cls: 'sl', h: 20, html: p.be ? `SL ที่ทุน ${f2(p.sl)} · ถึง TP1 แล้ว ไม่มีทางขาดทุน` : `SL ${f2(p.sl)} · −${f2(risk)}` },
-      ...p.tps.map((tp, i) => ({ y: y(tp), cls: 'tp', h: 20, html: `${p.tps.length > 1 ? `TP${i + 1}` : 'TP'} ${f2(tp)} · +$${f2(Math.abs(tp - p.entry))}${risk ? ` · ${(Math.abs(tp - p.entry) / risk).toFixed(1)}R` : ''}` })),
+      ...p.tps.map((tp, i) => ({ y: y(tp), cls: 'tp', h: 20, html: `TP${i + 1} ${f2(tp)} · +$${f2(Math.abs(tp - p.entry))}${risk ? ` · ${(Math.abs(tp - p.entry) / risk).toFixed(1)}R` : ''}` })),
     ].filter((t) => t.y != null).sort((a, b2) => a.y - b2.y);
     for (let i = 1; i < tags.length; i++) {
       const prev = tags[i - 1], min = prev.y + (prev.h + tags[i].h) / 2 + 2;
