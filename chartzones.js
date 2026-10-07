@@ -2,6 +2,15 @@
 // Timeframes with a backtested system get its entry zones (background), ▲ entries / ● exits replayed over the
 // candles on screen, and the open trade's entry / SL / TP lines. Timeframes without a system that passed the
 // test only get a direction tint, and the box above the chart says so. Uses main.js globals (state, candles, …).
+// Thai clock time + how long ago, so an hours-old entry never reads like "buy now"
+const clock = (ms) => new Date(ms).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
+function ago(ms) {
+  const m = Math.max(0, Math.round((Date.now() - ms) / 60e3));
+  if (m < 1) return 'เมื่อสักครู่';
+  if (m < 60) return `${m} นาทีก่อน`;
+  if (m < 24 * 60) return `${Math.floor(m / 60)} ชม.${m % 60 ? ` ${m % 60} นาที` : ''}ก่อน`;
+  return `${Math.floor(m / 1440)} วันก่อน`;
+}
 (function () {
   const $ = (id) => document.getElementById(id);
   const M = 60e3;
@@ -87,7 +96,7 @@
     const out = [];
     trades.forEach((r) => {
       if (r.createdAt < from) return;
-      out.push({ time: sec(r.createdAt), position: 'belowBar', color: '#0f9f6e', shape: 'arrowUp', text: 'ซื้อ' });
+      out.push({ time: sec(r.createdAt), position: 'belowBar', color: '#0f9f6e', shape: 'arrowUp', text: `ซื้อ ${clock(r.createdAt)}` });
       if (SIG.isFinal(r) && r.exitAt) {
         const win = r.pnl > 0;
         out.push({ time: sec(r.exitAt), position: win ? 'aboveBar' : 'belowBar', color: win ? '#0f9f6e' : '#e0424f', shape: 'circle',
@@ -203,7 +212,7 @@
     const buy = p.side > 0, risk = Math.abs(p.entry - p.sl);
     // Tags sit at the right edge next to the price scale; spread apart vertically when prices are close
     const tags = [
-      { y: ye, cls: `entry ${buy ? 'buy' : 'sell'}`, h: 30, html: `🎯 ${buy ? 'ซื้อ' : 'ขาย'} <b>${f2(p.entry)}</b> <small>${p.who}</small>` },
+      { y: ye, cls: `entry ${buy ? 'buy' : 'sell'}`, h: 30, html: `🎯 ${buy ? 'ซื้อ' : 'ขาย'} <b>${f2(p.entry)}</b> <small>${p.who}${p.since ? ` · ตั้งแต่ ${clock(p.since)} (${ago(p.since)})` : ''}</small>` },
       { y: ys, cls: 'sl', h: 20, html: `SL ${f2(p.sl)} · −$${f2(risk)}` },
       ...p.tps.map((tp, i) => ({ y: y(tp), cls: 'tp', h: 20, html: `${p.tps.length > 1 ? `TP${i + 1}` : 'TP'} ${f2(tp)} · +$${f2(Math.abs(tp - p.entry))}${risk ? ` · ${(Math.abs(tp - p.entry) / risk).toFixed(1)}R` : ''}` })),
     ].filter((t) => t.y != null).sort((a, b2) => a.y - b2.y);

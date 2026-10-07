@@ -539,3 +539,8 @@ h3 .tag { margin-left: 6px; vertical-align: 1px; }
 .in-side + .in-side { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 10px; }
 .in-side.good .in-row b { color: var(--up); } .in-side.ok .in-row b { color: var(--wait); } .in-side.bad .in-row b { color: var(--muted); }
 .in-side.bad .sig-tps { opacity: .55; }
+
+/* System heartbeat line (is the 30-minute checker running?) */
+.beat { margin: 6px 0 0; }
+.beat.up { color: var(--up, #0f9f6e); }
+.beat.down { color: var(--down, #e0424f); }

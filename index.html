@@ -17,9 +17,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610071500">
-  <link rel="stylesheet" href="live.css?v=202610071500">
-  <link rel="stylesheet" href="theme.css?v=202610071500" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610071600">
+  <link rel="stylesheet" href="live.css?v=202610071600">
+  <link rel="stylesheet" href="theme.css?v=202610071600" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -159,6 +159,7 @@
         <!-- Live trend gauge -->
         <div class="card intra" id="intraCard">
           <div class="sig-top"><span class="muted"><i class="sm-dot" id="smDot"></i>แนวโน้มสด · ระบบ 30 นาที</span><span class="muted small" id="inNext"></span></div>
+          <p class="small beat" id="inBeat" hidden></p>
           <!-- Trend strength: −6 … +6 as a segmented bar, plus the three timeframes that vote -->
           <div class="sm" id="sm">
             <div class="sm-head">
@@ -312,6 +313,7 @@
         <section class="card">
           <h3>⏱️ สัญญาณ 30 นาที — ผลจริง</h3>
           <p class="hint">วิเคราะห์ทุกครึ่งชั่วโมง เข้าเมื่อแนวโน้ม 30 นาที · 1 ชม. · 5 ชม. ชี้ทางเดียวกันชัดเจน (คะแนน ±5 ขึ้นไป) · ครั้งละ 1 ไม้ · SL $15 · TP $15 / $20 / $30</p>
+          <p class="small beat" id="statsBeat" hidden></p>
           <div class="tiles" id="inLiveTiles"></div>
           <div id="inLiveChart" class="chart-eq"></div>
           <div class="history" id="inHistory"></div>
@@ -621,25 +623,25 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610071500 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610071600 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610071500"></script>
-  <script src="auth.js?v=202610071500"></script>
-  <script src="indicators.js?v=202610071500"></script>
-  <script src="investing.js?v=202610071500"></script>
-  <script src="explain.js?v=202610071500"></script>
-  <script src="dailyplan.js?v=202610071500"></script>
-  <script src="signals.js?v=202610071500"></script>
-  <script src="intraday.js?v=202610071500"></script>
-  <script src="pwa.js?v=202610071500"></script>
-  <script src="ui.js?v=202610071500"></script>
-  <script src="main.js?v=202610071500"></script>
-  <script src="tradeplan.js?v=202610071500"></script>
-  <script src="chartzones.js?v=202610071500"></script>
+  <script src="config.js?v=202610071600"></script>
+  <script src="auth.js?v=202610071600"></script>
+  <script src="indicators.js?v=202610071600"></script>
+  <script src="investing.js?v=202610071600"></script>
+  <script src="explain.js?v=202610071600"></script>
+  <script src="dailyplan.js?v=202610071600"></script>
+  <script src="signals.js?v=202610071600"></script>
+  <script src="intraday.js?v=202610071600"></script>
+  <script src="pwa.js?v=202610071600"></script>
+  <script src="ui.js?v=202610071600"></script>
+  <script src="main.js?v=202610071600"></script>
+  <script src="tradeplan.js?v=202610071600"></script>
+  <script src="chartzones.js?v=202610071600"></script>
 </body>
 </html>

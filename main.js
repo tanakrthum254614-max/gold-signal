@@ -397,6 +397,36 @@ async function refreshSignals() {
   renderStats();
 }
 
+// Is the 30-minute system actually checking? intraday.json only changes when a trade changes, so ask
+// GitHub (public repo, no key) when the price-alerts run last started/finished. Each run checks every 5 min for ~28 min.
+const RUNS_URL = 'https://api.github.com/repos/tanakrthum254614-max/gold-signal/actions/workflows/price-alerts.yml/runs?per_page=3';
+async function refreshBeat() {
+  try {
+    const r = await fetch(RUNS_URL, { cache: 'no-store' });
+    if (!r.ok) return;
+    const run = ((await r.json()).workflow_runs || []).find((w) => w.status === 'in_progress' || w.status === 'completed');
+    if (run) state.beat = { running: run.status === 'in_progress', ok: run.status === 'in_progress' || run.conclusion === 'success', at: Date.parse(run.status === 'in_progress' ? run.run_started_at : run.updated_at) };
+  } catch (e) { /* GitHub unreachable: say nothing rather than guess */ }
+  renderIntra();
+  renderStats();
+}
+// { cls, text } for the system heartbeat, or null when unknown
+function showBeat(id) {
+  const el = $(id), info = beatInfo(INTRA.marketOpen(Date.now()));
+  el.hidden = !info;
+  if (info) { el.className = `small beat ${info.cls}`; el.textContent = info.text; }
+}
+function beatInfo(marketOpen) {
+  const b = state.beat;
+  if (!b) return null;
+  if (marketOpen === false) return { cls: 'muted', text: '⏸ ตลาดปิด · ระบบพัก' };
+  const age = Math.round((Date.now() - b.at) / 60e3);
+  if (!b.ok) return { cls: 'down', text: `⚠️ ระบบเช็กรอบล่าสุดล้มเหลว (${hhmm(b.at)} น.)` };
+  if (b.running) return { cls: 'up', text: `🟢 ระบบทำงานอยู่ · เช็กทุก 5 นาที (รอบนี้เริ่ม ${hhmm(b.at)} น.)` };
+  if (age <= 45) return { cls: 'up', text: `🟢 ระบบทำงานอยู่ · เช็กล่าสุด ${hhmm(b.at)} น.` };
+  return { cls: 'down', text: `⚠️ ระบบไม่ได้เช็กมา ${age} นาที (ล่าสุด ${hhmm(b.at)} น.)` };
+}
+
 // LINE messages used this month (checked every morning by scripts/line-quota.js)
 function renderQuota(q) {
   if (!q || q.used == null) return;
@@ -1205,6 +1235,7 @@ function renderIntra() {
   const price = nowPrice();
   const next = INTRA.slotOf(now) + INTRA.SLOT;
   $('inNext').textContent = `เช็กทางการรอบถัดไป ${hhmm(next)} น.`;
+  showBeat('inBeat');
 
   // Closed market (by the clock) vs. an open market whose candles are late (fetch failed / tab asleep)
   const off = !dec ? '' : !dec.open ? 'closed' : dec.stale ? 'late' : '';
@@ -1539,6 +1570,7 @@ function markChart15() {
 function renderIntraStats() {
   const trades = intraTrades();
   const sum = SIG.summary(trades, userSpread());
+  showBeat('statsBeat');
   $('inLiveTiles').innerHTML = tilesHtml(sum);
   plotEquity('inLiveChart', trades);
   $('inHistory').innerHTML = trades.length ? trades.slice().reverse().slice(0, 50).map((t) => {
@@ -1550,7 +1582,7 @@ function renderIntraStats() {
       <span class="h-px mono">${f2(t.entry)}</span>
       <span class="h-st">${SIG.STATUS_TH[t.status]}${t.hit ? ` (TP${t.hit})` : ''}</span>
       <b class="h-pnl mono">${res}</b></div>`;
-  }).join('') : '<p class="muted">ยังไม่มีไม้ — จะเริ่มบันทึกเมื่อสัญญาณ 30 นาทีไม้แรกออก</p>';
+  }).join('') : '<p class="muted">ยังไม่มีไม้ — ระบบจะเข้าซื้อเมื่อแท่งปิดได้คะแนน +5 ขึ้นไป (ทั้ง 3 ช่วงเวลาชี้ขึ้นชัด) · ไม่มีไม้ไม่ได้แปลว่าระบบหยุด ดูสถานะด้านบน</p>';
   const bt = state.bt30;
   if (bt) {
     const b = SIG.summary(bt.trades, userSpread());
@@ -1768,4 +1800,6 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { st
   every(30 * 60e3, refreshNews);
   every(60 * 60e3, refreshThb);
   every(5 * 60e3, refreshSignals);
+  refreshBeat();
+  every(5 * 60e3, refreshBeat);
 })();
