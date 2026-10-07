@@ -153,6 +153,8 @@
     calc.side = +b.dataset.side; $('tpCalc').querySelectorAll('[data-side]').forEach((x) => x.classList.toggle('on', x === b)); calc.out();
   }));
   ['cEntry', 'cSl', 'cTp'].forEach((id) => $(id).addEventListener('input', () => { calc.touched = true; calc.out(); }));
+  // The chart tab's "คำนวณ lot" button: fill the calculator with that signal (side 1 = buy, −1 = sell)
+  window.fillCalc = (side, entry, sl, tp) => calc.fill(side, r2(entry), r2(sl), r2(tp));
   $('cNow').addEventListener('click', () => {
     const p = nowPrice(); if (p == null) return;
     const s = INTRA.RULE.slUsd, d = calc.side;

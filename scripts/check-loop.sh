@@ -20,9 +20,10 @@ check() {
     node scripts/alerts.js data.json || rc=1
   fi
   node scripts/intraday-run.js data.json || rc=1
+  node scripts/chart-run.js data.json || rc=1   # every chart-timeframe signal → chart-signals.json
   node scripts/flush.js   # everything from this check as one LINE request
   # Save results — as the repo owner: Vercel (Hobby) only deploys commits from linked accounts
-  git add signals.json intraday.json
+  git add signals.json intraday.json chart-signals.json
   if ! git diff --cached --quiet; then
     git commit -q -m "Signal update $(TZ=Asia/Bangkok date '+%F %H:%M')"
     local ok=0

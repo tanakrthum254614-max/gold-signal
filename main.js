@@ -380,12 +380,14 @@ const thaiDay = (id) => new Date(`${id}T12:00:00+07:00`).toLocaleDateString('th-
 
 async function refreshSignals() {
   try {
-    const [sig, bt, intra, bt30, quota, bt15] = await Promise.all([
+    const [sig, bt, intra, bt30, quota, bt15, chartSig] = await Promise.all([
       getJson('signals.json'), state.backtest ? null : getJson('backtest.json').catch(() => null),
       getJson('intraday.json').catch(() => null), state.bt30 ? null : getJson('backtest-30m.json').catch(() => null),
       getJson('quota.json').catch(() => null), state.bt15 ? null : getJson('backtest-15m.json').catch(() => null),
+      getJson('chart-signals.json').catch(() => null),
     ]);
     if (bt15) state.bt15 = bt15;
+    if (chartSig) state.chartSig = chartSig;
     renderQuota(quota);
     state.signals = sig.signals || [];
     if (bt) state.backtest = bt;
@@ -425,6 +427,26 @@ function beatInfo(marketOpen) {
   if (b.running) return { cls: 'up', text: `🟢 ระบบทำงานอยู่ · เช็กทุก 5 นาที (รอบนี้เริ่ม ${hhmm(b.at)} น.)` };
   if (age <= 45) return { cls: 'up', text: `🟢 ระบบทำงานอยู่ · เช็กล่าสุด ${hhmm(b.at)} น.` };
   return { cls: 'down', text: `⚠️ ระบบไม่ได้เช็กมา ${age} นาที (ล่าสุด ${hhmm(b.at)} น.)` };
+}
+
+// Live record of the chart-tab systems (scripts/chart-run.js): per timeframe, real results next to the backtest
+function renderChartSignals() {
+  const el = $('csTable'), cs = state.chartSig;
+  if (!el || !window.CHARTSYS) return;
+  if (!cs) { el.innerHTML = '<p class="muted">ยังโหลดบันทึกไม่ได้</p>'; return; }
+  const sp = userSpread();
+  const rows = Object.entries(CHARTSYS.SYS).map(([tf, sys]) => {
+    const tr = cs.trades.filter((t) => t.tf === tf), s = SIG.summary(tr, sp), open = tr.find((t) => !SIG.isFinal(t));
+    const bt = [sys.buy && `BUY ${sys.buy.win}%`, sys.sell && `SELL ${sys.sell.win}%`].filter(Boolean).join(' · ');
+    const live = s.traded ? `${s.winRate}%` : '—';
+    const cls = !s.traded ? '' : s.traded < 20 ? 'muted' : s.winRate >= 50 ? 'up' : 'down';
+    return `<tr><td>${TF_LABEL[tf]}</td><td class="mono">${s.traded}</td><td class="mono">${s.wins}–${s.losses}</td>
+      <td class="mono ${cls}">${live}${s.traded && s.traded < 20 ? ' <small>(น้อย)</small>' : ''}</td><td class="mono">${bt}</td>
+      <td class="mono ${s.pnl > 0 ? 'up' : s.pnl < 0 ? 'down' : ''}">${s.traded ? money(s.pnl) : '—'}</td>
+      <td>${open ? `${open.side === 'BUY' ? '🟢 ซื้อ' : '🔴 ขาย'} ${f2(open.entry)}` : ''}</td></tr>`;
+  }).join('');
+  el.innerHTML = `<table><thead><tr><th>กรอบ</th><th>ไม้ปิด</th><th>ชนะ–แพ้</th><th>ชนะจริง</th><th>ทดสอบ</th><th>กำไร/ออนซ์</th><th>ถืออยู่</th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="small muted">เริ่มบันทึก ${new Date(cs.startedAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Bangkok' })} · หักสเปรด ${sp}/ไม้ · ราคาจาก investing.com (กรอบที่ไม่มีใช้ Binance ปรับให้เท่าราคาทอง) · แจ้ง LINE เฉพาะกรอบ 1 ชม. · 5 ชม. · 1 วัน · 1 สัปดาห์</p>`;
 }
 
 // LINE messages used this month (checked every morning by scripts/line-quota.js)
@@ -1571,6 +1593,7 @@ function renderIntraStats() {
   const trades = intraTrades();
   const sum = SIG.summary(trades, userSpread());
   showBeat('statsBeat');
+  renderChartSignals();
   $('inLiveTiles').innerHTML = tilesHtml(sum);
   plotEquity('inLiveChart', trades);
   $('inHistory').innerHTML = trades.length ? trades.slice().reverse().slice(0, 50).map((t) => {

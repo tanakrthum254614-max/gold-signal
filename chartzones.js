@@ -14,26 +14,7 @@ function ago(ms) {
 (function () {
   const $ = (id) => document.getElementById(id);
   const M = 60e3, H = 60 * M, DAY = 24 * H;
-  // Every timeframe: the same trend score over the chart frame + slower frames, with the settings that tested best
-  // for that timeframe (scratchpad research 7 Oct 2026, Binance PAXG, after a $0.4 spread, 4 equal periods old → new,
-  // $/oz). A side whose test failed gets no entries — its arrows only show direction. SL $15 × mult, TP1 $15 × mult
-  // (tp1) or TP $15/20/30 × mult. long = 5h/1d/1w: no session close, trades held up to `hold`.
-  const SYS = {
-    '5m': { frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', H, 60, '1 ชม.']], span: '2 ปี',
-      buy: { th: 5, tp1: true, mult: 1, win: 53, q: [312, 448, 99, -452] }, sell: { th: 6, tp1: false, mult: 0.67, win: 51, q: [22, 31, -18, 101] },
-      every: -1480 }, // taking every small arrow one at a time, SL / TP1 $15
-    '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { th: 6, tp1: true, mult: 1.5, win: 54, q: [254, 22, 16, 48] }, sellQ: [115, -233, -72, 204] },
-    '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { th: 5, tp1: true, mult: 1, win: 57, q: [264, 462, 239, -7] }, sellQ: [129, -174, -58, 113] },
-    '1h': { frames: [['h1', H, 60, '1 ชม.'], ['h4', 4 * H, 60, '4 ชม.'], ['h5', 5 * H, 40, '5 ชม.']], span: '2 ปี',
-      buy: { th: 5, tp1: false, mult: 2, win: 57, q: [188, 181, 348, 57] }, sellQ: [-62, 4, -112, 8] },
-    '5h': { frames: [['h5', 5 * H, 60, '5 ชม.'], ['d1', DAY, 60, '1 วัน']], span: '2 ปี', long: true, hold: 5 * DAY,
-      buy: { th: 3, tp1: false, mult: 4, win: 61, q: [355, 451, 526, 127] }, sellQ: [-72, -179, -6, 105] },
-    '1d': { frames: [['d1', DAY, 60, '1 วัน'], ['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '5 ปี', long: true, hold: 20 * DAY,
-      buy: { th: 3, tp1: true, mult: 8, win: 64, q: [128, 218, 1243, 966] }, sellQ: [92, -120, 0, 12] },
-    '1w': { frames: [['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '4 ปี', long: true, hold: 84 * DAY, few: 23,
-      buy: { th: 1, tp1: true, mult: 20, win: 70, q: [196, 737, 1167, 296] } },
-  };
-  const NONE = { ...INTRA.RULE, threshold: 99, sides: 'both', noChase: false }; // score only; entries decided below
+  const { SYS, usdList, levelsFor, maxScore, dirOf, stretched } = CHARTSYS;
   // Slower candles the systems need: Binance PAXG shifted to spot, like the backtest
   async function refreshSlow() {
     for (const [k, iv] of [['h4', '4h'], ['d1', '1d'], ['w1', '1w']]) {
@@ -41,8 +22,6 @@ function ago(ms) {
     }
   }
   refreshSlow(); setInterval(refreshSlow, 10 * 60e3);
-  const usdList = (c) => (c.tp1 ? [15] : INTRA.RULE.tpUsd).map((u) => Math.round(u * c.mult));
-  const levelsFor = (c, price, d) => ({ sl: price - d * Math.round(15 * c.mult), tps: usdList(c).map((u) => price + d * u) });
   const ms = (bars) => bars.map((b) => ({ ...b, time: b.time < 1e12 ? b.time * 1000 : b.time }));
   function frameBars(key) {
     const C = state.intraCandles || {};
@@ -50,15 +29,6 @@ function ago(ms) {
     if (['h4', 'd1', 'w1'].includes(key)) return state[key] || [];
     return C[key] || [];
   }
-  const maxScore = (sys) => sys.frames.length * 2;
-  // Entry direction for a decision: only on a side that passed its test, never chasing outside the Bollinger band
-  function dirOf(sys, dec) {
-    if (!dec || (!sys.long && (dec.stale || dec.lastHour || dec.news))) return 0;
-    if (sys.buy && dec.score >= sys.buy.th) return dec.bbPos >= 1 ? 0 : 1;
-    if (sys.sell && dec.score <= -sys.sell.th) return dec.bbPos <= 0 ? 0 : -1;
-    return 0;
-  }
-  const stretched = (sys, dec) => !!dec && ((sys.buy && dec.score >= sys.buy.th && dec.bbPos >= 1) || (sys.sell && dec.score <= -sys.sell.th && dec.bbPos <= 0));
   const when = (sys, t) => (sys.frames[0][1] >= DAY
     ? new Date(t).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' })
     : sys.long ? new Date(t).toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' }) : clock(t));
@@ -78,18 +48,15 @@ function ago(ms) {
       const key = `${tf}|${t}`;
       let dec = cache.get(key);
       // empty result = data still loading: don't cache it, try again next time
-      if (dec === undefined) { dec = INTRA.decideWith(sys.frames, NONE, data, t, sys.long ? null : state.news); if (t < last && dec) cache.set(key, dec); }
+      if (dec === undefined) { dec = CHARTSYS.decide(sys, data, t, state.news); if (t < last && dec) cache.set(key, dec); }
       decs.push({ t, dec });
       const dir = dirOf(sys, dec);
       if (!dir || t < busy) continue;
-      const c = dir > 0 ? sys.buy : sys.sell, tr = INTRA.makeTrade({ ...dec, dir }, chart[i - 1].close, t), L = levelsFor(c, tr.entry, dir);
-      tr.sl = SIG.round(L.sl); tr.tps = L.tps.map(SIG.round); tr.tp = tr.tps[0];
-      if (sys.hold) tr.expiresAt = t + sys.hold;
-      const r = SIG.evaluate(tr, chart.slice(i), now);
+      const r = SIG.evaluate(CHARTSYS.trade(sys, dec, dir, chart[i - 1].close, t), chart.slice(i), now);
       trades.push(r);
       busy = SIG.isFinal(r) ? (r.exitAt || r.expiresAt) + dur : Infinity;
     }
-    return { decs, trades, current: INTRA.decideWith(sys.frames, NONE, data, now, sys.long ? null : state.news, true) };
+    return { decs, trades, current: CHARTSYS.decide(sys, data, now, state.news, true) };
   }
 
   // Drawn on both chart views: trader (candles) and simple (price area)
@@ -103,11 +70,23 @@ function ago(ms) {
     return views;
   }
   const each = (fn) => getViews().forEach(fn);
+  // Accuracy / details under the status: folded on phones, open on wider screens; the reader's choice is kept
+  let moreOpen = window.innerWidth > 640;
   function setBox(cls, html) {
     each((v) => {
       const el = $(v.box); if (!el) return;
       el.className = `cz-box ${cls}`; el.innerHTML = html;
+      const more = el.querySelector('.cz-more');
+      if (more) more.addEventListener('toggle', () => { moreOpen = more.open; });
       el.querySelectorAll('[data-tf]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); setTf(a.dataset.tf); }));
+      // 🧮 → the lot calculator on the signals tab, filled with this signal's entry / SL / TP1
+      el.querySelectorAll('[data-calc]').forEach((b) => b.addEventListener('click', () => {
+        const [side, entry, sl, tp] = b.dataset.calc.split(',').map(Number);
+        if (!window.fillCalc) return;
+        fillCalc(side, entry, sl, tp);
+        location.hash = 'home';
+        setTimeout(() => { const c = $('tpCalc'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250);
+      }));
     });
   }
   const sec = (t) => Math.floor(t / 1000) + TZ;
@@ -173,15 +152,16 @@ function ago(ms) {
       const up = lastC.dec.lean > 0, dn = lastC.dec.lean < 0;
       pill = `<span class="cz-5m ${up ? 'up' : dn ? 'down' : 'flat'}">${up ? '▲ ขึ้น' : dn ? '▼ ลง' : '• ทรงตัว'}</span> ทิศกรอบ ${TF_LABEL[tf]} (แท่ง ${when(sys, lastC.t - dur)} ปิดแล้ว · คะแนน ${signedScore(lastC.dec.score)}/±${max}) · รอบถัดไป ${when(sys, lastC.t + dur)}<br>`;
     }
-    let head, cls;
+    let head, cls, calcArgs = null;
     const sellNo = !S && d && B && d.score <= -B.th;
-    if (open) { const sell = open.side === 'SELL'; head = `📌 อยู่ในไม้${sell ? 'ขาย (SELL)' : 'ซื้อ (BUY)'} ตั้งแต่ ${when(sys, open.createdAt)} — เข้า ${f2(open.entry)} · SL ${f2(open.hit ? open.entry : open.sl)}${open.hit ? ' (ที่ทุน)' : ''} · ${open.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}`; cls = sell ? 'hold sell' : 'hold'; }
+    if (open) { const sell = open.side === 'SELL'; head = `📌 อยู่ในไม้${sell ? 'ขาย (SELL)' : 'ซื้อ (BUY)'} ตั้งแต่ ${when(sys, open.createdAt)} — เข้า ${f2(open.entry)} · SL ${f2(open.hit ? open.entry : open.sl)}${open.hit ? ' (ที่ทุน)' : ''} · ${open.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}`; cls = sell ? 'hold sell' : 'hold'; calcArgs = [sell ? -1 : 1, open.entry, open.hit ? open.entry : open.sl, open.tps[0]]; }
     else if (!d) { head = 'กำลังคำนวณ… (รอกราฟกรอบใหญ่)'; cls = 'wait'; }
     else if (!sys.long && d.stale) { head = '🌙 ตลาดปิด — ไม่มีจุดเข้า'; cls = 'wait'; }
     else if (dir) {
       const c = dir > 0 ? B : S, L = levelsFor(c, price, dir);
       head = `${dir > 0 ? '🟢 สัญญาณ BUY (ซื้อ)' : '🔴 สัญญาณ SELL (ขาย)'} — ถ้าแท่งนี้ปิดแล้วยังได้ ${signedScore(d.score)} เข้าที่ ~${f2(price)} · SL ${f2(L.sl)} · ${L.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}`;
       cls = dir > 0 ? 'go' : 'no sell';
+      calcArgs = [dir, price, L.sl, L.tps[0]];
     }
     else if (stretched(sys, d)) { head = `⏸ คะแนนถึง ${signedScore(d.score)} แต่ราคายืดเกินขอบ${d.score > 0 ? 'บน' : 'ล่าง'} Bollinger — รอราคากลับเข้ากรอบก่อน`; cls = 'near'; }
     else if (!sys.long && d.news) { head = '⏸ ช่วงข่าวแรง — งดเข้า (พื้นหลังเหลือง)'; cls = 'wait'; }
@@ -200,12 +180,14 @@ function ago(ms) {
       return `<i class="${pos === 4 ? 'cz-ok' : 'cz-warn'}">${pos === 4 ? '✅' : '⚠️'} ${name}: ชนะ ${c.win}% · กำไร ${pos}/4 ช่วง (${c.q.map(usd).join(' / ')})</i>`;
     };
     const fin = s.trades.filter((r) => SIG.isFinal(r)), pnl = fin.reduce((a, r) => a + r.pnl, 0);
-    setBox(cls, `<b>${pill}${pill ? `<small>${head}</small>` : head}</b>
+    const calcBtn = calcArgs ? `<button type="button" class="btn cz-calc" data-calc="${calcArgs.map((v) => SIG.round(v)).join(',')}">🧮 คำนวณ lot จากสัญญาณนี้</button>` : '';
+    setBox(cls, `<b>${pill}${pill ? `<small>${head}</small>` : head}</b>${calcBtn}
+      <details class="cz-more"${moreOpen ? ' open' : ''}><summary>ความแม่นยำ: BUY ชนะ ${B.win}%${S ? ` · SELL ${S.win}%` : ' · SELL ไม่ให้สัญญาณ'} · รายละเอียด</summary>
       ${acc('BUY', B, null)} ${acc('SELL', S, sys.sellQ)}
       <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} · BUY ≥ +${B.th} (${sideText(B)})${S ? ` · SELL ≤ −${S.th} (${sideText(S)})` : ''}
       · ทดสอบย้อนหลัง ${sys.span} แบ่ง 4 ช่วงเท่ากัน เก่า→ใหม่ หลังสเปรด ต่อ 1 ออนซ์${sys.few ? ` · ตัวอย่างน้อย (${sys.few} ไม้)` : ''}${sys.long ? ' · ช่วงทดสอบทองเป็นขาขึ้นเกือบตลอด ไม่รับประกันอนาคต' : ''}
       · บนกราฟนี้ ${fin.length} ไม้ปิดแล้ว${fin.length ? ` รวม ${usd(SIG.round(pnl))}` : ''}${open ? ' + 1 ไม้ที่ถืออยู่' : ''}
-      · <b>ลูกศรเล็ก</b> = ทิศทุกแท่ง ใช้ดูทิศเท่านั้น${sys.every ? ` (เข้าทุกลูกศร 2 ปี ${usd(sys.every)} ชนะ ~50%)` : ''} · <b>ลูกศรใหญ่มีคำว่าซื้อ/ขาย</b> = สัญญาณเข้า</span>`);
+      · <b>ลูกศรเล็ก</b> = ทิศทุกแท่ง ใช้ดูทิศเท่านั้น${sys.every ? ` (เข้าทุกลูกศร 2 ปี ${usd(sys.every)} ชนะ ~50%)` : ''} · <b>ลูกศรใหญ่มีคำว่าซื้อ/ขาย</b> = สัญญาณเข้า</span></details>`);
   };
 })();
 

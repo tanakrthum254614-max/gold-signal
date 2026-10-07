@@ -526,3 +526,11 @@
 .cz-5m.up { background: var(--up); } .cz-5m.down { background: var(--down); }
 .cz-box b small { font-weight: 600; font-size: 12.5px; }
 .cz-5m.flat { background: var(--muted); }
+.cs-table { overflow-x: auto; }
+.cs-table table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+.cs-table th, .cs-table td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.cs-table th { color: var(--muted); font-weight: 600; font-size: 12px; }
+.cz-more { display: flex; flex-direction: column; gap: 3px; }
+.cz-more > summary { cursor: pointer; color: var(--muted); font-size: 12.5px; font-weight: 600; }
+.cz-more[open] > summary { margin-bottom: 2px; }
+.cz-box .cz-calc { align-self: flex-start; margin: 4px 0 2px; padding: 6px 12px; font-size: 13px; }
