@@ -1,12 +1,13 @@
 <!doctype html>
-<html lang="th"><head>
+<html lang="th">
+<head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f3f5f9">
   <title>Gold Signal · สัญญาณเทรดทองคำ</title>
-  <meta name="description" content="ราคาทองคำ XAU/USD สัญญาณซื้อระบบ 30 นาที พร้อมสถานะล่าสุด จุดเข้า ตัดขาดทุน เป้าหมาย และสถิติสัญญาณที่บันทึกจริง">
+  <meta name="description" content="สัญญาณเทรดทองคำ XAU/USD วันละ 1 สัญญาณ พร้อมจุดเข้า ตัดขาดทุน เป้าหมาย และสถิติชนะ–แพ้ที่บันทึกจริง">
   <meta property="og:title" content="Gold Signal · สัญญาณเทรดทองคำ">
-  <meta property="og:description" content="ราคาทองสด · สถานะสัญญาณ 30 นาที · ความสดของข้อมูล · สถิติสัญญาณที่บันทึกจริง">
+  <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
@@ -15,26 +16,26 @@
   <meta name="apple-mobile-web-app-title" content="Gold Signal">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610070005">
-  <link rel="stylesheet" href="live.css?v=202610070005">
-  <link rel="stylesheet" href="theme.css?v=202610070005" id="themeLight">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=202610071500">
+  <link rel="stylesheet" href="live.css?v=202610071500">
+  <link rel="stylesheet" href="theme.css?v=202610071500" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
-<link rel="stylesheet" href="simple.css?v=202610070005"></head>
-<body class="simplified">
+</head>
+<body>
   <!-- Loading screen -->
   <div id="splash" class="splash">
     <div class="sp-glow"></div>
     <!-- background lightning that strikes together with the logo's bolt -->
     <svg class="sp-sky" viewBox="0 0 400 300" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
-      <path d="M352 -5 L336 38 L350 42 L326 88 L341 92 L318 140 M336 38 L312 56 M326 88 L352 108"></path>
-      <path class="b2" d="M44 -5 L56 34 L42 39 L62 80 L50 85 L70 122 M56 34 L82 50"></path>
+      <path d="M352 -5 L336 38 L350 42 L326 88 L341 92 L318 140 M336 38 L312 56 M326 88 L352 108"/>
+      <path class="b2" d="M44 -5 L56 34 L42 39 L62 80 L50 85 L70 122 M56 34 L82 50"/>
     </svg>
     <!-- gold market chart rising in the background: candles pop up one by one, the price line draws across -->
     <svg class="sp-market" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true">
-      <g class="mk-c up" style="--i:0"><line x1="12" x2="12" y1="81.3" y2="96.1"></line><rect x="6" y="89.1" width="12" height="5.4" rx="1.5"></rect></g><g class="mk-c dn" style="--i:1"><line x1="34" x2="34" y1="83.0" y2="98.6"></line><rect x="28" y="89.1" width="12" height="2.4" rx="1.5"></rect></g><g class="mk-c dn" style="--i:2"><line x1="56" x2="56" y1="79.3" y2="107.3"></line><rect x="50" y="91.5" width="12" height="7.6" rx="1.5"></rect></g><g class="mk-c up" style="--i:3"><line x1="78" x2="78" y1="92.3" y2="110.0"></line><rect x="72" y="96.3" width="12" height="2.8" rx="1.5"></rect></g><g class="mk-c up" style="--i:4"><line x1="100" x2="100" y1="84.6" y2="103.2"></line><rect x="94" y="85.7" width="12" height="10.6" rx="1.5"></rect></g><g class="mk-c dn" style="--i:5"><line x1="122" x2="122" y1="76.3" y2="90.5"></line><rect x="116" y="85.7" width="12" height="2.6" rx="1.5"></rect></g><g class="mk-c up" style="--i:6"><line x1="144" x2="144" y1="74.0" y2="90.8"></line><rect x="138" y="80.8" width="12" height="7.5" rx="1.5"></rect></g><g class="mk-c dn" style="--i:7"><line x1="166" x2="166" y1="67.7" y2="102.8"></line><rect x="160" y="80.8" width="12" height="8.5" rx="1.5"></rect></g><g class="mk-c dn" style="--i:8"><line x1="188" x2="188" y1="83.1" y2="108.8"></line><rect x="182" y="89.3" width="12" height="6.2" rx="1.5"></rect></g><g class="mk-c dn" style="--i:9"><line x1="210" x2="210" y1="89.7" y2="107.3"></line><rect x="204" y="95.5" width="12" height="4.1" rx="1.5"></rect></g><g class="mk-c up" style="--i:10"><line x1="232" x2="232" y1="84.7" y2="102.0"></line><rect x="226" y="88.6" width="12" height="11.0" rx="1.5"></rect></g><g class="mk-c up" style="--i:11"><line x1="254" x2="254" y1="61.5" y2="91.8"></line><rect x="248" y="67.7" width="12" height="20.9" rx="1.5"></rect></g><g class="mk-c up" style="--i:12"><line x1="276" x2="276" y1="56.0" y2="69.8"></line><rect x="270" y="60.6" width="12" height="7.1" rx="1.5"></rect></g><g class="mk-c up" style="--i:13"><line x1="298" x2="298" y1="41.5" y2="65.5"></line><rect x="292" y="46.4" width="12" height="14.2" rx="1.5"></rect></g><g class="mk-c dn" style="--i:14"><line x1="320" x2="320" y1="33.5" y2="57.2"></line><rect x="314" y="46.4" width="12" height="7.5" rx="1.5"></rect></g><g class="mk-c up" style="--i:15"><line x1="342" x2="342" y1="29.7" y2="57.2"></line><rect x="336" y="36.2" width="12" height="17.7" rx="1.5"></rect></g><g class="mk-c up" style="--i:16"><line x1="364" x2="364" y1="21.7" y2="46.8"></line><rect x="358" y="27.3" width="12" height="8.9" rx="1.5"></rect></g><g class="mk-c up" style="--i:17"><line x1="386" x2="386" y1="15.0" y2="30.5"></line><rect x="380" y="16.9" width="12" height="10.4" rx="1.5"></rect></g>
-      <path class="mk-line" pathLength="1" d="M12,89.1 L34,91.5 L56,99.1 L78,96.3 L100,85.7 L122,88.3 L144,80.8 L166,89.3 L188,95.5 L210,99.6 L232,88.6 L254,67.7 L276,60.6 L298,46.4 L320,53.9 L342,36.2 L364,27.3 L386,16.9"></path>
+      <g class="mk-c up" style="--i:0"><line x1="12" x2="12" y1="81.3" y2="96.1"/><rect x="6" y="89.1" width="12" height="5.4" rx="1.5"/></g><g class="mk-c dn" style="--i:1"><line x1="34" x2="34" y1="83.0" y2="98.6"/><rect x="28" y="89.1" width="12" height="2.4" rx="1.5"/></g><g class="mk-c dn" style="--i:2"><line x1="56" x2="56" y1="79.3" y2="107.3"/><rect x="50" y="91.5" width="12" height="7.6" rx="1.5"/></g><g class="mk-c up" style="--i:3"><line x1="78" x2="78" y1="92.3" y2="110.0"/><rect x="72" y="96.3" width="12" height="2.8" rx="1.5"/></g><g class="mk-c up" style="--i:4"><line x1="100" x2="100" y1="84.6" y2="103.2"/><rect x="94" y="85.7" width="12" height="10.6" rx="1.5"/></g><g class="mk-c dn" style="--i:5"><line x1="122" x2="122" y1="76.3" y2="90.5"/><rect x="116" y="85.7" width="12" height="2.6" rx="1.5"/></g><g class="mk-c up" style="--i:6"><line x1="144" x2="144" y1="74.0" y2="90.8"/><rect x="138" y="80.8" width="12" height="7.5" rx="1.5"/></g><g class="mk-c dn" style="--i:7"><line x1="166" x2="166" y1="67.7" y2="102.8"/><rect x="160" y="80.8" width="12" height="8.5" rx="1.5"/></g><g class="mk-c dn" style="--i:8"><line x1="188" x2="188" y1="83.1" y2="108.8"/><rect x="182" y="89.3" width="12" height="6.2" rx="1.5"/></g><g class="mk-c dn" style="--i:9"><line x1="210" x2="210" y1="89.7" y2="107.3"/><rect x="204" y="95.5" width="12" height="4.1" rx="1.5"/></g><g class="mk-c up" style="--i:10"><line x1="232" x2="232" y1="84.7" y2="102.0"/><rect x="226" y="88.6" width="12" height="11.0" rx="1.5"/></g><g class="mk-c up" style="--i:11"><line x1="254" x2="254" y1="61.5" y2="91.8"/><rect x="248" y="67.7" width="12" height="20.9" rx="1.5"/></g><g class="mk-c up" style="--i:12"><line x1="276" x2="276" y1="56.0" y2="69.8"/><rect x="270" y="60.6" width="12" height="7.1" rx="1.5"/></g><g class="mk-c up" style="--i:13"><line x1="298" x2="298" y1="41.5" y2="65.5"/><rect x="292" y="46.4" width="12" height="14.2" rx="1.5"/></g><g class="mk-c dn" style="--i:14"><line x1="320" x2="320" y1="33.5" y2="57.2"/><rect x="314" y="46.4" width="12" height="7.5" rx="1.5"/></g><g class="mk-c up" style="--i:15"><line x1="342" x2="342" y1="29.7" y2="57.2"/><rect x="336" y="36.2" width="12" height="17.7" rx="1.5"/></g><g class="mk-c up" style="--i:16"><line x1="364" x2="364" y1="21.7" y2="46.8"/><rect x="358" y="27.3" width="12" height="8.9" rx="1.5"/></g><g class="mk-c up" style="--i:17"><line x1="386" x2="386" y1="15.0" y2="30.5"/><rect x="380" y="16.9" width="12" height="10.4" rx="1.5"/></g>
+      <path class="mk-line" pathLength="1" d="M12,89.1 L34,91.5 L56,99.1 L78,96.3 L100,85.7 L122,88.3 L144,80.8 L166,89.3 L188,95.5 L210,99.6 L232,88.6 L254,67.7 L276,60.6 L298,46.4 L320,53.9 L342,36.2 L364,27.3 L386,16.9"/>
     </svg>
     <div class="sp-flash" aria-hidden="true"></div>
     <div class="sp-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -42,31 +43,31 @@
       <div class="sp-beams" aria-hidden="true"></div>
       <i class="sp-wave" aria-hidden="true"></i><i class="sp-wave w2" aria-hidden="true"></i>
       <svg viewBox="0 0 160 160" aria-hidden="true">
-        <defs><linearGradient id="spGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a8"></stop><stop offset="1" stop-color="#d99a10"></stop></linearGradient></defs>
-        <circle class="sp-track" cx="80" cy="80" r="72"></circle>
-        <circle class="sp-orbit" cx="80" cy="80" r="62"></circle>
-        <circle class="sp-prog" id="splashFill" cx="80" cy="80" r="72"></circle>
-        <circle class="sp-head" id="splashHead" cx="152" cy="80" r="4.5"></circle>
+        <defs><linearGradient id="spGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#d99a10"/></linearGradient></defs>
+        <circle class="sp-track" cx="80" cy="80" r="72"/>
+        <circle class="sp-orbit" cx="80" cy="80" r="62"/>
+        <circle class="sp-prog" id="splashFill" cx="80" cy="80" r="72"/>
+        <circle class="sp-head" id="splashHead" cx="152" cy="80" r="4.5"/>
       </svg>
       <!-- Logo (same drawing as logo.svg), animated: rim draws in, gold bars rise, lightning strikes -->
       <svg class="sp-logo" viewBox="0 0 100 100" aria-hidden="true">
         <defs>
-          <linearGradient id="lgRim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1c2"></stop><stop offset=".35" stop-color="#f0b429"></stop><stop offset=".7" stop-color="#b9800c"></stop><stop offset="1" stop-color="#f6d47a"></stop></linearGradient>
-          <radialGradient id="lgCore" cx=".5" cy=".38" r=".7"><stop offset="0" stop-color="#2a2414"></stop><stop offset=".6" stop-color="#151a23"></stop><stop offset="1" stop-color="#0d1016"></stop></radialGradient>
-          <linearGradient id="lgBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"></stop><stop offset="1" stop-color="#b9800c"></stop></linearGradient>
-          <linearGradient id="lgBolt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"></stop><stop offset=".45" stop-color="#ffe9a8"></stop><stop offset="1" stop-color="#f0b429"></stop></linearGradient>
+          <linearGradient id="lgRim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1c2"/><stop offset=".35" stop-color="#f0b429"/><stop offset=".7" stop-color="#b9800c"/><stop offset="1" stop-color="#f6d47a"/></linearGradient>
+          <radialGradient id="lgCore" cx=".5" cy=".38" r=".7"><stop offset="0" stop-color="#2a2414"/><stop offset=".6" stop-color="#151a23"/><stop offset="1" stop-color="#0d1016"/></radialGradient>
+          <linearGradient id="lgBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#b9800c"/></linearGradient>
+          <linearGradient id="lgBolt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#ffe9a8"/><stop offset="1" stop-color="#f0b429"/></linearGradient>
         </defs>
         <g class="lg-rays" stroke="#ffe9a8" stroke-width="2.5" stroke-linecap="round">
-          <path d="M50 -2 V-12"></path><path d="M95 24 L104 19"></path><path d="M95 76 L104 81"></path><path d="M50 102 V112"></path><path d="M5 76 L-4 81"></path><path d="M5 24 L-4 19"></path>
+          <path d="M50 -2 V-12"/><path d="M95 24 L104 19"/><path d="M95 76 L104 81"/><path d="M50 102 V112"/><path d="M5 76 L-4 81"/><path d="M5 24 L-4 19"/>
         </g>
-        <path class="lg-rim" pathLength="1" d="M50 3 L91 26.5 V73.5 L50 97 L9 73.5 V26.5 Z" fill="url(#lgRim)" stroke="url(#lgRim)" stroke-width="2" stroke-linejoin="round"></path>
-        <path class="lg-core" d="M50 11 L84 30.5 V69.5 L50 89 L16 69.5 V30.5 Z" fill="url(#lgCore)"></path>
+        <path class="lg-rim" pathLength="1" d="M50 3 L91 26.5 V73.5 L50 97 L9 73.5 V26.5 Z" fill="url(#lgRim)" stroke="url(#lgRim)" stroke-width="2" stroke-linejoin="round"/>
+        <path class="lg-core" d="M50 11 L84 30.5 V69.5 L50 89 L16 69.5 V30.5 Z" fill="url(#lgCore)"/>
         <g fill="url(#lgBar)">
-          <rect class="lg-bar" x="22" y="58" width="9" height="14" rx="1.5"></rect>
-          <rect class="lg-bar" x="34" y="49" width="9" height="23" rx="1.5"></rect>
-          <rect class="lg-bar" x="67" y="40" width="9" height="32" rx="1.5"></rect>
+          <rect class="lg-bar" x="22" y="58" width="9" height="14" rx="1.5"/>
+          <rect class="lg-bar" x="34" y="49" width="9" height="23" rx="1.5"/>
+          <rect class="lg-bar" x="67" y="40" width="9" height="32" rx="1.5"/>
         </g>
-        <path class="lg-bolt" d="M60 16 L33 53 H48 L41 84 L70 45 H55 L63 16 Z" fill="url(#lgBolt)" stroke="#151a23" stroke-width="3" stroke-linejoin="round" paint-order="stroke"></path>
+        <path class="lg-bolt" d="M60 16 L33 53 H48 L41 84 L70 45 H55 L63 16 Z" fill="url(#lgBolt)" stroke="#151a23" stroke-width="3" stroke-linejoin="round" paint-order="stroke"/>
       </svg>
       <div class="sp-sparks" aria-hidden="true"><i style="--a:0deg;--d:84px"></i><i style="--a:50deg;--d:62px"></i><i style="--a:72deg;--d:84px"></i><i style="--a:122deg;--d:62px"></i><i style="--a:144deg;--d:84px"></i><i style="--a:194deg;--d:62px"></i><i style="--a:216deg;--d:84px"></i><i style="--a:266deg;--d:62px"></i><i style="--a:288deg;--d:84px"></i><i style="--a:338deg;--d:62px"></i></div>
     </div>
@@ -78,11 +79,11 @@
   </div>
 
   <!-- Sign-in page -->
-  <section id="login" class="login" hidden="">
+  <section id="login" class="login" hidden>
     <div class="login-intro">
       <div class="brand big"><img class="logo" src="logo.svg" alt=""><h1>Gold Signal</h1></div>
       <h2>อยากเทรดทองคำ<br>แต่ยังไม่มั่นใจ?</h2>
-      <p class="login-lead">ราคาทองสด · สัญญาณซื้อเมื่อเข้าเงื่อนไขระบบ 15 / 30 นาที พร้อมสถิติผลสัญญาณที่บันทึกจริง</p>
+      <p class="login-lead">ราคาทองสดทุกวินาที · สัญญาณเข้าซื้อ–ขายทุก 15 / 30 นาที พร้อมสถิติจริงว่าชนะกี่ครั้ง แพ้กี่ครั้ง</p>
       <ul>
         <li><span>🎯</span>บอกชัด: จุดเข้า · ตัดขาดทุน · เป้าหมาย</li>
         <li><span>📊</span>บันทึกผลทุกสัญญาณ ชนะ–แพ้ ไม่ปิดบัง</li>
@@ -97,7 +98,7 @@
   </section>
 
   <!-- App -->
-  <div id="app" hidden="">
+  <div id="app" hidden>
     <header class="appbar">
       <a class="brand" href="#home"><img class="logo" src="logo.svg" alt=""><b>Gold Signal</b></a>
       <div class="appbar-right">
@@ -109,24 +110,27 @@
     </header>
 
     <nav class="tabbar five" id="tabbar">
+      <a href="#home" data-tab="home"><span>🎯</span>สัญญาณ</a>
+      <a href="#stats" data-tab="stats"><span>📊</span>สถิติ</a>
+      <a href="#chart" data-tab="chart"><span>📈</span>กราฟ</a>
+      <a href="#learn" data-tab="learn"><span>📖</span>วิธีใช้</a>
+      <a href="#account" data-tab="account"><span>👤</span>บัญชี</a>
+    </nav>
 
-
-
-
-
-    <a href="#home" data-tab="home"><span>🎯</span>เทรด</a><a href="#chart" data-tab="chart"><span>📈</span>กราฟ</a><a href="#stats" data-tab="stats"><span>📊</span>ผลเทรด</a><a href="#learn" data-tab="learn"><span>📖</span>วิธีใช้</a><a href="#account" data-tab="account"><span>⚙️</span>ตั้งค่า</a></nav>
-
-    <div class="install-bar" id="installBar" hidden="">
+    <div class="install-bar" id="installBar" hidden>
       <img src="logo.svg" alt="" width="34" height="34">
       <div><b>ติดตั้ง Gold Signal เป็นแอป</b><small>เปิดเร็ว เต็มจอ · รับแจ้งเตือนได้</small></div>
       <button class="btn gold" id="installBarBtn" type="button">ติดตั้ง</button>
       <button class="install-x" id="installBarClose" type="button" aria-label="ปิด">✕</button>
     </div>
-    <div class="demo-bar" id="demoBar" hidden="">โหมดดูตัวอย่าง · <a href="./">เข้าสู่ระบบ</a> เพื่อบันทึกการตั้งค่า</div>
+    <div class="demo-bar" id="demoBar" hidden>👀 <b>โหมดดูตัวอย่าง</b> — ราคาและสัญญาณเป็นข้อมูลสดจริงทั้งหมด · <a href="./">ล็อกอินด้วย Google</a> เพื่อบันทึกการตั้งค่าไว้กับบัญชี</div>
 
     <main class="content">
       <!-- 🎯 Signal -->
-      <section id="tab-home" class="tab"><header class="page-intro"><h1>เทรดทอง</h1><p>ดูราคา → รอสัญญาณ → ตรวจจุดเข้าและ SL / TP</p></header><div class="trade-dashboard"><div class="card lv" id="liveHero">
+      <section id="tab-home" class="tab">
+
+        <!-- Live price -->
+        <div class="card lv" id="liveHero">
           <div class="lv-top">
             <span class="lv-pill" id="lvMarket"><i></i><span id="lvMarketText">กำลังเชื่อมต่อ</span></span>
             <span class="mono muted small" id="lvClock">--:--:--</span>
@@ -138,10 +142,10 @@
               <div class="lv-chg mono" id="lvChg"></div>
             </div>
             <svg class="lv-spark" id="lvSpark" viewBox="0 0 240 80" preserveAspectRatio="none" aria-hidden="true">
-              <defs><linearGradient id="lvFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0b429" stop-opacity=".35"></stop><stop offset="1" stop-color="#f0b429" stop-opacity="0"></stop></linearGradient></defs>
-              <path id="lvArea" fill="url(#lvFill)"></path>
-              <path id="lvLine" class="lv-line"></path>
-              <circle id="lvDot" class="lv-dot" r="3.5" cx="-10" cy="-10"></circle>
+              <defs><linearGradient id="lvFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0b429" stop-opacity=".35"/><stop offset="1" stop-color="#f0b429" stop-opacity="0"/></linearGradient></defs>
+              <path id="lvArea" fill="url(#lvFill)"/>
+              <path id="lvLine" class="lv-line"/>
+              <circle id="lvDot" class="lv-dot" r="3.5" cx="-10" cy="-10"/>
             </svg>
           </div>
           <div class="lv-stats">
@@ -150,7 +154,13 @@
             <div><label>เทียบ 1 ชม. ก่อน</label><b class="mono" id="lvH1">—</b></div>
           </div>
           <p class="lv-foot muted small" id="lvAgo">กำลังดึงราคาสด…</p>
-        </div><div class="card intra" id="intraCard"><div class="trade-card-head"><span class="section-kicker"><i class="sm-dot" id="smDot"></i>สัญญาณหลัก</span><span class="simple-tag">30 นาที · ซื้ออย่างเดียว</span></div><div class="intra-call" id="inCall">กำลังวิเคราะห์…</div><p class="intra-why muted" id="inWhy"></p><p class="trade-trend"><span id="tradeTrend">กำลังอ่านแนวโน้ม…</span></p><span class="muted small" id="inNext"></span><div class="trade-actions"><a class="btn gold" href="#chart">เปิดกราฟ →</a><a class="btn ghost" href="#account">ตั้งค่าขนาดไม้</a></div><details class="why-box" id="inDetail"><summary id="inDetailSum">🔍 ดูเหตุผลละเอียด</summary><div class="sm" id="sm">
+        </div>
+
+        <!-- Live trend gauge -->
+        <div class="card intra" id="intraCard">
+          <div class="sig-top"><span class="muted"><i class="sm-dot" id="smDot"></i>แนวโน้มสด · ระบบ 30 นาที</span><span class="muted small" id="inNext"></span></div>
+          <!-- Trend strength: −6 … +6 as a segmented bar, plus the three timeframes that vote -->
+          <div class="sm" id="sm">
             <div class="sm-head">
               <div class="sm-score"><b class="mono" id="gScore">0</b><span class="mono">/ ±6</span></div>
               <div class="sm-mood"><b id="smMood">กำลังวิเคราะห์…</b><small id="gScoreSub">คะแนนสด</small></div>
@@ -163,31 +173,74 @@
             <div class="sm-scale"><span>ขายแรง −6</span><span>สมดุล 0</span><span>+6 ซื้อแรง</span></div>
             <div class="sm-frames" id="inParts"></div>
             <div class="sm-cycle"><div class="sm-cycle-bar"><i id="smCycle"></i></div><span class="mono" id="smCycleTx"></span></div>
-          </div><div class="why-body" id="inDetailBody"></div></details></div></div><div id="inTrade"></div><section class="card essential-news"><div class="trade-card-head"><h2>ข่าวที่ต้องระวัง</h2><span class="simple-tag">เวลาไทย</span></div><p id="homeNews">กำลังโหลดข่าว…</p><details class="simple-fold" id="newsMore"><summary><span>ดูปฏิทินข่าว</span></summary><div id="inNews"></div></details></section><p class="page-note">สัญญาณเป็นข้อมูลประกอบ · ดูผลที่ผ่านมาได้ที่ <a href="#stats">ผลเทรด</a></p></section>
+          </div>
+          <div class="intra-call" id="inCall">กำลังวิเคราะห์…</div>
+          <p class="intra-why muted" id="inWhy"></p>
+          <details class="why-box" id="inDetail"><summary id="inDetailSum">🔍 ดูเหตุผลละเอียด</summary><div class="why-body" id="inDetailBody"></div></details>
+        </div>
 
-      <!-- 📊 Stats -->
-      <section id="tab-stats" class="tab" hidden=""><header class="page-intro"><h1>ผลเทรด</h1><p>ติดตามผลสัญญาณที่ระบบบันทึกไว้</p></header><section class="card">
-          <h3>ผลสัญญาณที่บันทึกจริง</h3>
-          <p class="hint">ระบบ 30 นาที · ต่อทอง 1 ออนซ์ · หักสเปรดตามที่ตั้งค่า</p>
-          <div class="tiles" id="inLiveTiles"></div><p class="stats-breakdown" id="statsBreakdown"></p>
-          <div id="inLiveChart" class="chart-eq"></div>
+        <div id="inTrade"></div>
+        <a class="lv-strip" id="lvStrip" href="#stats" hidden></a>
 
-        <details class="simple-fold" id="tradeHistory" open=""><summary><span>ประวัติสัญญาณล่าสุด</span></summary><div id="inToday"></div><div class="history" id="inHistory"></div></details></section><details class="simple-fold" id="backtestMore"><summary><span>ผลทดสอบย้อนหลัง</span><small>ข้อมูลจำลองและการเทียบกับผลจริง</small></summary><section class="card bt">
-          <h3>⏱️ สัญญาณ 30 นาที — ทดสอบย้อนหลัง 1 ปี <span class="tag neutral">จำลอง</span></h3>
-          <p class="hint">ใช้โค้ดตัดสินใจชุดเดียวกับของจริง บนข้อมูล Binance PAXG (แท่ง 5 ชม. สร้างจากแท่ง 1 ชม.)</p>
-          <div class="tiles" id="inBtTiles"></div>
-          <p class="bt-note up" id="inBtNote"></p>
-          <div id="inBtChart" class="chart-eq"></div>
-        </section><section class="card lv-card" id="lvCard">
-          <h3>🧪 ผลจริงเทียบกับที่ทดสอบไว้ — ระบบ 30 นาที</h3>
-          <p class="hint">ถ้าระบบยังใช้ได้ ผลจริงสะสมควรอยู่ในแถบสีเทา (ช่วงปกติจากผลทดสอบ 1 ปี) · หลุดใต้แถบ = ระบบอาจใช้ไม่ได้แล้ว ควรหยุดหรือลดขนาดไม้</p>
-          <div class="lv-status" id="lvStatus"></div>
-          <div class="lv-grid"><div id="lvTiles" class="lv-tiles"></div><svg id="lvChart" class="lv-chart" viewBox="0 0 600 220" preserveAspectRatio="none"></svg></div>
-          <div id="lvRecent"></div>
-        </section><a class="lv-strip" id="lvStrip" href="#stats" hidden=""></a><details class="simple-fold" id="oddsMore"><summary><span>สถิติจำลองฝั่งซื้อ / ขาย</span><small>เปอร์เซ็นต์ในอดีต ไม่ใช่สัญญาณให้เข้า</small></summary><div class="donuts">
+        <!-- 15-minute signal: website only (no LINE) -->
+        <div class="card s15" id="s15Card">
+          <div class="sig-top"><span class="muted">⏱️ สัญญาณ 15 นาที · <b>ดูบนเว็บเท่านั้น</b> (ไม่ส่ง LINE)</span><span class="muted small mono" id="s15Next"></span></div>
+          <div class="s15-call" id="s15Call">กำลังคำนวณ…</div>
+          <p class="s15-why muted" id="s15Why"></p>
+          <details class="why-box" id="s15Detail"><summary id="s15DetailSum">🔍 ดูเหตุผลละเอียด</summary><div class="why-body" id="s15DetailBody"></div></details>
+          <div id="s15Trade"></div>
+          <div class="s15-chart-wrap">
+            <div class="s15-ohlc mono" id="s15Ohlc"></div>
+            <button class="btn ghost s15-reset" id="s15Reset" type="button" hidden>↺ ดูล่าสุด</button>
+            <div id="s15Chart" class="s15-chart"></div>
+          </div>
+          <p class="muted small s15-hint">ลากเพื่อเลื่อนดูย้อนหลัง · ลากที่แกนราคา/แกนเวลา หรือถ่างสองนิ้วเพื่อซูม · ชี้/แตะแท่งเพื่อดูราคาและคะแนนตอนนั้น</p>
+          <ul class="s15-legend">
+            <li><i class="up">▲</i>จุดเข้าซื้อ</li><li><i class="tp">●</i>ถึง TP</li><li><i class="sl">●</i>โดน SL</li>
+            <li><i class="zone ok"></i>ช่วงที่เข้าได้</li><li><i class="zone news"></i>ช่วงข่าว งดเข้า</li><li><i class="zone"></i>ไม่เข้า</li>
+          </ul>
+          <div id="s15Today"></div>
+          <p class="muted small s15-stats" id="s15Stats"></p>
+        </div>
+
+        <!-- Trader toolkit: session, key levels with buy/sell zones, short-term radar, position calculator -->
+        <h3 class="sec-title">🧭 แผนเทรดวันนี้ — จุดเข้า · แนวรับแนวต้าน · สายสั้น <span class="lv-tag">สด</span></h3>
+        <div class="card tp" id="tpCard">
+          <ol class="tp-steps"><li><b>ดูช่วงตลาด</b> — รู้ว่าตอนนี้แกว่งแรงหรือเบา</li><li><b>รอสัญญาณ 30/15 นาที</b> แล้วดูว่าเป้า/SL มีแนวขวางไหม</li><li><b>คำนวณขนาดไม้</b> — ไม่เสี่ยงเกินทุน</li></ol>
+          <div class="tp-session" id="tpSession"></div>
+          <div class="tp-grid">
+            <div class="tp-ladder"><div class="tp-h">📐 แนวรับ–แนวต้าน (ราคาสดอยู่ตรงไหน)</div><div id="tpLadder"></div></div>
+            <div class="tp-zones"><div class="tp-h">🎯 ใช้แนวรับ–ต้านกับสัญญาณของระบบ</div><div id="tpZones"></div></div>
+          </div>
+          <div class="tp-h">⚡ เรดาร์แรงสั้น (กราฟ 1 นาที) — ข้อมูลประกอบ</div>
+          <div class="tp-radar" id="tpRadar"></div>
+          <div class="tp-h">🧮 คำนวณขนาดไม้ก่อนเข้า</div>
+          <div class="tp-calc" id="tpCalc">
+            <div class="tp-side"><button type="button" class="on" data-side="1">🟢 ซื้อ</button><button type="button" data-side="-1">🔴 ขาย</button></div>
+            <label>จุดเข้า<input id="cEntry" type="number" step="0.01" inputmode="decimal"></label>
+            <label>SL<input id="cSl" type="number" step="0.01" inputmode="decimal"></label>
+            <label>TP<input id="cTp" type="number" step="0.01" inputmode="decimal"></label>
+            <button type="button" class="btn" id="cNow">ใช้ราคาตอนนี้</button>
+            <div class="tp-calc-out" id="cOut"></div>
+          </div>
+          <p class="muted small tp-note">⚠️ จุดเข้าที่ผ่านการทดสอบย้อนหลังคือสัญญาณ 30/15 นาทีด้านบน — ส่วนนี้เป็นข้อมูลประกอบ ตั้ง SL ทุกครั้ง และไม่เสี่ยงเกิน 1–2% ของทุนต่อไม้</p>
+        </div>
+
+        <!-- Odds for each side, as donuts -->
+        <h3 class="sec-title">🎯 ถ้าเข้าตอนนี้ — โอกาสแต่ละจุด <span class="lv-tag">สด</span></h3>
+        <div class="donuts">
           <div class="card dn buy" id="dnBuy"></div>
           <div class="card dn sell" id="dnSell"></div>
-        </div><p class="muted small dn-note" id="dnNote"></p></details></details><details class="simple-fold" id="dailyArchive"><summary><span>ภาพรวมและสูตรรายวัน</span><small>ข้อมูลอ้างอิงเพิ่มเติม</small></summary><div class="home-cols">
+        </div>
+        <p class="muted small dn-note" id="dnNote"></p>
+
+        <div class="card news-card">
+          <div id="inNews"></div>
+          <div id="inToday"></div>
+        </div>
+
+        <h3 class="sec-title">🧭 ภาพรวมรายวัน (ตลาดเปิด) <span class="tag neutral">ข้อมูลประกอบ</span></h3>
+        <div class="home-cols">
           <div class="card sig" id="sigCard">
             <div class="sig-top">
               <span class="muted" id="sgDate">สัญญาณวันนี้</span>
@@ -195,7 +248,7 @@
             </div>
             <div class="sig-side" id="sgSide">กำลังโหลด…</div>
             <div class="sig-status" id="sgStatus"></div>
-            <p class="adv-note" id="sgAdv" hidden="">⚠️ <b>ข้อมูลประกอบ ไม่ใช่สัญญาณให้เข้าไม้</b> — สูตรรายวันทดสอบย้อนหลัง 1 ปีแล้วขาดทุนหลังหักสเปรด จึงใช้ <b>สัญญาณ 30 นาที</b> ด้านบนเป็นหลัก · ระบบยังบันทึกผลสมมติไว้ติดตามด้วยตัวเลขด้านล่าง</p>
+            <p class="adv-note" id="sgAdv" hidden>⚠️ <b>ข้อมูลประกอบ ไม่ใช่สัญญาณให้เข้าไม้</b> — สูตรรายวันทดสอบย้อนหลัง 1 ปีแล้วขาดทุนหลังหักสเปรด จึงใช้ <b>สัญญาณ 30 นาที</b> ด้านบนเป็นหลัก · ระบบยังบันทึกผลสมมติไว้ติดตามด้วยตัวเลขด้านล่าง</p>
 
             <div class="sig-nums">
               <div class="n entry"><label>🎯 จุดเข้า</label><b class="mono" id="sgEntry">—</b></div>
@@ -213,11 +266,11 @@
             <p class="sig-pnl" id="sgPnl"></p>
             <div id="sgLot"></div>
 
-            <details class="fold" id="sgHowBox" open="">
+            <details class="fold" id="sgHowBox" open>
               <summary>วิธีใช้สัญญาณนี้ (3 ขั้น)</summary>
               <ol class="steps" id="sgHow"></ol>
             </details>
-            <p class="hint alert-note" id="sgAlertNote">🔔 เพิ่มเพื่อน LINE ที่แท็บ <a href="#account">ตั้งค่า</a> แล้วระบบจะแจ้งเตือนทันทีเมื่อราคาถึงจุดเข้า / TP / SL</p>
+            <p class="hint alert-note" id="sgAlertNote">🔔 เพิ่มเพื่อน LINE ที่แท็บ <a href="#account">บัญชี</a> แล้วระบบจะแจ้งเตือนทันทีเมื่อราคาถึงจุดเข้า / TP / SL</p>
             <details class="fold">
               <summary>ทำไมถึงให้สัญญาณนี้</summary>
               <ul class="why" id="sgWhy"></ul>
@@ -240,36 +293,76 @@
               <p id="mkTrend"></p>
             </div>
           </div>
-        </div><p class="updated muted small">อัปเดต <span id="hUpdated">—</span> · ข้อมูลจาก investing.com · ไม่ใช่คำแนะนำการลงทุน</p><section class="card">
+        </div>
+        <p class="updated muted small">อัปเดต <span id="hUpdated">—</span> · ข้อมูลจาก investing.com · ไม่ใช่คำแนะนำการลงทุน</p>
+      </section>
+
+      <!-- 📊 Stats -->
+      <section id="tab-stats" class="tab" hidden>
+
+        <!-- Live record vs what the backtest promised: is the system still working? -->
+        <section class="card lv-card" id="lvCard">
+          <h3>🧪 ผลจริงเทียบกับที่ทดสอบไว้ — ระบบ 30 นาที</h3>
+          <p class="hint">ถ้าระบบยังใช้ได้ ผลจริงสะสมควรอยู่ในแถบสีเทา (ช่วงปกติจากผลทดสอบ 1 ปี) · หลุดใต้แถบ = ระบบอาจใช้ไม่ได้แล้ว ควรหยุดหรือลดขนาดไม้</p>
+          <div class="lv-status" id="lvStatus"></div>
+          <div class="lv-grid"><div id="lvTiles" class="lv-tiles"></div><svg id="lvChart" class="lv-chart" viewBox="0 0 600 220" preserveAspectRatio="none"></svg></div>
+          <div id="lvRecent"></div>
+        </section>
+
+        <section class="card">
+          <h3>⏱️ สัญญาณ 30 นาที — ผลจริง</h3>
+          <p class="hint">วิเคราะห์ทุกครึ่งชั่วโมง เข้าเมื่อแนวโน้ม 30 นาที · 1 ชม. · 5 ชม. ชี้ทางเดียวกันชัดเจน (คะแนน ±5 ขึ้นไป) · ครั้งละ 1 ไม้ · SL $15 · TP $15 / $20 / $30</p>
+          <div class="tiles" id="inLiveTiles"></div>
+          <div id="inLiveChart" class="chart-eq"></div>
+          <div class="history" id="inHistory"></div>
+        </section>
+
+        <section class="card bt">
+          <h3>⏱️ สัญญาณ 30 นาที — ทดสอบย้อนหลัง 1 ปี <span class="tag neutral">จำลอง</span></h3>
+          <p class="hint">ใช้โค้ดตัดสินใจชุดเดียวกับของจริง บนข้อมูล Binance PAXG (แท่ง 5 ชม. สร้างจากแท่ง 1 ชม.)</p>
+          <div class="tiles" id="inBtTiles"></div>
+          <p class="bt-note up" id="inBtNote"></p>
+          <div id="inBtChart" class="chart-eq"></div>
+        </section>
+
+        <h3 class="sec-title">🧭 สูตรรายวัน (ตลาดเปิด) — ข้อมูลประกอบ</h3>
+        <section class="card">
           <h3>📅 สูตรรายวัน — ติดตามผล <span class="tag neutral">ไม่ได้แนะนำให้เข้า</span></h3>
           <p class="hint" id="liveSince">บันทึกทุกสัญญาณที่ส่งจริง ไม่ตัดทิ้ง ไม่แก้ย้อนหลัง</p>
           <div class="tiles" id="liveTiles"></div>
           <div id="liveChart" class="chart-eq"></div>
-        </section><section class="card">
+        </section>
+
+        <section class="card">
           <h3>ประวัติสัญญาณ</h3>
           <div class="history" id="history"><p class="muted">ยังไม่มีสัญญาณ</p></div>
-        </section><section class="card bt">
+        </section>
+
+        <section class="card bt">
           <h3>ทดสอบย้อนหลัง 1 ปี <span class="tag neutral">จำลอง</span></h3>
           <p class="hint">ใช้กติกาเดียวกันกับสัญญาณจริง (ทุกวันทำการ · เข้าตอนตลาดเปิด · SL $15 · ปิด ⅓ ที่ TP $15 / $20 / $30 · ถึง TP1 แล้วเลื่อน SL ไปที่ทุน) ย้อนหลังทุกวันทำการ 1 ปี (ข้อมูลราคาจาก Binance PAXG และทิศทางจากเครื่องมือของเราเอง เพราะ investing.com ไม่เก็บผลวิเคราะห์ย้อนหลัง) กำไรหักสเปรดตามที่ตั้งไว้ในแท็บบัญชีแล้ว (ยังไม่รวมค่าคอมมิชชันของโบรก)</p>
           <div class="tiles" id="btTiles"></div>
           <p class="bt-note" id="btNote"></p>
           <div id="btChart" class="chart-eq"></div>
-        </section></details><details class="simple-fold" id="countingMore"><summary><span>วิธีนับผลกำไร / ขาดทุน</span></summary><section class="card">
+        </section>
+
+        <section class="card">
           <h3>นับชนะ–แพ้ยังไง?</h3>
           <ul class="why">
             <li><b>✅ ชนะ</b> — ราคาถึง <b>TP1</b> ก่อน SL (จากนั้นนับต่อว่าไปถึง TP2 / TP3 หรือไม่)</li>
             <li><b>❌ แพ้</b> — ราคาโดน <b>SL</b> ก่อนถึง TP1 (ถ้าแท่ง 15 นาทีเดียวโดนทั้งคู่ นับเป็นแพ้)</li>
             <li><b>⏸ ไม่มีสัญญาณ</b> — วันที่ตลาดไม่ชัด ระบบไม่ให้เทรด ไม่นับชนะหรือแพ้</li>
-            <li><b>ปิดเมื่อครบเวลา</b> — ปิดส่วนที่เหลือภายใน 02:45 น. (03:45 น. ช่วงเวลาหน้าหนาวสหรัฐ) ก่อนตลาดปิด · ผลกำไร/ขาดทุนรวมส่วนที่ปิดที่ TP ไปแล้วด้วย</li>
+            <li><b>ปิดสิ้นวัน</b> — เข้าแล้วแต่ไม่ถึงทั้งเป้าและตัดขาดทุน ปิดที่ราคาเช้าวันถัดไป กำไร = ชนะ ขาดทุน = แพ้</li>
             <li>กำไร/ขาดทุนคิดเป็น <b>ดอลลาร์ต่อทอง 1 ออนซ์</b> โดยปิด ⅓ ที่แต่ละ TP — ครบ 3 เป้า = <b>+$21.67</b> · โดน SL = <b>−$15</b></li>
           </ul>
-        </section></details></section>
+        </section>
+      </section>
 
       <!-- 📈 Chart -->
-      <section id="tab-chart" class="tab" hidden=""><header class="page-intro"><h1>กราฟทองคำ</h1><p>ดูราคา แนวรับ–แนวต้าน และจุดเข้า / SL / TP</p></header>
+      <section id="tab-chart" class="tab" hidden>
         <div class="seg" id="chartMode">
-          <button data-mode="simple">เส้นราคา</button>
-          <button data-mode="pro">แท่งเทียน</button>
+          <button data-mode="simple">แบบง่าย</button>
+          <button data-mode="pro">แบบนักเทรด</button>
         </div>
 
         <div id="chartSimple">
@@ -278,14 +371,14 @@
               <h3>ราคาทองย้อนหลัง</h3>
               <nav class="tfs" id="sRange"></nav>
             </div>
-            <div class="cz-box" id="czBoxS">กำลังตรวจสัญญาณล่าสุด…</div>
-            <ul class="s15-legend cz-legend compact-legend"><li><i class="zone ok"></i>คะแนนผ่านในอดีต</li><li><i class="zone news"></i>ข่าว งดเข้า</li><li><i class="up">▲</i>จุดซื้อจำลอง + เวลา</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul>
+            <div class="cz-box" id="czBoxS">กำลังคำนวณโซนเข้า…</div>
+            <ul class="s15-legend cz-legend"><li><i class="zone ok"></i>โซนเข้าซื้อ</li><li><i class="zone near"></i>ใกล้โซน</li><li><i class="zone bad"></i>ขาลง ไม่ซื้อ</li><li><i class="zone news"></i>ข่าว งดเข้า</li><li><i class="up">▲</i>จุดเข้า</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul>
             <div id="simpleChart" class="chart-simple"></div>
             <p class="hint">เส้นสีทอง = ราคาทอง · 🎯 จุดเข้า · 🛑 ตัดขาดทุน · 💰 เป้าหมาย ของสัญญาณล่าสุด</p>
           </section>
         </div>
 
-        <div id="chartPro" hidden="">
+        <div id="chartPro" hidden>
 <section class="quote">
       <div class="quote-main">
         <span class="sym">ทองคำ (XAU/USD)</span>
@@ -293,47 +386,39 @@
         <span class="chg mono" id="chg">—</span>
         <span class="muted small">ดอลลาร์ต่อออนซ์</span>
       </div>
-
-    <details class="simple-fold" id="priceInfo"><summary><span>ราคาเปิด / สูงสุด / ต่ำสุด</span></summary><div class="quote-stats">
+      <div class="quote-stats">
         <div><label>ราคาเปิดวันนี้</label><span class="mono" id="dOpen">—</span></div>
         <div><label>สูงสุดวันนี้</label><span class="mono" id="dHigh">—</span></div>
         <div><label>ต่ำสุดวันนี้</label><span class="mono" id="dLow">—</span></div>
         <div><label>ราคาปิดเมื่อวาน</label><span class="mono" id="dPrev">—</span></div>
         <div><label>อัปเดตล่าสุด</label><span class="mono" id="updated">—</span></div>
-      </div></details></section>
+      </div>
+    </section>
 
     <div class="tf-row">
-      <span class="muted small">กรอบเวลา</span>
+      <span class="muted small">เลือกกรอบเวลา — 1 แท่งเทียนแทนช่วงเวลาเท่าไร</span>
       <nav class="tfs" id="tfs"></nav>
     </div>
 
-    <div class="layout">
+    <main class="layout">
       <section class="charts card">
-
-
-        <div class="cz-box" id="czBox">กำลังตรวจสัญญาณล่าสุด…</div>
-
-        <div id="mainChart" class="chart-main"></div>
-
-
-
-
-      <details class="simple-fold" id="oscillatorsMore"><summary><span>RSI / MACD</span><small>ดูแรงซื้อขายและแรงส่ง</small></summary><div class="sub-title">RSI — วัดแรงซื้อ/ขาย <span class="muted">(เกิน 70 = ขึ้นแรงเกินไป · ต่ำกว่า 30 = ลงแรงเกินไป)</span></div><div id="rsiChart" class="chart-sub"></div><div class="sub-title">MACD — แรงส่งของราคา <span class="muted">(แท่งเขียว = แรงส่งขาขึ้น · แท่งแดง = แรงส่งขาลง)</span></div><div id="macdChart" class="chart-sub"></div></details><details class="simple-fold" id="chartLegend"><summary><span>อ่านเส้นและสีบนกราฟ</span></summary><div class="legend">
+        <div class="legend">
           <span><i style="background:var(--ema20)"></i>เส้นค่าเฉลี่ย 20 แท่ง (EMA 20)</span>
           <span><i style="background:var(--ema50)"></i>เส้นค่าเฉลี่ย 50 แท่ง (EMA 50)</span>
           <span><i class="dash"></i>กรอบราคาปกติ (Bollinger)</span>
           <span><i style="background:var(--gold)"></i>แนวรับ–แนวต้าน</span>
-        </div><p class="hint">🟩 แท่งเขียว = ราคาปิดสูงกว่าเปิด (ขึ้น) · 🟥 แท่งแดง = ราคาปิดต่ำกว่าเปิด (ลง) · ราคาอยู่เหนือเส้นค่าเฉลี่ย = แข็งแรง, อยู่ใต้เส้น = อ่อนแอ</p><ul class="s15-legend cz-legend compact-legend"><li><i class="zone ok"></i>คะแนนผ่านในอดีต</li><li><i class="zone news"></i>ช่วงข่าว งดเข้า</li><li><i class="up">▲</i>จุดซื้อจำลอง + เวลา</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul></details></section>
+        </div>
+        <p class="hint">🟩 แท่งเขียว = ราคาปิดสูงกว่าเปิด (ขึ้น) · 🟥 แท่งแดง = ราคาปิดต่ำกว่าเปิด (ลง) · ราคาอยู่เหนือเส้นค่าเฉลี่ย = แข็งแรง, อยู่ใต้เส้น = อ่อนแอ</p>
+        <div class="cz-box" id="czBox">กำลังคำนวณโซนเข้า…</div>
+        <ul class="s15-legend cz-legend"><li><i class="zone ok"></i>โซนเข้าซื้อ (ระบบที่ทดสอบแล้ว)</li><li><i class="zone near"></i>ใกล้โซน (คะแนน +3/+4)</li><li><i class="zone bad"></i>แนวโน้มลง ไม่ซื้อ</li><li><i class="zone news"></i>ช่วงข่าว งดเข้า</li><li><i class="up">▲</i>จุดเข้า</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul>
+        <div id="mainChart" class="chart-main"></div>
+        <div class="sub-title">RSI — วัดแรงซื้อ/ขาย <span class="muted">(เกิน 70 = ขึ้นแรงเกินไป · ต่ำกว่า 30 = ลงแรงเกินไป)</span></div>
+        <div id="rsiChart" class="chart-sub"></div>
+        <div class="sub-title">MACD — แรงส่งของราคา <span class="muted">(แท่งเขียว = แรงส่งขาขึ้น · แท่งแดง = แรงส่งขาลง)</span></div>
+        <div id="macdChart" class="chart-sub"></div>
+      </section>
 
-
-    </div>
-
-
-
-
-
-
-        <details class="simple-fold" id="analysisMore"><summary><span>วิเคราะห์เพิ่มเติม</span><small>แนวรับ–แนวต้านและตัวชี้วัดทุกกรอบเวลา</small></summary><aside class="side">
+      <aside class="side">
         <section class="card signal" id="signalCard">
           <div class="signal-head">
             <span class="muted">คำแนะนำ · กราฟ <span id="sigTf">—</span></span>
@@ -356,7 +441,10 @@
           <p class="hint">🔴 <b>แนวต้าน</b> = ระดับที่ราคามักขึ้นไปชนแล้วถูกกดลง · 🟢 <b>แนวรับ</b> = ระดับที่ราคามักลงมาแล้วเด้งขึ้น (คำนวณแบบ Pivot Points ของ investing.com)</p>
           <ul class="levels" id="levels"></ul>
         </section>
-      </aside><section class="card wide-card">
+      </aside>
+    </main>
+
+    <section class="card wide-card">
       <h3>ภาพรวมทุกกรอบเวลา <span class="muted small">— ข้อมูลจาก investing.com · <span id="techTime">—</span></span></h3>
       <p class="hint">กรอบเวลาสั้น (นาที) เหมาะกับเทรดเร็ว · กรอบเวลายาว (วัน/สัปดาห์) บอกแนวโน้มใหญ่ ถ้าทุกกรอบไปทางเดียวกัน สัญญาณจะน่าเชื่อถือขึ้น</p>
       <div class="table-scroll">
@@ -365,7 +453,9 @@
           <tbody></tbody>
         </table>
       </div>
-    </section><section class="layout2">
+    </section>
+
+    <section class="layout2">
       <section class="card">
         <h3>ตัวชี้วัดทางเทคนิค · <span class="tfName">—</span> <span class="tag" id="indSum"></span></h3>
         <p class="hint">เครื่องมือ 12 ตัวที่นักเทรดใช้ แต่ละตัวโหวตว่า “ซื้อ” หรือ “ขาย” — บรรทัดล่างคือความหมายแบบภาษาคน</p>
@@ -382,106 +472,121 @@
           <tbody></tbody>
         </table>
       </section>
-    </section></details></div>
-      <section class="card position-tools" id="positionTools"><div class="trade-card-head"><h2>คำนวณขนาดไม้</h2><a href="#account">ตั้งค่าทุน →</a></div><p class="muted small">ใส่จุดเข้า จุดตัดขาดทุน และเป้าหมาย</p><div class="tp-calc" id="tpCalc">
-            <div class="tp-side"><button type="button" class="on" data-side="1">🟢 ซื้อ</button><button type="button" data-side="-1">🔴 ขาย</button></div>
-            <label>จุดเข้า<input id="cEntry" type="number" step="0.01" inputmode="decimal"></label>
-            <label>SL<input id="cSl" type="number" step="0.01" inputmode="decimal"></label>
-            <label>TP<input id="cTp" type="number" step="0.01" inputmode="decimal"></label>
-            <button type="button" class="btn" id="cNow">ใช้ราคาตอนนี้</button>
-            <div class="tp-calc-out" id="cOut"></div>
-          </div></section><details class="simple-fold" id="levelsMore"><summary><span>ช่วงตลาดและแนวรับ–แนวต้าน</span><small>ข้อมูลประกอบการวางแผน</small></summary><div class="card tp" id="tpCard">
+    </section>
 
-          <div class="tp-session" id="tpSession"></div>
-          <div class="tp-grid">
-            <div class="tp-ladder"><div class="tp-h">📐 แนวรับ–แนวต้าน (ราคาสดอยู่ตรงไหน)</div><div id="tpLadder"></div></div>
-            <div class="tp-zones"><div class="tp-h">🎯 ใช้แนวรับ–ต้านกับสัญญาณของระบบ</div><div id="tpZones"></div></div>
-          </div>
-
-
-
-
-          <p class="muted small tp-note">แนวรับ–แนวต้านและโมเมนตัมใช้ประกอบการอ่านกราฟ</p>
-        <details class="simple-fold" id="radarMore"><summary><span>โมเมนตัมระยะสั้น</span><small>ข้อมูลประกอบ ไม่ใช่สัญญาณเข้า</small></summary><div class="tp-h">⚡ เรดาร์แรงสั้น (กราฟ 1 นาที) — ข้อมูลประกอบ</div><div class="tp-radar" id="tpRadar"></div></details></div></details><details class="simple-fold" id="signal15More"><summary><span>สัญญาณ 15 นาที</span><small>ระบบเสริมบนเว็บ ไม่ส่ง LINE</small></summary><div class="card s15" id="s15Card">
-          <div class="sig-top"><span class="muted">⏱️ สัญญาณ 15 นาที · <b>ดูบนเว็บเท่านั้น</b> (ไม่ส่ง LINE)</span><span class="muted small mono" id="s15Next"></span></div>
-          <div class="s15-call" id="s15Call">กำลังคำนวณ…</div>
-          <p class="s15-why muted" id="s15Why"></p>
-          <details class="why-box" id="s15Detail"><summary id="s15DetailSum">🔍 ดูเหตุผลละเอียด</summary><div class="why-body" id="s15DetailBody"></div></details>
-          <div id="s15Trade"></div>
-          <div class="s15-chart-wrap">
-            <div class="s15-ohlc mono" id="s15Ohlc"></div>
-            <button class="btn ghost s15-reset" id="s15Reset" type="button" hidden="">↺ ดูล่าสุด</button>
-            <div id="s15Chart" class="s15-chart"></div>
-          </div>
-          <p class="muted small s15-hint">ลากเพื่อเลื่อนดูย้อนหลัง · ลากที่แกนราคา/แกนเวลา หรือถ่างสองนิ้วเพื่อซูม · ชี้/แตะแท่งเพื่อดูราคาและคะแนนตอนนั้น</p>
-          <ul class="s15-legend">
-            <li><i class="up">▲</i>จุดซื้อจำลอง + เวลาซื้อ</li><li><i class="tp">●</i>ถึง TP</li><li><i class="sl">●</i>โดน SL</li>
-            <li><i class="zone ok"></i>ช่วงที่เข้าได้</li><li><i class="zone news"></i>ช่วงข่าว งดเข้า</li><li><i class="zone"></i>ไม่เข้า</li>
-          </ul>
-          <div id="s15Today"></div>
-          <p class="muted small s15-stats" id="s15Stats"></p>
-        </div></details></section>
+    
+        </div>
+      </section>
 
       <!-- 📖 How to use -->
-      <section id="tab-learn" class="tab" hidden=""><header class="page-intro"><h1>วิธีใช้</h1><p>เริ่มต้นจาก 3 ขั้นตอนนี้</p></header><section class="card quick-guide"><ol><li><span>1</span><div><h2>ดูราคาและสัญญาณ</h2><p>เริ่มที่หน้าเทรด หากระบบบอกให้รอ ให้ดูเหตุผลใต้สัญญาณ</p></div></li><li><span>2</span><div><h2>ตรวจจุดเข้า · SL · TP</h2><p>เมื่อมีไม้ที่เปิดอยู่ จะเห็นจุดเข้า จุดตัดขาดทุน และเป้าหมาย ใช้หน้ากราฟดูตำแหน่งราคา</p></div></li><li><span>3</span><div><h2>คำนวณขนาดไม้และติดตามผล</h2><p>ใส่ทุนในหน้าตั้งค่า แล้วใช้เครื่องคำนวณใต้กราฟ ดูผลสัญญาณย้อนหลังที่หน้าผลเทรด</p></div></li></ol></section><section class="card glossary">
-          <h3>คำศัพท์ที่ใช้บ่อย</h3>
-          <dl>
-            <dt>XAU/USD</dt><dd>ราคาทองคำในตลาดโลก เป็นดอลลาร์สหรัฐต่อออนซ์ (1 ออนซ์ ≈ 31.1 กรัม)</dd>
-            <dt>ซื้อ (Buy)</dt><dd>ได้กำไรเมื่อราคาขึ้น</dd>
-            <dt>ขาย (Sell / Short)</dt><dd>ได้กำไรเมื่อราคาลง (ทำได้ในบัญชีเทรด เช่น โกลด์ฟิวเจอร์ส / CFD)</dd>
-
-            <dt>Stop Loss (SL)</dt><dd>จุดตัดขาดทุน — ปิดออเดอร์อัตโนมัติเมื่อผิดทางถึงระดับนี้</dd>
-            <dt>Take Profit (TP)</dt><dd>จุดเป้าหมาย — ปิดเก็บกำไรอัตโนมัติ</dd>
-            <dt>อัตราชนะ</dt><dd>ชนะกี่ % ของครั้งที่ได้เข้าเทรดจริง</dd>
-          </dl>
-        </section><details class="simple-fold" id="guideMore"><summary><span>รายละเอียดระบบและกติกา</span><small>ระบบ 30 นาที / 15 นาที และการแบ่งปิดเป้าหมาย</small></summary><section class="card">
+      <section id="tab-learn" class="tab" hidden>
+        <section class="card">
           <h3>สัญญาณคืออะไร?</h3>
           <p><b>สัญญาณหลักคือ ⏱️ สัญญาณ 30 นาที</b> (การ์ดถัดไป) — บอกจุดเข้า SL และ TP $15 / $20 / $30 พร้อมแจ้ง LINE
             <br>ทุกเช้าวันจันทร์–ศุกร์ 07:05 (ต้น พ.ย.–กลาง มี.ค. 08:05) ระบบส่ง <b>🧭 ภาพรวมรายวัน</b>: แนวโน้มวันนี้เอียงขึ้นหรือลง ข่าวแรง และสถานะระบบ 30 นาที —
             <b>เป็นข้อมูลประกอบ ไม่ใช่สัญญาณให้เข้าไม้</b> เพราะสูตรรายวันทดสอบย้อนหลัง 1 ปีแล้วขาดทุนหลังหักสเปรด (ระบบยังบันทึกผลสมมติไว้ให้ดูในแท็บสถิติ)</p>
-        </section><section class="card">
+        </section>
+
+        <section class="card">
           <h3>⏱️ สัญญาณ 30 นาที</h3>
-          <p>ระบบใช้แท่งที่ปิดแล้วของ <b>30 นาที · 1 ชม. · 5 ชม.</b> เปิดสัญญาณ<b>ซื้ออย่างเดียวเมื่อคะแนน +5 ขึ้นไป</b> และผ่านเงื่อนไขข่าว ไม่ไล่ราคา และการพักระบบ · ครั้งละไม้เดียว พร้อม SL $15 และ TP $15 / $20 / $30 · หลังไม้ก่อนปิด ต้องรอรอบครึ่งชั่วโมงที่เริ่มอย่างน้อย 15 นาทีหลังปิด</p>
-          <p>LINE แจ้งเมื่อมีสัญญาณใหม่หรือเกิด TP/SL ส่วนข้อความประเมินฝั่งซื้อ–ขายส่งเมื่อสถานะ ✅ เปลี่ยน · <b>คะแนนสดและเปอร์เซ็นต์บนเว็บเป็นข้อมูลประกอบ</b> คะแนนแท่งปิดที่เว็บคำนวณผ่านยังต้องรอยืนยันจากบันทึกระบบ และไม่ใช่หลักฐานว่าแจ้งเตือนถูกส่งแล้ว</p>
-        </section><section class="card">
+          <p>ระหว่างวันระบบวิเคราะห์ทุกครึ่งชั่วโมง ถ้าแนวโน้ม <b>30 นาที · 1 ชม. · 5 ชม.</b> ชี้ไปทางเดียวกันชัดเจน จะส่ง <b>“ซื้อ/ขายตอนนี้”</b> พร้อม SL $15 และ TP $15 / $20 / $30 เข้า LINE ทันที · ระบบเช็กทุก 30 นาที แต่<b>ส่ง LINE เฉพาะตอนที่ฝั่งใดฝั่งหนึ่งขึ้น ✅ หรือหมดจังหวะ</b> (เฉลี่ยวันละ ~2 ครั้ง ประหยัดโควตา LINE ฟรี) บอกทั้ง <b>ฝั่งซื้อ</b> และ <b>ฝั่งขาย</b> ว่า ✅ ควรเข้า / 🟡 เข้าได้แต่ลดขนาดไม้ / ❌ ไม่ควรเข้า พร้อม % “จบกำไร” และ % “ถึง TP1” จากสถิติย้อนหลัง 2 ปี — บนเว็บแสดงเป็นแผนภูมิวงกลมแบบสด
+            (ประมาณวันละ 2–4 ไม้ ครั้งละไม้เดียว) ถ้ายังไม่ชัด หน้าเว็บจะบอกว่า <b>“ยังไม่ควรเข้า”</b> พร้อมเหตุผล</p>
+        </section>
+
+        <section class="card">
           <h3>⏱️ สัญญาณ 15 นาที (ดูบนเว็บเท่านั้น)</h3>
           <p>ทุกครั้งที่แท่ง 15 นาทีปิด ระบบเช็กแนวโน้ม <b>15 นาที · 1 ชม. · 5 ชม.</b> ถ้าทั้ง 3 ชี้ขึ้นชัด (คะแนน <b>+5</b>) จะขึ้น <b>▲ ซื้อ</b> บนกราฟ พร้อม SL $15 และ TP $15 / $20 / $30
             · <b>พื้นเขียว</b> = ช่วงที่เข้าได้ · <b>พื้นเหลือง</b> = ช่วงข่าวแรง งดเข้า · <b>พื้นว่าง</b> = ไม่เข้า
             <br>ฝั่งขายบอก "ไม่เข้า" เสมอ เพราะทดสอบย้อนหลังแล้วแพ้มากกว่าชนะ · <b>ไม่ส่ง LINE</b> ดูได้ที่หน้าสัญญาณและหน้ากราฟ (ช่วง 2 วัน)
             <br><span class="muted small">ทดสอบ 1 ปี: ~1.4 ไม้/วัน ชนะ 52% กำไรหลังสเปรดน้อยกว่าระบบ 30 นาที — บางวันไม่มีจุดเข้าเลย</span></p>
-        </section><section class="card">
+        </section>
+
+        <section class="card">
           <h3>ระบบช่วยกันพอร์ต 🛡️</h3>
           <ul class="why">
             <li><b>📈 สัญญาณ 30 นาทีเข้าเฉพาะฝั่งซื้อ</b> — สถิติ 2 ปี ฝั่งซื้อชนะ ~56–58% ส่วนฝั่งขายแค่ ~50% (เหมือนโยนเหรียญ) วันที่แนวโน้มลงระบบจะบอกให้รอ</li>
             <li><b>📰 หลบข่าวแรงสหรัฐ</b> (Non-Farm, CPI, Fed ฯลฯ จาก investing.com) — ไม่เปิดไม้ใหม่ ±30 นาทีรอบข่าว และเตือนล่วงหน้า 30 นาที</li>
-            <li><b>📏 คำนวณขนาดไม้ให้</b> — ใส่ทุนและ % ที่ยอมเสียในแท็บ <a href="#account">ตั้งค่า</a> ทุกสัญญาณจะบอกว่าควรเข้ากี่ lot (0.01 lot = ทอง 1 ออนซ์)</li>
+            <li><b>📏 คำนวณขนาดไม้ให้</b> — ใส่ทุนและ % ที่ยอมเสียในแท็บ <a href="#account">บัญชี</a> ทุกสัญญาณจะบอกว่าควรเข้ากี่ lot (0.01 lot = ทอง 1 ออนซ์)</li>
             <li><b>💸 หักสเปรดของโบรกคุณ</b> — สถิติทุกหน้าคิดกำไรหลังหักสเปรดแล้ว ตั้งค่าได้ในแท็บบัญชี</li>
             <li><b>📊 สรุปผลทุกเสาร์ 07:30</b> — สัปดาห์นี้กี่ไม้ ชนะ/แพ้ กำไรสุทธิ เทียบสัปดาห์ก่อน</li>
             <li><b>🛑 เบรกฉุกเฉิน</b> — ถ้าแพ้ติดกัน 5 ไม้ หรือขาดทุนเกิน $60/ออนซ์ ในสัปดาห์เดียว ระบบ 30 นาทีจะหยุดเปิดไม้ใหม่จนถึงตลาดเปิดวันจันทร์หน้า และแจ้งทาง LINE</li>
             <li><b>🕐 เวลาตลาด</b> — ทองคำซื้อขายตามเวลานิวยอร์ก: กลาง มี.ค.–ต้น พ.ย. เปิด <b>07:00–03:00 น.</b> · ต้น พ.ย.–กลาง มี.ค. เลื่อนเป็น <b>08:00–04:00 น.</b> ระบบเลื่อนเวลาทั้งหมด (เปิดไม้ ปิดไม้ ข้อความเช้า) ให้เอง</li>
             <li><b>🔧 แจ้งเตือนเมื่อระบบมีปัญหา</b> — ถ้าดึงข้อมูลไม่ได้หรืองานอัตโนมัติล้ม จะส่งข้อความบอก</li>
           </ul>
-        </section><section class="card">
+        </section>
+
+        <section class="card">
           <h3>ใช้สัญญาณใน 3 ขั้น</h3>
           <ol class="steps">
-            <li><b>ตรวจสัญญาณซื้อที่ระบบบันทึกแล้ว</b> พร้อมเวลา จุดเข้า และความสดของข้อมูล · แยกจากคะแนนสดและภาพรวมรายวันซึ่งเป็นข้อมูลประกอบ</li>
+            <li><b>เปิดออเดอร์ทันที (Market)</b> ตามสัญญาณ ซื้อ หรือ ขาย เมื่อได้รับสัญญาณตอนตลาดเปิด</li>
             <li><b>ตั้งตัดขาดทุน (Stop Loss)</b> ทุกครั้ง — กันขาดทุนบานปลายถ้าผิดทาง</li>
             <li><b>แบ่งปิด 3 ส่วน</b> ที่ TP1 · TP2 · TP3 — พอถึง TP1 ให้<b>เลื่อน SL ไปที่ราคาเข้า</b> (ไม้นั้นจะไม่ขาดทุนแล้ว) ถ้าถึง 02:45 น. (ต้น พ.ย.–กลาง มี.ค. 03:45 น.) ก่อนตลาดปิด ยังไม่ปิด ให้ปิดเอง</li>
           </ol>
-        </section><section class="card">
+        </section>
+
+        <section class="card">
           <h3>ดาวความมั่นใจ ★</h3>
           <p>★★★★★ = แนวโน้มระยะสั้น กลาง และยาว ชี้ไปทางเดียวกันชัดเจน · ★ น้อย = แต่ละช่วงเวลาขัดกัน ควรลดขนาดออเดอร์หรือข้ามได้
             <br><span class="muted small">ดาวไม่ได้รับประกันผล — ดูสถิติจริงประกอบเสมอ</span></p>
-        </section><section class="card">
+        </section>
+
+        <section class="card glossary">
+          <h3>คำศัพท์</h3>
+          <dl>
+            <dt>XAU/USD</dt><dd>ราคาทองคำในตลาดโลก เป็นดอลลาร์สหรัฐต่อออนซ์ (1 ออนซ์ ≈ 31.1 กรัม)</dd>
+            <dt>ซื้อ (Buy)</dt><dd>ได้กำไรเมื่อราคาขึ้น</dd>
+            <dt>ขาย (Sell / Short)</dt><dd>ได้กำไรเมื่อราคาลง (ทำได้ในบัญชีเทรด เช่น โกลด์ฟิวเจอร์ส / CFD)</dd>
+            <dt>Limit Order</dt><dd>คำสั่งรอซื้อ/ขายที่ราคาที่กำหนด ทำงานเองเมื่อราคามาถึง</dd>
+            <dt>Stop Loss (SL)</dt><dd>จุดตัดขาดทุน — ปิดออเดอร์อัตโนมัติเมื่อผิดทางถึงระดับนี้</dd>
+            <dt>Take Profit (TP)</dt><dd>จุดเป้าหมาย — ปิดเก็บกำไรอัตโนมัติ</dd>
+            <dt>อัตราชนะ</dt><dd>ชนะกี่ % ของครั้งที่ได้เข้าเทรดจริง</dd>
+          </dl>
+        </section>
+
+        <section class="card">
           <h3>ข้อควรระวัง ⚠️</h3>
           <p>สัญญาณเป็นการวิเคราะห์ทางเทคนิคอัตโนมัติ <b>ไม่ใช่คำแนะนำการลงทุน</b> ไม่มีระบบไหนชนะทุกครั้ง
             ดูผลจริงสะสมที่แท็บสถิติประกอบการตัดสินใจ และ <b>อย่าเสี่ยงเกิน 1–2% ของเงินทุนต่อครั้ง</b></p>
-        </section></details></section>
+        </section>
+      </section>
 
       <!-- 👤 Account -->
-      <section id="tab-account" class="tab" hidden=""><header class="page-intro"><h1>ตั้งค่า</h1><p>กำหนดทุนและขนาดความเสี่ยงที่ใช้คำนวณ</p></header><section class="card">
-          <h3>ทุนและความเสี่ยง</h3>
-          <p class="muted small">ใช้คำนวณขนาดไม้และต้นทุนในหน้าผลเทรด</p>
+      <section id="tab-account" class="tab" hidden>
+        <section class="card profile">
+          <img id="accAvatar" class="avatar big" alt="">
+          <div><b id="accName">—</b><p class="muted small" id="accEmail"></p>
+            <a class="btn" id="accSignIn" href="./" hidden>เข้าสู่ระบบด้วย Google</a></div>
+        </section>
+
+        <section class="card">
+          <h3>หน้าจอ 🎨</h3>
+          <p class="muted small">เลือกโทนสีที่อ่านสบายตา — จำไว้ในเครื่องนี้</p>
+          <div class="seg" id="themeSeg">
+            <button type="button" data-theme="light">☀️ สว่าง</button>
+            <button type="button" data-theme="dark">🌙 มืด</button>
+          </div>
+        </section>
+
+        <section class="card pwa" id="pwaCard">
+          <h3>แอปบนมือถือ + แจ้งเตือน 📲</h3>
+          <div class="pwa-row">
+            <div><b>ติดตั้งเป็นแอป</b><p class="muted small" id="pwaInstallTx"></p></div>
+            <button class="btn gold" id="pwaInstall" type="button">📲 ติดตั้ง</button>
+          </div>
+          <div class="pwa-how" id="pwaHow" hidden>
+            <ol id="pwaHowIos"><li>เปิดเว็บนี้ใน <b>Safari</b></li><li>กดปุ่ม <b>แชร์</b> <span class="mono">⬆︎</span> ด้านล่าง</li><li>เลือก <b>เพิ่มไปยังหน้าจอโฮม</b> แล้วกด <b>เพิ่ม</b></li><li>เปิด Gold Signal จากหน้าจอโฮม แล้วกลับมาเปิดแจ้งเตือนที่นี่</li></ol>
+            <ol id="pwaHowOther"><li>กดเมนู <b>⋮</b> ของเบราว์เซอร์ (Chrome / Edge)</li><li>เลือก <b>ติดตั้งแอป</b> หรือ <b>เพิ่มลงในหน้าจอหลัก</b></li><li>เปิด Gold Signal จากไอคอนบนหน้าจอได้เลย</li></ol>
+          </div>
+          <div class="pwa-row">
+            <div><b>แจ้งเตือนบนเครื่องนี้</b><p class="muted small" id="pwaPushTx">กำลังตรวจสอบ…</p></div>
+            <button class="btn" id="pwaPush" type="button" hidden>🔔 เปิดแจ้งเตือน</button>
+          </div>
+          <button class="btn" id="pwaTest" type="button" hidden>🧪 ส่งแจ้งเตือนทดสอบ</button>
+        </section>
+
+        <section class="card">
+          <h3>ตั้งค่าการเทรดของฉัน ⚙️</h3>
+          <p class="muted small">ใช้คำนวณขนาดไม้ (lot) ในทุกสัญญาณ และหักสเปรดในหน้าสถิติ — บันทึกไว้กับบัญชีของคุณ</p>
           <div class="settings">
             <label>ทุนในบัญชีเทรด
               <span class="row"><input id="setCap" type="number" min="0" step="100" placeholder="เช่น 1000"><select id="setCur"><option value="USD">ดอลลาร์ (USD)</option><option value="THB">บาท (THB)</option></select></span>
@@ -495,67 +600,46 @@
           </div>
           <p class="set-preview" id="setPreview"></p>
           <button class="btn" id="setSave">บันทึก</button>
-        </section><details class="simple-fold" id="notificationSettings"><summary><span>การแจ้งเตือนและติดตั้งแอป</span><small>LINE และแจ้งเตือนบนเครื่อง</small></summary><section class="card">
+        </section>
+
+        <section class="card">
           <h3>รับสัญญาณทาง LINE 📩</h3>
           <p class="muted">ทุกเช้าวันทำการ 07:05 (ต้น พ.ย.–กลาง มี.ค. 08:05) ส่งภาพรวมรายวัน · ระหว่างวันส่ง <b>สัญญาณ 30 นาที</b> เมื่อเข้าไม้ ✅ ถึง TP ❌ โดน SL และเมื่อมีจังหวะ ✅ หรือหมดจังหวะ · เตือนก่อนข่าวแรง</p>
           <p class="muted small" id="lineQuota"></p>
-          <a class="btn line" id="lineAdd" target="_blank" rel="noopener" hidden="">เพิ่มเพื่อน LINE เพื่อรับสัญญาณ</a>
+          <a class="btn line" id="lineAdd" target="_blank" rel="noopener" hidden>เพิ่มเพื่อน LINE เพื่อรับสัญญาณ</a>
           <p class="muted small" id="lineSoon">กำลังเตรียมบัญชี LINE — เร็ว ๆ นี้</p>
-        </section><section class="card pwa" id="pwaCard">
-          <h3>แอปบนมือถือ + แจ้งเตือน 📲</h3>
-          <div class="pwa-row">
-            <div><b>ติดตั้งเป็นแอป</b><p class="muted small" id="pwaInstallTx"></p></div>
-            <button class="btn gold" id="pwaInstall" type="button">📲 ติดตั้ง</button>
-          </div>
-          <div class="pwa-how" id="pwaHow" hidden="">
-            <ol id="pwaHowIos"><li>เปิดเว็บนี้ใน <b>Safari</b></li><li>กดปุ่ม <b>แชร์</b> <span class="mono">⬆︎</span> ด้านล่าง</li><li>เลือก <b>เพิ่มไปยังหน้าจอโฮม</b> แล้วกด <b>เพิ่ม</b></li><li>เปิด Gold Signal จากหน้าจอโฮม แล้วกลับมาเปิดแจ้งเตือนที่นี่</li></ol>
-            <ol id="pwaHowOther"><li>กดเมนู <b>⋮</b> ของเบราว์เซอร์ (Chrome / Edge)</li><li>เลือก <b>ติดตั้งแอป</b> หรือ <b>เพิ่มลงในหน้าจอหลัก</b></li><li>เปิด Gold Signal จากไอคอนบนหน้าจอได้เลย</li></ol>
-          </div>
-          <div class="pwa-row">
-            <div><b>แจ้งเตือนบนเครื่องนี้</b><p class="muted small" id="pwaPushTx">กำลังตรวจสอบ…</p></div>
-            <button class="btn" id="pwaPush" type="button" hidden="">🔔 เปิดแจ้งเตือน</button>
-          </div>
-          <button class="btn" id="pwaTest" type="button" hidden="">🧪 ส่งแจ้งเตือนทดสอบ</button>
-        </section></details><details class="simple-fold" id="personalSettings"><summary><span>หน้าจอและบัญชี</span><small>โทนสี บัญชี และแชร์เว็บ</small></summary><section class="card">
-          <h3>หน้าจอ 🎨</h3>
-          <p class="muted small">เลือกโทนสีที่อ่านสบายตา — จำไว้ในเครื่องนี้</p>
-          <div class="seg" id="themeSeg">
-            <button type="button" data-theme="light">☀️ สว่าง</button>
-            <button type="button" data-theme="dark">🌙 มืด</button>
-          </div>
-        </section><section class="card profile">
-          <img id="accAvatar" class="avatar big" alt="">
-          <div><b id="accName">—</b><p class="muted small" id="accEmail"></p>
-            <a class="btn" id="accSignIn" href="./" hidden="">เข้าสู่ระบบด้วย Google</a></div>
-        </section><section class="card">
+        </section>
+
+        <section class="card">
           <h3>ชวนเพื่อนมาใช้ 🤝</h3>
           <p class="muted">ส่งลิงก์ให้เพื่อน เพื่อนกดเข้ามาแล้วล็อกอินด้วย Google ได้เลย</p>
           <div class="share">
             <a class="btn line" id="shareLine" target="_blank" rel="noopener">แชร์ทาง LINE</a>
             <button class="btn" id="shareCopy">คัดลอกลิงก์</button>
-            <button class="btn" id="shareNative" hidden="">แชร์…</button>
+            <button class="btn" id="shareNative" hidden>แชร์…</button>
           </div>
-        </section><button class="btn danger wide" id="signOut">ออกจากระบบ</button></details><p class="muted small center">เวอร์ชัน 202610070005 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p></section>
+        </section>
+
+        <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
+        <p class="muted small center">เวอร์ชัน 202610071500 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+      </section>
     </main>
   </div>
 
-  <div class="toast" id="toast" hidden=""></div>
+  <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610070005"></script>
-  <script src="auth.js?v=202610070005"></script>
-  <script src="indicators.js?v=202610070005"></script>
-  <script src="investing.js?v=202610070005"></script>
-  <script src="explain.js?v=202610070005"></script>
-  <script src="dailyplan.js?v=202610070005"></script>
-  <script src="signals.js?v=202610070005"></script>
-  <script src="intraday.js?v=202610070005"></script>
-  <script src="pwa.js?v=202610070005"></script>
-  <script src="ui.js?v=202610070005"></script>
-  <script src="status.js?v=202610070005"></script>
-  <script src="main.js?v=202610070005"></script>
-  <script src="tradeplan.js?v=202610070005"></script>
-  <script src="chartentry.js?v=202610070005"></script>
-  <script src="chartzones.js?v=202610070005"></script>
-
-
-</body></html>
+  <script src="config.js?v=202610071500"></script>
+  <script src="auth.js?v=202610071500"></script>
+  <script src="indicators.js?v=202610071500"></script>
+  <script src="investing.js?v=202610071500"></script>
+  <script src="explain.js?v=202610071500"></script>
+  <script src="dailyplan.js?v=202610071500"></script>
+  <script src="signals.js?v=202610071500"></script>
+  <script src="intraday.js?v=202610071500"></script>
+  <script src="pwa.js?v=202610071500"></script>
+  <script src="ui.js?v=202610071500"></script>
+  <script src="main.js?v=202610071500"></script>
+  <script src="tradeplan.js?v=202610071500"></script>
+  <script src="chartzones.js?v=202610071500"></script>
+</body>
+</html>

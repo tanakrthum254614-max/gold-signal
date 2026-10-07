@@ -48,7 +48,7 @@
   }
 
   const shareUrl = location.origin + location.pathname;
-  const shareText = 'Gold Signal — ราคาทอง กราฟ และสัญญาณซื้อระบบ 30 นาที พร้อมผลสัญญาณที่บันทึกจริง';
+  const shareText = 'ลองใช้ Gold Signal — สัญญาณเทรดทองวันละ 1 ครั้ง พร้อมสถิติชนะ–แพ้จริง';
   $('shareLine').href = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
   $('shareCopy').addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(shareUrl); toast('คัดลอกลิงก์แล้ว ส่งให้เพื่อนได้เลย'); }
@@ -131,7 +131,7 @@
   function start() {
     fillAccount();
     fillSettings();
-    setChartMode(store.get('gs-chart') || 'pro');
+    setChartMode(store.get('gs-chart') || 'simple');
     showTab(currentTab());
   }
 
