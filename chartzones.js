@@ -1,7 +1,7 @@
 // Chart tab: where to enter, on the chart itself, for every timeframe.
-// Timeframes with a backtested system get its entry zones (background), ▲ entries / ● exits replayed over the
-// candles on screen, and the open trade's entry / SL / TP lines. Timeframes without a system that passed the
-// test only get a direction tint, and the box above the chart says so. Uses main.js globals (state, candles, …).
+// Every timeframe has its own backtested settings: a small up / down arrow on each closed candle, entry zones,
+// big labelled ▲ buy / ▼ sell entries and exits replayed over the candles on screen, and the open trade's entry / SL / TP
+// lines. A side that failed its test gives no entries. Uses main.js globals (state, candles, …).
 // Thai clock time + how long ago, so an hours-old entry never reads like "buy now"
 const clock = (ms) => new Date(ms).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
 function ago(ms) {
@@ -13,48 +13,61 @@ function ago(ms) {
 }
 (function () {
   const $ = (id) => document.getElementById(id);
-  const M = 60e3;
-  // One system per timeframe: the same 3-timeframe score (buy at +5, no chasing above the Bollinger band) with the
-  // chart timeframe as the fast frame. bt = 2-year backtest after a $0.4 spread, half-years oldest → newest, $/oz
-  // (scratchpad research 6 Oct 2026, Binance PAXG). mult scales the $15 stop and $15/20/30 targets.
-  const BUY5 = { ...INTRA.RULE, threshold: 5, sides: 'buy', noChase: true };
-  // Sell at −5 too (website chart only — LINE / recorded trades stay buy-only). sbt = sell-only 2-year backtest,
-  // same format as bt (scratchpad research 7 Oct 2026): over 2 years about break-even, profitable only lately.
-  const BOTH5 = { ...BUY5, sides: 'both' };
+  const M = 60e3, H = 60 * M, DAY = 24 * H;
+  // Every timeframe: the same trend score over the chart frame + slower frames, with the settings that tested best
+  // for that timeframe (scratchpad research 7 Oct 2026, Binance PAXG, after a $0.4 spread, 4 equal periods old → new,
+  // $/oz). A side whose test failed gets no entries — its arrows only show direction. SL $15 × mult, TP1 $15 × mult
+  // (tp1) or TP $15/20/30 × mult. long = 5h/1d/1w: no session close, trades held up to `hold`.
   const SYS = {
-    // 5m: an up/down arrow on every closed candle (user request 7 Oct) and trades with TP1 only. every = 2-year result of
-    // taking every arrow one at a time (SL/TP1 $15) — shown so nobody mistakes the small arrows for a tested system.
-    '5m': { frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', 60 * M, 60, '1 ชม.']], rule: BOTH5, mult: 1, tp1: true, bt: [312, 448, 99, -466], sbt: [6, -117, -9, 212], every: [-89, 389, -977, -803] },
-    '15m': { frames: INTRA.FRAMES15, rule: BOTH5, mult: 1, bt: [61, 480, 305, -53], sbt: [-3, -139, -293, 150] },
-    '30m': { frames: INTRA.FRAMES, rule: BOTH5, mult: 1, bt: [135, 429, 218, -31], sbt: [-55, -50, -14, 124] },
-    // the only one that made money in all four half-years (also with a 1.5× stop: +194/+220/+101/+58)
-    '1h': { frames: [['h1', 60 * M, 60, '1 ชม.'], ['h4', 240 * M, 60, '4 ชม.'], ['h5', 300 * M, 40, '5 ชม.']], rule: BUY5, mult: 2, bt: [166, 145, 383, 57], sellLost: [-21, -65, -287, -235] },
-    '5h': { note: 'กรอบใหญ่: แท่งน้อยเกินกว่าจะมีจุดเข้าระหว่างวัน' },
-    '1d': { note: 'กรอบรายวัน: ใช้ดูทิศทางของสัปดาห์' },
-    '1w': { note: 'กรอบรายสัปดาห์: ใช้ดูภาพใหญ่' },
+    '5m': { frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', H, 60, '1 ชม.']], span: '2 ปี',
+      buy: { th: 5, tp1: true, mult: 1, win: 53, q: [312, 448, 99, -452] }, sell: { th: 6, tp1: false, mult: 0.67, win: 51, q: [22, 31, -18, 101] },
+      every: -1480 }, // taking every small arrow one at a time, SL / TP1 $15
+    '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { th: 6, tp1: true, mult: 1.5, win: 54, q: [254, 22, 16, 48] }, sellQ: [115, -233, -72, 204] },
+    '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { th: 5, tp1: true, mult: 1, win: 57, q: [264, 462, 239, -7] }, sellQ: [129, -174, -58, 113] },
+    '1h': { frames: [['h1', H, 60, '1 ชม.'], ['h4', 4 * H, 60, '4 ชม.'], ['h5', 5 * H, 40, '5 ชม.']], span: '2 ปี',
+      buy: { th: 5, tp1: false, mult: 2, win: 57, q: [188, 181, 348, 57] }, sellQ: [-62, 4, -112, 8] },
+    '5h': { frames: [['h5', 5 * H, 60, '5 ชม.'], ['d1', DAY, 60, '1 วัน']], span: '2 ปี', long: true, hold: 5 * DAY,
+      buy: { th: 3, tp1: false, mult: 4, win: 61, q: [355, 451, 526, 127] }, sellQ: [-72, -179, -6, 105] },
+    '1d': { frames: [['d1', DAY, 60, '1 วัน'], ['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '5 ปี', long: true, hold: 20 * DAY,
+      buy: { th: 3, tp1: true, mult: 8, win: 64, q: [128, 218, 1243, 966] }, sellQ: [92, -120, 0, 12] },
+    '1w': { frames: [['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '4 ปี', long: true, hold: 84 * DAY, few: 23,
+      buy: { th: 1, tp1: true, mult: 20, win: 70, q: [196, 737, 1167, 296] } },
   };
-  // 4-hour candles (only the 1-hour system needs them): Binance PAXG shifted to spot, like the backtest
-  async function refreshH4() {
-    try { state.h4 = msBars(await backupBars('4h', 200)); } catch (e) { /* keep last */ }
+  const NONE = { ...INTRA.RULE, threshold: 99, sides: 'both', noChase: false }; // score only; entries decided below
+  // Slower candles the systems need: Binance PAXG shifted to spot, like the backtest
+  async function refreshSlow() {
+    for (const [k, iv] of [['h4', '4h'], ['d1', '1d'], ['w1', '1w']]) {
+      try { state[k] = msBars(await backupBars(iv, 200)); } catch (e) { /* keep last */ }
+    }
   }
-  refreshH4(); setInterval(refreshH4, 10 * 60e3);
-  const tpsUsd = (sys) => (sys.tp1 ? INTRA.RULE.tpUsd.slice(0, 1) : INTRA.RULE.tpUsd).map((u) => u * sys.mult);
-  const levelsFor = (sys, price, d = 1) => ({ sl: price - d * INTRA.RULE.slUsd * sys.mult, tps: tpsUsd(sys).map((u) => price + d * u) });
+  refreshSlow(); setInterval(refreshSlow, 10 * 60e3);
+  const usdList = (c) => (c.tp1 ? [15] : INTRA.RULE.tpUsd).map((u) => Math.round(u * c.mult));
+  const levelsFor = (c, price, d) => ({ sl: price - d * Math.round(15 * c.mult), tps: usdList(c).map((u) => price + d * u) });
   const ms = (bars) => bars.map((b) => ({ ...b, time: b.time < 1e12 ? b.time * 1000 : b.time }));
-  // Candles for a frame key, all with times in ms
-  function frameBars(key, chart) {
+  function frameBars(key) {
     const C = state.intraCandles || {};
-    if (key === 'chart') return chart;
     if (key === 'm15') return state.m15;
-    if (key === 'h4') return state.h4 || [];
+    if (['h4', 'd1', 'w1'].includes(key)) return state[key] || [];
     return C[key] || [];
   }
+  const maxScore = (sys) => sys.frames.length * 2;
+  // Entry direction for a decision: only on a side that passed its test, never chasing outside the Bollinger band
+  function dirOf(sys, dec) {
+    if (!dec || (!sys.long && (dec.stale || dec.lastHour || dec.news))) return 0;
+    if (sys.buy && dec.score >= sys.buy.th) return dec.bbPos >= 1 ? 0 : 1;
+    if (sys.sell && dec.score <= -sys.sell.th) return dec.bbPos <= 0 ? 0 : -1;
+    return 0;
+  }
+  const stretched = (sys, dec) => !!dec && ((sys.buy && dec.score >= sys.buy.th && dec.bbPos >= 1) || (sys.sell && dec.score <= -sys.sell.th && dec.bbPos <= 0));
+  const when = (sys, t) => (sys.frames[0][1] >= DAY
+    ? new Date(t).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' })
+    : sys.long ? new Date(t).toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' }) : clock(t));
 
-  // Replay the system over the candles on screen (same rules as the backtest: one trade at a time)
+  // Replay over the candles on screen (same rules as the backtest: one trade at a time)
   const cache = new Map();
   function replay(tf, sys, chart) {
     const dur = sys.frames[0][1], now = Date.now();
-    const data = Object.fromEntries(sys.frames.map(([k]) => [k, frameBars(k === sys.frames[0][0] ? 'chart' : k, chart)]));
+    const data = Object.fromEntries(sys.frames.map(([k]) => [k, frameBars(k)]));
     data[sys.frames[0][0]] = chart;
     const decs = [], trades = [];
     let busy = 0;
@@ -65,17 +78,18 @@ function ago(ms) {
       const key = `${tf}|${t}`;
       let dec = cache.get(key);
       // empty result = data still loading: don't cache it, try again next time
-      if (dec === undefined) { dec = INTRA.decideWith(sys.frames, sys.rule, data, t, state.news); if (t < last && dec) cache.set(key, dec); }
+      if (dec === undefined) { dec = INTRA.decideWith(sys.frames, NONE, data, t, sys.long ? null : state.news); if (t < last && dec) cache.set(key, dec); }
       decs.push({ t, dec });
-      if (!dec || !dec.dir || t < busy) continue;
-      const tr = INTRA.makeTrade(dec, chart[i - 1].close, t);
-      if (sys.mult !== 1) { const L = levelsFor(sys, tr.entry, dec.dir); tr.sl = SIG.round(L.sl); tr.tps = L.tps.map(SIG.round); tr.tp = tr.tps[0]; }
-      if (sys.tp1) { tr.tps = tr.tps.slice(0, 1); tr.tp = tr.tps[0]; }
+      const dir = dirOf(sys, dec);
+      if (!dir || t < busy) continue;
+      const c = dir > 0 ? sys.buy : sys.sell, tr = INTRA.makeTrade({ ...dec, dir }, chart[i - 1].close, t), L = levelsFor(c, tr.entry, dir);
+      tr.sl = SIG.round(L.sl); tr.tps = L.tps.map(SIG.round); tr.tp = tr.tps[0];
+      if (sys.hold) tr.expiresAt = t + sys.hold;
       const r = SIG.evaluate(tr, chart.slice(i), now);
       trades.push(r);
       busy = SIG.isFinal(r) ? (r.exitAt || r.expiresAt) + dur : Infinity;
     }
-    return { decs, trades, current: INTRA.decideWith(sys.frames, sys.rule, data, now, state.news, true) };
+    return { decs, trades, current: INTRA.decideWith(sys.frames, NONE, data, now, sys.long ? null : state.news, true) };
   }
 
   // Drawn on both chart views: trader (candles) and simple (price area)
@@ -99,22 +113,20 @@ function ago(ms) {
   const sec = (t) => Math.floor(t / 1000) + TZ;
   const usd = (v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US')}`;
 
-  function markers(trades, from, decs) {
+  function markers(sys, trades, from, decs) {
     const out = [];
-    // every closed candle: small up / down arrow from the score's lean (no text; trades get the big labelled ones)
-    if (decs) {
-      const taken = new Set(trades.map((r) => r.createdAt));
-      decs.forEach(({ t, dec }) => {
-        if (t < from || !dec || dec.stale || !dec.lean || taken.has(t)) return;
-        const up = dec.lean > 0;
-        out.push({ time: sec(t), position: up ? 'belowBar' : 'aboveBar', shape: up ? 'arrowUp' : 'arrowDown', size: 0.5,
-          color: up ? 'rgba(15,159,110,.55)' : 'rgba(224,66,79,.55)' });
-      });
-    }
+    // every closed candle: small up / down arrow from the score's lean (no text; entries get the big labelled ones)
+    const taken = new Set(trades.map((r) => r.createdAt));
+    decs.forEach(({ t, dec }) => {
+      if (t < from || !dec || (!sys.long && dec.stale) || !dec.lean || taken.has(t)) return;
+      const up = dec.lean > 0;
+      out.push({ time: sec(t), position: up ? 'belowBar' : 'aboveBar', shape: up ? 'arrowUp' : 'arrowDown', size: 0.5,
+        color: up ? 'rgba(15,159,110,.55)' : 'rgba(224,66,79,.55)' });
+    });
     trades.forEach((r) => {
       if (r.createdAt < from) return;
       const buy = r.side !== 'SELL';
-      out.push({ time: sec(r.createdAt), position: buy ? 'belowBar' : 'aboveBar', color: buy ? '#0f9f6e' : '#e0424f', shape: buy ? 'arrowUp' : 'arrowDown', text: `${buy ? 'ซื้อ' : 'ขาย'} ${clock(r.createdAt)}` });
+      out.push({ time: sec(r.createdAt), position: buy ? 'belowBar' : 'aboveBar', color: buy ? '#0f9f6e' : '#e0424f', shape: buy ? 'arrowUp' : 'arrowDown', text: `${buy ? 'ซื้อ' : 'ขาย'} ${when(sys, r.createdAt)}` });
       if (SIG.isFinal(r) && r.exitAt) {
         const win = r.pnl > 0;
         out.push({ time: sec(r.exitAt), position: win ? 'aboveBar' : 'belowBar', color: win ? '#0f9f6e' : '#e0424f', shape: 'circle',
@@ -123,35 +135,24 @@ function ago(ms) {
     });
     return out.sort((a, b) => a.time - b.time);
   }
+  const sideText = (c) => `SL $${Math.round(15 * c.mult)} · ${c.tp1 ? 'TP1' : 'TP'} $${usdList(c).join('/')}`;
 
-  // Draw for the current timeframe; key = what's drawn, so ticks don't redraw everything
+  // Draw for the current timeframe
   window.renderChartZones = function () {
     if (!state.bars.length) return;
     const tf = state.tf, sys = SYS[tf];
-    const chart = ms(state.bars);
+    if (!sys) return;
+    const chart = ms(state.bars), dur = sys.frames[0][1], max = maxScore(sys);
     each((v) => { v.lines.forEach((l) => v.series.removePriceLine(l)); v.lines = []; });
-    if (!sys || !sys.frames) {
-      // No tested system: direction tint from this timeframe's own indicators
-      const an = TA.analyze(state.bars), k = an.label.key;
-      const tint = k.includes('buy') ? 'rgba(15,159,110,.07)' : k.includes('sell') ? 'rgba(224,66,79,.07)' : 'rgba(0,0,0,0)';
-      const zd = state.bars.map((b) => ({ time: b.time + TZ, value: 1, color: tint }));
-      each((v) => { v.zone.setData(zd); v.series.setMarkers([]); });
-      window.CZ_OPEN = null;
-      if ($('sigNote')) $('sigNote').textContent = 'การ์ดนี้คือบทวิเคราะห์ภาพรวม — กรอบนี้ไม่มีระบบจุดเข้าบนกราฟ';
-      if (window.drawPositionBoxes) drawPositionBoxes();
-      setBox('none', `<b>🧭 กรอบ ${TF_LABEL[tf]}: ใช้ดูทิศทางเท่านั้น — ไม่มีจุดเข้า</b>
-        <span>ตอนนี้ภาพรวม${an.label.th} (พื้นหลัง${k.includes('buy') ? 'เขียว' : k.includes('sell') ? 'แดง' : 'ใส'}) · ${sys && sys.note ? sys.note : 'ระบบจุดเข้ายังไม่ผ่านการทดสอบในกรอบนี้'} · ดูจุดเข้าที่ทดสอบแล้วในกรอบ <a href="#" data-tf="15m">15 นาที</a> / <a href="#" data-tf="30m">30 นาที</a> / <a href="#" data-tf="1h">1 ชม.</a></span>`);
-      return;
-    }
     const s = replay(tf, sys, chart);
     const byT = new Map(s.decs.map((d) => [d.t, d.dec]));
     const zd = state.bars.map((b) => {
-      const d = byT.get(b.time * 1000);
-      const color = !d || d.stale ? 'rgba(0,0,0,0)' : d.news ? 'rgba(240,180,41,.20)' : d.dir > 0 ? 'rgba(15,159,110,.20)' : d.dir < 0 ? 'rgba(224,66,79,.20)'
-        : d.score >= 3 ? 'rgba(15,159,110,.07)' : d.score <= -3 ? 'rgba(224,66,79,.06)' : 'rgba(0,0,0,0)';
+      const d = byT.get(b.time * 1000), dir = dirOf(sys, d);
+      const color = !d || (!sys.long && d.stale) ? 'rgba(0,0,0,0)' : !sys.long && d.news ? 'rgba(240,180,41,.20)' : dir > 0 ? 'rgba(15,159,110,.20)' : dir < 0 ? 'rgba(224,66,79,.20)'
+        : d.score >= max / 2 ? 'rgba(15,159,110,.07)' : d.score <= -max / 2 ? 'rgba(224,66,79,.06)' : 'rgba(0,0,0,0)';
       return { time: b.time + TZ, value: 1, color };
     });
-    const mk = markers(s.trades, chart[0].time, sys.tp1 ? s.decs : null);
+    const mk = markers(sys, s.trades, chart[0].time, s.decs);
     each((v) => { v.zone.setData(zd); v.series.setMarkers(mk); });
     const open = s.trades.find((r) => r.status === 'active');
     window.CZ_OPEN = open || null;
@@ -162,39 +163,49 @@ function ago(ms) {
       line(open.hit ? open.entry : open.sl, '#e0424f', open.hit ? 'SL→ทุน' : 'SL', LC.LineStyle.Dashed);
       open.tps.forEach((tp, k) => line(tp, '#0f9f6e', `TP${k + 1}`, LC.LineStyle.Dashed));
     }
-    // Status box: what to do now on this timeframe
-    const d = s.current, price = state.bars[state.bars.length - 1].close;
-    const need = d ? sys.rule.threshold - d.score : null;
-    const sells = sys.rule.sides === 'both';
+
+    // 1) the latest closed candle's direction  2) what to do now  3) how accurate each side tested
+    const d = s.current, price = state.bars[state.bars.length - 1].close, dir = dirOf(sys, d);
+    const B = sys.buy, S = sys.sell;
+    const lastC = s.decs.slice().reverse().find((x) => x.dec && (sys.long || !x.dec.stale));
+    let pill = '';
+    if (lastC && (sys.long || !(d && d.stale))) {
+      const up = lastC.dec.lean > 0, dn = lastC.dec.lean < 0;
+      pill = `<span class="cz-5m ${up ? 'up' : dn ? 'down' : 'flat'}">${up ? '▲ ขึ้น' : dn ? '▼ ลง' : '• ทรงตัว'}</span> ทิศกรอบ ${TF_LABEL[tf]} (แท่ง ${when(sys, lastC.t - dur)} ปิดแล้ว · คะแนน ${signedScore(lastC.dec.score)}/±${max}) · รอบถัดไป ${when(sys, lastC.t + dur)}<br>`;
+    }
     let head, cls;
-    if (open) { const sell = open.side === 'SELL'; head = `📌 อยู่ในไม้${sell ? 'ขาย (SELL)' : 'ซื้อ (BUY)'} — เข้า ${f2(open.entry)} · SL ${f2(open.hit ? open.entry : open.sl)} · TP ${open.tps.map(f2).join(' / ')}`; cls = sell ? 'hold sell' : 'hold'; }
-    else if (!d) { head = 'กำลังคำนวณ…'; cls = 'wait'; }
-    else if (d.stale) { head = '🌙 ตลาดปิด — ไม่มีจุดเข้า'; cls = 'wait'; }
-    else if (d.dir > 0) { const L = levelsFor(sys, price); head = `🟢 สัญญาณ BUY (ซื้อ) — ถ้าแท่งนี้ปิดแล้วยังได้ ${signedScore(d.score)} เข้าที่ ~${f2(price)} · SL ${f2(L.sl)} · TP ${L.tps.map(f2).join(' / ')}`; cls = 'go'; }
-    else if (d.dir < 0) { const L = levelsFor(sys, price, -1); head = `🔴 สัญญาณ SELL (ขาย) — ถ้าแท่งนี้ปิดแล้วยังได้ ${signedScore(d.score)} เข้าที่ ~${f2(price)} · SL ${f2(L.sl)} · TP ${L.tps.map(f2).join(' / ')}`; cls = 'no sell'; }
-    else if (d.stretched) { head = `⏸ คะแนนถึง ${signedScore(d.score)} แต่ราคายืดเกินขอบ${d.score > 0 ? 'บน' : 'ล่าง'} Bollinger — รอราคากลับเข้ากรอบ แล้วจะเป็นโซน${d.score > 0 ? 'ซื้อ' : 'ขาย'}`; cls = 'near'; }
-    else if (d.news) { head = '⏸ ช่วงข่าวแรง — งดเข้า (พื้นหลังเหลือง)'; cls = 'wait'; }
-    else if (d.lastHour && Math.abs(d.score) >= sys.rule.threshold) { head = '⏸ ใกล้ตลาดปิด — งดเปิดไม้ใหม่'; cls = 'wait'; }
-    else if (d.score <= -sys.rule.threshold && !sells) { head = `⚠️ แนวโน้มลง ${signedScore(d.score)} แต่กรอบนี้ไม่แนะนำ SELL — ทดสอบฝั่งขายขาดทุนทุกช่วง (${sys.sellLost.map(usd).join(' / ')}) · ดูสัญญาณขายในกรอบ <a href="#" data-tf="5m">5</a> / <a href="#" data-tf="15m">15</a> / <a href="#" data-tf="30m">30 นาที</a>`; cls = 'no'; }
-    else if (d.score >= 3) { head = `⏳ ใกล้สัญญาณ BUY — คะแนน ${signedScore(d.score)} ขาดอีก ${sys.rule.threshold - d.score} (พื้นหลังเขียวอ่อน)`; cls = 'near'; }
-    else if (d.score <= -3) { head = sells ? `⏳ ใกล้สัญญาณ SELL — คะแนน ${signedScore(d.score)} ขาดอีก ${sys.rule.threshold + d.score} (พื้นหลังแดงอ่อน)` : `❌ ไม่ใช่โซนซื้อ — แนวโน้มลง ${signedScore(d.score)} (กรอบนี้ไม่เข้าฝั่งขาย)`; cls = sells ? 'near' : 'no'; }
-    else { head = `⏸ รอก่อน — คะแนน ${signedScore(d.score)} ต้อง +${sys.rule.threshold} (BUY)${sells ? ` หรือ −${sys.rule.threshold} (SELL)` : ''}`; cls = 'wait'; }
+    const sellNo = !S && d && B && d.score <= -B.th;
+    if (open) { const sell = open.side === 'SELL'; head = `📌 อยู่ในไม้${sell ? 'ขาย (SELL)' : 'ซื้อ (BUY)'} ตั้งแต่ ${when(sys, open.createdAt)} — เข้า ${f2(open.entry)} · SL ${f2(open.hit ? open.entry : open.sl)}${open.hit ? ' (ที่ทุน)' : ''} · ${open.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}`; cls = sell ? 'hold sell' : 'hold'; }
+    else if (!d) { head = 'กำลังคำนวณ… (รอกราฟกรอบใหญ่)'; cls = 'wait'; }
+    else if (!sys.long && d.stale) { head = '🌙 ตลาดปิด — ไม่มีจุดเข้า'; cls = 'wait'; }
+    else if (dir) {
+      const c = dir > 0 ? B : S, L = levelsFor(c, price, dir);
+      head = `${dir > 0 ? '🟢 สัญญาณ BUY (ซื้อ)' : '🔴 สัญญาณ SELL (ขาย)'} — ถ้าแท่งนี้ปิดแล้วยังได้ ${signedScore(d.score)} เข้าที่ ~${f2(price)} · SL ${f2(L.sl)} · ${L.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}`;
+      cls = dir > 0 ? 'go' : 'no sell';
+    }
+    else if (stretched(sys, d)) { head = `⏸ คะแนนถึง ${signedScore(d.score)} แต่ราคายืดเกินขอบ${d.score > 0 ? 'บน' : 'ล่าง'} Bollinger — รอราคากลับเข้ากรอบก่อน`; cls = 'near'; }
+    else if (!sys.long && d.news) { head = '⏸ ช่วงข่าวแรง — งดเข้า (พื้นหลังเหลือง)'; cls = 'wait'; }
+    else if (!sys.long && d.lastHour) { head = '⏸ ใกล้ตลาดปิด — งดเปิดไม้ใหม่'; cls = 'wait'; }
+    else if (sellNo) { head = `⚠️ แนวโน้มลง ${signedScore(d.score)} แต่กรอบนี้ไม่ให้สัญญาณ SELL — ฝั่งขายทดสอบไม่ผ่าน · ใช้ดูทิศเท่านั้น (SELL ที่ทดสอบผ่าน: <a href="#" data-tf="5m">กรอบ 5 นาที</a>)`; cls = 'no'; }
+    else if (B && d.score > 0 && d.score >= B.th - 2) { head = `⏳ ใกล้สัญญาณ BUY — คะแนน ${signedScore(d.score)} ขาดอีก ${B.th - d.score}`; cls = 'near'; }
+    else if (S && d.score < 0 && d.score <= -(S.th - 2)) { head = `⏳ ใกล้สัญญาณ SELL — คะแนน ${signedScore(d.score)} ขาดอีก ${S.th + d.score}`; cls = 'near'; }
+    else { head = `⏸ รอก่อน — คะแนน ${signedScore(d.score)} · BUY ต้อง +${B.th}${S ? ` · SELL ต้อง −${S.th}` : ''}`; cls = 'wait'; }
     const note = $('sigNote');
     if (note) note.innerHTML = open
-      ? `📌 <b>ระบบบนกราฟถือไม้${open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}อยู่</b> ตั้งแต่ ${clock(open.createdAt)} — ไม่ต้องเปิดไม้ใหม่ · การ์ดนี้คือบทวิเคราะห์ภาพรวม คนละระบบกับจุดเข้าบนกราฟ`
+      ? `📌 <b>ระบบบนกราฟถือไม้${open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}อยู่</b> ตั้งแต่ ${when(sys, open.createdAt)} — ไม่ต้องเปิดไม้ใหม่ · การ์ดนี้คือบทวิเคราะห์ภาพรวม คนละระบบกับจุดเข้าบนกราฟ`
       : 'การ์ดนี้คือบทวิเคราะห์ภาพรวม — คนละระบบกับจุดเข้าบนกราฟ (กล่องด้านซ้าย)';
-    if (sys.tp1) {
-      const lastC = s.decs.slice().reverse().find((x) => x.dec && !x.dec.stale);
-      if (lastC && !(d && d.stale)) {
-        const up = lastC.dec.lean > 0, L = levelsFor(sys, price, up ? 1 : -1), nextAt = Math.floor(Date.now() / (5 * M)) * 5 * M + 5 * M;
-        head = `<span class="cz-5m ${up ? 'up' : 'down'}">${up ? '▲ ขึ้น' : '▼ ลง'}</span> สัญญาณ 5 นาที (แท่ง ${clock(lastC.t - 5 * M)} ปิดแล้ว · คะแนน ${signedScore(lastC.dec.score)}) · ${up ? 'ซื้อ' : 'ขาย'}ที่ ~${f2(price)} · SL ${f2(L.sl)} · TP1 ${f2(L.tps[0])} · รอบถัดไป ${clock(nextAt)}<br><small>${head}</small>`;
-      }
-    }
+    const acc = (name, c, q) => {
+      if (!c) return `<i class="cz-warn">${name}: ทดสอบไม่ผ่าน${q ? ` (${q.map(usd).join(' / ')})` : ''} — ไม่ให้สัญญาณ</i>`;
+      const pos = c.q.filter((v) => v > 0).length;
+      return `<i class="${pos === 4 ? 'cz-ok' : 'cz-warn'}">${pos === 4 ? '✅' : '⚠️'} ${name}: ชนะ ${c.win}% · กำไร ${pos}/4 ช่วง (${c.q.map(usd).join(' / ')})</i>`;
+    };
     const fin = s.trades.filter((r) => SIG.isFinal(r)), pnl = fin.reduce((a, r) => a + r.pnl, 0);
-    setBox(cls, `<b>${head}</b>
-      ${sys.bt.every((v) => v > 0) ? '<i class="cz-ok">✅ BUY กำไรทุกครึ่งปีในการทดสอบ</i>' : '<i class="cz-warn">⚠️ BUY ครึ่งปีล่าสุดขาดทุนในการทดสอบ</i>'}${sells ? ` <i class="cz-warn">⚠️ SELL 2 ปีรวม ${usd(sys.sbt.reduce((a, v) => a + v, 0))} — กำไรเฉพาะช่วงหลังที่ทองลง</i>` : ''}
-      <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} ชี้ทางเดียวกัน (BUY ≥ +${sys.rule.threshold}${sells ? ` · SELL ≤ −${sys.rule.threshold}` : ''}) · SL ${INTRA.RULE.slUsd * sys.mult} · ${sys.tp1 ? 'TP1' : 'TP'} ${tpsUsd(sys).join('/')} · บนกราฟนี้ ${fin.length} ไม้ปิดแล้ว${fin.length ? ` รวม ${usd(SIG.round(pnl))}` : ''}${open ? ` + 1 ไม้ที่ถืออยู่` : ''}
-      · <b>ทดสอบ 2 ปี BUY</b> ${sys.bt.map(usd).join(' / ')}${sells ? ` · <b>SELL</b> ${sys.sbt.map(usd).join(' / ')}` : ''} (ครึ่งปี เก่า→ใหม่, หลังสเปรด)${sys.every ? ` · <b>ลูกศรเล็ก</b> = ทิศทุก 5 นาที — ถ้าเข้าทุกลูกศร 2 ปี ${usd(sys.every.reduce((a, v) => a + v, 0))} (ชนะ ~50%) ใช้ดูทิศเท่านั้น · ลูกศรใหญ่มีคำว่าซื้อ/ขาย = คะแนน ±5` : ''}</span>`);
+    setBox(cls, `<b>${pill}${pill ? `<small>${head}</small>` : head}</b>
+      ${acc('BUY', B, null)} ${acc('SELL', S, sys.sellQ)}
+      <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} · BUY ≥ +${B.th} (${sideText(B)})${S ? ` · SELL ≤ −${S.th} (${sideText(S)})` : ''}
+      · ทดสอบย้อนหลัง ${sys.span} แบ่ง 4 ช่วงเท่ากัน เก่า→ใหม่ หลังสเปรด ต่อ 1 ออนซ์${sys.few ? ` · ตัวอย่างน้อย (${sys.few} ไม้)` : ''}${sys.long ? ' · ช่วงทดสอบทองเป็นขาขึ้นเกือบตลอด ไม่รับประกันอนาคต' : ''}
+      · บนกราฟนี้ ${fin.length} ไม้ปิดแล้ว${fin.length ? ` รวม ${usd(SIG.round(pnl))}` : ''}${open ? ' + 1 ไม้ที่ถืออยู่' : ''}
+      · <b>ลูกศรเล็ก</b> = ทิศทุกแท่ง ใช้ดูทิศเท่านั้น${sys.every ? ` (เข้าทุกลูกศร 2 ปี ${usd(sys.every)} ชนะ ~50%)` : ''} · <b>ลูกศรใหญ่มีคำว่าซื้อ/ขาย</b> = สัญญาณเข้า</span>`);
   };
 })();
 

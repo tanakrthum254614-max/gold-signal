@@ -525,3 +525,4 @@
 .cz-box b .cz-5m, .cz-5m { display: inline-block; padding: 1px 9px; border-radius: 99px; color: #fff; font-size: 14px; margin-right: 4px; }
 .cz-5m.up { background: var(--up); } .cz-5m.down { background: var(--down); }
 .cz-box b small { font-weight: 600; font-size: 12.5px; }
+.cz-5m.flat { background: var(--muted); }
