@@ -8,7 +8,8 @@
 import { get, put } from '@vercel/blob';
 import { next } from '@vercel/functions';
 
-export const config = { matcher: '/:path*' };
+// Node.js runtime: the Blob SDK could not read the private store from the Edge runtime (login always failed there)
+export const config = { matcher: '/:path*', runtime: 'nodejs' };
 
 const COOKIE = 'gs_auth';
 const DAYS = 30;
@@ -28,7 +29,7 @@ const normalize = (code) => String(code || '').trim().toUpperCase().replace(/[^A
 
 async function readJson(path, fallback) {
   try {
-    const r = await get(path, { access: 'private' });
+    const r = await get(path, { access: 'private', useCache: false });
     if (!r || r.statusCode !== 200) return fallback;
     return JSON.parse(await new Response(r.stream).text());
   } catch (e) { return fallback; }
@@ -65,8 +66,9 @@ async function holder(request) {
 }
 
 async function login(request) {
-  let code = '';
-  try { code = (await request.json()).code; } catch (e) { /* empty */ }
+  // The code comes in a header: Routing Middleware doesn't reliably receive the request body (it arrived empty).
+  let code = request.headers.get('x-access-code') || '';
+  if (!code) { try { code = (await request.json()).code; } catch (e) { /* empty */ } }
   const hash = await sha256(normalize(code));
   const entry = normalize(code) && (await codes()).find((c) => c.hash === hash);
   if (!entry || !process.env.ACCESS_SECRET) {
@@ -84,8 +86,12 @@ async function pushApi(request, who) {
   const all = await readJson(SUBS, { subs: [] });
   const mine = () => all.subs.filter((s) => s.who === who);
   if (request.method === 'GET') return json({ subs: mine().map(({ endpoint, device, at }) => ({ endpoint, device, at })) });
+  // Same as login: the device comes in a header (base64 JSON), the body as a fallback
   let body = {};
-  try { body = await request.json(); } catch (e) { return json({ ok: false }, 400); }
+  try {
+    const h = request.headers.get('x-push');
+    body = h ? JSON.parse(decodeURIComponent(escape(atob(h)))) : await request.json();
+  } catch (e) { return json({ ok: false }, 400); }
   if (!body.endpoint) return json({ ok: false }, 400);
   all.subs = all.subs.filter((s) => s.endpoint !== body.endpoint);
   if (request.method === 'POST') {

@@ -75,7 +75,7 @@
       $('err').textContent = '';
       $('go').disabled = true; $('go').textContent = 'กำลังตรวจสอบ…';
       try {
-        const r = await fetch('/api/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: $('code').value }) });
+        const r = await fetch('/api/login', { method: 'POST', headers: { 'x-access-code': $('code').value.trim() } });
         if (r.ok) { location.replace('/'); return; }
         $('err').textContent = r.status === 401 ? 'รหัสไม่ถูกต้อง หรือถูกยกเลิกแล้ว' : 'ระบบขัดข้อง ลองใหม่อีกครั้ง';
       } catch (err) { $('err').textContent = 'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง'; }

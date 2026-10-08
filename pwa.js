@@ -44,7 +44,8 @@
     const r = await fetch('/api/push', { cache: 'no-store' });
     return r.ok ? (await r.json()).subs || [] : [];
   }
-  const pushApi = (method, body) => fetch('/api/push', { method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+  // The device goes in a header (base64 JSON): the access-check middleware doesn't reliably get request bodies
+  const pushApi = (method, body) => fetch('/api/push', { method, headers: { 'x-push': btoa(unescape(encodeURIComponent(JSON.stringify(body)))) } })
     .then((r) => { if (!r.ok) throw new Error('บันทึกบนเซิร์ฟเวอร์ไม่สำเร็จ'); });
   const keyBytes = (b64) => {
     const s = atob((b64 + '='.repeat((4 - (b64.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/'));

@@ -26,7 +26,7 @@ function newCode() {
 }
 
 async function load() {
-  const r = await get(FILE, { access: 'private' }).catch(() => null);
+  const r = await get(FILE, { access: 'private', useCache: false }).catch(() => null);
   if (!r || r.statusCode !== 200) return { codes: [] };
   return JSON.parse(await new Response(r.stream).text());
 }

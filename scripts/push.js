@@ -8,7 +8,7 @@ const SUBS = 'access/push-subs.json';
 
 async function readSubs() {
   const { get } = require('@vercel/blob');
-  const r = await get(SUBS, { access: 'private' });
+  const r = await get(SUBS, { access: 'private', useCache: false });
   if (!r || r.statusCode !== 200) return { subs: [] };
   return JSON.parse(await new Response(r.stream).text());
 }
