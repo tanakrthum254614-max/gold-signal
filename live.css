@@ -602,3 +602,10 @@ body.cz-clean .charts > .legend { display: none; }
 /* investing.com confidence: secondary to the chart system's % */
 #signalCard .meter { opacity: .55; height: 5px; } #confText { opacity: .8; }
 .learn-steps { margin: 6px 0 8px; padding-left: 20px; display: grid; gap: 6px; line-height: 1.6; }
+/* Desktop: the tab menu is a vertical sidebar on the left (user, 8 Oct); phones keep the bottom bar */
+@media (min-width: 900px) {
+  #app { padding-left: 200px; }
+  #app > .appbar { margin-left: -200px; }
+  #tabbar.tabbar { position: fixed; top: 56px; bottom: 0; left: 0; width: 200px; z-index: 25; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; gap: 4px; padding: 16px 12px; border-bottom: 0; border-right: 1px solid var(--line); overflow-y: auto; }
+  #tabbar.tabbar a { justify-content: flex-start; padding: 11px 14px; border-radius: 12px; }
+}

@@ -33,6 +33,9 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 4. เปลี่ยนเลข `?v=` → commit → push → เช็กว่าเว็บจริงได้ไฟล์ใหม่ · แก้ workflow → สั่งรันทดสอบ (send=false)
 5. อัปเดต Skill.md + สำเนา `.claude/skills/gold-signal/SKILL.md` + memory
 
+## ◧ เมนูแนวตั้งด้านซ้าย (8 ต.ค. 2569 · เวอร์ชัน 202610082400)
+- ผู้ใช้: "ย้ายแถบ navbar มาเป็นเมนูแนวตั้งฝั่งซ้าย" → live.css `@media (min-width: 900px)`: `#tabbar.tabbar` fixed top 56px ซ้าย กว้าง 200px flex-column · `#app { padding-left: 200px }` · `#app > .appbar { margin-left: -200px }` (หัวเว็บยังเต็มความกว้าง) · ใช้ `#tabbar` เพื่อชนะ theme.css ที่โหลดทีหลัง · มือถือ (<900px) ยังเป็นแถบล่างเดิม
+
 ## 🔤 การ์ดขวา: แค่ "Buy" / "Sell" (8 ต.ค. 2569 · เวอร์ชัน 202610082300)
 - ผู้ใช้: "อยากให้สั้นลง ว่า Buy หรือ Sell พอ" → `renderSignalHead`: มีสัญญาณ = "Buy"/"Sell" · ถือไม้ = "ถือ Buy"/"ถือ Sell" · บรรทัดรองเหมือนเดิม · ไม่มีสัญญาณ = คำของ investing.com
 
