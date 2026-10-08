@@ -1,4 +1,23 @@
 {
  "startedAt": 1791370502705,
- "trades": []
+ "trades": [
+  {
+   "id": "5m-1791482400000",
+   "createdAt": 1791482400000,
+   "expiresAt": 1791488700000,
+   "status": "active",
+   "entryAt": 1791482400000,
+   "side": "BUY",
+   "entry": 4130.55,
+   "sl": 4115.55,
+   "tps": [
+    4145.55
+   ],
+   "tp": 4145.55,
+   "score": 5,
+   "tf": "5m"
+  }
+ ],
+ "brakes": {},
+ "updatedAt": 1791482421160
 }
