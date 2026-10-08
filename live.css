@@ -581,3 +581,4 @@ body.cz-clean .charts > .legend { display: none; }
 .cz-prog.buy.live em { background: var(--up); } .cz-prog.sell.live em { background: var(--down); }
 .sig-note .cz-prog { margin: 0 0 6px; }
 .cz-box .cz-more-now { color: var(--text); } .sig-note > small { color: var(--muted); }
+.cz-untested { color: var(--down) !important; font-weight: 600; } .cz-prog.untested b { color: var(--down); }
