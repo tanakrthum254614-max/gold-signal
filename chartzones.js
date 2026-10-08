@@ -106,7 +106,9 @@ function ago(ms) {
     });
     trades.forEach((r) => {
       if (r.createdAt < from) return;
-      // entries are drawn as Buy / Sell tags (setChartDecor); exits stay as small markers
+      // entry: a big ▲ / ▼ on the candle (always shown, also in the clean view) — the Buy / Sell price tag sits past it
+      const buy = r.side !== 'SELL';
+      out.push({ time: sec(r.createdAt), position: buy ? 'belowBar' : 'aboveBar', shape: buy ? 'arrowUp' : 'arrowDown', size: 1.6, color: buy ? '#18a058' : '#e0424f' });
       if (SIG.isFinal(r) && r.exitAt) {
         const win = r.pnl > 0;
         out.push({ time: sec(r.exitAt), position: win ? 'aboveBar' : 'belowBar', color: win ? '#0f9f6e' : '#e0424f', shape: 'circle',
@@ -408,7 +410,7 @@ function ago(ms) {
     }).join('');
     const tg = tags.map((g) => {
       const x = ts.timeToCoordinate(g.t), py = y(g.price); if (x == null || py == null || x < 0 || x > W) return '';
-      return `<div class="cz-tag ${g.side}" style="left:${x}px;top:${g.side === 'buy' ? py + 8 : py - 8}px" title="${g.title}">${g.side === 'buy' ? 'Buy' : 'Sell'} ${f2(g.entry)}</div>`;
+      return `<div class="cz-tag ${g.side}" style="left:${x}px;top:${g.side === 'buy' ? py + 26 : py - 26}px" title="${g.title}">${g.side === 'buy' ? 'Buy' : 'Sell'} ${f2(g.entry)}</div>`;
     }).join('');
     // Entry (gold) / TP (green) / SL (red) segments from the entry candle to the exit, last 8 closed trades on screen
     const seg = tags.filter((g) => !g.open && g.t1 != null).slice(-8).map((g) => {
