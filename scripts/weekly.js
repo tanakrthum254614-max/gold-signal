@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const SIG = require('../signals.js');
+const CS = require('../chartsys.js');
 const { money } = require('../dailyplan.js');
 const { send } = require('./notify.js');
 const { signed } = require('./trade-events.js');
@@ -38,6 +39,7 @@ function section(name, trades) {
   const data = JSON.parse(fs.readFileSync(path.resolve(process.argv[2] || 'data.json'), 'utf8'));
   const daily = read('signals.json', { signals: [] });
   const intra = read('intraday.json', { trades: [] });
+  const chart = read('chart-signals.json', { trades: [] });
 
   // Score daily signals that expired since the last morning run
   const sb = [...bars(data.m30).filter((b) => !data.m15 || b.time + 30 * 60e3 <= data.m15[0][0]), ...bars(data.m15)];
@@ -65,7 +67,19 @@ function section(name, trades) {
   const worst = all.reduce((m, t) => (!m || t.net < m.net ? t : m), null);
   const label = (t) => `${day(t.createdAt)} ${t.side === 'BUY' ? 'ซื้อ' : 'ขาย'} ${money(t.entry)} → ${signed(t.net)}`;
 
-  const lines = [`📊 สรุปผลสัปดาห์ ${day(from)} – ${day(now - DAY)}`, '', ...i30.lines, ...d1.lines, '',
+  // Chart-tab signals, every timeframe (live record by scripts/chart-run.js) — reported separately, not in the total
+  const TF_TH = { '5m': '5 นาที', '15m': '15 นาที', '30m': '30 นาที', '1h': '1 ชม.', '5h': '5 ชม.', '1d': '1 วัน', '1w': '1 สัปดาห์' };
+  const chartLines = [];
+  Object.entries(CS.SYS).forEach(([tf, sys]) => {
+    const all = chart.trades.filter((t) => t.tf === tf);
+    const s = SIG.summary(inWeek(all, from, now), SPREAD), b = CS.brake(sys, all, now);
+    if (!s.traded && !b) return;
+    chartLines.push(`• ${TF_TH[tf]}: ${s.traded ? `${s.traded} ไม้ · ชนะ ${s.wins} แพ้ ${s.losses} · ${signed(s.pnl)}` : 'ไม่มีไม้'}${b ? ` · ⛔ พัก (${b.why})` : ''}`);
+  });
+  if (chartLines.length) chartLines.unshift('📈 สัญญาณบนกราฟ (ผลจริง หักสเปรดแล้ว · ไม่รวมในยอดด้านล่าง)');
+  else chartLines.push('📈 สัญญาณบนกราฟ: ไม่มีไม้ในสัปดาห์นี้');
+
+  const lines = [`📊 สรุปผลสัปดาห์ ${day(from)} – ${day(now - DAY)}`, '', ...i30.lines, ...d1.lines, '', ...chartLines, '',
     `รวมทั้งสัปดาห์: ${signed(total)}/ออนซ์ (หักสเปรด $${SPREAD}/ไม้แล้ว)`,
     `= ถ้าเทรดไม้ละ 0.01 lot ได้ ${signed(total)} · 0.10 lot ได้ ${signed(total * 10)}`];
   if (best && all.length > 1) lines.push(`ไม้ดีที่สุด: ${label(best)}`, `ไม้แย่ที่สุด: ${label(worst)}`);

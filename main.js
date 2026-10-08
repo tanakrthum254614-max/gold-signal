@@ -437,16 +437,18 @@ function renderChartSignals() {
   const sp = userSpread();
   const rows = Object.entries(CHARTSYS.SYS).map(([tf, sys]) => {
     const tr = cs.trades.filter((t) => t.tf === tf), s = SIG.summary(tr, sp), open = tr.find((t) => !SIG.isFinal(t));
+    const br = CHARTSYS.brake(sys, tr, Date.now());
     const bt = [sys.buy && `BUY ${sys.buy.win}%`, sys.sell && `SELL ${sys.sell.win}%`].filter(Boolean).join(' · ');
     const live = s.traded ? `${s.winRate}%` : '—';
     const cls = !s.traded ? '' : s.traded < 20 ? 'muted' : s.winRate >= 50 ? 'up' : 'down';
     return `<tr><td>${TF_LABEL[tf]}</td><td class="mono">${s.traded}</td><td class="mono">${s.wins}–${s.losses}</td>
       <td class="mono ${cls}">${live}${s.traded && s.traded < 20 ? ' <small>(น้อย)</small>' : ''}</td><td class="mono">${bt}</td>
       <td class="mono ${s.pnl > 0 ? 'up' : s.pnl < 0 ? 'down' : ''}">${s.traded ? money(s.pnl) : '—'}</td>
-      <td>${open ? `${open.side === 'BUY' ? '🟢 ซื้อ' : '🔴 ขาย'} ${f2(open.entry)}` : ''}</td></tr>`;
+      <td>${open ? `${open.side === 'BUY' ? '🟢 ซื้อ' : '🔴 ขาย'} ${f2(open.entry)}` : ''}</td>
+      <td>${br ? `<span class="down" title="${br.why}">⛔ พัก</span>` : '✅'}</td></tr>`;
   }).join('');
-  el.innerHTML = `<table><thead><tr><th>กรอบ</th><th>ไม้ปิด</th><th>ชนะ–แพ้</th><th>ชนะจริง</th><th>ทดสอบ</th><th>กำไร/ออนซ์</th><th>ถืออยู่</th></tr></thead><tbody>${rows}</tbody></table>
-    <p class="small muted">เริ่มบันทึก ${new Date(cs.startedAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Bangkok' })} · หักสเปรด ${sp}/ไม้ · ราคาจาก investing.com (กรอบที่ไม่มีใช้ Binance ปรับให้เท่าราคาทอง) · แจ้ง LINE เฉพาะกรอบ 1 ชม. · 5 ชม. · 1 วัน · 1 สัปดาห์</p>`;
+  el.innerHTML = `<table><thead><tr><th>กรอบ</th><th>ไม้ปิด</th><th>ชนะ–แพ้</th><th>ชนะจริง</th><th>ทดสอบ</th><th>กำไร/ออนซ์</th><th>ถืออยู่</th><th>สถานะ</th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="small muted">เริ่มบันทึก ${new Date(cs.startedAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Bangkok' })} · หักสเปรด ${sp}/ไม้ · ราคาจาก investing.com (กรอบที่ไม่มีใช้ Binance ปรับให้เท่าราคาทอง) · แจ้ง LINE เฉพาะกรอบ 1 ชม. · 5 ชม. · 1 วัน · 1 สัปดาห์ · ⛔ พัก = แพ้ติดกัน 5 ไม้ หรือ 20 ไม้ล่าสุดชนะน้อยกว่าผลทดสอบเกิน 12% → หยุดแจ้ง/ไม่แนะนำเข้า แต่ยังบันทึกต่อ</p>`;
 }
 
 // LINE messages used this month (checked every morning by scripts/line-quota.js)

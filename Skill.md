@@ -33,6 +33,13 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 4. เปลี่ยนเลข `?v=` → commit → push → เช็กว่าเว็บจริงได้ไฟล์ใหม่ · แก้ workflow → สั่งรันทดสอบ (send=false)
 5. อัปเดต Skill.md + สำเนา `.claude/skills/gold-signal/SKILL.md` + memory
 
+## ⛔ เบรกสัญญาณกราฟ + สรุปรายสัปดาห์ (8 ต.ค. 2569 · เวอร์ชัน 202610080900)
+- `CHARTSYS.brake(sys, trades, now)` (chartsys.js, ไม่มี state — คำนวณจาก chart-signals.json): แพ้ติดกัน 5 ไม้ → พักถึงเปิดตลาดจันทร์ถัดไป (`INTRA.nextWeek`; กรอบ long พัก 30 วัน) ไม้ที่เกิดระหว่างพักไม่นับ streak ใหม่ · 20 ไม้ปิดล่าสุดชนะต่ำกว่าผลทดสอบ (ถัวตามฝั่ง) เกิน 12 จุด → พักจนกว่าจะดีขึ้น (`until: null`)
+- chart-run.js: ระหว่างพักยังเปิดไม้แต่ใส่ `paused: true` ไม่ส่ง LINE ตอนเข้า/ปิด (เพื่อให้เบรกปลดเองได้) · เก็บ `store.brakes` แล้วส่ง LINE ครั้งเดียวตอนเริ่มพัก ⛔ / กลับมา ✅ (เฉพาะกรอบใน CHART_NOTIFY)
+- เว็บ: กล่องกราฟขึ้น `.cz-brake` "⛔ พักสัญญาณกรอบนี้…" สัญญาณที่เกิดเป็น "(พักอยู่ — ไม่แนะนำเข้า)" ไม่มีปุ่มคำนวณ · ตาราง #csCard มีคอลัมน์สถานะ ✅/⛔
+- weekly.js: เพิ่มส่วน "📈 สัญญาณบนกราฟ" ผลสัปดาห์ต่อกรอบ (หักสเปรด) + สถานะพัก — **ไม่รวม**ในยอดรวมสัปดาห์
+- Web push: ผู้ใช้ต้องรัน `node scripts/setup-push.js` เอง (สร้าง VAPID, ตั้ง secret ผ่าน gh, ดึง CLERK_SECRET_KEY จาก Vercel env) แล้ว commit config.js
+
 ## 📈 บันทึกผลจริงสัญญาณกราฟ + LINE + ปุ่มคำนวณ + มือถือ (7 ต.ค. 2569 · เวอร์ชัน 202610072000)
 - **`chartsys.js`** (ใหม่, UMD) = กติกากลางของสัญญาณกราฟ (SYS, dirOf, decide, trade, levelsFor) ใช้ร่วมกันระหว่าง chartzones.js (เว็บ) และ `scripts/chart-run.js` (GitHub) — แก้กติกาที่ไฟล์นี้ที่เดียว · โหลดก่อน chartzones.js
 - **`scripts/chart-run.js`** รันทุกเช็ก 5 นาทีใน check-loop.sh (หลัง intraday-run) → ติดตามไม้เปิด (5m Binance สำหรับกรอบสั้น, 1h สำหรับ 5h/1d, 1d สำหรับ 1w) แล้วเปิดไม้ใหม่ครั้งละ 1 ไม้ต่อกรอบ ตัดสินที่เปิดแท่งถัดไป · ข้ามถ้าช้าเกิน 10 นาที (กรอบยาว 2 ชม.) · แท่ง: investing m15/m30/h1/h5 จาก data.json + Binance m5/h4/d1/w1 เลื่อนให้เท่าราคา investing · บันทึก `chart-signals.json` (commit เมื่อเปลี่ยน) · `CHART_NOW`/`CHART_FILE` ใช้ทดสอบย้อนหลังเท่านั้น

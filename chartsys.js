@@ -45,7 +45,29 @@
     return tr;
   }
 
-  const CHARTSYS = { SYS, NONE, usdList, levelsFor, maxScore, dirOf, stretched, decide, trade };
+  // Safety brake from the live record (chart-signals.json). Trades opened while paused are still recorded (paused:
+  // true, no LINE), so a pause can lift by itself. Returns null, or { why, until } — until null = until the last 20 recover.
+  // • 5 losses in a row → pause until next week's open (5h/1d/1w: 30 days); trades inside that pause don't count again
+  // • 20 closed trades winning 12+ points less than the backtest
+  function brake(sys, trades, now) {
+    const done = trades.filter((t) => t.status === 'win' || t.status === 'loss').sort((a, b) => (a.exitAt || a.createdAt) - (b.exitAt || b.createdAt));
+    let until = 0, streak = 0;
+    for (const t of done) {
+      if (t.createdAt < until) continue;
+      streak = t.status === 'loss' ? streak + 1 : 0;
+      if (streak >= 5) { const at = t.exitAt || t.createdAt; until = sys.long ? at + 30 * DAY : INTRA.nextWeek(at); streak = 0; }
+    }
+    if (now < until) return { why: 'แพ้ติดกัน 5 ไม้', until };
+    const last = done.slice(-20);
+    if (last.length === 20) {
+      const win = last.filter((t) => t.status === 'win').length * 5;
+      const exp = Math.round(last.reduce((a, t) => a + ((t.side === 'SELL' && sys.sell) || sys.buy).win, 0) / 20);
+      if (win < exp - 12) return { why: `ชนะ ${win}% ใน 20 ไม้ล่าสุด (ทดสอบ ${exp}%)`, until: null };
+    }
+    return null;
+  }
+
+  const CHARTSYS = { SYS, NONE, usdList, levelsFor, maxScore, dirOf, stretched, decide, trade, brake };
   if (typeof module !== 'undefined' && module.exports) module.exports = CHARTSYS;
   else root.CHARTSYS = CHARTSYS;
 })(typeof window !== 'undefined' ? window : globalThis);

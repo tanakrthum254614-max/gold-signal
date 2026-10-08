@@ -62,7 +62,7 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
   store.trades = store.trades.map((t) => {
     if (SIG.isFinal(t)) return t;
     const r = keep(SIG.evaluate(t, (follow[t.tf] || C.m5).filter((b) => b.time >= t.createdAt), now));
-    if (SIG.isFinal(r) && NOTIFY.includes(r.tf)) {
+    if (SIG.isFinal(r) && NOTIFY.includes(r.tf) && !r.paused) {
       const how = r.closedBy === 'sl' ? 'โดน SL' : r.closedBy === 'be' ? 'ออกที่ทุน' : r.hit ? `ถึง TP${r.hit}` : 'หมดเวลา ปิดที่ราคาตลาด';
       texts.push(`${r.pnl > 0 ? '✅' : r.pnl < 0 ? '❌' : '➖'} ปิดไม้กราฟ ${TF_TH[r.tf]} · ${r.side === 'BUY' ? 'ซื้อ' : 'ขาย'} ${f2(r.entry)}\n${how} · ${signed(r.pnl)}/ออนซ์ (ก่อนหักสเปรด)`);
     }
@@ -82,10 +82,12 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
     const dec = CS.decide(sys, data2, t, data.news || []);
     const dir = CS.dirOf(sys, dec);
     if (!dir) continue;
-    const tr = keep({ ...CS.trade(sys, dec, dir, fast[fast.length - 1].close, t), tf, id: `${tf}-${t}`, score: dec.score });
+    // While the safety brake is on, keep recording (so it can lift by itself) but don't announce
+    const paused = !!CS.brake(sys, mine, now);
+    const tr = keep({ ...CS.trade(sys, dec, dir, fast[fast.length - 1].close, t), tf, id: `${tf}-${t}`, score: dec.score, ...(paused ? { paused } : {}) });
     store.trades.push(tr);
-    console.log(`${tf}: ${tr.side} ${tr.entry} SL ${tr.sl} TP ${tr.tps.join('/')} (score ${dec.score})`);
-    if (NOTIFY.includes(tf)) {
+    console.log(`${tf}: ${tr.side} ${tr.entry} SL ${tr.sl} TP ${tr.tps.join('/')} (score ${dec.score})${paused ? ' — paused, not announced' : ''}`);
+    if (NOTIFY.includes(tf) && !paused) {
       const c = dir > 0 ? sys.buy : sys.sell;
       texts.push(`🎯 สัญญาณกราฟ ${TF_TH[tf]} · ${dir > 0 ? '🟢 ซื้อ (BUY)' : '🔴 ขาย (SELL)'}\n`
         + `เข้า ~${f2(tr.entry)} · SL ${f2(tr.sl)} · ${tr.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}\n`
@@ -93,8 +95,23 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
     }
   }
 
+  // 3) safety brake on / off since the last run
+  const brakes = {};
+  for (const [tf, sys] of Object.entries(CS.SYS)) {
+    const b = CS.brake(sys, store.trades.filter((x) => x.tf === tf), now);
+    if (b) brakes[tf] = b;
+    const was = (store.brakes || {})[tf];
+    if (!NOTIFY.includes(tf) || !!was === !!b) continue;
+    texts.push(b
+      ? `⛔ พักสัญญาณกราฟ ${TF_TH[tf]}: ${b.why}
+หยุดแจ้ง${b.until ? `ถึง ${when('1d', b.until)}` : 'จนกว่าผล 20 ไม้ล่าสุดจะกลับมาใกล้ผลทดสอบ'} · ระบบยังบันทึกต่อแบบไม่แจ้ง`
+      : `✅ กลับมาแจ้งสัญญาณกราฟ ${TF_TH[tf]} แล้ว`);
+  }
+  const brakesChanged = JSON.stringify(brakes) !== JSON.stringify(store.brakes || {});
+  store.brakes = brakes;
+
   store.trades = store.trades.slice(-600);
-  if (JSON.stringify(store.trades) === before) return console.log('chart signals: no change');
+  if (JSON.stringify(store.trades) === before && !brakesChanged) return console.log('chart signals: no change');
   store.updatedAt = now;
   if (process.env.RECORD === 'true') fs.writeFileSync(FILE, `${JSON.stringify(store, null, 1)}\n`);
   else console.log(`(not recorded) ${store.trades.length} trades`);
