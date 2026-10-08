@@ -4,11 +4,15 @@
   "description": "Real-time XAU/USD chart analysis with buy/sell/wait signals",
   "private": true,
   "scripts": {
-    "start": "node dev-server.js"
+    "start": "node dev-server.js",
+    "build:middleware": "node access/build.mjs"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.1",
     "@vercel/functions": "^3.9.11",
     "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
   }
 }
