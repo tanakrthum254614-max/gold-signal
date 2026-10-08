@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Gold Signal · เข้าสู่ระบบ</title>
+  <meta name="theme-color" content="#0d1016">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #f3f5f9; --panel: #fff; --line: #e2e7ef; --text: #1c2433; --muted: #697386; --gold: #b9800c; --gold-bg: #f0b429; --down: #e0424f; --up: #0f9f6e; --input: #f2f5f9; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0d1016; --panel: #151a23; --line: #262e3b; --text: #e6e9ef; --muted: #8a93a3; --gold: #e8b64c; --input: #0f131a; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: var(--bg); color: var(--text);
+      font-family: "IBM Plex Sans Thai", system-ui, sans-serif; line-height: 1.6; }
+    main { width: 100%; max-width: 420px; }
+    .brand { display: flex; align-items: center; gap: 12px; justify-content: center; margin-bottom: 18px; }
+    .brand img { width: 52px; height: 52px; }
+    .brand b { font-size: 26px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(20, 30, 50, .08); }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    p { margin: 0 0 16px; color: var(--muted); font-size: 14.5px; }
+    label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    input, textarea { width: 100%; font: inherit; color: var(--text); background: var(--input); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+    #code { font-family: "IBM Plex Mono", monospace; font-size: 18px; letter-spacing: .06em; text-transform: uppercase; }
+    input:focus, textarea:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+    button, .btn { display: flex; width: 100%; justify-content: center; align-items: center; gap: 8px; margin-top: 14px; padding: 13px; border: 0; border-radius: 12px;
+      font: inherit; font-weight: 700; font-size: 16px; cursor: pointer; text-decoration: none; }
+    button { background: var(--gold-bg); color: #1c2433; }
+    button:disabled { opacity: .6; cursor: wait; }
+    .btn { background: transparent; color: var(--text); border: 1px solid var(--line); }
+    .err { color: var(--down); font-size: 14px; margin: 10px 0 0; min-height: 1.4em; }
+    .or { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; margin: 22px 0 14px; }
+    .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+    details summary { cursor: pointer; font-weight: 600; font-size: 15px; list-style: none; }
+    details summary::-webkit-details-marker { display: none; }
+    details[open] summary { margin-bottom: 12px; }
+    .field { margin-top: 10px; }
+    .note { font-size: 12.5px; margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand"><img src="logo.svg" alt=""><b>Gold Signal</b></div>
+    <div class="card">
+      <h1>🔒 เข้าใช้งานด้วยรหัส</h1>
+      <p>เว็บนี้เปิดให้เฉพาะคนที่ได้รับรหัสจากผู้ดูแลเท่านั้น</p>
+      <form id="form" autocomplete="off">
+        <label for="code">รหัสเข้าใช้งาน</label>
+        <input id="code" name="code" placeholder="GOLD-XXXXX-XXXXX" autocapitalize="characters" spellcheck="false" required>
+        <button id="go" type="submit">เข้าใช้งาน</button>
+        <p class="err" id="err" role="alert"></p>
+      </form>
+
+      <div class="or">ยังไม่มีรหัส?</div>
+      <details id="ask">
+        <summary>📧 ขอรหัสผ่านทางอีเมล</summary>
+        <p>กรอกข้อมูลแล้วกดปุ่ม — แอปอีเมลจะเปิดพร้อมข้อความที่กรอกไว้ให้ กดส่งได้เลย ผู้ดูแลจะส่งรหัสกลับทางอีเมล</p>
+        <div class="field"><label for="askName">ชื่อของคุณ</label><input id="askName" placeholder="เช่น สมชาย"></div>
+        <div class="field"><label for="askWhy">ใช้ทำอะไร (ไม่บังคับ)</label><textarea id="askWhy" rows="2" placeholder="เช่น อยากดูสัญญาณทองระหว่างวัน"></textarea></div>
+        <a class="btn" id="askSend" href="#">📧 ส่งคำขอรหัส</a>
+        <p class="note">ส่งถึง tanakrthum254614@gmail.com · รหัสหนึ่งชุดต่อหนึ่งคน อย่าแชร์ต่อ</p>
+      </details>
+    </div>
+  </main>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const OWNER = 'tanakrthum254614@gmail.com';
+    $('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('err').textContent = '';
+      $('go').disabled = true; $('go').textContent = 'กำลังตรวจสอบ…';
+      try {
+        const r = await fetch('/api/login', { method: 'POST', headers: { 'x-access-code': $('code').value.trim() } });
+        if (r.ok) { location.replace('/'); return; }
+        $('err').textContent = r.status === 401 ? 'รหัสไม่ถูกต้อง หรือถูกยกเลิกแล้ว' : 'ระบบขัดข้อง ลองใหม่อีกครั้ง';
+      } catch (err) { $('err').textContent = 'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง'; }
+      $('go').disabled = false; $('go').textContent = 'เข้าใช้งาน';
+    });
+    // The request opens the visitor's mail app with everything filled in
+    function mailto() {
+      const name = $('askName').value.trim(), why = $('askWhy').value.trim();
+      const body = `สวัสดีครับ/ค่ะ\n\nขอรหัสเข้าใช้งาน Gold Signal\nชื่อ: ${name || '-'}\nใช้ทำอะไร: ${why || '-'}\n\nขอบคุณครับ/ค่ะ`;
+      return `mailto:${OWNER}?subject=${encodeURIComponent(`ขอรหัสเข้าใช้งาน Gold Signal${name ? ` — ${name}` : ''}`)}&body=${encodeURIComponent(body)}`;
+    }
+    $('askSend').addEventListener('click', (e) => { e.preventDefault(); location.href = mailto(); });
+  </script>
+</body>
+</html>
