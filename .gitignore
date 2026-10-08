@@ -6,3 +6,5 @@ node_modules/
 skills-lock.json
 state/
 outbox.json
+
+.env*

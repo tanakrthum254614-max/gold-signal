@@ -45,6 +45,7 @@
     });
     $('signOut').hidden = !u;
     $('accSignIn').hidden = true;
+    if ($('adminLink')) $('adminLink').hidden = !(u && u.admin);
   }
 
   const shareUrl = location.origin + location.pathname;

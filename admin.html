@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>หลังบ้าน Gold Signal</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #f3f5f9; --panel: #fff; --panel-2: #f2f5f9; --line: #e2e7ef; --text: #1c2433; --muted: #697386; --gold: #b9800c; --gold-bg: #f0b429; --up: #0f9f6e; --down: #e0424f; --blue: #2f6fed; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) { --bg: #0d1016; --panel: #151a23; --panel-2: #1b212c; --line: #262e3b; --text: #e6e9ef; --muted: #8a93a3; --gold: #e8b64c; --blue: #6c9cff; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans Thai", system-ui, sans-serif; line-height: 1.55; }
+    .mono { font-family: "IBM Plex Mono", monospace; }
+    header { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: var(--panel); border-bottom: 1px solid var(--line); }
+    header img { width: 34px; height: 34px; }
+    header h1 { font-size: 19px; margin: 0; flex: 1; }
+    header a, button { font: inherit; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); text-decoration: none; cursor: pointer; font-size: 14px; font-weight: 600; }
+    .btn:hover { border-color: var(--gold); }
+    main { max-width: 1400px; margin: 0 auto; padding: 18px 16px 60px; }
+    .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+    .tile small { display: block; color: var(--muted); font-size: 13px; }
+    .tile b { font-size: 26px; }
+    .tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--line); margin-bottom: 12px; }
+    .tabs button { border: 0; background: transparent; color: var(--muted); padding: 8px 16px; border-radius: 9px; cursor: pointer; font-weight: 700; font-size: 15px; }
+    .tabs button.on { background: var(--panel); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+    .filters input, .filters select { font: inherit; font-size: 14px; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+    .filters input[type=search] { flex: 1; min-width: 200px; }
+    .count { color: var(--muted); font-size: 13px; margin-left: auto; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; white-space: nowrap; }
+    th { color: var(--muted); font-size: 12.5px; font-weight: 600; position: sticky; top: 0; background: var(--panel); }
+    td small { display: block; color: var(--muted); font-size: 12.5px; }
+    tr.click { cursor: pointer; } tr.click:hover td { background: var(--panel-2); }
+    .who { display: flex; gap: 10px; align-items: center; }
+    .who img, .who .ph { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; background: var(--panel-2); display: grid; place-items: center; font-weight: 700; color: var(--muted); }
+    .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 99px; border: 1px solid var(--line); }
+    .pill.google { color: var(--blue); } .pill.email { color: var(--gold); } .pill.login { color: var(--up); } .pill.visit { color: var(--muted); }
+    .pill.admin { color: #fff; background: var(--gold-bg); border-color: transparent; color: #1c2433; } .pill.banned { color: var(--down); }
+    .empty { color: var(--muted); padding: 24px; text-align: center; }
+    .err { color: var(--down); }
+    .note { color: var(--muted); font-size: 12.5px; margin-top: 10px; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.svg" alt="">
+    <h1>หลังบ้าน Gold Signal</h1>
+    <button class="btn" id="reload" type="button">↻ โหลดใหม่</button>
+    <a class="btn" href="/">← กลับเว็บ</a>
+  </header>
+  <main>
+    <div class="tiles" id="tiles"></div>
+    <div class="tabs" id="tabs"><button type="button" class="on" data-tab="members">👥 สมาชิก</button><button type="button" data-tab="log">📋 บันทึกการเข้าใช้</button></div>
+
+    <section class="card" id="membersPane">
+      <div class="filters">
+        <input type="search" id="mQ" placeholder="ค้นหาชื่อ หรืออีเมล…">
+        <select id="mMethod"><option value="">ทุกวิธีสมัคร</option><option>Google</option><option>อีเมล</option></select>
+        <select id="mSince"><option value="">สมัครเมื่อ: ทั้งหมด</option><option value="1">วันนี้</option><option value="7">7 วันล่าสุด</option><option value="30">30 วันล่าสุด</option></select>
+        <select id="mSort"><option value="created">เรียง: สมัครล่าสุด</option><option value="active">เรียง: เข้าใช้ล่าสุด</option><option value="often">เรียง: เข้าบ่อยสุด</option></select>
+        <button class="btn" id="mCsv" type="button">⬇ CSV</button>
+        <span class="count" id="mCount"></span>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>สมาชิก</th><th>สมัครด้วย</th><th>สมัครเมื่อ</th><th>เข้าใช้ล่าสุด</th><th>ล็อกอิน</th><th>เข้าเว็บ (วัน·เครื่อง)</th><th>อุปกรณ์ / ที่อยู่ล่าสุด</th></tr></thead>
+        <tbody id="mBody"></tbody>
+      </table></div>
+      <p class="note">กดแถวสมาชิกเพื่อดูบันทึกการเข้าใช้ของคนนั้น · “เข้าเว็บ” นับครั้งแรกของวันต่อเครื่อง · ข้อมูลอุปกรณ์/ที่อยู่เริ่มเก็บตั้งแต่ 8 ต.ค. 2569</p>
+    </section>
+
+    <section class="card" id="logPane" hidden>
+      <div class="filters">
+        <input type="search" id="lQ" placeholder="ค้นหาชื่อ อีเมล อุปกรณ์ หรือที่อยู่…">
+        <select id="lType"><option value="">ทุกประเภท</option><option value="login">ล็อกอิน</option><option value="visit">เข้าเว็บ</option></select>
+        <select id="lSince"><option value="">ช่วง: ทั้งหมด</option><option value="1">วันนี้</option><option value="7">7 วันล่าสุด</option><option value="30">30 วันล่าสุด</option></select>
+        <button class="btn" id="lClear" type="button" hidden>✕ ล้างตัวกรองสมาชิก</button>
+        <button class="btn" id="lCsv" type="button">⬇ CSV</button>
+        <span class="count" id="lCount"></span>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>เวลา (ไทย)</th><th>ใคร</th><th>ประเภท</th><th>อุปกรณ์</th><th>ที่อยู่ (โดยประมาณจาก IP)</th></tr></thead>
+        <tbody id="lBody"></tbody>
+      </table></div>
+      <p class="note">เก็บล่าสุด 5,000 รายการ · ที่อยู่มาจาก Vercel (ประเทศ/เมืองโดยประมาณ) ไม่ได้เก็บ IP</p>
+    </section>
+  </main>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const DAY = 864e5;
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const when = (ms) => (ms ? new Date(ms).toLocaleString('th-TH', { day: 'numeric', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' }) : '—');
+    const ago = (ms) => {
+      if (!ms) return '';
+      const m = Math.round((Date.now() - ms) / 60e3);
+      return m < 60 ? `${Math.max(1, m)} นาทีก่อน` : m < 1440 ? `${Math.round(m / 60)} ชม.ก่อน` : `${Math.round(m / 1440)} วันก่อน`;
+    };
+    const startOfDay = () => { const now = Date.now(); return now - ((now + 7 * 3600e3) % DAY); }; // midnight, Thai time
+    const since = (v) => (!v ? 0 : v === '1' ? startOfDay() : Date.now() - +v * DAY);
+    let members = [], log = [], onlyId = '';
+
+    function tiles() {
+      const t0 = startOfDay(), w = Date.now() - 7 * DAY;
+      const uniq = (from) => new Set(log.filter((e) => e.at >= from).map((e) => e.id)).size;
+      const items = [
+        ['สมาชิกทั้งหมด', members.length],
+        ['สมัครใหม่ 7 วัน', members.filter((m) => m.createdAt >= w).length],
+        ['คนเข้าใช้วันนี้', uniq(t0)],
+        ['คนเข้าใช้ 7 วัน', uniq(w)],
+        ['ล็อกอิน 7 วัน', log.filter((e) => e.type === 'login' && e.at >= w).length],
+      ];
+      $('tiles').innerHTML = items.map(([k, v]) => `<div class="tile"><small>${k}</small><b class="mono">${v}</b></div>`).join('');
+    }
+
+    function filteredMembers() {
+      const q = $('mQ').value.trim().toLowerCase(), method = $('mMethod').value, from = since($('mSince').value);
+      const list = members.filter((m) => (!q || `${m.name} ${m.email}`.toLowerCase().includes(q)) && (!method || m.method === method) && m.createdAt >= from);
+      const last = (m) => Math.max(m.lastSeen || 0, m.lastActiveAt || 0, m.lastSignInAt || 0);
+      const sort = $('mSort').value;
+      return list.sort((a, b) => (sort === 'active' ? last(b) - last(a) : sort === 'often' ? (b.logins + b.visits) - (a.logins + a.visits) : b.createdAt - a.createdAt));
+    }
+    function renderMembers() {
+      const list = filteredMembers();
+      $('mCount').textContent = `${list.length} จาก ${members.length} คน`;
+      const last = (m) => Math.max(m.lastSeen || 0, m.lastActiveAt || 0, m.lastSignInAt || 0);
+      $('mBody').innerHTML = list.length ? list.map((m) => `<tr class="click" data-id="${esc(m.id)}">
+        <td><div class="who">${m.image ? `<img src="${esc(m.image)}" alt="">` : `<span class="ph">${esc((m.name || m.email || '?')[0].toUpperCase())}</span>`}<div>${esc(m.name || '—')} ${m.admin ? '<span class="pill admin">แอดมิน</span>' : ''}${m.banned ? ' <span class="pill banned">ถูกแบน</span>' : ''}<small>${esc(m.email)}</small></div></div></td>
+        <td><span class="pill ${m.method === 'Google' ? 'google' : 'email'}">${esc(m.method)}</span></td>
+        <td>${when(m.createdAt)}<small>${ago(m.createdAt)}</small></td>
+        <td>${when(last(m))}<small>${ago(last(m))}</small></td>
+        <td class="mono">${m.logins}</td>
+        <td class="mono">${m.visits}</td>
+        <td>${esc(m.device || '—')}<small>${esc(m.place || '')}</small></td></tr>`).join('')
+        : '<tr><td colspan="7" class="empty">ไม่พบสมาชิกตามตัวกรอง</td></tr>';
+    }
+
+    function filteredLog() {
+      const q = $('lQ').value.trim().toLowerCase(), type = $('lType').value, from = since($('lSince').value);
+      return log.filter((e) => (!onlyId || e.id === onlyId) && (!type || e.type === type) && e.at >= from
+        && (!q || `${e.name} ${e.email} ${e.device} ${e.city} ${e.country}`.toLowerCase().includes(q)));
+    }
+    function renderLog() {
+      const list = filteredLog();
+      $('lClear').hidden = !onlyId;
+      $('lCount').textContent = `${list.length} รายการ`;
+      $('lBody').innerHTML = list.length ? list.slice(0, 1000).map((e) => `<tr>
+        <td>${when(e.at)}<small>${ago(e.at)}</small></td>
+        <td>${esc(e.name || '—')}<small>${esc(e.email)}</small></td>
+        <td><span class="pill ${e.type}">${e.type === 'login' ? 'ล็อกอิน' : 'เข้าเว็บ'}</span></td>
+        <td>${esc(e.device)}</td>
+        <td>${esc([e.city, e.country].filter(Boolean).join(', ') || '—')}</td></tr>`).join('')
+        : '<tr><td colspan="5" class="empty">ยังไม่มีบันทึกตามตัวกรอง</td></tr>';
+    }
+
+    function csv(name, header, rows) {
+      const cell = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      const text = '﻿' + [header, ...rows].map((r) => r.map(cell).join(',')).join('\r\n');
+      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8' })), download: name });
+      a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+    $('mCsv').addEventListener('click', () => csv('gold-signal-members.csv', ['ชื่อ', 'อีเมล', 'สมัครด้วย', 'สมัครเมื่อ', 'เข้าใช้ล่าสุด', 'ล็อกอิน', 'เข้าเว็บ', 'อุปกรณ์ล่าสุด', 'ที่อยู่ล่าสุด'],
+      filteredMembers().map((m) => [m.name, m.email, m.method, when(m.createdAt), when(Math.max(m.lastSeen || 0, m.lastActiveAt || 0, m.lastSignInAt || 0)), m.logins, m.visits, m.device, m.place])));
+    $('lCsv').addEventListener('click', () => csv('gold-signal-access-log.csv', ['เวลา', 'ชื่อ', 'อีเมล', 'ประเภท', 'อุปกรณ์', 'เมือง', 'ประเทศ'],
+      filteredLog().map((e) => [when(e.at), e.name, e.email, e.type === 'login' ? 'ล็อกอิน' : 'เข้าเว็บ', e.device, e.city, e.country])));
+
+    function tab(t) {
+      document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
+      $('membersPane').hidden = t !== 'members'; $('logPane').hidden = t !== 'log';
+    }
+    $('tabs').addEventListener('click', (e) => e.target.dataset.tab && tab(e.target.dataset.tab));
+    $('mBody').addEventListener('click', (e) => { const tr = e.target.closest('tr[data-id]'); if (!tr) return; onlyId = tr.dataset.id; renderLog(); tab('log'); });
+    $('lClear').addEventListener('click', () => { onlyId = ''; renderLog(); });
+    ['mQ', 'mMethod', 'mSince', 'mSort'].forEach((id) => $(id).addEventListener('input', renderMembers));
+    ['lQ', 'lType', 'lSince'].forEach((id) => $(id).addEventListener('input', renderLog));
+
+    async function load() {
+      $('mBody').innerHTML = '<tr><td colspan="7" class="empty">กำลังโหลด…</td></tr>';
+      try {
+        const [m, l] = await Promise.all([fetch('/api/admin/members', { cache: 'no-store' }), fetch('/api/admin/log', { cache: 'no-store' })]);
+        if (m.status === 401 || m.status === 403) { location.replace('/'); return; }
+        if (!m.ok || !l.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
+        members = await m.json(); log = await l.json();
+        tiles(); renderMembers(); renderLog();
+      } catch (e) { $('mBody').innerHTML = `<tr><td colspan="7" class="empty err">${esc(e.message)}</td></tr>`; }
+    }
+    $('reload').addEventListener('click', load);
+    load();
+  </script>
+</body>
+</html>
