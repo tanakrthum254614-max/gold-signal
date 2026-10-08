@@ -32,6 +32,7 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 3. **อัปเดต `compare.html`** — เพิ่มหัวข้อใหม่ไว้บนสุด: 🕰️ แบบเก่า vs ✨ แบบใหม่ (ภาพใน `compare/`; ภาพแบบเก่าถ่ายจากโค้ดก่อนแก้ด้วย `git worktree add <dir> <commit>` + `PORT=3001 node dev-server.js` แล้วปิด server ก่อนลบ worktree)
 4. เปลี่ยนเลข `?v=` → commit → push → เช็กว่าเว็บจริงได้ไฟล์ใหม่ · แก้ workflow → สั่งรันทดสอบ (send=false)
 5. อัปเดต Skill.md + สำเนา `.claude/skills/gold-signal/SKILL.md` + memory
+6. **อัปเดตพอร์ตโฟลิโอ** https://web-tan-portfolio.vercel.app/#activities (ผู้ใช้สั่ง 8 ต.ค. 2569) — repo `C:\Users\HP\tan-portfolio`: สไลด์ "Slide 4: Gold Signal" ใน `projects-modal` แก้ **ทั้ง index.html และ Portfolio.html** (ต้องเหมือนกัน) ให้คำอธิบาย/แท็ก/ข้อความในภาพตรงกับเว็บล่าสุด · เช็กในเครื่อง (รอ intro ~9 วิ แล้วเปิด modal + `projGoTo(3)`) → commit + push → เช็กว่าเว็บจริงมีข้อความใหม่ · ถ้างานไม่เปลี่ยนสิ่งที่ผู้ใช้เห็น (เช่นแก้บั๊กเล็ก) ไม่ต้องแก้สไลด์ แต่ต้องบอกว่าข้าม
 
 ## 🖥️ จอกว้างมาก (8 ต.ค. 2569 · เวอร์ชัน 202610082600)
 - ผู้ใช้: "ขอมากกว่านี้อีกนิด" → `@media (min-width: 1700px)`: `.content/.demo-bar` max-width none (padding 28px, demo-bar margin 28px) · sidebar 260px font 18.5 · การ์ดขวา 460px · body 18px และข้อความหลักใหญ่ขึ้นอีก ~10% · ระวัง: `git checkout -- compare/` จะทับภาพทดสอบที่ชื่อซ้ำไฟล์เดิม ให้ตั้งชื่อใหม่ก่อน
