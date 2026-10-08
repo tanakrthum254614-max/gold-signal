@@ -1,5 +1,5 @@
 // Install as an app (PWA) + push notifications on this device.
-// Subscriptions are saved on the server under the access-code holder (/api/push → private Blob, middleware.js); the
+// Subscriptions are saved on the server under the signed-in member (/api/push → private Blob, middleware.js); the
 // GitHub Actions jobs read them with the Clerk secret key and send every LINE message as a push too
 // (scripts/push.js), so notifications don't use the LINE quota.
 (function () {
@@ -107,7 +107,7 @@
     let state;
     if (!VAPID) state = ['ระบบแจ้งเตือนกำลังเตรียม — เร็ว ๆ นี้', null];
     else if (!pushSupported()) state = [ios && !installed ? 'iPhone/iPad: ต้องติดตั้งเป็นแอปก่อน (ข้อด้านบน) แล้วเปิดจากหน้าจอหลัก' : 'เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน', null];
-    else if (!user()) state = ['เข้าใช้งานด้วยรหัสก่อน เพื่อเปิดการแจ้งเตือน', null];
+    else if (!user()) state = ['เข้าสู่ระบบก่อน เพื่อเปิดการแจ้งเตือน', null];
     else if (Notification.permission === 'denied') state = ['ถูกบล็อกไว้ — เปิดสิทธิ์การแจ้งเตือนของเว็บนี้ในการตั้งค่าเบราว์เซอร์', null];
     else {
       const sub = await currentSub();
