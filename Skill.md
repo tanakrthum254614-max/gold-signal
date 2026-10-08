@@ -19,8 +19,8 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 |---|---|
 | เว็บจริง | https://gold-signal-ten.vercel.app (alias: thander-gold-signal.vercel.app) |
 | โค้ด (Public) | https://github.com/tanakrthum254614-max/gold-signal — push `main` = deploy อัตโนมัติ |
-| Vercel | scope `thander1`, project `gold-signal` (ใช้ CLI `npx vercel`, ล็อกอินเป็น tanakrthum2546-3404) |
-| ล็อกอิน | Clerk (Google) dev instance `delicate-tapir-2101` — publishable key อยู่ใน `config.js` |
+| Vercel | scope `thander1`, project `gold-signal` = **เว็บจริง** (ใช้ CLI `npx vercel`, ล็อกอินเป็น tanakrthum2546-3404) · repo นี้ผูกกับโปรเจค `thander2/gold-signal` ด้วย (สถานะ "Vercel – gold-signal" บน GitHub มาจากตัวนั้น ไม่ใช่เว็บจริง — preview ของมันถูกล็อก เข้าทดสอบไม่ได้) · ทดสอบ preview ให้ใช้ `npx vercel ls gold-signal` → URL `-thander1` แล้ว `npx vercel curl <url>` |
+| ล็อกอิน | **รหัสเข้าใช้งาน** (8 ต.ค. 2569) — `middleware.js` + `login.html` · จัดการรหัส: `node scripts/access-codes.js list / add <ชื่อ> / remove <ชื่อ>` (ต้องมี `.env.local` จาก `npx vercel env pull .env.local --yes`) · Clerk/Google และ `?demo=1` เลิกใช้แล้ว |
 | LINE OA | `@279arudw` · เพิ่มเพื่อน https://line.me/R/ti/p/@279arudw |
 | Secret | GitHub Actions secret `LINE_CHANNEL_ACCESS_TOKEN` (Channel access token *long-lived* จากแท็บ Messaging API) |
 
@@ -48,6 +48,16 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 
 ## 📖 หน้าวิธีใช้: อ่านหน้ากราฟยังไง (8 ต.ค. 2569 · เวอร์ชัน 202610082200)
 - แทนหัวข้อ "⏱️ สัญญาณ 15 นาที (ดูบนเว็บเท่านั้น)" (อธิบายการ์ดที่ลบแล้ว) ด้วย "📈 อ่านหน้ากราฟยังไง" `ol.learn-steps` 5 ข้อ: กรอบเวลา → ช่อง Buy|Sell (% + ✅⏸⚠️⛔) → เข้าเฉพาะ ✅ + 🧮 → ลูกศร/ป้าย/กล่อง TP-SL/เส้นไม้ที่ปิด → สิ่งที่ดูประกอบเท่านั้น · เมื่อเปลี่ยนหน้ากราฟอีก ให้อัปเดตหัวข้อนี้ด้วย
+
+## 🔒 เข้าใช้งานด้วยรหัส (8 ต.ค. 2569 · เวอร์ชัน 202610082700)
+- ผู้ใช้: ต้องขอรหัสจากเจ้าของทางอีเมลก่อนเข้าเว็บ (กันคนอื่นมาใช้/ดึงผลงาน) · เลือก: ส่งคำขอถึง **tanakrthum254614@gmail.com** · ใช้รหัส**แทน** Google · **ปิด** `?demo=1` · repo GitHub **ยังสาธารณะ** (ถ้าเป็น private เวลา Actions ฟรี 2,000 นาที/เดือน ไม่พอระบบเช็กทุก 5 นาที)
+- `middleware.js` (Vercel Routing Middleware, `runtime: 'nodejs'`, matcher ทุก path) — **ห้าม import แพ็กเกจ**: Vercel ไม่ส่ง node_modules ไปกับ middleware (เคยล่มบน production "Cannot find module '@vercel/blob'" ~8 นาที แล้ว revert; ไฟล์ bundle ESM ก็โหลดไม่ได้) → อ่าน/เขียน Blob ด้วย fetch ตรง (`{storeId}.private.blob.vercel-storage.com/<path>?cache=0` / PUT `vercel.com/api/blob/?pathname=` + x-api-version 12) · ไปต่อ = `Response` header `x-middleware-next: 1`
+- **Routing Middleware ไม่ได้รับ request body** → รหัสส่งใน header `x-access-code` (login.html) · อุปกรณ์ push ส่งใน `x-push` (base64 JSON, pwa.js)
+- เปิดได้โดยไม่ล็อกอิน: `/login.html /logo.svg /favicon.ico /manifest.webmanifest /robots.txt /icons/*` · ที่เหลือ: ไม่มีคุกกี้ → หน้า/HTML 302 ไป /login.html, อื่น ๆ 401 · API: `POST /api/login`, `/api/logout`, `GET /api/me` → {name}, `/api/push` (GET/POST/DELETE ของผู้ถือรหัส สูงสุด 5 เครื่อง)
+- คุกกี้ `gs_auth` = base64(ชื่อ).หมดอายุ.HMAC(ACCESS_SECRET, ชื่อ|หมดอายุ|แฮชรหัส) อายุ 30 วัน HttpOnly Secure · ลบรหัส = คุกกี้ของคนนั้นใช้ไม่ได้ภายใน ~30 วิ (แคชในหน่วยความจำ) · รหัสรูปแบบ `GOLD-XXXXX-XXXXX` เก็บแค่ sha-256 ใน Blob `access/codes.json` · ใส่ตัวเล็ก/เว้นวรรคได้ (normalize)
+- Blob store ส่วนตัว `gold-signal-push` (thander1) · env Vercel: `BLOB_READ_WRITE_TOKEN`, `ACCESS_SECRET` (ทุก environment) · GitHub secret `BLOB_READ_WRITE_TOKEN` (scripts/push.js อ่าน `access/push-subs.json` ด้วย @vercel/blob — ใน Actions มี npm install) · CLERK_SECRET_KEY ไม่ใช้แล้ว
+- แอป: `auth.js` เรียก `/api/me` (401 → /login.html; dev-server ไม่มี middleware → เข้าแบบไม่มีผู้ใช้) · หน้าบัญชีแสดง "🔑 ชื่อ" + ปุ่มออก → /api/logout · การตั้งค่าเก็บในเครื่อง (localStorage)
+- ทดสอบในเครื่อง: `npx vercel dev --listen 3005` (ใช้ .env.local) หรือ import middleware.js ใน Node แล้วเรียกด้วย `new Request(...)` · ลบรหัสทดสอบทุกครั้ง · เจ้าของมีรหัสชื่อ `tan`
 
 ## 🗑️ เอาสัญญาณ 15 นาที + แผนเทรดวันนี้ออกจากหน้าสัญญาณ (8 ต.ค. 2569 · เวอร์ชัน 202610082100)
 - ผู้ใช้ส่งภาพ "เอาอันนี้ออก" → ถามก่อน → เลือก "เอาออกทั้งสองส่วน" · ลบ markup `#s15Card` และ `#tpCard` (+ หัวข้อ "🧭 แผนเทรดวันนี้") จาก index.html · **ห้ามใส่กลับเอง**
