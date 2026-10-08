@@ -330,12 +330,23 @@ function renderQuote(price) {
   $('updated').textContent = new Date().toLocaleTimeString('th-TH');
 }
 
+// The side card's big word follows the chart system when it has an entry (window.CZ_GO from chartzones.js) — otherwise
+// "รอก่อน" stayed up while the chart said Buy 100% (user, 8 Oct). investing.com's own verdict moves to the sub-line.
+function renderSignalHead(plan = state.lastPlan) {
+  if (!plan) return;
+  const g = window.CZ_GO, inv = ACTION_TH[plan.action];
+  const side = g ? (g.side > 0 ? 'BUY' : 'SELL') : plan.action;
+  $('signalCard').className = `card signal ${side}`;
+  $('action').textContent = !g ? inv[0] : g.open ? `📌 ถือไม้${g.side > 0 ? 'ซื้อ' : 'ขาย'}อยู่` : `✅ เข้า${g.side > 0 ? 'ซื้อ (Buy)' : 'ขาย (Sell)'}ได้`;
+  $('actionSub').textContent = !g ? inv[1] : `ระบบบนกราฟ ${TF_LABEL[state.tf]} ${g.open ? 'ถือไม้อยู่ — ไม่ต้องเปิดไม้ใหม่' : 'ถึงจุดเข้า 100%'} · บทวิเคราะห์ investing.com: ${inv[0]}`;
+}
+window.renderSignalHead = renderSignalHead;
+
 function renderSignal(plan, htfKey) {
-  $('signalCard').className = `card signal ${plan.action}`;
+  state.lastPlan = plan;
   $('sigTf').textContent = TF_LABEL[state.tf];
   $('sigSource').textContent = `อิง ${plan.basis}`;
-  $('action').textContent = ACTION_TH[plan.action][0];
-  $('actionSub').textContent = ACTION_TH[plan.action][1];
+  renderSignalHead(plan);
   $('meterFill').style.width = `${plan.confidence}%`;
   const htech = state.tech && state.tech[htfKey];
   const htf = htech ? ` · ${TF_LABEL[htfKey]}: ${INV.summaryTh(htech.summary)}` : '';

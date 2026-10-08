@@ -191,43 +191,37 @@ function ago(ms) {
     };
     const fin = s.trades.filter((r) => SIG.isFinal(r)), pnl = fin.reduce((a, r) => a + r.pnl, 0);
     if (br) head = `<span class="cz-brake">⛔ พักสัญญาณกรอบนี้: ${br.why} — ${br.until ? `ถึง ${when(SYS['1d'], br.until)}` : 'จนกว่าผล 20 ไม้ล่าสุดจะดีขึ้น'} · ระบบยังบันทึกต่อ</span><br>${head}`;
-    // Both sides, always: where a Buy / Sell would go in at the current price, and what it still needs
-    const planRow = (side) => {
-      const c = side > 0 ? B : S, cc = c || B, L = levelsFor(cc, price, side), th = c ? c.th : null;
-      const lv = `เข้า ~<b>${f2(price)}</b> · SL <b>${f2(L.sl)}</b> · ${L.tps.map((v, k) => `TP${k + 1} <b>${f2(v)}</b>`).join(' · ')}`;
-      const state2 = !c ? '⚠️ ฝั่งนี้ทดสอบไม่ผ่านในกรอบนี้ — ไม่แนะนำ'
-        : open ? 'มีไม้ถืออยู่ — รอปิดก่อน'
-        : dir === side ? (br ? '⛔ พักอยู่' : '✅ สัญญาณมาแล้ว')
-        : d ? `รอคะแนน ${side > 0 ? '+' : '−'}${th} (ตอนนี้ ${signedScore(d.score)})` : '';
-      return `<div class="cz-plan-row ${side > 0 ? 'buy' : 'sell'}${c ? '' : ' off'}"><span class="cz-plan-side">${side > 0 ? '🟢 Buy' : '🔴 Sell'}</span><span>${lv}</span>${c && !open ? '' : `<small>${state2}</small>`}</div>`;
+    // BOTH sides, each in its own column with its own % and verdict (user, 8 Oct: "อยากให้มี 2 ตัว Buy และ Sell คนละช่อง
+    // และบอกเปอร์เซ็นต์ของแต่ละอันว่าควรเข้าไหม"). % = how far the score has come toward that side's threshold
+    // (100 = signal). A side that failed its backtest uses the Buy threshold mirrored, is labelled ⚠️ and is never
+    // "ควรเข้า" — not recorded, no LINE.
+    const sideInfo = (side) => {
+      const c = side > 0 ? B : S, cc = c || B, L = levelsFor(cc, price, side);
+      const pct = !d ? 0 : dir === side ? 100 : Math.max(0, Math.min(c ? 99 : 100, Math.round(((side > 0 ? d.score : -d.score) / cc.th) * 100)));
+      const tested = !!c, go = tested && dir === side && !br;
+      const verdict = br && tested ? '⛔ พัก — ไม่เข้า' : go ? '✅ ควรเข้า' : !tested ? (pct >= 100 ? '⚠️ ถึงเกณฑ์ แต่ไม่แนะนำ' : '⚠️ ไม่แนะนำ') : '⏸ ยังไม่ควรเข้า';
+      return { side, c, L, pct, tested, go, verdict };
     };
-    // ONE plan, never two to choose from (user, 8 Oct): the live signal's side, else the tested side closest to its
-    // threshold. Live = solid "เข้าตอนนี้"; otherwise faded "รอ — ยังไม่ใช่จุดเข้า"
-    // An untested side still shows when the score leans its way (user, 8 Oct: "ไม่เห็นมีจุดเข้า Sell"), with a warning and
-    // the tested side's threshold mirrored — never as "เข้าตอนนี้", not recorded, no LINE
-    const gap = (side) => { const c = (side > 0 ? B : S) || B; return !d ? Infinity : (side > 0 ? c.th - d.score : c.th + d.score) + ((side > 0 ? B : S) ? 0 : 0.5); };
-    const leanNow = d && d.score ? Math.sign(d.score) : lastC && lastC.dec.lean ? Math.sign(lastC.dec.lean) : 1; // score 0: follow the ▲/▼
-    const pick = dir || (d && d.score === 0 ? leanNow : gap(-1) < gap(1) ? -1 : 1);
-    const untested = !(pick > 0 ? B : S);
-    const other = -pick, oc = other > 0 ? B : S;
-    const otherLine = `<small class="cz-plan-other">${other > 0 ? 'Buy' : 'Sell'}: ${!oc ? 'ไม่ให้สัญญาณในกรอบนี้ (ทดสอบไม่ผ่าน)' : d ? `ห่างกว่า — ต้องได้คะแนน ${other > 0 ? '+' : '−'}${oc.th} (ตอนนี้ ${signedScore(d.score)})` : ''}</small>`;
-    const plan = sys.long || !(d && d.stale) ? `<div class="cz-plan">${planRow(pick)}</div>` : '';
-    // How close to an entry, in %: the score toward the picked side ÷ the score it needs (0 % at or past neutral, 100 % = enter)
-    const pc = (pick > 0 ? B : S) || B;
-    const pct = !d || open ? null : dir === pick ? 100 : Math.max(0, Math.min(untested ? 100 : 99, Math.round(((pick > 0 ? d.score : -d.score) / pc.th) * 100)));
-    const progHtml = pct == null || !plan ? '' : `<div class="cz-prog ${pick > 0 ? 'buy' : 'sell'}${pct >= 100 && !untested ? ' live' : ''}${untested ? ' untested' : ''}"><span>${pct >= 100 ? (untested ? '⚠️ ถึงเกณฑ์' : '✅ ถึงจุดเข้าแล้ว') : '⏳ ใกล้จุดเข้า'} ${pick > 0 ? 'Buy' : 'Sell'} <b>${pct}%</b>${untested ? ' <small class="cz-untested">⚠️ ฝั่งนี้ทดสอบขาดทุน — เสี่ยง</small>' : ''}</span><i><em style="width:${pct}%"></em></i></div>`;
-    if (note && !open) note.innerHTML = `${progHtml}<small>จากระบบบนกราฟ · การ์ดนี้เป็นบทวิเคราะห์ภาพรวม</small>`;
-    window.CZ_PLANS = open || !plan ? null : [pick].map((side) => {
-      const c = (side > 0 ? B : S) || B, L = levelsFor(c, price, side), live = dir === side && !br;
-      const note = live ? '✅ เข้าตอนนี้' : br ? '⛔ พักอยู่ — ไม่เข้า' : untested ? `⚠️ ${pct}% · ทดสอบขาดทุน` : `⏸ รอ ${pct == null ? '' : `${pct}%`}`;
-      return { side, entry: price, sl: L.sl, tps: L.tps, ok: live, note };
-    });
+    const sides = [sideInfo(1), sideInfo(-1)];
+    const col = (x) => `<div class="cz-col ${x.side > 0 ? 'buy' : 'sell'}${x.go ? ' go' : ''}${x.tested ? '' : ' untested'}">
+      <div class="cz-col-h"><b>${x.side > 0 ? '🟢 Buy' : '🔴 Sell'}</b><span class="cz-verdict">${x.verdict}</span></div>
+      <div class="cz-prog"><span>ความพร้อมเข้า <b>${x.pct}%</b></span><i><em style="width:${x.pct}%"></em></i></div>
+      <div class="cz-col-px">เข้า ~<b>${f2(price)}</b> · SL <b>${f2(x.L.sl)}</b><br>${x.L.tps.map((v, k) => `TP${k + 1} <b>${f2(v)}</b>`).join(' · ')}</div>
+      <small>${x.tested ? `ทดสอบชนะ ${x.c.win}% · ต้องได้คะแนน ${x.side > 0 ? '+' : '−'}${x.c.th}` : 'ฝั่งนี้ทดสอบขาดทุนในกรอบนี้ — เสี่ยง'}</small></div>`;
+    const showPlans = !open && (sys.long || !(d && d.stale));
+    const plan = showPlans ? `<div class="cz-two">${sides.map(col).join('')}</div>` : '';
+    const mini = (x) => `<div class="cz-prog ${x.side > 0 ? 'buy' : 'sell'}${x.go ? ' live' : ''}${x.tested ? '' : ' untested'}"><span>${x.side > 0 ? 'Buy' : 'Sell'} <b>${x.pct}%</b> · ${x.verdict}</span><i><em style="width:${x.pct}%"></em></i></div>`;
+    if (note && !open) note.innerHTML = showPlans ? `${sides.map(mini).join('')}<small>จากระบบบนกราฟ · การ์ดนี้เป็นบทวิเคราะห์ภาพรวม</small>` : note.innerHTML;
+    const goSide = sides.find((x) => x.go);
+    window.CZ_GO = open ? { side: open.side === 'SELL' ? -1 : 1, open: true } : goSide ? { side: goSide.side } : null;
+    if (window.renderSignalHead) renderSignalHead();
+    window.CZ_PLANS = showPlans ? sides.map((x) => ({ side: x.side, entry: price, sl: x.L.sl, tps: x.L.tps, ok: x.go, note: `${x.side > 0 ? 'Buy' : 'Sell'} ${x.pct}% ${x.go ? '✅ เข้า' : br && x.tested ? '⛔' : x.tested ? '⏸' : '⚠️'}` })) : null;
     if (window.drawPositionBoxes) drawPositionBoxes();
     const calcBtn = calcArgs ? `<button type="button" class="btn cz-calc" data-calc="${calcArgs.map((v) => SIG.round(v)).join(',')}">🧮 คำนวณ lot จากสัญญาณนี้</button>` : '';
     const top = pill ? `${pill}${waitOnly ? '' : `<br><small>${head}</small>`}` : head;
-    setBox(cls, `<b>${top}</b>${progHtml}${plan}${calcBtn}
-      <details class="cz-more"${moreOpen ? ' open' : ''}><summary>รายละเอียด (${other > 0 ? "Buy" : "Sell"} · ความแม่นยำ · วิธีอ่าน)</summary>
-      <span class="cz-more-now">${pillFull}${waitOnly ? ` · ${head}` : ''}</span>${otherLine}
+    setBox(cls, `<b>${top}</b>${plan}${calcBtn}
+      <details class="cz-more"${moreOpen ? ' open' : ''}><summary>รายละเอียด (ความแม่นยำ · วิธีอ่าน)</summary>
+      <span class="cz-more-now">${pillFull}${waitOnly ? ` · ${head}` : ''}</span>
       ${acc('BUY', B, null)} ${acc('SELL', S, sys.sellQ)}
       <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} · BUY ≥ +${B.th} (${sideText(B)})${S ? ` · SELL ≤ −${S.th} (${sideText(S)})` : ''}
       · ทดสอบย้อนหลัง ${sys.span} แบ่ง 4 ช่วงเท่ากัน เก่า→ใหม่ หลังสเปรด ต่อ 1 ออนซ์${sys.few ? ` · ตัวอย่างน้อย (${sys.few} ไม้)` : ''}${sys.long ? ' · ช่วงทดสอบทองเป็นขาขึ้นเกือบตลอด ไม่รับประกันอนาคต' : ''}

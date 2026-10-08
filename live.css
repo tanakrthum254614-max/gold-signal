@@ -582,3 +582,20 @@ body.cz-clean .charts > .legend { display: none; }
 .sig-note .cz-prog { margin: 0 0 6px; }
 .cz-box .cz-more-now { color: var(--text); } .sig-note > small { color: var(--muted); }
 .cz-untested { color: var(--down) !important; font-weight: 600; } .cz-prog.untested b { color: var(--down); }
+/* Buy | Sell columns, each with its own % and verdict */
+.cz-two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0 4px; }
+@media (max-width: 520px) { .cz-two { grid-template-columns: 1fr; } }
+.cz-col { display: grid; gap: 5px; padding: 8px 10px; border-radius: 10px; background: var(--panel); border-top: 3px solid; font-size: 13px; color: var(--text); }
+.cz-col.buy { border-color: var(--up); } .cz-col.sell { border-color: var(--down); }
+.cz-col.untested { opacity: .8; }
+.cz-col.go.buy { background: color-mix(in srgb, var(--up) 12%, var(--panel)); } .cz-col.go.sell { background: color-mix(in srgb, var(--down) 12%, var(--panel)); }
+.cz-col-h { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.cz-box .cz-col span, .cz-box .cz-col-px { color: var(--text); }
+.cz-verdict { font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 99px; background: var(--panel-2); color: var(--muted) !important; }
+.cz-col.go .cz-verdict { color: #fff !important; } .cz-col.go.buy .cz-verdict { background: var(--up); } .cz-col.go.sell .cz-verdict { background: var(--down); }
+.cz-col.untested .cz-verdict { color: var(--down) !important; }
+.cz-col small { color: var(--muted); }
+.cz-col.buy .cz-prog em { background: var(--up); } .cz-col.sell .cz-prog em { background: var(--down); }
+.cz-col.untested .cz-prog em { background: var(--muted); }
+.sig-note .cz-prog { margin-bottom: 4px; }
+.sig-note .cz-prog.buy em { background: var(--up); } .sig-note .cz-prog.sell em { background: var(--down); } .sig-note .cz-prog.untested em { background: var(--muted); }
