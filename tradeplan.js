@@ -164,14 +164,16 @@
   // ----- Render (main.js calls this at most once a second) -----
   window.renderPlan = function () {
     const now = Date.now(), price = nowPrice();
-    renderSession(now);
     if (price == null) return;
-    const dec = state.intraCandles ? INTRA.decide(state.intraCandles, now, state.news, true) : null;
-    const score = dec ? dec.score : 0;
-    const lv = levels(price, now);
-    renderLevels(price, lv);
-    renderZones(price, lv);
-    renderRadar(price, score, lv, now);
+    // The trade-plan card (session, levels, radar) was removed from the signals tab (user, 8 Oct): only the calculator remains
+    if ($('tpSession')) {
+      renderSession(now);
+      const dec = state.intraCandles ? INTRA.decide(state.intraCandles, now, state.news, true) : null;
+      const lv = levels(price, now);
+      renderLevels(price, lv);
+      renderZones(price, lv);
+      renderRadar(price, dec ? dec.score : 0, lv, now);
+    }
     if (!calc.touched) { const s = INTRA.RULE.slUsd; calc.fill(1, r2(price), r2(price - s), r2(price + s)); calc.touched = false; }
   };
 })();

@@ -875,7 +875,7 @@ function onStreamTick(p) {
     else { renderIntra(); renderSignalHome(); }
     // Panels below the fold only while visible (saves battery on phones); they catch up as soon as they scroll in
     if (onScreen('s15Card')) renderS15();
-    if (window.renderPlan && onScreen('tpCard')) renderPlan();
+    if (window.renderPlan && onScreen('calcCard')) renderPlan();
   }
 }
 function onScreen(id) {
@@ -1522,6 +1522,7 @@ function s15Tick() {
 
 // Light update (every tick): countdown, call, live profit; the chart only when a candle closed
 function renderS15() {
+  if (!$('s15Card')) return; // card removed from the signals tab (user, 8 Oct)
   const now = Date.now();
   const s = state.s15;
   const next = Math.floor(now / M15) * M15 + M15;

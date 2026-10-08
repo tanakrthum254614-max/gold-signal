@@ -79,13 +79,12 @@ function ago(ms) {
       const more = el.querySelector('.cz-more');
       if (more) more.addEventListener('toggle', () => { moreOpen = more.open; });
       el.querySelectorAll('[data-tf]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); setTf(a.dataset.tf); }));
-      // 🧮 → the lot calculator on the signals tab, filled with this signal's entry / SL / TP1
+      // 🧮 → the lot calculator under the chart, filled with this signal's entry / SL / TP1
       el.querySelectorAll('[data-calc]').forEach((b) => b.addEventListener('click', () => {
         const [side, entry, sl, tp] = b.dataset.calc.split(',').map(Number);
         if (!window.fillCalc) return;
         fillCalc(side, entry, sl, tp);
-        location.hash = 'home';
-        setTimeout(() => { const c = $('tpCalc'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250);
+        const c = $('tpCalc'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }));
     });
   }

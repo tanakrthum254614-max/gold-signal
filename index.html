@@ -17,9 +17,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610082010">
-  <link rel="stylesheet" href="live.css?v=202610082010">
-  <link rel="stylesheet" href="theme.css?v=202610082010" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610082100">
+  <link rel="stylesheet" href="live.css?v=202610082100">
+  <link rel="stylesheet" href="theme.css?v=202610082100" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -182,50 +182,6 @@
 
         <div id="inTrade"></div>
         <a class="lv-strip" id="lvStrip" href="#stats" hidden></a>
-
-        <!-- 15-minute signal: website only (no LINE) -->
-        <div class="card s15" id="s15Card">
-          <div class="sig-top"><span class="muted">⏱️ สัญญาณ 15 นาที · <b>ดูบนเว็บเท่านั้น</b> (ไม่ส่ง LINE)</span><span class="muted small mono" id="s15Next"></span></div>
-          <div class="s15-call" id="s15Call">กำลังคำนวณ…</div>
-          <p class="s15-why muted" id="s15Why"></p>
-          <details class="why-box" id="s15Detail"><summary id="s15DetailSum">🔍 ดูเหตุผลละเอียด</summary><div class="why-body" id="s15DetailBody"></div></details>
-          <div id="s15Trade"></div>
-          <div class="s15-chart-wrap">
-            <div class="s15-ohlc mono" id="s15Ohlc"></div>
-            <button class="btn ghost s15-reset" id="s15Reset" type="button" hidden>↺ ดูล่าสุด</button>
-            <div id="s15Chart" class="s15-chart"></div>
-          </div>
-          <p class="muted small s15-hint">ลากเพื่อเลื่อนดูย้อนหลัง · ลากที่แกนราคา/แกนเวลา หรือถ่างสองนิ้วเพื่อซูม · ชี้/แตะแท่งเพื่อดูราคาและคะแนนตอนนั้น</p>
-          <ul class="s15-legend">
-            <li><i class="up">▲</i>จุดเข้าซื้อ</li><li><i class="tp">●</i>ถึง TP</li><li><i class="sl">●</i>โดน SL</li>
-            <li><i class="zone ok"></i>ช่วงที่เข้าได้</li><li><i class="zone news"></i>ช่วงข่าว งดเข้า</li><li><i class="zone"></i>ไม่เข้า</li>
-          </ul>
-          <div id="s15Today"></div>
-          <p class="muted small s15-stats" id="s15Stats"></p>
-        </div>
-
-        <!-- Trader toolkit: session, key levels with buy/sell zones, short-term radar, position calculator -->
-        <h3 class="sec-title">🧭 แผนเทรดวันนี้ — จุดเข้า · แนวรับแนวต้าน · สายสั้น <span class="lv-tag">สด</span></h3>
-        <div class="card tp" id="tpCard">
-          <ol class="tp-steps"><li><b>ดูช่วงตลาด</b> — รู้ว่าตอนนี้แกว่งแรงหรือเบา</li><li><b>รอสัญญาณ 30/15 นาที</b> แล้วดูว่าเป้า/SL มีแนวขวางไหม</li><li><b>คำนวณขนาดไม้</b> — ไม่เสี่ยงเกินทุน</li></ol>
-          <div class="tp-session" id="tpSession"></div>
-          <div class="tp-grid">
-            <div class="tp-ladder"><div class="tp-h">📐 แนวรับ–แนวต้าน (ราคาสดอยู่ตรงไหน)</div><div id="tpLadder"></div></div>
-            <div class="tp-zones"><div class="tp-h">🎯 ใช้แนวรับ–ต้านกับสัญญาณของระบบ</div><div id="tpZones"></div></div>
-          </div>
-          <div class="tp-h">⚡ เรดาร์แรงสั้น (กราฟ 1 นาที) — ข้อมูลประกอบ</div>
-          <div class="tp-radar" id="tpRadar"></div>
-          <div class="tp-h">🧮 คำนวณขนาดไม้ก่อนเข้า</div>
-          <div class="tp-calc" id="tpCalc">
-            <div class="tp-side"><button type="button" class="on" data-side="1">🟢 ซื้อ</button><button type="button" data-side="-1">🔴 ขาย</button></div>
-            <label>จุดเข้า<input id="cEntry" type="number" step="0.01" inputmode="decimal"></label>
-            <label>SL<input id="cSl" type="number" step="0.01" inputmode="decimal"></label>
-            <label>TP<input id="cTp" type="number" step="0.01" inputmode="decimal"></label>
-            <button type="button" class="btn" id="cNow">ใช้ราคาตอนนี้</button>
-            <div class="tp-calc-out" id="cOut"></div>
-          </div>
-          <p class="muted small tp-note">⚠️ จุดเข้าที่ผ่านการทดสอบย้อนหลังคือสัญญาณ 30/15 นาทีด้านบน — ส่วนนี้เป็นข้อมูลประกอบ ตั้ง SL ทุกครั้ง และไม่เสี่ยงเกิน 1–2% ของทุนต่อไม้</p>
-        </div>
 
         <!-- Odds for each side, as donuts -->
         <h3 class="sec-title">🎯 ถ้าเข้าตอนนี้ — โอกาสแต่ละจุด <span class="lv-tag">สด</span></h3>
@@ -454,6 +410,20 @@
       </aside>
     </main>
 
+    <!-- Lot calculator (moved here from the signals tab, 8 Oct; the chart's 🧮 button fills it) -->
+    <section class="card tp calc-card" id="calcCard">
+      <h3>🧮 คำนวณขนาดไม้ก่อนเข้า</h3>
+        <div class="tp-calc" id="tpCalc">
+          <div class="tp-side"><button type="button" class="on" data-side="1">🟢 ซื้อ</button><button type="button" data-side="-1">🔴 ขาย</button></div>
+          <label>จุดเข้า<input id="cEntry" type="number" step="0.01" inputmode="decimal"></label>
+          <label>SL<input id="cSl" type="number" step="0.01" inputmode="decimal"></label>
+          <label>TP<input id="cTp" type="number" step="0.01" inputmode="decimal"></label>
+          <button type="button" class="btn" id="cNow">ใช้ราคาตอนนี้</button>
+          <div class="tp-calc-out" id="cOut"></div>
+        </div>
+        <p class="muted small tp-note">⚠️ จุดเข้าที่ผ่านการทดสอบย้อนหลังคือสัญญาณบนกราฟด้านบน (กดปุ่ม 🧮 ในกล่องเหนือกราฟเพื่อใส่ค่าให้) ตั้ง SL ทุกครั้ง และไม่เสี่ยงเกิน 1–2% ของทุนต่อไม้</p>
+    </section>
+
     <section class="card wide-card">
       <h3>ภาพรวมทุกกรอบเวลา <span class="muted small">— ข้อมูลจาก investing.com · <span id="techTime">—</span></span></h3>
       <p class="hint">กรอบเวลาสั้น (นาที) เหมาะกับเทรดเร็ว · กรอบเวลายาว (วัน/สัปดาห์) บอกแนวโน้มใหญ่ ถ้าทุกกรอบไปทางเดียวกัน สัญญาณจะน่าเชื่อถือขึ้น</p>
@@ -631,26 +601,26 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610082010 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610082100 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610082010"></script>
-  <script src="auth.js?v=202610082010"></script>
-  <script src="indicators.js?v=202610082010"></script>
-  <script src="investing.js?v=202610082010"></script>
-  <script src="explain.js?v=202610082010"></script>
-  <script src="dailyplan.js?v=202610082010"></script>
-  <script src="signals.js?v=202610082010"></script>
-  <script src="intraday.js?v=202610082010"></script>
-  <script src="pwa.js?v=202610082010"></script>
-  <script src="ui.js?v=202610082010"></script>
-  <script src="main.js?v=202610082010"></script>
-  <script src="tradeplan.js?v=202610082010"></script>
-  <script src="chartsys.js?v=202610082010"></script>
-  <script src="chartzones.js?v=202610082010"></script>
+  <script src="config.js?v=202610082100"></script>
+  <script src="auth.js?v=202610082100"></script>
+  <script src="indicators.js?v=202610082100"></script>
+  <script src="investing.js?v=202610082100"></script>
+  <script src="explain.js?v=202610082100"></script>
+  <script src="dailyplan.js?v=202610082100"></script>
+  <script src="signals.js?v=202610082100"></script>
+  <script src="intraday.js?v=202610082100"></script>
+  <script src="pwa.js?v=202610082100"></script>
+  <script src="ui.js?v=202610082100"></script>
+  <script src="main.js?v=202610082100"></script>
+  <script src="tradeplan.js?v=202610082100"></script>
+  <script src="chartsys.js?v=202610082100"></script>
+  <script src="chartzones.js?v=202610082100"></script>
 </body>
 </html>
