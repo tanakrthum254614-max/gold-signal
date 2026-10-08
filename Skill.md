@@ -33,6 +33,9 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 4. เปลี่ยนเลข `?v=` → commit → push → เช็กว่าเว็บจริงได้ไฟล์ใหม่ · แก้ workflow → สั่งรันทดสอบ (send=false)
 5. อัปเดต Skill.md + สำเนา `.claude/skills/gold-signal/SKILL.md` + memory
 
+## 🖥️ จอกว้างมาก (8 ต.ค. 2569 · เวอร์ชัน 202610082600)
+- ผู้ใช้: "ขอมากกว่านี้อีกนิด" → `@media (min-width: 1700px)`: `.content/.demo-bar` max-width none (padding 28px, demo-bar margin 28px) · sidebar 260px font 18.5 · การ์ดขวา 460px · body 18px และข้อความหลักใหญ่ขึ้นอีก ~10% · ระวัง: `git checkout -- compare/` จะทับภาพทดสอบที่ชื่อซ้ำไฟล์เดิม ให้ตั้งชื่อใหม่ก่อน
+
 ## 🖥️ จอกว้างสมส่วน (8 ต.ค. 2569 · เวอร์ชัน 202610082500)
 - ผู้ใช้ใช้จอ ~1900px: "แถบซ้ายเล็ก ข้อมูลเล็กไป" → live.css `@media (min-width: 1400px)`: sidebar 240px (font 17, icon 22) · `.content/.demo-bar` max 1600px · `.layout` การ์ดขวา 420px · body 17px และขยายข้อความในกล่องสัญญาณ/ช่อง Buy-Sell/การ์ดขวา/ปุ่มกรอบเวลา · **ห้ามใช้ CSS zoom** (พิกัดเมาส์บนกราฟจะเพี้ยน) · ทดสอบที่ 1920px
 

@@ -630,3 +630,25 @@ body.cz-clean .charts > .legend { display: none; }
   .sig-note, #confText, .reasons li { font-size: 14.5px; }
   .tfs button, .tfs a { font-size: 15px; padding: 8px 16px; }
 }
+/* Very wide screens (user, 8 Oct: "ขอมากกว่านี้อีกนิด"): content fills the width, one more step up in size */
+@media (min-width: 1700px) {
+  #app { padding-left: 260px; }
+  #app > .appbar { margin-left: -260px; }
+  #tabbar.tabbar { width: 260px; padding: 22px 16px; gap: 8px; }
+  #tabbar.tabbar a { font-size: 18.5px; padding: 14px 20px; }
+  #tabbar.tabbar a span { font-size: 24px; }
+  .content, .demo-bar { max-width: none; padding-left: 28px; padding-right: 28px; }
+  .layout { grid-template-columns: minmax(0, 1fr) 460px; gap: 22px; }
+  body { font-size: 18px; }
+  .small { font-size: 15px; }
+  h3 { font-size: 18.5px; }
+  .cz-box { font-size: 16px; } .cz-box b { font-size: 17.5px; }
+  .cz-col { font-size: 16px; padding: 10px 14px; } .cz-col-px b { font-size: 17px; } .cz-prog b { font-size: 19px; }
+  .cz-verdict { font-size: 14px; }
+  .s15-legend { font-size: 14px; }
+  .signal .action { font-size: 52px; }
+  .sig-note, #confText, .reasons li { font-size: 15.5px; }
+  .tfs button, .tfs a { font-size: 16.5px; padding: 9px 18px; }
+  .pp-lab { font-size: 11.5px; } .pp-status { font-size: 13px; }
+}
+@media (min-width: 1700px) { .demo-bar { margin: 10px 28px 0; } }
