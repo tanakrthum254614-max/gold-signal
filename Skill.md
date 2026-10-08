@@ -33,6 +33,9 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 4. เปลี่ยนเลข `?v=` → commit → push → เช็กว่าเว็บจริงได้ไฟล์ใหม่ · แก้ workflow → สั่งรันทดสอบ (send=false)
 5. อัปเดต Skill.md + สำเนา `.claude/skills/gold-signal/SKILL.md` + memory
 
+## 🖥️ จอกว้างสมส่วน (8 ต.ค. 2569 · เวอร์ชัน 202610082500)
+- ผู้ใช้ใช้จอ ~1900px: "แถบซ้ายเล็ก ข้อมูลเล็กไป" → live.css `@media (min-width: 1400px)`: sidebar 240px (font 17, icon 22) · `.content/.demo-bar` max 1600px · `.layout` การ์ดขวา 420px · body 17px และขยายข้อความในกล่องสัญญาณ/ช่อง Buy-Sell/การ์ดขวา/ปุ่มกรอบเวลา · **ห้ามใช้ CSS zoom** (พิกัดเมาส์บนกราฟจะเพี้ยน) · ทดสอบที่ 1920px
+
 ## ◧ เมนูแนวตั้งด้านซ้าย (8 ต.ค. 2569 · เวอร์ชัน 202610082400)
 - ผู้ใช้: "ย้ายแถบ navbar มาเป็นเมนูแนวตั้งฝั่งซ้าย" → live.css `@media (min-width: 900px)`: `#tabbar.tabbar` fixed top 56px ซ้าย กว้าง 200px flex-column · `#app { padding-left: 200px }` · `#app > .appbar { margin-left: -200px }` (หัวเว็บยังเต็มความกว้าง) · ใช้ `#tabbar` เพื่อชนะ theme.css ที่โหลดทีหลัง · มือถือ (<900px) ยังเป็นแถบล่างเดิม
 

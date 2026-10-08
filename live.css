@@ -609,3 +609,24 @@ body.cz-clean .charts > .legend { display: none; }
   #tabbar.tabbar { position: fixed; top: 56px; bottom: 0; left: 0; width: 200px; z-index: 25; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; gap: 4px; padding: 16px 12px; border-bottom: 0; border-right: 1px solid var(--line); overflow-y: auto; }
   #tabbar.tabbar a { justify-content: flex-start; padding: 11px 14px; border-radius: 12px; }
 }
+/* Wide screens (user, 8 Oct: sidebar and content looked small on a ~1900px screen): wider sidebar, wider content,
+   larger text in the main blocks. Sizes only — no CSS zoom (it would shift the chart's mouse coordinates). */
+@media (min-width: 1400px) {
+  #app { padding-left: 240px; }
+  #app > .appbar { margin-left: -240px; }
+  #tabbar.tabbar { width: 240px; padding: 20px 14px; gap: 6px; }
+  #tabbar.tabbar a { font-size: 17px; gap: 12px; padding: 13px 18px; }
+  #tabbar.tabbar a span { font-size: 22px; }
+  .content, .demo-bar { max-width: 1600px; }
+  .layout { grid-template-columns: minmax(0, 1fr) 420px; gap: 18px; }
+  body { font-size: 17px; }
+  .small { font-size: 14px; }
+  h3 { font-size: 17px; }
+  .cz-box { font-size: 14.5px; } .cz-box b { font-size: 16px; }
+  .cz-col { font-size: 14.5px; } .cz-col-px b { font-size: 15.5px; } .cz-prog b { font-size: 17px; }
+  .cz-verdict { font-size: 13px; }
+  .s15-legend { font-size: 13px; }
+  .signal .action { font-size: 44px; }
+  .sig-note, #confText, .reasons li { font-size: 14.5px; }
+  .tfs button, .tfs a { font-size: 15px; padding: 8px 16px; }
+}
