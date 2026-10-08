@@ -198,6 +198,12 @@ function ago(ms) {
       return `<div class="cz-plan-row ${side > 0 ? 'buy' : 'sell'}${c ? '' : ' off'}"><span class="cz-plan-side">${side > 0 ? '🟢 Buy' : '🔴 Sell'}</span><span>${lv}</span><small>${state2}</small></div>`;
     };
     const plan = sys.long || !(d && d.stale) ? `<div class="cz-plan">${planRow(1)}${planRow(-1)}</div>` : '';
+    window.CZ_PLANS = open || !plan ? null : [1, -1].map((side) => {
+      const c = side > 0 ? B : S, L = levelsFor(c || B, price, side);
+      const note = !c ? '⚠️ ทดสอบไม่ผ่าน' : br ? '⛔ พักอยู่' : dir === side ? '✅ สัญญาณมาแล้ว' : d ? `รอคะแนน ${side > 0 ? '+' : '−'}${c.th} (ตอนนี้ ${signedScore(d.score)})` : '';
+      return { side, entry: price, sl: L.sl, tps: L.tps, ok: !!c && !br, note };
+    });
+    if (window.drawPositionBoxes) drawPositionBoxes();
     const calcBtn = calcArgs ? `<button type="button" class="btn cz-calc" data-calc="${calcArgs.map((v) => SIG.round(v)).join(',')}">🧮 คำนวณ lot จากสัญญาณนี้</button>` : '';
     setBox(cls, `<b>${pill}${pill ? `<small>${head}</small>` : head}</b>${plan}${calcBtn}
       <details class="cz-more"${moreOpen ? ' open' : ''}><summary>ความแม่นยำ: BUY ชนะ ${B.win}%${S ? ` · SELL ${S.win}%` : ' · SELL ไม่ให้สัญญาณ'} · รายละเอียด</summary>
@@ -232,15 +238,46 @@ function ago(ms) {
   function currentPlan() {
     const t = window.CZ_OPEN;
     if (t) return { be: !!t.hit, side: t.side === 'SELL' ? -1 : 1, entry: t.entry, sl: t.hit ? t.entry : t.sl, tps: t.tps, since: t.createdAt, who: 'ระบบที่ทดสอบแล้ว' };
-    const L = state.locked;
-    if (!L || L.action === 'WAIT' || L.entry == null) return null;
-    return { side: L.action === 'BUY' ? 1 : -1, entry: L.entry, sl: L.sl, tps: [L.tp1].filter((v) => v != null), since: L.since, who: 'บทวิเคราะห์ investing.com' };
+    return null;
+  }
+  // No open trade: where a Buy and a Sell would go in right now (window.CZ_PLANS from renderChartZones), drawn as two
+  // long / short boxes in the empty space right of the last candle, with the entry, SL and TP prices written on them
+  function drawPlans(b, plans) {
+    const ts = b.chart.timeScale(), y = (v) => b.series.priceToCoordinate(v);
+    const right = b.chart.priceScale('right').width(), W = b.el.clientWidth - right;
+    const bars = state.bars, lastX = ts.timeToCoordinate(bars[bars.length - 1].time + TZ);
+    if (lastX == null || !W) return '';
+    const x0 = Math.max(0, Math.min(W - 104, lastX + 6)), colW = Math.max(48, (W - x0 - 6) / 2);
+    return plans.map((p, i) => {
+      const x = x0 + i * (colW + 6), ye = y(p.entry), ys = y(p.sl), yt = y(p.tps[p.tps.length - 1]);
+      if (ye == null || ys == null || yt == null) return '';
+      const box = (ya, yb, cls) => `<div class="pbox ${cls}" style="left:${x}px;width:${colW}px;top:${Math.min(ya, yb)}px;height:${Math.max(2, Math.abs(ya - yb))}px"></div>`;
+      const lab = (yy, cls, txt) => `<div class="pp-lab ${cls}" style="left:${x + 3}px;width:${colW - 6}px;top:${yy}px">${txt}</div>`;
+      const buy = p.side > 0;
+      const tpLines = p.tps.map((v, k) => { const yy = y(v); return yy == null ? '' : `<div class="pp-line tp" style="left:${x}px;width:${colW}px;top:${yy}px"></div>` + lab(yy + (buy ? 8 : -8), 'tp', `TP${k + 1} ${f2(v)}`); }).join('');
+      const note = lab(buy ? ys + 12 : ys - 12, 'note', p.note);
+      return `<div class="pp ${p.ok ? '' : 'off'}">${box(ye, ys, 'loss')}${box(ye, yt, 'win')}
+        <div class="pentry" style="left:${x}px;width:${colW}px;top:${ye}px"></div>${tpLines}
+        ${lab(ye, `en ${buy ? 'buy' : 'sell'}`, `${buy ? 'Buy' : 'Sell'} ${f2(p.entry)}`)}${lab(ys + (buy ? -8 : 8), 'sl', `SL ${f2(p.sl)}`)}${note}</div>`;
+    }).join('');
   }
   function draw(b) {
-    const p = currentPlan();
-    // Room on the right for the box while there is an entry (like a platform's position tool)
-    const off = p ? 8 : 6;
+    const p = currentPlan(), plans = !p && window.CZ_PLANS;
+    // Room on the right for the box while there is an entry (like a platform's position tool); the two plan boxes
+    // need ~260px whatever the zoom
+    const sp = b.chart.timeScale().options().barSpacing || 6;
+    const plotW = b.el.clientWidth - b.chart.priceScale('right').width();
+    const need = plotW < 520 ? Math.round(plotW * 0.48) : 260; // phones: about half the plot
+    const off = p ? 8 : plans ? Math.min(80, Math.ceil(need / sp) + 1) : 6;
     if (b.off !== off) { b.off = off; b.chart.timeScale().applyOptions({ rightOffset: off }); }
+    if (plans && state.bars.length) {
+      // Showing the latest candles but without room for the boxes (a zoom or tab switch set the range): make room
+      const ts = b.chart.timeScale(), r = ts.getVisibleLogicalRange(), n = state.bars.length;
+      if (r && r.to >= n - 2 && r.to < n - 1 + off - 1) { ts.setVisibleLogicalRange({ from: r.from, to: n - 1 + off }); return; }
+      const html = drawPlans(b, plans);
+      if (html !== b.html) { b.html = html; b.el.innerHTML = html; }
+      return;
+    }
     if (!p || !state.bars.length) { b.html = b.el.innerHTML = ''; return; }
     const ts = b.chart.timeScale(), y = (v) => b.series.priceToCoordinate(v);
     // Plot width = chart width − right price scale (timeScale().width() is 0 when the time axis is hidden)
