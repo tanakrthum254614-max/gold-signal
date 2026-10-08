@@ -1,31 +1,20 @@
 // Web push: sends every message that goes to LINE to the devices people switched notifications on
-// for in the app (saved on their Clerk account as unsafeMetadata.push). Doesn't use the LINE quota.
-// Env: CLERK_SECRET_KEY, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY (scripts/setup-push.js sets them up).
-// Missing keys / the web-push package → skipped with a log line. Never throws.
-const CLERK = 'https://api.clerk.com/v1';
+// for in the app (saved by middleware.js /api/push in the private Blob store, access/push-subs.json, one entry per
+// device with the access-code holder's name). Doesn't use the LINE quota.
+// Env: BLOB_READ_WRITE_TOKEN, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY (scripts/setup-push.js sets the VAPID keys up).
+// Missing keys / packages → skipped with a log line. Never throws.
 const SITE = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
+const SUBS = 'access/push-subs.json';
 
-async function clerk(pathname, init = {}) {
-  const r = await fetch(`${CLERK}${pathname}`, {
-    ...init,
-    headers: { Authorization: `Bearer ${process.env.CLERK_SECRET_KEY.trim()}`, 'Content-Type': 'application/json', ...(init.headers || {}) },
-  });
-  if (!r.ok) throw new Error(`Clerk ${r.status}: ${(await r.text()).slice(0, 200)}`);
-  return r.json();
+async function readSubs() {
+  const { get } = require('@vercel/blob');
+  const r = await get(SUBS, { access: 'private' });
+  if (!r || r.statusCode !== 200) return { subs: [] };
+  return JSON.parse(await new Response(r.stream).text());
 }
-
-// [{ id, subs: [{ endpoint, keys, device, at }] }] for every account with at least one device
-async function subscribers() {
-  const out = [];
-  for (let offset = 0; offset < 5000; offset += 100) {
-    const page = await clerk(`/users?limit=100&offset=${offset}&order_by=-created_at`);
-    page.forEach((u) => {
-      const subs = (u.unsafe_metadata && u.unsafe_metadata.push) || [];
-      if (Array.isArray(subs) && subs.length) out.push({ id: u.id, subs });
-    });
-    if (page.length < 100) break;
-  }
-  return out;
+async function writeSubs(data) {
+  const { put } = require('@vercel/blob');
+  await put(SUBS, JSON.stringify(data), { access: 'private', addRandomSuffix: false, allowOverwrite: true, contentType: 'application/json' });
 }
 
 // A LINE text → notification: first line is the title, the rest the body
@@ -37,37 +26,33 @@ function toNote(text, i) {
 }
 
 async function push(texts) {
-  const { CLERK_SECRET_KEY, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY } = process.env;
+  const { BLOB_READ_WRITE_TOKEN, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY } = process.env;
   if (!texts.length) return;
-  if (!CLERK_SECRET_KEY || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return console.log('push: not set up (keys missing) — skipped');
+  if (!BLOB_READ_WRITE_TOKEN || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return console.log('push: not set up (keys missing) — skipped');
   let webpush;
   try { webpush = require('web-push'); } catch (e) { return console.log('push: web-push package not installed — skipped'); }
   try {
     webpush.setVapidDetails(SITE, VAPID_PUBLIC_KEY.trim(), VAPID_PRIVATE_KEY.trim());
-    const users = await subscribers();
+    const data = await readSubs();
     const notes = texts.map(toNote);
-    let sent = 0, failed = 0, removed = 0;
-    for (const u of users) {
-      const dead = new Set();
-      for (const sub of u.subs) {
-        for (const n of notes) {
-          try {
-            await webpush.sendNotification({ endpoint: sub.endpoint, keys: sub.keys }, JSON.stringify(n), { TTL: 3600, urgency: 'high' });
-            sent++;
-          } catch (e) {
-            if (e.statusCode === 404 || e.statusCode === 410) { dead.add(sub.endpoint); break; } // device unsubscribed / app removed
-            failed++;
-            console.log(`push: ${e.statusCode || ''} ${e.message}`);
-          }
+    let sent = 0, failed = 0;
+    const dead = new Set();
+    for (const sub of data.subs) {
+      for (const n of notes) {
+        try {
+          await webpush.sendNotification({ endpoint: sub.endpoint, keys: sub.keys }, JSON.stringify(n), { TTL: 3600, urgency: 'high' });
+          sent++;
+        } catch (e) {
+          if (e.statusCode === 404 || e.statusCode === 410) { dead.add(sub.endpoint); break; } // device unsubscribed / app removed
+          failed++;
+          console.log(`push: ${e.statusCode || ''} ${e.message}`);
         }
       }
-      if (dead.size) {
-        removed += dead.size;
-        await clerk(`/users/${u.id}/metadata`, { method: 'PATCH', body: JSON.stringify({ unsafe_metadata: { push: u.subs.filter((s) => !dead.has(s.endpoint)) } }) })
-          .catch((e) => console.log(`push: couldn't remove old devices: ${e.message}`));
-      }
     }
-    console.log(`✓ push: ${sent} sent to ${users.reduce((a, u) => a + u.subs.length, 0)} device(s)${failed ? `, ${failed} failed` : ''}${removed ? `, ${removed} old removed` : ''}`);
+    const removed = dead.size;
+    if (removed) await writeSubs({ ...data, subs: data.subs.filter((s) => !dead.has(s.endpoint)) }).catch((e) => console.log(`push: couldn't remove old devices: ${e.message}`));
+    const users = data.subs;
+    console.log(`✓ push: ${sent} sent to ${users.length} device(s)${failed ? `, ${failed} failed` : ''}${removed ? `, ${removed} old removed` : ''}`);
   } catch (e) {
     console.log(`⚠️ push failed: ${e.message}`);
   }
