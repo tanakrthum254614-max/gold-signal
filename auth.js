@@ -1,4 +1,4 @@
-// Loading screen + Google sign-in (Clerk). Exposes SPLASH and AUTH for main.js.
+// Loading screen + who is signed in (access codes — middleware.js). Exposes SPLASH and AUTH for main.js.
 (function () {
   const $ = (id) => document.getElementById(id);
 
@@ -56,116 +56,27 @@
   $('splashFill').style.strokeDashoffset = RING;
   SPLASH.step('กำลังเริ่มต้น…', 5);
 
-  const THEME = {
-    variables: {
-      colorPrimary: '#1c2433', colorPrimaryForeground: '#ffffff', colorTextOnPrimaryBackground: '#ffffff',
-      colorBackground: '#ffffff', colorForeground: '#1c2433', colorText: '#1c2433',
-      colorMutedForeground: '#697386', colorTextSecondary: '#697386', colorNeutral: '#1c2433',
-      colorInput: '#f2f5f9', colorInputBackground: '#f2f5f9', colorInputForeground: '#1c2433', colorInputText: '#1c2433',
-      fontFamily: '"IBM Plex Sans Thai", system-ui, sans-serif', borderRadius: '10px', fontSize: '16px',
-    },
-    // Google only: hide the email form so the sign-in screen is a single button
-    elements: {
-      dividerRow: { display: 'none' }, form: { display: 'none' }, footerAction: { display: 'none' },
-      socialButtonsBlockButton: { padding: '14px', fontSize: '16px' },
-      cardBox: { boxShadow: '0 8px 24px rgba(20,30,50,.08)', border: '1px solid #e2e7ef', borderRadius: '20px' },
-    },
-  };
-  const THAI_OVERRIDES = {
-    signIn: { start: {
-      title: 'เข้าใช้งานด้วย Google', subtitle: 'กดปุ่มเดียว ไม่ต้องสมัครสมาชิก',
-      titleCombined: 'เข้าใช้งานด้วย Google', subtitleCombined: 'กดปุ่มเดียว ไม่ต้องสมัครสมาชิก',
-    } },
-    signUp: { start: { title: 'สมัครใช้งาน Gold Signal', subtitle: 'สมัครฟรีด้วยบัญชี Google' } },
-  };
-
-  function merge(base, extra) {
-    const out = { ...base };
-    for (const [k, v] of Object.entries(extra)) {
-      out[k] = v && typeof v === 'object' && !Array.isArray(v) ? merge(base[k] || {}, v) : v;
-    }
-    return out;
-  }
-
-  function loadScript(src, attrs = {}) {
-    return new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = src;
-      s.crossOrigin = 'anonymous';
-      Object.entries(attrs).forEach(([k, v]) => s.setAttribute(k, v));
-      s.onload = resolve;
-      s.onerror = () => reject(new Error(`โหลด ${src} ไม่สำเร็จ`));
-      document.head.appendChild(s);
-    });
-  }
-
+  // Signing in happens on /login.html with an access code; the server only serves this page to a signed-in visitor.
+  // AUTH.user = { fullName } of the code's holder (no email / photo — there is no account any more).
+  let resolveReady;
+  window.AUTH = { ready: new Promise((r) => { resolveReady = r; }), user: null };
   function showApp() {
     $('login').hidden = true;
     $('app').hidden = false;
   }
-
-  let resolveReady;
-  window.AUTH = { ready: new Promise((r) => { resolveReady = r; }), user: null };
-
-  // Preview mode (?demo=1): the whole app, live, without signing in — for visitors from the portfolio.
-  // Settings are kept in this browser only; nothing needs an account.
-  const DEMO = new URLSearchParams(location.search).has('demo');
-
   async function start() {
-    if (DEMO) {
-      SPLASH.step('โหมดดูตัวอย่าง — ไม่ต้องล็อกอิน', 25);
-      $('demoBar').hidden = false;
-      showApp(null);
-      return resolveReady(null);
-    }
-    SPLASH.step('กำลังตรวจสอบการเข้าสู่ระบบ…', 15);
-    const pk = window.GOLD_CONFIG && window.GOLD_CONFIG.clerkPublishableKey;
-    if (!pk) { showApp(null); return resolveReady(null); }
-
-    // The publishable key encodes the Clerk Frontend API host: pk_test_<base64("host$")>
-    const fapi = atob(pk.split('_')[2]).replace(/\$$/, '');
-    let thTH = {};
-    await Promise.all([
-      loadScript(`https://${fapi}/npm/@clerk/ui@1/dist/ui.browser.js`),
-      loadScript(`https://${fapi}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`, { 'data-clerk-publishable-key': pk }),
-      import('https://cdn.jsdelivr.net/npm/@clerk/localizations@4/+esm').then((m) => { thTH = m.thTH; }).catch(() => {}),
-    ]);
-    const Clerk = window.Clerk;
-    await Clerk.load({
-      ui: { ClerkUI: window.__internal_ClerkUICtor },
-      localization: merge(thTH, THAI_OVERRIDES),
-      appearance: THEME,
-      afterSignOutUrl: location.pathname,
-    });
-
-    let signedIn = !!Clerk.user;
-    Clerk.addListener(({ user }) => {
-      if (user && !signedIn) {
-        signedIn = true;
-        SPLASH.show();
-        SPLASH.step('เข้าสู่ระบบสำเร็จ กำลังโหลด…', 30);
-        window.AUTH.user = user;
-        showApp(user);
-        resolveReady(user);
-      } else if (!user && signedIn) {
-        location.reload(); // signed out
-      }
-    });
-
-    if (signedIn) {
-      window.AUTH.user = Clerk.user;
-      showApp(Clerk.user);
-      return resolveReady(Clerk.user);
-    }
-
-    // Not signed in: show the sign-in page instead of the app
-    SPLASH.hide();
-    $('login').hidden = false;
-    Clerk.mountSignIn($('signIn'), { withSignUp: true, forceRedirectUrl: location.href, signUpForceRedirectUrl: location.href });
+    SPLASH.step('กำลังตรวจสอบรหัสเข้าใช้งาน…', 15);
+    const r = await fetch('/api/me', { cache: 'no-store', credentials: 'same-origin' });
+    if (r.status === 401) { location.replace('/login.html'); return; }
+    // Opened as a plain file / dev server without the middleware: carry on unsigned
+    const me = r.ok && (r.headers.get('content-type') || '').includes('json') ? await r.json() : null;
+    window.AUTH.user = me ? { fullName: me.name } : null;
+    showApp();
+    resolveReady(window.AUTH.user);
   }
-
   start().catch((e) => {
     console.error(e);
-    SPLASH.step('ระบบเข้าสู่ระบบมีปัญหา กรุณารีเฟรชหน้าอีกครั้ง', 100);
+    showApp();
+    resolveReady(null);
   });
 })();

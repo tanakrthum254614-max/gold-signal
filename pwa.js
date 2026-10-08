@@ -1,11 +1,10 @@
 // Install as an app (PWA) + push notifications on this device.
-// Subscriptions are saved on the signed-in Clerk account (unsafeMetadata.push, one per device); the
+// Subscriptions are saved on the server under the access-code holder (/api/push → private Blob, middleware.js); the
 // GitHub Actions jobs read them with the Clerk secret key and send every LINE message as a push too
 // (scripts/push.js), so notifications don't use the LINE quota.
 (function () {
   const $ = (id) => document.getElementById(id);
   const VAPID = (window.GOLD_CONFIG && GOLD_CONFIG.vapidPublicKey) || '';
-  const DEMO = new URLSearchParams(location.search).has('demo');
   const store = {
     get: (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* private mode */ } },
@@ -40,7 +39,14 @@
   // ---------- Push ----------
   const pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
   const user = () => window.AUTH && AUTH.user;
-  const subsOf = (u) => (u && u.unsafeMetadata && Array.isArray(u.unsafeMetadata.push) ? u.unsafeMetadata.push : []);
+  // This holder's devices on the server (/api/push in middleware.js)
+  async function serverSubs() {
+    const r = await fetch('/api/push', { cache: 'no-store' });
+    return r.ok ? (await r.json()).subs || [] : [];
+  }
+  // The device goes in a header (base64 JSON): the access-check middleware doesn't reliably get request bodies
+  const pushApi = (method, body) => fetch('/api/push', { method, headers: { 'x-push': btoa(unescape(encodeURIComponent(JSON.stringify(body)))) } })
+    .then((r) => { if (!r.ok) throw new Error('บันทึกบนเซิร์ฟเวอร์ไม่สำเร็จ'); });
   const keyBytes = (b64) => {
     const s = atob((b64 + '='.repeat((4 - (b64.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/'));
     return Uint8Array.from(s, (c) => c.charCodeAt(0));
@@ -49,11 +55,6 @@
     const r = await swReady;
     return r && r.pushManager ? r.pushManager.getSubscription() : null;
   }
-  async function saveSubs(list) {
-    const u = user();
-    await u.update({ unsafeMetadata: { ...(u.unsafeMetadata || {}), push: list } });
-  }
-
   async function enablePush() {
     const perm = await Notification.requestPermission();
     if (perm !== 'granted') { render(); return toast('ยังไม่ได้อนุญาตการแจ้งเตือน — เปิดได้ในการตั้งค่าเบราว์เซอร์'); }
@@ -64,9 +65,7 @@
       || await Promise.race([r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(VAPID) }), late]);
     const json = sub.toJSON();
     const device = ios ? 'iPhone/iPad' : /android/i.test(ua) ? 'Android' : /mac/i.test(ua) ? 'Mac' : /windows/i.test(ua) ? 'Windows' : 'อุปกรณ์อื่น';
-    // newest first, at most 5 devices (Clerk metadata is small)
-    const list = [{ endpoint: json.endpoint, keys: json.keys, device, at: Date.now() }, ...subsOf(user()).filter((s) => s.endpoint !== json.endpoint)].slice(0, 5);
-    await saveSubs(list);
+    await pushApi('POST', { endpoint: json.endpoint, keys: json.keys, device }); // the server keeps 5 devices per holder
     store.set('gs-push', 'on');
     r.showNotification('🔔 เปิดแจ้งเตือนแล้ว', { body: 'จะเด้งเตือนเมื่อมีจังหวะ ✅ เข้าไม้ ถึง TP โดน SL และข่าวแรง — เหมือนใน LINE', icon: '/icons/icon-192.png', badge: '/icons/badge-96.png', tag: 'gs-test' });
     render();
@@ -74,7 +73,7 @@
   async function disablePush() {
     const sub = await currentSub();
     if (sub) {
-      await saveSubs(subsOf(user()).filter((s) => s.endpoint !== sub.endpoint)).catch(() => {});
+      await pushApi('DELETE', { endpoint: sub.endpoint }).catch(() => {});
       await sub.unsubscribe().catch(() => {});
     }
     store.set('gs-push', 'off');
@@ -108,11 +107,11 @@
     let state;
     if (!VAPID) state = ['ระบบแจ้งเตือนกำลังเตรียม — เร็ว ๆ นี้', null];
     else if (!pushSupported()) state = [ios && !installed ? 'iPhone/iPad: ต้องติดตั้งเป็นแอปก่อน (ข้อด้านบน) แล้วเปิดจากหน้าจอหลัก' : 'เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน', null];
-    else if (DEMO || !user()) state = ['ล็อกอินด้วย Google ก่อน เพื่อผูกการแจ้งเตือนกับบัญชี', null];
+    else if (!user()) state = ['เข้าใช้งานด้วยรหัสก่อน เพื่อเปิดการแจ้งเตือน', null];
     else if (Notification.permission === 'denied') state = ['ถูกบล็อกไว้ — เปิดสิทธิ์การแจ้งเตือนของเว็บนี้ในการตั้งค่าเบราว์เซอร์', null];
     else {
       const sub = await currentSub();
-      const on = !!sub && subsOf(user()).some((s) => s.endpoint === sub.endpoint);
+      const on = !!sub && (await serverSubs()).some((s) => s.endpoint === sub.endpoint);
       state = on ? ['✅ เปิดอยู่ — เด้งเตือนทุกครั้งที่ LINE ส่ง (ไม่กินโควตา LINE)', 'off'] : ['เด้งเตือนบนเครื่องนี้เมื่อมีจังหวะ ✅ เข้าไม้ ถึง TP โดน SL และข่าวแรง', 'on'];
       $('pwaTest').hidden = !on;
     }
