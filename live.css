@@ -548,3 +548,15 @@
 .s15-legend i.lg-tag { color: #fff; font-size: 10px; padding: 0 5px; border-radius: 3px; } .s15-legend i.lg-tag.buy { background: #1f8a4c; } .s15-legend i.lg-tag.sell { background: #c2223b; } .s15-legend i.lg-env { color: rgb(216,190,120); }
 .cz-clean-btn { padding: 6px 12px; font-size: 13px; }
 body.cz-clean .charts > .legend { display: none; }
+/* Entry / TP / SL segments of past signals, and the both-side plan in the status box */
+.cz-seg { position: absolute; height: 0; border-top: 2px solid; }
+.cz-seg.en { border-color: rgba(232,182,76,.95); } .cz-seg.tp { border-color: rgba(15,159,110,.9); border-top-style: dashed; } .cz-seg.sl { border-color: rgba(224,66,79,.9); border-top-style: dashed; }
+.cz-lv { position: absolute; transform: translateY(-50%); font: 600 10.5px/14px system-ui, sans-serif; padding: 0 4px; border-radius: 3px; color: #fff; white-space: nowrap; }
+.cz-lv.tp { background: rgba(15,159,110,.9); } .cz-lv.sl { background: rgba(224,66,79,.9); } .cz-lv.en { display: none; }
+.cz-plan { display: grid; gap: 4px; margin: 4px 0; }
+.cz-plan-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 5px 9px; border-radius: 8px; background: var(--panel); font-size: 13px; color: var(--text); border-left: 3px solid; }
+.cz-plan-row.buy { border-color: var(--up); } .cz-plan-row.sell { border-color: var(--down); }
+.cz-plan-row.off { opacity: .6; }
+.cz-plan-row small { color: var(--muted); }
+.cz-plan-side { font-weight: 700; min-width: 52px; }
+.cz-box .cz-plan-row span { color: var(--text); } .cz-box .cz-plan-row .cz-plan-side { color: inherit; }

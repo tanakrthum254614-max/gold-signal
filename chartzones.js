@@ -187,8 +187,19 @@ function ago(ms) {
     };
     const fin = s.trades.filter((r) => SIG.isFinal(r)), pnl = fin.reduce((a, r) => a + r.pnl, 0);
     if (br) head = `<span class="cz-brake">⛔ พักสัญญาณกรอบนี้: ${br.why} — ${br.until ? `ถึง ${when(SYS['1d'], br.until)}` : 'จนกว่าผล 20 ไม้ล่าสุดจะดีขึ้น'} · ระบบยังบันทึกต่อ</span><br>${head}`;
+    // Both sides, always: where a Buy / Sell would go in at the current price, and what it still needs
+    const planRow = (side) => {
+      const c = side > 0 ? B : S, cc = c || B, L = levelsFor(cc, price, side), th = c ? c.th : null;
+      const lv = `เข้า ~<b>${f2(price)}</b> · SL <b>${f2(L.sl)}</b> · ${L.tps.map((v, k) => `TP${k + 1} <b>${f2(v)}</b>`).join(' · ')}`;
+      const state2 = !c ? '⚠️ ฝั่งนี้ทดสอบไม่ผ่านในกรอบนี้ — ไม่แนะนำ'
+        : open ? 'มีไม้ถืออยู่ — รอปิดก่อน'
+        : dir === side ? (br ? '⛔ พักอยู่' : '✅ สัญญาณมาแล้ว')
+        : d ? `รอคะแนน ${side > 0 ? '+' : '−'}${th} (ตอนนี้ ${signedScore(d.score)})` : '';
+      return `<div class="cz-plan-row ${side > 0 ? 'buy' : 'sell'}${c ? '' : ' off'}"><span class="cz-plan-side">${side > 0 ? '🟢 Buy' : '🔴 Sell'}</span><span>${lv}</span><small>${state2}</small></div>`;
+    };
+    const plan = sys.long || !(d && d.stale) ? `<div class="cz-plan">${planRow(1)}${planRow(-1)}</div>` : '';
     const calcBtn = calcArgs ? `<button type="button" class="btn cz-calc" data-calc="${calcArgs.map((v) => SIG.round(v)).join(',')}">🧮 คำนวณ lot จากสัญญาณนี้</button>` : '';
-    setBox(cls, `<b>${pill}${pill ? `<small>${head}</small>` : head}</b>${calcBtn}
+    setBox(cls, `<b>${pill}${pill ? `<small>${head}</small>` : head}</b>${plan}${calcBtn}
       <details class="cz-more"${moreOpen ? ' open' : ''}><summary>ความแม่นยำ: BUY ชนะ ${B.win}%${S ? ` · SELL ${S.win}%` : ' · SELL ไม่ให้สัญญาณ'} · รายละเอียด</summary>
       ${acc('BUY', B, null)} ${acc('SELL', S, sys.sellQ)}
       <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} · BUY ≥ +${B.th} (${sideText(B)})${S ? ` · SELL ≤ −${S.th} (${sideText(S)})` : ''}
@@ -353,9 +364,18 @@ function ago(ms) {
     }).join('');
     const tg = tags.map((g) => {
       const x = ts.timeToCoordinate(g.t), py = y(g.price); if (x == null || py == null || x < 0 || x > W) return '';
-      return `<div class="cz-tag ${g.side}" style="left:${x}px;top:${g.side === 'buy' ? py + 8 : py - 8}px" title="${g.title}">${g.side === 'buy' ? 'Buy' : 'Sell'}</div>`;
+      return `<div class="cz-tag ${g.side}" style="left:${x}px;top:${g.side === 'buy' ? py + 8 : py - 8}px" title="${g.title}">${g.side === 'buy' ? 'Buy' : 'Sell'} ${f2(g.entry)}</div>`;
     }).join('');
-    const html = z + tg;
+    // Entry (gold) / TP (green) / SL (red) segments from the entry candle to the exit, last 8 closed trades on screen
+    const seg = tags.filter((g) => !g.open && g.t1 != null).slice(-8).map((g) => {
+      let x0 = ts.timeToCoordinate(g.t), x1 = ts.timeToCoordinate(g.t1);
+      if (x0 == null || x1 == null || x1 < 0 || x0 > W) return '';
+      x0 = Math.max(0, x0); x1 = Math.min(W, Math.max(x1, x0 + 24));
+      const ln = (p, cls, label) => { const yy = y(p); return yy == null ? '' : `<div class="cz-seg ${cls}" style="left:${x0}px;width:${x1 - x0}px;top:${yy}px"></div><span class="cz-lv ${cls}" style="left:${x1 + 3}px;top:${yy}px">${label}</span>`; };
+      return ln(g.entry, 'en', '') + ln(g.sl, 'sl', `SL ${f2(g.sl)}${g.closedBy === 'sl' ? ' ✗' : ''}`)
+        + g.tps.map((v, k) => ln(v, 'tp', `TP${g.tps.length > 1 ? k + 1 : 1} ${f2(v)}${g.hit > k ? ' ✓' : ''}`)).join('');
+    }).join('');
+    const html = z + seg + tg;
     if (html !== v.html) { v.html = html; v.el.innerHTML = html; }
   }
   // Called by renderChartZones with the tested systems' entries: [{ createdAt, side: 'BUY' | 'SELL' }]
@@ -370,7 +390,12 @@ function ago(ms) {
       const b = at.get(r.createdAt) || bars.find((x) => x.time * 1000 >= r.createdAt);
       if (!b) return null;
       const buy = r.side !== 'SELL';
-      return { t: b.time + TZ, side: buy ? 'buy' : 'sell', price: buy ? b.low : b.high, title: `${buy ? 'ซื้อ' : 'ขาย'} ${f2(r.entry)} · ${new Date(r.createdAt).toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' })}` };
+      // where the trade ended (the candle holding the exit), for the entry / TP / SL segments; open trades: none
+      // (the position box draws those)
+      const done = SIG.isFinal(r) && r.exitAt;
+      const xb = done ? bars.filter((x) => x.time * 1000 <= r.exitAt).pop() : null;
+      return { t: b.time + TZ, t1: xb ? xb.time + TZ : null, open: !done, entry: r.entry, sl: r.sl, tps: r.tps || [], hit: r.hit || 0, closedBy: r.closedBy,
+        side: buy ? 'buy' : 'sell', price: buy ? b.low : b.high, title: `${buy ? 'ซื้อ' : 'ขาย'} ${f2(r.entry)} · ${new Date(r.createdAt).toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' })}` };
     }).filter(Boolean);
     views.forEach((v) => {
       v.zones = zn;
