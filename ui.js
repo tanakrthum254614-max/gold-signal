@@ -35,8 +35,8 @@
   // ---------- Account + sharing ----------
   function fillAccount() {
     const u = window.AUTH && AUTH.user;
-    const name = u ? `🔑 ${u.fullName || ''}` : 'ผู้ใช้งาน';
-    const email = u ? 'เข้าใช้งานด้วยรหัสจากผู้ดูแล' : '';
+    const name = u ? (u.fullName || u.email || 'สมาชิก') : 'ผู้ใช้งาน';
+    const email = u ? (u.email || '') : '';
     const img = u && u.imageUrl;
     $('accName').textContent = name || email;
     $('accEmail').textContent = email;

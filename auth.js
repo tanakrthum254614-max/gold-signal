@@ -1,4 +1,4 @@
-// Loading screen + who is signed in (access codes — middleware.js). Exposes SPLASH and AUTH for main.js.
+// Loading screen + who is signed in (members — Clerk on /login.html, checked by middleware.js). Exposes SPLASH and AUTH.
 (function () {
   const $ = (id) => document.getElementById(id);
 
@@ -56,8 +56,8 @@
   $('splashFill').style.strokeDashoffset = RING;
   SPLASH.step('กำลังเริ่มต้น…', 5);
 
-  // Signing in happens on /login.html with an access code; the server only serves this page to a signed-in visitor.
-  // AUTH.user = { fullName } of the code's holder (no email / photo — there is no account any more).
+  // Signing in happens on /login.html (Clerk); the server only serves this page to a signed-in member.
+  // AUTH.user = { fullName, email } from the site's session (/api/me).
   let resolveReady;
   window.AUTH = { ready: new Promise((r) => { resolveReady = r; }), user: null };
   function showApp() {
@@ -65,12 +65,12 @@
     $('app').hidden = false;
   }
   async function start() {
-    SPLASH.step('กำลังตรวจสอบรหัสเข้าใช้งาน…', 15);
+    SPLASH.step('กำลังตรวจสอบการเข้าสู่ระบบ…', 15);
     const r = await fetch('/api/me', { cache: 'no-store', credentials: 'same-origin' });
     if (r.status === 401) { location.replace('/login.html'); return; }
     // Opened as a plain file / dev server without the middleware: carry on unsigned
     const me = r.ok && (r.headers.get('content-type') || '').includes('json') ? await r.json() : null;
-    window.AUTH.user = me ? { fullName: me.name } : null;
+    window.AUTH.user = me ? { fullName: me.name, email: me.email } : null;
     showApp();
     resolveReady(window.AUTH.user);
   }

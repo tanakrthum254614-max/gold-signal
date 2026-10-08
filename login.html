@@ -4,90 +4,127 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Gold Signal · เข้าสู่ระบบ</title>
-  <meta name="theme-color" content="#0d1016">
+  <meta name="theme-color" content="#f3f5f9">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root { --bg: #f3f5f9; --panel: #fff; --line: #e2e7ef; --text: #1c2433; --muted: #697386; --gold: #b9800c; --gold-bg: #f0b429; --down: #e0424f; --up: #0f9f6e; --input: #f2f5f9; }
-    @media (prefers-color-scheme: dark) {
-      :root { --bg: #0d1016; --panel: #151a23; --line: #262e3b; --text: #e6e9ef; --muted: #8a93a3; --gold: #e8b64c; --input: #0f131a; }
-    }
+    :root { --bg: #f3f5f9; --text: #1c2433; --muted: #697386; --down: #e0424f; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #0d1016; --text: #e6e9ef; --muted: #8a93a3; } }
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: var(--bg); color: var(--text);
       font-family: "IBM Plex Sans Thai", system-ui, sans-serif; line-height: 1.6; }
-    main { width: 100%; max-width: 420px; }
-    .brand { display: flex; align-items: center; gap: 12px; justify-content: center; margin-bottom: 18px; }
+    main { width: 100%; max-width: 440px; display: grid; justify-items: center; gap: 14px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
     .brand img { width: 52px; height: 52px; }
     .brand b { font-size: 26px; }
-    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(20, 30, 50, .08); }
-    h1 { font-size: 20px; margin: 0 0 4px; }
-    p { margin: 0 0 16px; color: var(--muted); font-size: 14.5px; }
-    label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
-    input, textarea { width: 100%; font: inherit; color: var(--text); background: var(--input); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
-    #code { font-family: "IBM Plex Mono", monospace; font-size: 18px; letter-spacing: .06em; text-transform: uppercase; }
-    input:focus, textarea:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
-    button, .btn { display: flex; width: 100%; justify-content: center; align-items: center; gap: 8px; margin-top: 14px; padding: 13px; border: 0; border-radius: 12px;
-      font: inherit; font-weight: 700; font-size: 16px; cursor: pointer; text-decoration: none; }
-    button { background: var(--gold-bg); color: #1c2433; }
-    button:disabled { opacity: .6; cursor: wait; }
-    .btn { background: transparent; color: var(--text); border: 1px solid var(--line); }
-    .err { color: var(--down); font-size: 14px; margin: 10px 0 0; min-height: 1.4em; }
-    .or { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; margin: 22px 0 14px; }
-    .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-    details summary { cursor: pointer; font-weight: 600; font-size: 15px; list-style: none; }
-    details summary::-webkit-details-marker { display: none; }
-    details[open] summary { margin-bottom: 12px; }
-    .field { margin-top: 10px; }
-    .note { font-size: 12.5px; margin-top: 14px; }
+    .lead { margin: 0; color: var(--muted); font-size: 14.5px; text-align: center; }
+    #status { color: var(--muted); font-size: 15px; min-height: 1.5em; text-align: center; }
+    #status.err { color: var(--down); }
+    #signIn { width: 100%; display: flex; justify-content: center; }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; max-width: 400px; padding: 5px; border-radius: 14px; background: rgba(105,115,134,.14); }
+    .tabs button { font: inherit; font-weight: 700; font-size: 15px; padding: 10px; border: 0; border-radius: 10px; cursor: pointer; background: transparent; color: var(--muted); }
+    .tabs button.on { background: #fff; color: #1c2433; box-shadow: 0 2px 8px rgba(20,30,50,.12); }
+    .tabs[hidden] { display: none; }
   </style>
 </head>
 <body>
   <main>
     <div class="brand"><img src="logo.svg" alt=""><b>Gold Signal</b></div>
-    <div class="card">
-      <h1>🔒 เข้าใช้งานด้วยรหัส</h1>
-      <p>เว็บนี้เปิดให้เฉพาะคนที่ได้รับรหัสจากผู้ดูแลเท่านั้น</p>
-      <form id="form" autocomplete="off">
-        <label for="code">รหัสเข้าใช้งาน</label>
-        <input id="code" name="code" placeholder="GOLD-XXXXX-XXXXX" autocapitalize="characters" spellcheck="false" required>
-        <button id="go" type="submit">เข้าใช้งาน</button>
-        <p class="err" id="err" role="alert"></p>
-      </form>
-
-      <div class="or">ยังไม่มีรหัส?</div>
-      <details id="ask">
-        <summary>📧 ขอรหัสผ่านทางอีเมล</summary>
-        <p>กรอกข้อมูลแล้วกดปุ่ม — แอปอีเมลจะเปิดพร้อมข้อความที่กรอกไว้ให้ กดส่งได้เลย ผู้ดูแลจะส่งรหัสกลับทางอีเมล</p>
-        <div class="field"><label for="askName">ชื่อของคุณ</label><input id="askName" placeholder="เช่น สมชาย"></div>
-        <div class="field"><label for="askWhy">ใช้ทำอะไร (ไม่บังคับ)</label><textarea id="askWhy" rows="2" placeholder="เช่น อยากดูสัญญาณทองระหว่างวัน"></textarea></div>
-        <a class="btn" id="askSend" href="#">📧 ส่งคำขอรหัส</a>
-        <p class="note">ส่งถึง tanakrthum254614@gmail.com · รหัสหนึ่งชุดต่อหนึ่งคน อย่าแชร์ต่อ</p>
-      </details>
-    </div>
+    <p class="lead">🔒 สำหรับสมาชิกเท่านั้น — ยังไม่มีบัญชี กดแท็บ <b>“สมัครสมาชิก”</b> (ฟรี ใช้อีเมลหรือ Google)</p>
+    <div class="tabs" id="tabs" hidden><button type="button" class="on" data-mode="in">เข้าสู่ระบบ</button><button type="button" data-mode="up">สมัครสมาชิก</button></div>
+    <p id="status">กำลังโหลด…</p>
+    <div id="signIn"></div>
   </main>
   <script>
+    // Members only: sign up / sign in with Clerk (email + password with an emailed code, or Google). Once signed in, the
+    // Clerk session token goes to /api/session (middleware.js checks it and sets the site's own cookie) → the app.
+    const PK = 'pk_test_ZGVsaWNhdGUtdGFwaXItMjEwMS5jbGVyay5hY2NvdW50cy5kZXYk'; // public by design
+    const FAPI = atob(PK.split('_')[2]).replace(/\$$/, '');
     const $ = (id) => document.getElementById(id);
-    const OWNER = 'tanakrthum254614@gmail.com';
-    $('form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      $('err').textContent = '';
-      $('go').disabled = true; $('go').textContent = 'กำลังตรวจสอบ…';
-      try {
-        const r = await fetch('/api/login', { method: 'POST', headers: { 'x-access-code': $('code').value.trim() } });
-        if (r.ok) { location.replace('/'); return; }
-        $('err').textContent = r.status === 401 ? 'รหัสไม่ถูกต้อง หรือถูกยกเลิกแล้ว' : 'ระบบขัดข้อง ลองใหม่อีกครั้ง';
-      } catch (err) { $('err').textContent = 'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง'; }
-      $('go').disabled = false; $('go').textContent = 'เข้าใช้งาน';
-    });
-    // The request opens the visitor's mail app with everything filled in
-    function mailto() {
-      const name = $('askName').value.trim(), why = $('askWhy').value.trim();
-      const body = `สวัสดีครับ/ค่ะ\n\nขอรหัสเข้าใช้งาน Gold Signal\nชื่อ: ${name || '-'}\nใช้ทำอะไร: ${why || '-'}\n\nขอบคุณครับ/ค่ะ`;
-      return `mailto:${OWNER}?subject=${encodeURIComponent(`ขอรหัสเข้าใช้งาน Gold Signal${name ? ` — ${name}` : ''}`)}&body=${encodeURIComponent(body)}`;
+    const status = (text, err) => { $('status').textContent = text; $('status').className = err ? 'err' : ''; };
+
+    const THEME = {
+      variables: {
+        colorPrimary: '#1c2433', colorPrimaryForeground: '#ffffff', colorTextOnPrimaryBackground: '#ffffff',
+        colorBackground: '#ffffff', colorForeground: '#1c2433', colorText: '#1c2433',
+        colorMutedForeground: '#697386', colorTextSecondary: '#697386', colorNeutral: '#1c2433',
+        colorInput: '#f2f5f9', colorInputBackground: '#f2f5f9', colorInputForeground: '#1c2433', colorInputText: '#1c2433',
+        fontFamily: '"IBM Plex Sans Thai", system-ui, sans-serif', borderRadius: '10px', fontSize: '16px',
+      },
+      elements: {
+        socialButtonsBlockButton: { padding: '12px', fontSize: '15px' },
+        cardBox: { boxShadow: '0 8px 24px rgba(20,30,50,.08)', border: '1px solid #e2e7ef', borderRadius: '20px' },
+      },
+    };
+    const THAI = {
+      signIn: { start: {
+        title: 'เข้าสู่ระบบ Gold Signal', subtitle: 'ใช้อีเมลหรือบัญชี Google ที่สมัครไว้',
+        titleCombined: 'เข้าสู่ระบบ Gold Signal', subtitleCombined: 'ใช้อีเมลหรือบัญชี Google ที่สมัครไว้',
+      } },
+      signUp: { start: { title: 'สมัครสมาชิก Gold Signal', subtitle: 'สมัครฟรีด้วยอีเมล หรือกดปุ่ม Google' } },
+    };
+    function merge(base, extra) {
+      const out = { ...base };
+      for (const [k, v] of Object.entries(extra)) out[k] = v && typeof v === 'object' && !Array.isArray(v) ? merge(base[k] || {}, v) : v;
+      return out;
     }
-    $('askSend').addEventListener('click', (e) => { e.preventDefault(); location.href = mailto(); });
+    function loadScript(src, attrs = {}) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src; s.crossOrigin = 'anonymous';
+        Object.entries(attrs).forEach(([k, v]) => s.setAttribute(k, v));
+        s.onload = resolve; s.onerror = () => reject(new Error('โหลดระบบเข้าสู่ระบบไม่สำเร็จ'));
+        document.head.appendChild(s);
+      });
+    }
+
+    let entering = false;
+    async function enter() {
+      if (entering) return;
+      entering = true;
+      status('เข้าสู่ระบบสำเร็จ กำลังเปิดเว็บ…');
+      try {
+        const token = await window.Clerk.session.getToken();
+        const r = await fetch('/api/session', { method: 'POST', headers: { authorization: `Bearer ${token}` } });
+        if (r.ok) { location.replace('/'); return; }
+        status('ยืนยันบัญชีไม่สำเร็จ ลองรีเฟรชหน้าอีกครั้ง', true);
+      } catch (e) { status('เชื่อมต่อไม่ได้ ลองรีเฟรชหน้าอีกครั้ง', true); }
+      entering = false;
+    }
+
+    (async () => {
+      let thTH = {};
+      await Promise.all([
+        loadScript(`https://${FAPI}/npm/@clerk/ui@1/dist/ui.browser.js`),
+        loadScript(`https://${FAPI}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`, { 'data-clerk-publishable-key': PK }),
+        import('https://cdn.jsdelivr.net/npm/@clerk/localizations@4/+esm').then((m) => { thTH = m.thTH; }).catch(() => {}),
+      ]);
+      const Clerk = window.Clerk;
+      await Clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor }, localization: merge(thTH, THAI), appearance: THEME });
+      // Coming from "ออกจากระบบ" in the app: end the Clerk session too
+      if (new URLSearchParams(location.search).has('signout') && Clerk.user) {
+        await Clerk.signOut();
+        history.replaceState(null, '', '/login.html');
+      }
+      if (Clerk.user) return enter();
+      status('');
+      // Two clear tabs: sign in | sign up (Clerk's combined screen has no visible "sign up" link)
+      const opts = { forceRedirectUrl: '/login.html', signUpForceRedirectUrl: '/login.html', signInForceRedirectUrl: '/login.html' };
+      let mode = '';
+      const show = (m) => {
+        if (m === mode) return;
+        if (mode === 'in') Clerk.unmountSignIn($('signIn')); else if (mode === 'up') Clerk.unmountSignUp($('signIn'));
+        mode = m;
+        document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
+        if (m === 'in') Clerk.mountSignIn($('signIn'), { ...opts, withSignUp: true }); else Clerk.mountSignUp($('signIn'), opts);
+      };
+      $('tabs').hidden = false;
+      $('tabs').addEventListener('click', (e) => e.target.dataset.mode && show(e.target.dataset.mode));
+      show(location.hash === '#signup' ? 'up' : 'in');
+      Clerk.addListener(({ user }) => { if (user) enter(); });
+    })().catch((e) => { console.error(e); status(e.message || 'ระบบเข้าสู่ระบบมีปัญหา ลองรีเฟรชหน้าอีกครั้ง', true); });
   </script>
 </body>
 </html>
