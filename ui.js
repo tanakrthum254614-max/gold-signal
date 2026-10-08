@@ -35,8 +35,8 @@
   // ---------- Account + sharing ----------
   function fillAccount() {
     const u = window.AUTH && AUTH.user;
-    const name = u ? `🔑 ${u.fullName || ''}` : 'ผู้ใช้งาน';
-    const email = u ? 'เข้าใช้งานด้วยรหัสจากผู้ดูแล' : '';
+    const name = u ? (u.fullName || u.firstName || '') : 'ผู้เยี่ยมชม (โหมดดูตัวอย่าง)';
+    const email = u && u.primaryEmailAddress ? u.primaryEmailAddress.emailAddress : '';
     const img = u && u.imageUrl;
     $('accName').textContent = name || email;
     $('accEmail').textContent = email;
@@ -44,7 +44,7 @@
       if (img) el.src = img; else el.hidden = true;
     });
     $('signOut').hidden = !u;
-    $('accSignIn').hidden = true;
+    $('accSignIn').hidden = !!u;
   }
 
   const shareUrl = location.origin + location.pathname;
@@ -60,9 +60,9 @@
   }
   const lineUrl = window.GOLD_CONFIG && GOLD_CONFIG.lineAddFriendUrl;
   if (lineUrl) { $('lineAdd').href = lineUrl; $('lineAdd').hidden = false; $('lineSoon').hidden = true; }
-  $('signOut').addEventListener('click', () => { location.href = '/api/logout'; });
+  $('signOut').addEventListener('click', () => window.Clerk && Clerk.signOut());
 
-  // ---------- Trading settings (capital / risk / spread) — saved in this browser ----------
+  // ---------- Trading settings (capital / risk / spread) — saved on the account + this browser ----------
   const DEFAULTS = { capital: 0, currency: 'USD', risk: 1, spread: 0.4 };
   function settings() {
     const u = window.AUTH && AUTH.user;
