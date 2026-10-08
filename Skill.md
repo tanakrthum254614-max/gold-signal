@@ -33,6 +33,11 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 4. เปลี่ยนเลข `?v=` → commit → push → เช็กว่าเว็บจริงได้ไฟล์ใหม่ · แก้ workflow → สั่งรันทดสอบ (send=false)
 5. อัปเดต Skill.md + สำเนา `.claude/skills/gold-signal/SKILL.md` + memory
 
+## 🏷️ กราฟแบบภาพตัวอย่าง TradingView (8 ต.ค. 2569 · เวอร์ชัน 202610081000)
+- ผู้ใช้ส่งภาพกราฟที่มีป้าย Buy/Sell + เส้นโค้ง 3 เส้น (Nadaraya-Watson Envelope) + แถบแนวรับ/ต้าน → IIFE "Chart decor" ท้าย chartzones.js: `setChartDecor(trades)` (เรียกจาก renderChartZones) วาด overlay `.cz-decor` บนทั้ง 2 กราฟ: ป้าย `.cz-tag.buy/.sell` ที่แท่งตัดสินใจ (แทนลูกศรใหญ่; จุดออกยังเป็นวงกลมเล็ก) · โซน `.cz-zone` จาก swing high/low (5 แท่งสองข้าง) ที่ยังไม่มีแท่งปิดทะลุ หนา 0.6–1.2 ATR สูงสุดฝั่งละ 5 · เส้นโค้ง = kernel regression แบบ endpoint (h 8, หน้าต่าง 30) ± 3×MAE(100) เป็น line series บนกราฟแท่งเทียนเท่านั้น
+- **ทดสอบ 2 ปี (scratchpad nwe.js): เข้าเมื่อแตะขอบ/เด้งจากขอบ ขาดทุนเกือบทุกกรอบ** (มีแค่ 1d BUY +$412 จาก 21 ไม้) — NWE บน TradingView ส่วนใหญ่ repaint จึงดูแม่น → เส้นโค้งเป็นแค่ภาพประกอบ ป้าย Buy/Sell = ระบบที่ทดสอบผ่าน (chartsys.js) เท่านั้น
+- ปุ่ม `#czClean` "มุมมองสะอาด" (ค่าเริ่มเปิด, จำใน localStorage `gs-clean`): ซ่อน EMA20/50 + Bollinger + พื้นหลังโซนเข้า + ลูกศรเล็กทุกแท่ง + legend บน · `window.CZ_CLEAN()`
+
 ## ⛔ เบรกสัญญาณกราฟ + สรุปรายสัปดาห์ (8 ต.ค. 2569 · เวอร์ชัน 202610080900)
 - `CHARTSYS.brake(sys, trades, now)` (chartsys.js, ไม่มี state — คำนวณจาก chart-signals.json): แพ้ติดกัน 5 ไม้ → พักถึงเปิดตลาดจันทร์ถัดไป (`INTRA.nextWeek`; กรอบ long พัก 30 วัน) ไม้ที่เกิดระหว่างพักไม่นับ streak ใหม่ · 20 ไม้ปิดล่าสุดชนะต่ำกว่าผลทดสอบ (ถัวตามฝั่ง) เกิน 12 จุด → พักจนกว่าจะดีขึ้น (`until: null`)
 - chart-run.js: ระหว่างพักยังเปิดไม้แต่ใส่ `paused: true` ไม่ส่ง LINE ตอนเข้า/ปิด (เพื่อให้เบรกปลดเองได้) · เก็บ `store.brakes` แล้วส่ง LINE ครั้งเดียวตอนเริ่มพัก ⛔ / กลับมา ✅ (เฉพาะกรอบใน CHART_NOTIFY)

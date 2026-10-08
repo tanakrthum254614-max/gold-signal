@@ -96,7 +96,9 @@ function ago(ms) {
     const out = [];
     // every closed candle: small up / down arrow from the score's lean (no text; entries get the big labelled ones)
     const taken = new Set(trades.map((r) => r.createdAt));
+    const quiet = window.CZ_CLEAN && CZ_CLEAN();
     decs.forEach(({ t, dec }) => {
+      if (quiet) return;
       if (t < from || !dec || (!sys.long && dec.stale) || !dec.lean || taken.has(t)) return;
       const up = dec.lean > 0;
       out.push({ time: sec(t), position: up ? 'belowBar' : 'aboveBar', shape: up ? 'arrowUp' : 'arrowDown', size: 0.5,
@@ -104,8 +106,7 @@ function ago(ms) {
     });
     trades.forEach((r) => {
       if (r.createdAt < from) return;
-      const buy = r.side !== 'SELL';
-      out.push({ time: sec(r.createdAt), position: buy ? 'belowBar' : 'aboveBar', color: buy ? '#0f9f6e' : '#e0424f', shape: buy ? 'arrowUp' : 'arrowDown', text: `${buy ? 'ซื้อ' : 'ขาย'} ${when(sys, r.createdAt)}` });
+      // entries are drawn as Buy / Sell tags (setChartDecor); exits stay as small markers
       if (SIG.isFinal(r) && r.exitAt) {
         const win = r.pnl > 0;
         out.push({ time: sec(r.exitAt), position: win ? 'aboveBar' : 'belowBar', color: win ? '#0f9f6e' : '#e0424f', shape: 'circle',
@@ -132,7 +133,9 @@ function ago(ms) {
       return { time: b.time + TZ, value: 1, color };
     });
     const mk = markers(sys, s.trades, chart[0].time, s.decs);
-    each((v) => { v.zone.setData(zd); v.series.setMarkers(mk); });
+    const quiet = window.CZ_CLEAN && CZ_CLEAN();
+    each((v) => { v.zone.applyOptions({ visible: !quiet }); v.zone.setData(zd); v.series.setMarkers(mk); });
+    if (window.setChartDecor) setChartDecor(s.trades.filter((r) => r.createdAt >= chart[0].time));
     const open = s.trades.find((r) => r.status === 'active');
     window.CZ_OPEN = open || null;
     if (window.drawPositionBoxes) drawPositionBoxes();
@@ -191,7 +194,7 @@ function ago(ms) {
       <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} · BUY ≥ +${B.th} (${sideText(B)})${S ? ` · SELL ≤ −${S.th} (${sideText(S)})` : ''}
       · ทดสอบย้อนหลัง ${sys.span} แบ่ง 4 ช่วงเท่ากัน เก่า→ใหม่ หลังสเปรด ต่อ 1 ออนซ์${sys.few ? ` · ตัวอย่างน้อย (${sys.few} ไม้)` : ''}${sys.long ? ' · ช่วงทดสอบทองเป็นขาขึ้นเกือบตลอด ไม่รับประกันอนาคต' : ''}
       · บนกราฟนี้ ${fin.length} ไม้ปิดแล้ว${fin.length ? ` รวม ${usd(SIG.round(pnl))}` : ''}${open ? ' + 1 ไม้ที่ถืออยู่' : ''}
-      · <b>ลูกศรเล็ก</b> = ทิศทุกแท่ง ใช้ดูทิศเท่านั้น${sys.every ? ` (เข้าทุกลูกศร 2 ปี ${usd(sys.every)} ชนะ ~50%)` : ''} · <b>ลูกศรใหญ่มีคำว่าซื้อ/ขาย</b> = สัญญาณเข้า</span></details>`);
+      · <b>ลูกศรเล็ก</b> = ทิศทุกแท่ง ใช้ดูทิศเท่านั้น${sys.every ? ` (เข้าทุกลูกศร 2 ปี ${usd(sys.every)} ชนะ ~50%)` : ''} · <b>ป้าย Buy / Sell</b> = สัญญาณเข้า · เส้นโค้งสีทอง = กรอบราคา (ดูประกอบ — ทดสอบแล้วการเข้าเมื่อแตะขอบขาดทุนเกือบทุกกรอบ) · แถบแดง/เขียว = แนวต้าน/แนวรับจากจุดกลับตัวที่ยังไม่ถูกทะลุ</span></details>`);
   };
 })();
 
@@ -260,5 +263,119 @@ function ago(ms) {
   window.drawPositionBoxes = function () {
     if (!boxes.length && typeof mainChart !== 'undefined') { overlay(mainChart, candles, 'mainChart'); overlay(simpleChart, areaS, 'simpleChart'); }
     boxes.forEach(draw);
+  };
+})();
+
+// ---------- Chart decor (user's reference picture, 8 Oct): smooth envelope, supply / demand zones, Buy / Sell tags ----------
+// Envelope = Nadaraya-Watson kernel regression of the close (endpoint version: never redrawn afterwards) ± 3 × mean
+// absolute error. Shown for context only: touching a band as a signal LOST in the 2-year backtest on every timeframe
+// except 1d (scratchpad nwe.js), so the Buy / Sell tags stay the tested systems' entries. Zones = the latest swing highs /
+// lows (5 candles each side) that price hasn't closed through since, drawn from the swing to the right edge.
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const H = 8, WIN = 30, MULT = 3, MAE = 100, SWING = 5, KEEP = 5;
+  let tags = [];
+  const views = [];
+  // Clean view (like the reference picture): hide EMA / Bollinger, the entry-zone background and the small arrows.
+  // On by default; the choice is remembered on this device.
+  let clean = true;
+  try { clean = localStorage.getItem('gs-clean') !== '0'; } catch (e) { /* storage blocked: default */ }
+  window.CZ_CLEAN = () => clean;
+  function applyClean() {
+    if (typeof ema20S !== 'undefined') [ema20S, ema50S, bbU, bbL].forEach((x) => x.applyOptions({ visible: !clean }));
+    document.body.classList.toggle('cz-clean', clean);
+    const b = $('czClean'); if (b) { b.textContent = clean ? '📊 แสดงเส้นอินดิเคเตอร์' : '✨ มุมมองสะอาด'; b.setAttribute('aria-pressed', String(clean)); }
+  }
+  const btn = $('czClean');
+  if (btn) btn.addEventListener('click', () => {
+    clean = !clean;
+    try { localStorage.setItem('gs-clean', clean ? '1' : '0'); } catch (e) { /* not remembered */ }
+    applyClean();
+    if (window.renderChartZones) renderChartZones();
+  });
+  applyClean();
+  function envelope(bars) {
+    const w = Array.from({ length: WIN }, (_, i) => Math.exp(-(i * i) / (2 * H * H))), ws = w.reduce((a, b) => a + b, 0);
+    const mid = bars.map((_, k) => { if (k < WIN) return null; let s = 0; for (let i = 0; i < WIN; i++) s += bars[k - i].close * w[i]; return s / ws; });
+    const out = [];
+    let errSum = 0, errs = [];
+    bars.forEach((b, k) => {
+      if (mid[k] == null) return;
+      const e = Math.abs(b.close - mid[k]); errs.push(e); errSum += e;
+      if (errs.length > MAE) errSum -= errs.shift();
+      if (errs.length < 20) return;
+      const band = (errSum / errs.length) * MULT, t = b.time + TZ;
+      out.push({ t, mid: mid[k], up: mid[k] + band, lo: mid[k] - band });
+    });
+    return out;
+  }
+  function zones(bars) {
+    if (bars.length < 2 * SWING + 2) return [];
+    const atr = bars.slice(-50).reduce((a, b) => a + b.high - b.low, 0) / Math.min(50, bars.length);
+    const out = [];
+    for (let k = SWING; k < bars.length - SWING; k++) {
+      const b = bars[k], around = [...bars.slice(k - SWING, k), ...bars.slice(k + 1, k + 1 + SWING)];
+      const later = bars.slice(k + 1);
+      if (around.every((x) => x.high < b.high) && !later.some((x) => x.close > b.high)) {
+        const depth = Math.min(atr * 1.2, Math.max(atr * 0.6, b.high - Math.max(b.open, b.close)));
+        out.push({ side: 'sell', t: b.time + TZ, top: b.high, bottom: b.high - depth });
+      }
+      if (around.every((x) => x.low > b.low) && !later.some((x) => x.close < b.low)) {
+        const depth = Math.min(atr * 1.2, Math.max(atr * 0.6, Math.min(b.open, b.close) - b.low));
+        out.push({ side: 'buy', t: b.time + TZ, top: b.low + depth, bottom: b.low });
+      }
+    }
+    return [...out.filter((z) => z.side === 'sell').slice(-KEEP), ...out.filter((z) => z.side === 'buy').slice(-KEEP)];
+  }
+  function view(chart, series, hostId, lines) {
+    const host = $(hostId); if (!host) return null;
+    host.style.position = 'relative';
+    const el = document.createElement('div'); el.className = 'pbox-layer cz-decor'; host.appendChild(el);
+    const v = { chart, series, el, lines, zones: [] };
+    chart.timeScale().subscribeVisibleLogicalRangeChange(() => draw(v));
+    new ResizeObserver(() => draw(v)).observe(host);
+    views.push(v); return v;
+  }
+  function init() {
+    if (views.length || typeof mainChart === 'undefined') return;
+    const ln = (color, style) => mainChart.addLineSeries({ color, lineWidth: 1.5, lineStyle: style, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
+    view(mainChart, candles, 'mainChart', { up: ln('rgba(216,190,120,.85)', 0), mid: ln('rgba(216,190,120,.55)', 2), lo: ln('rgba(216,190,120,.85)', 0) });
+    view(simpleChart, areaS, 'simpleChart', null);
+  }
+  function draw(v) {
+    const ts = v.chart.timeScale(), W = v.el.clientWidth - v.chart.priceScale('right').width();
+    if (!W) return;
+    const y = (p) => v.series.priceToCoordinate(p);
+    const z = v.zones.map((zn) => {
+      const yt = y(zn.top), yb = y(zn.bottom); if (yt == null || yb == null) return '';
+      let x = ts.timeToCoordinate(zn.t); if (x == null || x < 0) x = 0; if (x >= W) return '';
+      return `<div class="cz-zone ${zn.side}" style="left:${x}px;width:${W - x}px;top:${Math.min(yt, yb)}px;height:${Math.max(3, Math.abs(yb - yt))}px"></div>`;
+    }).join('');
+    const tg = tags.map((g) => {
+      const x = ts.timeToCoordinate(g.t), py = y(g.price); if (x == null || py == null || x < 0 || x > W) return '';
+      return `<div class="cz-tag ${g.side}" style="left:${x}px;top:${g.side === 'buy' ? py + 8 : py - 8}px" title="${g.title}">${g.side === 'buy' ? 'Buy' : 'Sell'}</div>`;
+    }).join('');
+    const html = z + tg;
+    if (html !== v.html) { v.html = html; v.el.innerHTML = html; }
+  }
+  // Called by renderChartZones with the tested systems' entries: [{ createdAt, side: 'BUY' | 'SELL' }]
+  window.setChartDecor = function (trades) {
+    init();
+    const bars = state.bars;
+    if (!bars.length) return;
+    const env = envelope(bars), zn = zones(bars);
+    const at = new Map(bars.map((b) => [b.time * 1000, b]));
+    tags = trades.map((r) => {
+      // tag on the candle the entry was decided on (the one that just closed), under its low / over its high
+      const b = at.get(r.createdAt) || bars.find((x) => x.time * 1000 >= r.createdAt);
+      if (!b) return null;
+      const buy = r.side !== 'SELL';
+      return { t: b.time + TZ, side: buy ? 'buy' : 'sell', price: buy ? b.low : b.high, title: `${buy ? 'ซื้อ' : 'ขาย'} ${f2(r.entry)} · ${new Date(r.createdAt).toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' })}` };
+    }).filter(Boolean);
+    views.forEach((v) => {
+      v.zones = zn;
+      if (v.lines) ['up', 'mid', 'lo'].forEach((k) => v.lines[k].setData(env.map((e) => ({ time: e.t, value: e[k] }))));
+      draw(v);
+    });
   };
 })();

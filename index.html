@@ -17,9 +17,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610080900">
-  <link rel="stylesheet" href="live.css?v=202610080900">
-  <link rel="stylesheet" href="theme.css?v=202610080900" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610081000">
+  <link rel="stylesheet" href="live.css?v=202610081000">
+  <link rel="stylesheet" href="theme.css?v=202610081000" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -380,7 +380,7 @@
               <nav class="tfs" id="sRange"></nav>
             </div>
             <div class="cz-box" id="czBoxS">กำลังคำนวณโซนเข้า…</div>
-            <ul class="s15-legend cz-legend"><li><i class="zone ok"></i>โซน BUY</li><li><i class="zone sell"></i>โซน SELL</li><li><i class="zone near"></i>ใกล้โซน</li><li><i class="zone bad"></i>ขาลง</li><li><i class="zone news"></i>ข่าว งดเข้า</li><li><i class="up">▲</i>ซื้อ</li><li><i class="sell-mk">▼</i>ขาย</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul>
+            <ul class="s15-legend cz-legend"><li><i class="zone ok"></i>โซน BUY</li><li><i class="zone sell"></i>โซน SELL</li><li><i class="zone near"></i>ใกล้โซน</li><li><i class="zone bad"></i>ขาลง</li><li><i class="zone news"></i>ข่าว งดเข้า</li><li><i class="lg-tag buy">Buy</i>ซื้อ</li><li><i class="lg-tag sell">Sell</i>ขาย</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul>
             <div id="simpleChart" class="chart-simple"></div>
             <p class="hint">เส้นสีทอง = ราคาทอง · 🎯 จุดเข้า · 🛑 ตัดขาดทุน · 💰 เป้าหมาย ของสัญญาณล่าสุด</p>
           </section>
@@ -406,6 +406,7 @@
     <div class="tf-row">
       <span class="muted small">เลือกกรอบเวลา — 1 แท่งเทียนแทนช่วงเวลาเท่าไร</span>
       <nav class="tfs" id="tfs"></nav>
+      <button type="button" class="btn cz-clean-btn" id="czClean" aria-pressed="true">📊 แสดงเส้นอินดิเคเตอร์</button>
     </div>
 
     <main class="layout">
@@ -418,7 +419,7 @@
         </div>
         <p class="hint">🟩 แท่งเขียว = ราคาปิดสูงกว่าเปิด (ขึ้น) · 🟥 แท่งแดง = ราคาปิดต่ำกว่าเปิด (ลง) · ราคาอยู่เหนือเส้นค่าเฉลี่ย = แข็งแรง, อยู่ใต้เส้น = อ่อนแอ</p>
         <div class="cz-box" id="czBox">กำลังคำนวณโซนเข้า…</div>
-        <ul class="s15-legend cz-legend"><li><i class="zone ok"></i>โซน BUY</li><li><i class="zone sell"></i>โซน SELL</li><li><i class="zone near"></i>แนวโน้มขึ้น</li><li><i class="zone bad"></i>แนวโน้มลง</li><li><i class="zone news"></i>ช่วงข่าว งดเข้า</li><li><i class="up">▲</i>จุดซื้อ</li><li><i class="sell-mk">▼</i>จุดขาย</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul>
+        <ul class="s15-legend cz-legend"><li><i class="zone ok"></i>โซน BUY</li><li><i class="zone sell"></i>โซน SELL</li><li><i class="zone near"></i>แนวโน้มขึ้น</li><li><i class="zone bad"></i>แนวโน้มลง</li><li><i class="zone news"></i>ช่วงข่าว งดเข้า</li><li><i class="lg-tag buy">Buy</i>จุดซื้อ</li><li><i class="lg-tag sell">Sell</i>จุดขาย</li><li><i class="lg-env">〰</i>กรอบราคา</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul>
         <div id="mainChart" class="chart-main"></div>
         <div class="sub-title">RSI — วัดแรงซื้อ/ขาย <span class="muted">(เกิน 70 = ขึ้นแรงเกินไป · ต่ำกว่า 30 = ลงแรงเกินไป)</span></div>
         <div id="rsiChart" class="chart-sub"></div>
@@ -630,26 +631,26 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610080900 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610081000 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610080900"></script>
-  <script src="auth.js?v=202610080900"></script>
-  <script src="indicators.js?v=202610080900"></script>
-  <script src="investing.js?v=202610080900"></script>
-  <script src="explain.js?v=202610080900"></script>
-  <script src="dailyplan.js?v=202610080900"></script>
-  <script src="signals.js?v=202610080900"></script>
-  <script src="intraday.js?v=202610080900"></script>
-  <script src="pwa.js?v=202610080900"></script>
-  <script src="ui.js?v=202610080900"></script>
-  <script src="main.js?v=202610080900"></script>
-  <script src="tradeplan.js?v=202610080900"></script>
-  <script src="chartsys.js?v=202610080900"></script>
-  <script src="chartzones.js?v=202610080900"></script>
+  <script src="config.js?v=202610081000"></script>
+  <script src="auth.js?v=202610081000"></script>
+  <script src="indicators.js?v=202610081000"></script>
+  <script src="investing.js?v=202610081000"></script>
+  <script src="explain.js?v=202610081000"></script>
+  <script src="dailyplan.js?v=202610081000"></script>
+  <script src="signals.js?v=202610081000"></script>
+  <script src="intraday.js?v=202610081000"></script>
+  <script src="pwa.js?v=202610081000"></script>
+  <script src="ui.js?v=202610081000"></script>
+  <script src="main.js?v=202610081000"></script>
+  <script src="tradeplan.js?v=202610081000"></script>
+  <script src="chartsys.js?v=202610081000"></script>
+  <script src="chartzones.js?v=202610081000"></script>
 </body>
 </html>
