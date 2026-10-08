@@ -33,6 +33,9 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 4. เปลี่ยนเลข `?v=` → commit → push → เช็กว่าเว็บจริงได้ไฟล์ใหม่ · แก้ workflow → สั่งรันทดสอบ (send=false)
 5. อัปเดต Skill.md + สำเนา `.claude/skills/gold-signal/SKILL.md` + memory
 
+## 🔔 เปิด Web push แล้ว (8 ต.ค. 2569 · เวอร์ชัน 202610082010)
+- ผู้ใช้สั่ง "ทำมาหมด" → รัน `node scripts/setup-push.js` แล้ว: GitHub secret VAPID_PRIVATE_KEY + CLERK_SECRET_KEY (ดึงจาก Vercel env, ไม่แสดง) + variable VAPID_PUBLIC_KEY · config.js มี vapidPublicKey (commit d5b4003) · ทุกข้อความที่ส่ง LINE จะส่ง push ไปเครื่องที่กดเปิดแจ้งเตือนในหน้าบัญชีด้วย (ไม่ใช้โควตา LINE) · ผู้ใช้ต้องกด 🔔 เปิดแจ้งเตือนบนเครื่องเอง (ล็อกอิน Google; โหมด ?demo=1 บันทึกไม่ได้)
+
 ## 📏 TP/SL อยู่ในกราฟเสมอ + ชื่อความมั่นใจ (8 ต.ค. 2569 · เวอร์ชัน 202610082000)
 - `fitPlans(series)` (position-box IIFE) ตั้ง `autoscaleInfoProvider` บน candles และ areaS: ขยายช่วงราคาให้ครอบ sl/tps ของ `CZ_PLANS` และ `CZ_OPEN` · การ์ดขวา `#confText` = "ความมั่นใจของ investing.com X%" แถบ `#signalCard .meter` จาง (.55) เพื่อไม่สับสนกับ "ความพร้อมเข้า"
 
