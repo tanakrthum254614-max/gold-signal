@@ -206,14 +206,19 @@ function ago(ms) {
     const other = -pick, oc = other > 0 ? B : S;
     const otherLine = `<small class="cz-plan-other">${other > 0 ? 'Buy' : 'Sell'}: ${!oc ? 'ไม่ให้สัญญาณในกรอบนี้ (ทดสอบไม่ผ่าน)' : d ? `ห่างกว่า — ต้องได้คะแนน ${other > 0 ? '+' : '−'}${oc.th} (ตอนนี้ ${signedScore(d.score)})` : ''}</small>`;
     const plan = sys.long || !(d && d.stale) ? `<div class="cz-plan">${planRow(pick)}${otherLine}</div>` : '';
+    // How close to an entry, in %: the score toward the picked side ÷ the score it needs (0 % at or past neutral, 100 % = enter)
+    const pc = (pick > 0 ? B : S) || B;
+    const pct = !d || open ? null : dir === pick ? 100 : Math.max(0, Math.min(99, Math.round(((pick > 0 ? d.score : -d.score) / pc.th) * 100)));
+    const progHtml = pct == null || !plan ? '' : `<div class="cz-prog ${pick > 0 ? 'buy' : 'sell'}${pct >= 100 ? ' live' : ''}"><span>${pct >= 100 ? '✅ ถึงจุดเข้าแล้ว' : '⏳ ใกล้จุดเข้า'} ${pick > 0 ? 'Buy' : 'Sell'} <b>${pct}%</b> <small>(คะแนน ${signedScore(d.score)} จากที่ต้อง ${pick > 0 ? '+' : '−'}${pc.th})</small></span><i><em style="width:${pct}%"></em></i></div>`;
+    if (note && !open) note.innerHTML = `${progHtml}<span>การ์ดนี้คือบทวิเคราะห์ภาพรวม — คนละระบบกับจุดเข้าบนกราฟ · ${pct >= 100 ? 'ระบบบนกราฟ: เข้าได้' : 'ระบบบนกราฟ: ยังรอ'}</span>`;
     window.CZ_PLANS = open || !plan ? null : [pick].map((side) => {
       const c = (side > 0 ? B : S) || B, L = levelsFor(c, price, side), live = dir === side && !br;
-      const note = live ? '✅ เข้าตอนนี้' : br ? '⛔ พักอยู่ — ไม่เข้า' : d ? `⏸ รอ — ยังไม่ใช่จุดเข้า · ต้องได้คะแนน ${side > 0 ? '+' : '−'}${c.th} (ตอนนี้ ${signedScore(d.score)})` : '⏸ รอ';
+      const note = live ? '✅ เข้าตอนนี้' : br ? '⛔ พักอยู่ — ไม่เข้า' : d ? `⏸ รอ — ใกล้จุดเข้า ${pct}% · ต้องได้คะแนน ${side > 0 ? '+' : '−'}${c.th} (ตอนนี้ ${signedScore(d.score)})` : '⏸ รอ';
       return { side, entry: price, sl: L.sl, tps: L.tps, ok: live, note };
     });
     if (window.drawPositionBoxes) drawPositionBoxes();
     const calcBtn = calcArgs ? `<button type="button" class="btn cz-calc" data-calc="${calcArgs.map((v) => SIG.round(v)).join(',')}">🧮 คำนวณ lot จากสัญญาณนี้</button>` : '';
-    setBox(cls, `<b>${pill}${pill ? `<small>${head}</small>` : head}</b>${plan}${calcBtn}
+    setBox(cls, `<b>${pill}${pill ? `<small>${head}</small>` : head}</b>${progHtml}${plan}${calcBtn}
       <details class="cz-more"${moreOpen ? ' open' : ''}><summary>ความแม่นยำ: BUY ชนะ ${B.win}%${S ? ` · SELL ${S.win}%` : ' · SELL ไม่ให้สัญญาณ'} · รายละเอียด</summary>
       ${acc('BUY', B, null)} ${acc('SELL', S, sys.sellQ)}
       <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} · BUY ≥ +${B.th} (${sideText(B)})${S ? ` · SELL ≤ −${S.th} (${sideText(S)})` : ''}

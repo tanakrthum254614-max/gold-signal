@@ -571,3 +571,12 @@ body.cz-clean .charts > .legend { display: none; }
 .pp-status.live { color: #fff; background: #1f8a4c; border-radius: 4px; }
 .pp.sell .pp-status.live { background: #c2223b; }
 .cz-plan-other { color: var(--muted); padding-left: 10px; }
+/* How close to an entry (%) */
+.cz-prog { display: grid; gap: 4px; margin: 4px 0; font-size: 13px; }
+.cz-box .cz-prog span, .sig-note .cz-prog span { color: var(--text); }
+.cz-prog b { font-size: 15px; color: var(--wait); } .cz-prog.live b { color: var(--up); } .cz-prog.sell.live b { color: var(--down); }
+.cz-prog small { color: var(--muted); font-weight: 500; }
+.cz-prog i { display: block; height: 7px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.cz-prog em { display: block; height: 100%; border-radius: 99px; background: var(--wait); transition: width .5s; }
+.cz-prog.buy.live em { background: var(--up); } .cz-prog.sell.live em { background: var(--down); }
+.sig-note .cz-prog { margin: 0 0 6px; }
