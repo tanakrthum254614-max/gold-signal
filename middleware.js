@@ -5,10 +5,28 @@
 // moment that code is removed. Without it only /login.html and its icons are served — no app code, no signal data.
 // Also hosts the small API the app needs once signed in: /api/me, /api/logout and /api/push (web-push devices,
 // access/push-subs.json, read by scripts/push.js). Env: ACCESS_SECRET (cookie signing), BLOB_READ_WRITE_TOKEN.
-import { get, put } from '@vercel/blob';
-import { next } from '@vercel/functions';
+// NO imports on purpose: Vercel does not ship node_modules with Routing Middleware (with @vercel/blob imported, production
+// failed "Cannot find module '@vercel/blob'", and a bundled copy wouldn't load as a module). The Blob store is reached
+// with plain fetch — the same requests @vercel/blob makes (reads: the store host with ?cache=0; writes: the Blob API).
+const blobToken = () => process.env.BLOB_READ_WRITE_TOKEN || '';
+const storeId = () => blobToken().split('_')[3] || ''; // vercel_blob_rw_<storeId>_<secret>
+async function blobGet(path) {
+  const r = await fetch(`https://${storeId()}.private.blob.vercel-storage.com/${path}?cache=0`, { headers: { authorization: `Bearer ${blobToken()}` } });
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error(`blob get ${r.status}`);
+  return r.text();
+}
+async function blobPut(path, text) {
+  const r = await fetch(`https://vercel.com/api/blob/?pathname=${encodeURIComponent(path)}`, {
+    method: 'PUT', body: text,
+    headers: { authorization: `Bearer ${blobToken()}`, 'x-api-version': '12', 'x-vercel-blob-store-id': storeId(), 'x-vercel-blob-access': 'private',
+      'x-add-random-suffix': '0', 'x-allow-overwrite': '1', 'x-content-type': 'application/json' },
+  });
+  if (!r.ok) throw new Error(`blob put ${r.status}`);
+}
+// What @vercel/functions next() returns: let the request continue to the static file
+const next = () => new Response(null, { headers: { 'x-middleware-next': '1' } });
 
-// Node.js runtime: the Blob SDK could not read the private store from the Edge runtime (login always failed there)
 export const config = { matcher: '/:path*', runtime: 'nodejs' };
 
 const COOKIE = 'gs_auth';
@@ -29,12 +47,11 @@ const normalize = (code) => String(code || '').trim().toUpperCase().replace(/[^A
 
 async function readJson(path, fallback) {
   try {
-    const r = await get(path, { access: 'private', useCache: false });
-    if (!r || r.statusCode !== 200) return fallback;
-    return JSON.parse(await new Response(r.stream).text());
+    const text = await blobGet(path);
+    return text == null ? fallback : JSON.parse(text);
   } catch (e) { return fallback; }
 }
-const writeJson = (path, value) => put(path, JSON.stringify(value), { access: 'private', addRandomSuffix: false, allowOverwrite: true, contentType: 'application/json' });
+const writeJson = (path, value) => blobPut(path, JSON.stringify(value));
 
 // The code list, cached briefly per instance (a revoked code stops working within ~30 s)
 let cache = { at: 0, codes: [] };
