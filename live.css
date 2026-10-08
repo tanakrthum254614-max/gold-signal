@@ -580,3 +580,4 @@ body.cz-clean .charts > .legend { display: none; }
 .cz-prog em { display: block; height: 100%; border-radius: 99px; background: var(--wait); transition: width .5s; }
 .cz-prog.buy.live em { background: var(--up); } .cz-prog.sell.live em { background: var(--down); }
 .sig-note .cz-prog { margin: 0 0 6px; }
+.cz-box .cz-more-now { color: var(--text); } .sig-note > small { color: var(--muted); }

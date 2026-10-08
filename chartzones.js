@@ -70,8 +70,8 @@ function ago(ms) {
     return views;
   }
   const each = (fn) => getViews().forEach(fn);
-  // Accuracy / details under the status: folded on phones, open on wider screens; the reader's choice is kept
-  let moreOpen = window.innerWidth > 640;
+  // Accuracy / details under the status: folded by default (less text), the reader's choice is kept
+  let moreOpen = false;
   function setBox(cls, html) {
     each((v) => {
       const el = $(v.box); if (!el) return;
@@ -152,14 +152,16 @@ function ago(ms) {
     const d = s.current, price = state.bars[state.bars.length - 1].close, dir = dirOf(sys, d);
     const B = sys.buy, S = sys.sell;
     const lastC = s.decs.slice().reverse().find((x) => x.dec && (sys.long || !x.dec.stale));
-    let pill = '';
+    // Kept short on purpose (user, 8 Oct: "คำเยอะไป"): direction · % to an entry · the one plan; the rest is folded
+    let pill = '', pillFull = '';
     if (lastC && (sys.long || !(d && d.stale))) {
       const up = lastC.dec.lean > 0, dn = lastC.dec.lean < 0;
-      pill = `<span class="cz-5m ${up ? 'up' : dn ? 'down' : 'flat'}">${up ? '▲ ขึ้น' : dn ? '▼ ลง' : '• ทรงตัว'}</span> ทิศกรอบ ${TF_LABEL[tf]} (แท่ง ${when(sys, lastC.t - dur)} ปิดแล้ว · คะแนน ${signedScore(lastC.dec.score)}/±${max}) · รอบถัดไป ${when(sys, lastC.t + dur)}<br>`;
+      pill = `<span class="cz-5m ${up ? 'up' : dn ? 'down' : 'flat'}">${up ? '▲ ขึ้น' : dn ? '▼ ลง' : '• ทรงตัว'}</span> ${TF_LABEL[tf]} · รอบถัดไป ${when(sys, lastC.t + dur)}`;
+      pillFull = `ทิศกรอบ ${TF_LABEL[tf]}: แท่ง ${when(sys, lastC.t - dur)} ปิดแล้ว · คะแนน ${signedScore(lastC.dec.score)}/±${max}`;
     }
     const live = ((state.chartSig && state.chartSig.trades) || []).filter((x) => x.tf === tf);
     const br = CHARTSYS.brake(sys, live, Date.now());
-    let head, cls, calcArgs = null;
+    let head, cls, calcArgs = null, waitOnly = false;
     const sellNo = !S && d && B && d.score <= -B.th;
     if (open) { const sell = open.side === 'SELL'; head = `📌 อยู่ในไม้${sell ? 'ขาย (SELL)' : 'ซื้อ (BUY)'} ตั้งแต่ ${when(sys, open.createdAt)} — เข้า ${f2(open.entry)} · SL ${f2(open.hit ? open.entry : open.sl)}${open.hit ? ' (ที่ทุน)' : ''} · ${open.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}`; cls = sell ? 'hold sell' : 'hold'; calcArgs = [sell ? -1 : 1, open.entry, open.hit ? open.entry : open.sl, open.tps[0]]; }
     else if (!d) { head = 'กำลังคำนวณ… (รอกราฟกรอบใหญ่)'; cls = 'wait'; }
@@ -174,10 +176,10 @@ function ago(ms) {
     else if (stretched(sys, d)) { head = `⏸ คะแนนถึง ${signedScore(d.score)} แต่ราคายืดเกินขอบ${d.score > 0 ? 'บน' : 'ล่าง'} Bollinger — รอราคากลับเข้ากรอบก่อน`; cls = 'near'; }
     else if (!sys.long && d.news) { head = '⏸ ช่วงข่าวแรง — งดเข้า (พื้นหลังเหลือง)'; cls = 'wait'; }
     else if (!sys.long && d.lastHour) { head = '⏸ ใกล้ตลาดปิด — งดเปิดไม้ใหม่'; cls = 'wait'; }
-    else if (sellNo) { head = `⚠️ แนวโน้มลง ${signedScore(d.score)} แต่กรอบนี้ไม่ให้สัญญาณ SELL — ฝั่งขายทดสอบไม่ผ่าน · ใช้ดูทิศเท่านั้น (SELL ที่ทดสอบผ่าน: <a href="#" data-tf="5m">กรอบ 5 นาที</a>)`; cls = 'no'; }
-    else if (B && d.score > 0 && d.score >= B.th - 2) { head = `⏳ ใกล้สัญญาณ BUY — คะแนน ${signedScore(d.score)} ขาดอีก ${B.th - d.score}`; cls = 'near'; }
-    else if (S && d.score < 0 && d.score <= -(S.th - 2)) { head = `⏳ ใกล้สัญญาณ SELL — คะแนน ${signedScore(d.score)} ขาดอีก ${S.th + d.score}`; cls = 'near'; }
-    else { head = `⏸ รอก่อน — คะแนน ${signedScore(d.score)} · BUY ต้อง +${B.th}${S ? ` · SELL ต้อง −${S.th}` : ''}`; cls = 'wait'; }
+    else if (sellNo) { head = `⚠️ แนวโน้มลง ${signedScore(d.score)} แต่กรอบนี้ไม่ให้สัญญาณ SELL — ฝั่งขายทดสอบไม่ผ่าน · ใช้ดูทิศเท่านั้น (SELL ที่ทดสอบผ่าน: <a href="#" data-tf="5m">กรอบ 5 นาที</a>)`; cls = 'no'; waitOnly = true; }
+    else if (B && d.score > 0 && d.score >= B.th - 2) { head = `⏳ ใกล้สัญญาณ BUY — คะแนน ${signedScore(d.score)} ขาดอีก ${B.th - d.score}`; cls = 'near'; waitOnly = true; }
+    else if (S && d.score < 0 && d.score <= -(S.th - 2)) { head = `⏳ ใกล้สัญญาณ SELL — คะแนน ${signedScore(d.score)} ขาดอีก ${S.th + d.score}`; cls = 'near'; waitOnly = true; }
+    else { head = `⏸ รอก่อน — คะแนน ${signedScore(d.score)} · BUY ต้อง +${B.th}${S ? ` · SELL ต้อง −${S.th}` : ''}`; cls = 'wait'; waitOnly = true; }
     const note = $('sigNote');
     if (note) note.innerHTML = open
       ? `📌 <b>ระบบบนกราฟถือไม้${open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}อยู่</b> ตั้งแต่ ${when(sys, open.createdAt)} — ไม่ต้องเปิดไม้ใหม่ · การ์ดนี้คือบทวิเคราะห์ภาพรวม คนละระบบกับจุดเข้าบนกราฟ`
@@ -197,7 +199,7 @@ function ago(ms) {
         : open ? 'มีไม้ถืออยู่ — รอปิดก่อน'
         : dir === side ? (br ? '⛔ พักอยู่' : '✅ สัญญาณมาแล้ว')
         : d ? `รอคะแนน ${side > 0 ? '+' : '−'}${th} (ตอนนี้ ${signedScore(d.score)})` : '';
-      return `<div class="cz-plan-row ${side > 0 ? 'buy' : 'sell'}${c ? '' : ' off'}"><span class="cz-plan-side">${side > 0 ? '🟢 Buy' : '🔴 Sell'}</span><span>${lv}</span><small>${state2}</small></div>`;
+      return `<div class="cz-plan-row ${side > 0 ? 'buy' : 'sell'}${c ? '' : ' off'}"><span class="cz-plan-side">${side > 0 ? '🟢 Buy' : '🔴 Sell'}</span><span>${lv}</span>${c && !open ? '' : `<small>${state2}</small>`}</div>`;
     };
     // ONE plan, never two to choose from (user, 8 Oct): the live signal's side, else the tested side closest to its
     // threshold. Live = solid "เข้าตอนนี้"; otherwise faded "รอ — ยังไม่ใช่จุดเข้า"
@@ -205,21 +207,23 @@ function ago(ms) {
     const pick = dir || (gap(-1) < gap(1) ? -1 : 1);
     const other = -pick, oc = other > 0 ? B : S;
     const otherLine = `<small class="cz-plan-other">${other > 0 ? 'Buy' : 'Sell'}: ${!oc ? 'ไม่ให้สัญญาณในกรอบนี้ (ทดสอบไม่ผ่าน)' : d ? `ห่างกว่า — ต้องได้คะแนน ${other > 0 ? '+' : '−'}${oc.th} (ตอนนี้ ${signedScore(d.score)})` : ''}</small>`;
-    const plan = sys.long || !(d && d.stale) ? `<div class="cz-plan">${planRow(pick)}${otherLine}</div>` : '';
+    const plan = sys.long || !(d && d.stale) ? `<div class="cz-plan">${planRow(pick)}</div>` : '';
     // How close to an entry, in %: the score toward the picked side ÷ the score it needs (0 % at or past neutral, 100 % = enter)
     const pc = (pick > 0 ? B : S) || B;
     const pct = !d || open ? null : dir === pick ? 100 : Math.max(0, Math.min(99, Math.round(((pick > 0 ? d.score : -d.score) / pc.th) * 100)));
-    const progHtml = pct == null || !plan ? '' : `<div class="cz-prog ${pick > 0 ? 'buy' : 'sell'}${pct >= 100 ? ' live' : ''}"><span>${pct >= 100 ? '✅ ถึงจุดเข้าแล้ว' : '⏳ ใกล้จุดเข้า'} ${pick > 0 ? 'Buy' : 'Sell'} <b>${pct}%</b> <small>(คะแนน ${signedScore(d.score)} จากที่ต้อง ${pick > 0 ? '+' : '−'}${pc.th})</small></span><i><em style="width:${pct}%"></em></i></div>`;
-    if (note && !open) note.innerHTML = `${progHtml}<span>การ์ดนี้คือบทวิเคราะห์ภาพรวม — คนละระบบกับจุดเข้าบนกราฟ · ${pct >= 100 ? 'ระบบบนกราฟ: เข้าได้' : 'ระบบบนกราฟ: ยังรอ'}</span>`;
+    const progHtml = pct == null || !plan ? '' : `<div class="cz-prog ${pick > 0 ? 'buy' : 'sell'}${pct >= 100 ? ' live' : ''}"><span>${pct >= 100 ? '✅ ถึงจุดเข้าแล้ว' : '⏳ ใกล้จุดเข้า'} ${pick > 0 ? 'Buy' : 'Sell'} <b>${pct}%</b></span><i><em style="width:${pct}%"></em></i></div>`;
+    if (note && !open) note.innerHTML = `${progHtml}<small>จากระบบบนกราฟ · การ์ดนี้เป็นบทวิเคราะห์ภาพรวม</small>`;
     window.CZ_PLANS = open || !plan ? null : [pick].map((side) => {
       const c = (side > 0 ? B : S) || B, L = levelsFor(c, price, side), live = dir === side && !br;
-      const note = live ? '✅ เข้าตอนนี้' : br ? '⛔ พักอยู่ — ไม่เข้า' : d ? `⏸ รอ — ใกล้จุดเข้า ${pct}% · ต้องได้คะแนน ${side > 0 ? '+' : '−'}${c.th} (ตอนนี้ ${signedScore(d.score)})` : '⏸ รอ';
+      const note = live ? '✅ เข้าตอนนี้' : br ? '⛔ พักอยู่ — ไม่เข้า' : `⏸ รอ ${pct == null ? '' : `${pct}%`}`;
       return { side, entry: price, sl: L.sl, tps: L.tps, ok: live, note };
     });
     if (window.drawPositionBoxes) drawPositionBoxes();
     const calcBtn = calcArgs ? `<button type="button" class="btn cz-calc" data-calc="${calcArgs.map((v) => SIG.round(v)).join(',')}">🧮 คำนวณ lot จากสัญญาณนี้</button>` : '';
-    setBox(cls, `<b>${pill}${pill ? `<small>${head}</small>` : head}</b>${progHtml}${plan}${calcBtn}
-      <details class="cz-more"${moreOpen ? ' open' : ''}><summary>ความแม่นยำ: BUY ชนะ ${B.win}%${S ? ` · SELL ${S.win}%` : ' · SELL ไม่ให้สัญญาณ'} · รายละเอียด</summary>
+    const top = pill ? `${pill}${waitOnly ? '' : `<br><small>${head}</small>`}` : head;
+    setBox(cls, `<b>${top}</b>${progHtml}${plan}${calcBtn}
+      <details class="cz-more"${moreOpen ? ' open' : ''}><summary>รายละเอียด (${other > 0 ? "Buy" : "Sell"} · ความแม่นยำ · วิธีอ่าน)</summary>
+      <span class="cz-more-now">${pillFull}${waitOnly ? ` · ${head}` : ''}</span>${otherLine}
       ${acc('BUY', B, null)} ${acc('SELL', S, sys.sellQ)}
       <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} · BUY ≥ +${B.th} (${sideText(B)})${S ? ` · SELL ≤ −${S.th} (${sideText(S)})` : ''}
       · ทดสอบย้อนหลัง ${sys.span} แบ่ง 4 ช่วงเท่ากัน เก่า→ใหม่ หลังสเปรด ต่อ 1 ออนซ์${sys.few ? ` · ตัวอย่างน้อย (${sys.few} ไม้)` : ''}${sys.long ? ' · ช่วงทดสอบทองเป็นขาขึ้นเกือบตลอด ไม่รับประกันอนาคต' : ''}
