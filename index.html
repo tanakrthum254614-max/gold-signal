@@ -17,9 +17,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610082100">
-  <link rel="stylesheet" href="live.css?v=202610082100">
-  <link rel="stylesheet" href="theme.css?v=202610082100" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610082200">
+  <link rel="stylesheet" href="live.css?v=202610082200">
+  <link rel="stylesheet" href="theme.css?v=202610082200" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -474,11 +474,16 @@
         </section>
 
         <section class="card">
-          <h3>⏱️ สัญญาณ 15 นาที (ดูบนเว็บเท่านั้น)</h3>
-          <p>ทุกครั้งที่แท่ง 15 นาทีปิด ระบบเช็กแนวโน้ม <b>15 นาที · 1 ชม. · 5 ชม.</b> ถ้าทั้ง 3 ชี้ขึ้นชัด (คะแนน <b>+5</b>) จะขึ้น <b>▲ ซื้อ</b> บนกราฟ พร้อม SL $15 และ TP $15 / $20 / $30
-            · <b>พื้นเขียว</b> = ช่วงที่เข้าได้ · <b>พื้นเหลือง</b> = ช่วงข่าวแรง งดเข้า · <b>พื้นว่าง</b> = ไม่เข้า
-            <br>ฝั่งขายบอก "ไม่เข้า" เสมอ เพราะทดสอบย้อนหลังแล้วแพ้มากกว่าชนะ · <b>ไม่ส่ง LINE</b> ดูได้ที่หน้าสัญญาณและหน้ากราฟ (ช่วง 2 วัน)
-            <br><span class="muted small">ทดสอบ 1 ปี: ~1.4 ไม้/วัน ชนะ 52% กำไรหลังสเปรดน้อยกว่าระบบ 30 นาที — บางวันไม่มีจุดเข้าเลย</span></p>
+          <h3>📈 อ่านหน้ากราฟยังไง</h3>
+          <ol class="learn-steps">
+            <li><b>เลือกกรอบเวลา</b> (5 นาที – 1 สัปดาห์) — แต่ละกรอบมีระบบจุดเข้าของตัวเองที่ทดสอบย้อนหลังแล้ว</li>
+            <li><b>ดูช่อง 🟢 Buy | 🔴 Sell</b> เหนือกราฟ — <b>ความพร้อมเข้า %</b> บอกว่าใกล้จุดเข้าแค่ไหน (100% = ถึงจุดเข้า) และมีคำตัดสิน:
+              <b>✅ ควรเข้า</b> · <b>⏸ ยังไม่ควรเข้า</b> · <b>⚠️ ไม่แนะนำ</b> (ฝั่งนี้ทดสอบขาดทุนในกรอบนี้) · <b>⛔ พัก</b> (แพ้ติดกัน ระบบพักให้เอง)</li>
+            <li><b>เข้าเฉพาะตอนเห็น ✅ ควรเข้า</b> — ใช้ราคาเข้า · SL · TP ที่เขียนไว้ กด <b>🧮 คำนวณ lot</b> เพื่อดูขนาดไม้ตามทุน (เครื่องคำนวณอยู่ใต้กราฟ)</li>
+            <li><b>บนกราฟ:</b> ▲ เขียว / ▼ แดง พร้อมป้ายราคา = จุดที่ระบบเข้าจริง · กล่องทางขวา = เขียวถึง TP แดงถึง SL · เส้นทอง/เขียว/แดงสั้น ๆ = ไม้ที่ปิดแล้ว (✓ ถึง TP · ✗ โดน SL)</li>
+            <li><b>ดูประกอบเท่านั้น:</b> เส้นโค้งสีทอง = กรอบราคา · แถบแดง/เขียว = แนวต้าน/แนวรับ · “ความมั่นใจของ investing.com” ในการ์ดขวา — ไม่ใช่สัญญาณเข้า</li>
+          </ol>
+          <p class="muted small">ปุ่ม “📊 แสดงเส้นอินดิเคเตอร์” เปิด EMA/Bollinger/ลูกศรทุกแท่งกลับมาได้ · ผลจริงของทุกกรอบดูได้ที่หน้าสถิติ · ทุกระบบไม่รับประกันกำไร ตั้ง SL ทุกครั้ง</p>
         </section>
 
         <section class="card">
@@ -601,26 +606,26 @@
         </section>
 
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610082100 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610082200 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610082100"></script>
-  <script src="auth.js?v=202610082100"></script>
-  <script src="indicators.js?v=202610082100"></script>
-  <script src="investing.js?v=202610082100"></script>
-  <script src="explain.js?v=202610082100"></script>
-  <script src="dailyplan.js?v=202610082100"></script>
-  <script src="signals.js?v=202610082100"></script>
-  <script src="intraday.js?v=202610082100"></script>
-  <script src="pwa.js?v=202610082100"></script>
-  <script src="ui.js?v=202610082100"></script>
-  <script src="main.js?v=202610082100"></script>
-  <script src="tradeplan.js?v=202610082100"></script>
-  <script src="chartsys.js?v=202610082100"></script>
-  <script src="chartzones.js?v=202610082100"></script>
+  <script src="config.js?v=202610082200"></script>
+  <script src="auth.js?v=202610082200"></script>
+  <script src="indicators.js?v=202610082200"></script>
+  <script src="investing.js?v=202610082200"></script>
+  <script src="explain.js?v=202610082200"></script>
+  <script src="dailyplan.js?v=202610082200"></script>
+  <script src="signals.js?v=202610082200"></script>
+  <script src="intraday.js?v=202610082200"></script>
+  <script src="pwa.js?v=202610082200"></script>
+  <script src="ui.js?v=202610082200"></script>
+  <script src="main.js?v=202610082200"></script>
+  <script src="tradeplan.js?v=202610082200"></script>
+  <script src="chartsys.js?v=202610082200"></script>
+  <script src="chartzones.js?v=202610082200"></script>
 </body>
 </html>

@@ -601,3 +601,4 @@ body.cz-clean .charts > .legend { display: none; }
 .sig-note .cz-prog.buy em { background: var(--up); } .sig-note .cz-prog.sell em { background: var(--down); } .sig-note .cz-prog.untested em { background: var(--muted); }
 /* investing.com confidence: secondary to the chart system's % */
 #signalCard .meter { opacity: .55; height: 5px; } #confText { opacity: .8; }
+.learn-steps { margin: 6px 0 8px; padding-left: 20px; display: grid; gap: 6px; line-height: 1.6; }
