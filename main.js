@@ -337,7 +337,8 @@ function renderSignalHead(plan = state.lastPlan) {
   const g = window.CZ_GO, inv = ACTION_TH[plan.action];
   const side = g ? (g.side > 0 ? 'BUY' : 'SELL') : plan.action;
   $('signalCard').className = `card signal ${side}`;
-  $('action').textContent = !g ? inv[0] : g.open ? `📌 ถือไม้${g.side > 0 ? 'ซื้อ' : 'ขาย'}อยู่` : `✅ เข้า${g.side > 0 ? 'ซื้อ (Buy)' : 'ขาย (Sell)'}ได้`;
+  // Just "Buy" / "Sell" (user, 8 Oct: shorter); the sub-line explains
+  $('action').textContent = !g ? inv[0] : `${g.open ? 'ถือ ' : ''}${g.side > 0 ? 'Buy' : 'Sell'}`;
   $('actionSub').textContent = !g ? inv[1] : `ระบบบนกราฟ ${TF_LABEL[state.tf]} ${g.open ? 'ถือไม้อยู่ — ไม่ต้องเปิดไม้ใหม่' : 'ถึงจุดเข้า 100%'} · บทวิเคราะห์ investing.com: ${inv[0]}`;
 }
 window.renderSignalHead = renderSignalHead;
