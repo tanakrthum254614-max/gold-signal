@@ -652,3 +652,4 @@ body.cz-clean .charts > .legend { display: none; }
   .pp-lab { font-size: 11.5px; } .pp-status { font-size: 13px; }
 }
 @media (min-width: 1700px) { .demo-bar { margin: 10px 28px 0; } }
+.admin-link { text-decoration: none; margin-bottom: 10px; }

@@ -70,9 +70,16 @@
     if (r.status === 401) { location.replace('/login.html'); return; }
     // Opened as a plain file / dev server without the middleware: carry on unsigned
     const me = r.ok && (r.headers.get('content-type') || '').includes('json') ? await r.json() : null;
-    window.AUTH.user = me ? { fullName: me.name, email: me.email } : null;
+    window.AUTH.user = me ? { fullName: me.name, email: me.email, admin: !!me.admin } : null;
     showApp();
     resolveReady(window.AUTH.user);
+    // Access log (back office): the first visit of the day from this device
+    if (me) {
+      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
+      let last = null;
+      try { last = localStorage.getItem('gs-visit'); } catch (e) { /* storage blocked */ }
+      if (last !== today) fetch('/api/visit', { method: 'POST' }).then(() => { try { localStorage.setItem('gs-visit', today); } catch (e) { /* ok */ } }).catch(() => {});
+    }
   }
   start().catch((e) => {
     console.error(e);

@@ -3,8 +3,9 @@
 // Google) on /login.html; that page hands the Clerk session token to POST /api/session, which checks it against
 // Clerk's public keys and sets the site's own signed cookie (14 days). Without the cookie only /login.html and its icons
 // are served — no app code, no signal data. Also: /api/me, /api/logout, /api/push (web-push devices in the private Blob
-// store, access/push-subs.json, read by scripts/push.js).
-// Env: ACCESS_SECRET (cookie signing), CLERK_SECRET_KEY (name / email of a new session), BLOB_READ_WRITE_TOKEN.
+// store, access/push-subs.json, read by scripts/push.js), /api/visit, and the admin back office (/admin.html,
+// /api/admin/members, /api/admin/log — ADMIN_EMAILS only).
+// Env: ACCESS_SECRET (cookie signing), CLERK_SECRET_KEY (names / emails), BLOB_READ_WRITE_TOKEN, ADMIN_EMAILS (comma list).
 // NO imports on purpose: Vercel does not ship node_modules with Routing Middleware (with @vercel/blob imported, production
 // failed "Cannot find module '@vercel/blob'", and a bundled copy wouldn't load as a module). The Blob store is reached
 // with plain fetch — the same requests @vercel/blob makes (reads: the store host with ?cache=0; writes: the Blob API).
@@ -114,6 +115,7 @@ async function session(request) {
   } catch (e) { /* the cookie still works without them */ }
   const data = btoa(unescape(encodeURIComponent(JSON.stringify({ id, name, email }))));
   const exp = Date.now() + DAYS * 864e5;
+  await logEvent(request, { id, name, email }, 'login').catch(() => {});
   return json({ ok: true }, 200, { 'set-cookie': cookieOut(`${data}.${exp}.${await sign(`${data}.${exp}`)}`, DAYS * 86400) });
 }
 
@@ -154,7 +156,67 @@ export default async function middleware(request) {
     if (page) return new Response(null, { status: 302, headers: { location: '/login.html', 'cache-control': 'no-store' } });
     return new Response('ต้องเข้าสู่ระบบก่อน', { status: 401, headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' } });
   }
-  if (path === '/api/me') return json({ name: who.name, email: who.email });
+  if (path === '/api/me') return json({ name: who.name, email: who.email, admin: isAdmin(who) });
   if (path === '/api/push') return pushApi(request, who.id);
+  if (path === '/api/visit' && request.method === 'POST') { await logEvent(request, who, 'visit').catch(() => {}); return json({ ok: true }); }
+  // Back office: members and the access log — admins only (ADMIN_EMAILS)
+  if (path === '/admin.html' || path.startsWith('/api/admin/')) {
+    if (!isAdmin(who)) {
+      return path === '/admin.html' ? new Response(null, { status: 302, headers: { location: '/', 'cache-control': 'no-store' } }) : json({ ok: false }, 403);
+    }
+    if (path === '/api/admin/members') return adminMembers();
+    if (path === '/api/admin/log') return json((await readJson(LOG, { events: [] })).events.slice().reverse());
+  }
   return next();
+}
+
+// ---------- Back office ----------
+const LOG = 'access/log.json';
+const admins = () => (process.env.ADMIN_EMAILS || '').toLowerCase().split(',').map((s) => s.trim()).filter(Boolean);
+const isAdmin = (m) => !!(m && m.email) && admins().includes(m.email.toLowerCase());
+function device(ua) {
+  const os = /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows' : /Mac OS X|Macintosh/.test(ua) ? 'Mac' : /Linux/.test(ua) ? 'Linux' : 'อื่น ๆ';
+  const app = /Line\//.test(ua) ? 'LINE' : /Edg\//.test(ua) ? 'Edge' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : '';
+  return app ? `${os} · ${app}` : os;
+}
+// One line in the access log: a sign-in, or the first visit of the day from a device (sent by auth.js). Last 5,000 kept.
+async function logEvent(request, m, type) {
+  const h = request.headers;
+  let city = h.get('x-vercel-ip-city') || '';
+  try { city = decodeURIComponent(city); } catch (e) { /* keep raw */ }
+  const all = await readJson(LOG, { events: [] });
+  all.events.push({ at: Date.now(), type, id: m.id, name: m.name, email: m.email, device: device(h.get('user-agent') || ''), country: h.get('x-vercel-ip-country') || '', city });
+  all.events = all.events.slice(-5000);
+  await writeJson(LOG, all);
+}
+// Everyone who signed up (Clerk), with sign-in / visit counts from the access log
+async function adminMembers() {
+  const key = (process.env.CLERK_SECRET_KEY || '').trim();
+  const users = [];
+  for (let offset = 0; offset < 5000; offset += 500) {
+    const r = await fetch(`https://api.clerk.com/v1/users?limit=500&offset=${offset}&order_by=-created_at`, { headers: { authorization: `Bearer ${key}` } });
+    if (!r.ok) return json({ ok: false, error: `Clerk ${r.status}` }, 502);
+    const page = await r.json();
+    users.push(...page);
+    if (page.length < 500) break;
+  }
+  const events = (await readJson(LOG, { events: [] })).events;
+  const stats = new Map();
+  events.forEach((e) => {
+    const s = stats.get(e.id) || { logins: 0, visits: 0, lastSeen: 0, device: '', place: '' };
+    if (e.type === 'login') s.logins++; else s.visits++;
+    if (e.at > s.lastSeen) { s.lastSeen = e.at; s.device = e.device; s.place = [e.city, e.country].filter(Boolean).join(', '); }
+    stats.set(e.id, s);
+  });
+  return json(users.map((u) => {
+    const primary = (u.email_addresses || []).find((e) => e.id === u.primary_email_address_id) || (u.email_addresses || [])[0];
+    const email = primary ? primary.email_address : '';
+    const s = stats.get(u.id) || { logins: 0, visits: 0, lastSeen: 0, device: '', place: '' };
+    return {
+      id: u.id, email, name: [u.first_name, u.last_name].filter(Boolean).join(' '), image: u.image_url || '',
+      method: (u.external_accounts || []).some((a) => /google/.test(a.provider)) ? 'Google' : 'อีเมล',
+      createdAt: u.created_at, lastSignInAt: u.last_sign_in_at || 0, lastActiveAt: u.last_active_at || 0, banned: !!u.banned,
+      admin: admins().includes(email.toLowerCase()), ...s,
+    };
+  }));
 }
