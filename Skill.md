@@ -49,6 +49,12 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 ## 📖 หน้าวิธีใช้: อ่านหน้ากราฟยังไง (8 ต.ค. 2569 · เวอร์ชัน 202610082200)
 - แทนหัวข้อ "⏱️ สัญญาณ 15 นาที (ดูบนเว็บเท่านั้น)" (อธิบายการ์ดที่ลบแล้ว) ด้วย "📈 อ่านหน้ากราฟยังไง" `ol.learn-steps` 5 ข้อ: กรอบเวลา → ช่อง Buy|Sell (% + ✅⏸⚠️⛔) → เข้าเฉพาะ ✅ + 🧮 → ลูกศร/ป้าย/กล่อง TP-SL/เส้นไม้ที่ปิด → สิ่งที่ดูประกอบเท่านั้น · เมื่อเปลี่ยนหน้ากราฟอีก ให้อัปเดตหัวข้อนี้ด้วย
 
+## 🛠️ หลังบ้าน: สมาชิก + บันทึกการเข้าใช้ (8 ต.ค. 2569 · เวอร์ชัน 202610082900)
+- `/admin.html` + `/api/admin/members` (Clerk Backend API `/v1/users` ทีละ 500 + นับจาก log) + `/api/admin/log` (ใหม่สุดก่อน) — เฉพาะอีเมลใน env `ADMIN_EMAILS` (ตอนนี้ = 2 บัญชี Google ของเจ้าของที่มีอยู่ก่อน) · ไม่ใช่แอดมิน: หน้า → 302 `/`, API → 403 · `/api/me` มี `admin` → ลิงก์ `#adminLink` ในหน้าบัญชี
+- บันทึก `access/log.json` (Blob, เก็บ 5,000 ล่าสุด): `login` ตอน /api/session และ `visit` จาก auth.js วันละครั้งต่อเครื่อง (localStorage `gs-visit`, POST /api/visit) · ฟิลด์: at, type, id, name, email, device (จาก UA), country/city (header `x-vercel-ip-*`) — ไม่เก็บ IP
+- หน้า admin: ตัวเลขสรุป, ค้นหา/กรอง/เรียง, กดสมาชิก → บันทึกของคนนั้น, CSV (UTF-8 BOM) · เพิ่ม/เปลี่ยนแอดมิน: `npx vercel env rm/add ADMIN_EMAILS <env>` แล้ว redeploy
+- ทดสอบ: `vercel dev` ใช้ env จาก cloud (แก้ .env.local ไม่มีผล) → ทดสอบแอดมินด้วยการ import middleware ใน Node และตั้ง env เอง · ลบผู้ใช้ทดสอบและบันทึก `+clerk_test@example.com` ออกจาก log ทุกครั้ง
+
 ## 👤 สมาชิกเท่านั้น — Clerk + ตรวจฝั่งเซิร์ฟเวอร์ (8 ต.ค. 2569 · เวอร์ชัน 202610082800)
 - ลำดับ: ผู้ใช้ขอระบบรหัสจากผู้ดูแล (ทำเสร็จ v202610082700) → เปลี่ยนใจ "ล็อกอินอีเมลแบบเดิม ต้องสมัครสมาชิกก่อน" → เลือก **อีเมล + Google** และ **ตรวจฝั่งเซิร์ฟเวอร์** · ระบบรหัส/สคริปต์ access-codes/ข้อมูล codes ใน Blob ลบแล้ว · repo ยังสาธารณะ
 - `login.html`: โหลด clerk-js + ui จาก FAPI (pk คงที่ในไฟล์) · แท็บ **เข้าสู่ระบบ | สมัครสมาชิก** (`mountSignIn` withSignUp / `mountSignUp`; หน้ารวมของ Clerk ไม่มีลิงก์สมัครให้เห็น) · `#signup` เปิดแท็บสมัคร · ล็อกอินแล้ว `Clerk.session.getToken()` → `POST /api/session` (header Authorization) → `/` · `?signout=1` = เรียก `Clerk.signOut()`
