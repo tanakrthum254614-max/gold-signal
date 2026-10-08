@@ -350,7 +350,8 @@ function renderSignal(plan, htfKey) {
   $('meterFill').style.width = `${plan.confidence}%`;
   const htech = state.tech && state.tech[htfKey];
   const htf = htech ? ` · ${TF_LABEL[htfKey]}: ${INV.summaryTh(htech.summary)}` : '';
-  $('confText').textContent = `ความมั่นใจ ${plan.confidence}%${htf}`;
+  // Named after its source, so it isn't mistaken for the chart system's "ความพร้อมเข้า" % above it
+  $('confText').textContent = `ความมั่นใจของ investing.com ${plan.confidence}%${htf}`;
 
   const box = (label, value, cls = '', note = '') =>
     `<div class="${cls}"><label>${label}</label><span class="mono">${value}</span>${note ? `<small>${note}</small>` : ''}</div>`;

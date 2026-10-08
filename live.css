@@ -599,3 +599,5 @@ body.cz-clean .charts > .legend { display: none; }
 .cz-col.untested .cz-prog em { background: var(--muted); }
 .sig-note .cz-prog { margin-bottom: 4px; }
 .sig-note .cz-prog.buy em { background: var(--up); } .sig-note .cz-prog.sell em { background: var(--down); } .sig-note .cz-prog.untested em { background: var(--muted); }
+/* investing.com confidence: secondary to the chart system's % */
+#signalCard .meter { opacity: .55; height: 5px; } #confText { opacity: .8; }

@@ -324,8 +324,17 @@ function ago(ms) {
       + tags.map((t) => `<div class="ptag ${t.cls}" style="right:${right + 6}px;top:${t.y}px">${t.html}</div>`).join('');
     if (html !== b.html) { b.html = html; b.el.innerHTML = html; } // only when something moved: no flicker
   }
+  // Keep every drawn entry / SL / TP inside the price scale, so no label sits off the chart
+  function fitPlans(series) {
+    series.applyOptions({ autoscaleInfoProvider: (orig) => {
+      const r = orig(); if (!r || !r.priceRange) return r;
+      const t = window.CZ_OPEN, ps = [...(window.CZ_PLANS || []).flatMap((p) => [p.sl, ...p.tps]), ...(t ? [t.sl, ...t.tps] : [])].filter(Number.isFinite);
+      if (!ps.length) return r;
+      return { ...r, priceRange: { minValue: Math.min(r.priceRange.minValue, ...ps), maxValue: Math.max(r.priceRange.maxValue, ...ps) } };
+    } });
+  }
   window.drawPositionBoxes = function () {
-    if (!boxes.length && typeof mainChart !== 'undefined') { overlay(mainChart, candles, 'mainChart'); overlay(simpleChart, areaS, 'simpleChart'); }
+    if (!boxes.length && typeof mainChart !== 'undefined') { overlay(mainChart, candles, 'mainChart'); overlay(simpleChart, areaS, 'simpleChart'); fitPlans(candles); fitPlans(areaS); }
     boxes.forEach(draw);
   };
 })();
