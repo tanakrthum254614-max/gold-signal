@@ -178,7 +178,8 @@
    "source": "investing.com",
    "alerts": {
     "entry": 1791505974600,
-    "tp1": 1791509421225
+    "tp1": 1791509421225,
+    "tp2": 1791509720966
    },
    "market": true,
    "side": "BUY",
@@ -193,17 +194,18 @@
    "stars": 3,
    "status": "active",
    "entryAt": 1791505974600,
-   "hit": 1,
+   "hit": 2,
    "hitAt": [
+    1791508500000,
     1791508500000
    ],
    "stop": 4143.42,
-   "realized": 5,
-   "pnl": 16.89,
-   "last": 4161.25
+   "realized": 11.67,
+   "pnl": 17.96,
+   "last": 4162.31
   }
  ],
- "updatedAt": 1791509421225,
+ "updatedAt": 1791509720966,
  "summary": {
   "total": 4,
   "traded": 4,
