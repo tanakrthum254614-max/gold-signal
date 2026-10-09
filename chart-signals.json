@@ -149,14 +149,14 @@
    "hitAt": [],
    "stop": 4157.82,
    "realized": 0,
-   "pnl": -16.79,
-   "last": 4171.03
+   "pnl": -18.11,
+   "last": 4169.71
   },
   {
    "id": "30m-1791547200000",
    "createdAt": 1791547200000,
    "expiresAt": 1791575100000,
-   "status": "active",
+   "status": "loss",
    "entryAt": 1791547200000,
    "side": "BUY",
    "entry": 4182.76,
@@ -171,14 +171,17 @@
    "hitAt": [],
    "stop": 4167.76,
    "realized": 0,
-   "pnl": -11.73,
-   "last": 4171.03
+   "pnl": -15,
+   "last": 4171.03,
+   "closedBy": "sl",
+   "exitPrice": 4167.76,
+   "exitAt": 1791550200000
   },
   {
    "id": "5m-1791547800000",
    "createdAt": 1791547800000,
    "expiresAt": 1791575100000,
-   "status": "active",
+   "status": "loss",
    "entryAt": 1791547800000,
    "side": "BUY",
    "entry": 4182.93,
@@ -193,10 +196,13 @@
    "hitAt": [],
    "stop": 4167.93,
    "realized": 0,
-   "pnl": -11.9,
-   "last": 4171.03
+   "pnl": -15,
+   "last": 4171.03,
+   "closedBy": "sl",
+   "exitPrice": 4167.93,
+   "exitAt": 1791550200000
   }
  ],
  "brakes": {},
- "updatedAt": 1791550521650
+ "updatedAt": 1791550821673
 }
