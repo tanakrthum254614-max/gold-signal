@@ -566,3 +566,76 @@ h3 .tag { margin-left: 6px; vertical-align: 1px; }
 .cs-go { cursor: pointer; } .cs-go:hover td { background: var(--panel-2, rgba(105,115,134,.08)); } .cs-arrow { color: var(--muted); }
 .stats-more > summary { font-weight: 700; font-size: 15px; padding: 12px 4px; cursor: pointer; }
 @media (max-width: 640px) { .tc-chart { height: 280px; } .tc-tf { padding: 6px 9px; font-size: 13px; } }
+
+/* ===== Stats dashboard (9 Oct: the stats page looked too plain) ===== */
+.st-dash { display: flex; flex-direction: column; gap: 16px; }
+.st-dash > .card { margin: 0; }
+.st-hero { position: relative; overflow: hidden; border-radius: 20px; padding: 22px 22px 18px; color: #f3f5f9;
+  background: radial-gradient(120% 140% at 0% 0%, rgba(240,180,41,.28), transparent 55%), radial-gradient(90% 120% at 100% 100%, rgba(15,159,110,.22), transparent 60%), linear-gradient(135deg, #141a24, #0d1118);
+  box-shadow: 0 10px 30px rgba(10,14,22,.18); border: 1px solid rgba(255,255,255,.06); }
+.st-hero-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.st-eyebrow { font-size: 13px; letter-spacing: .3px; color: rgba(243,245,249,.7); }
+.st-title { margin: 2px 0 0; font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: #fff; }
+.st-live { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 99px; background: rgba(15,159,110,.18); color: #49d6a0; display: inline-flex; align-items: center; gap: 6px; }
+.st-live i { width: 7px; height: 7px; border-radius: 50%; background: #49d6a0; animation: stPulse 1.8s infinite; }
+@keyframes stPulse { 0% { box-shadow: 0 0 0 0 rgba(73,214,160,.55); } 70% { box-shadow: 0 0 0 8px rgba(73,214,160,0); } 100% { box-shadow: 0 0 0 0 rgba(73,214,160,0); } }
+.st-hero .beat { color: rgba(243,245,249,.75); margin: 0; }
+.st-kpis { display: grid; grid-template-columns: 1.5fr 1.1fr 1fr 1.2fr 1fr; gap: 12px; margin-top: 16px; }
+.st-kpi { position: relative; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 14px; min-width: 0; }
+.st-kpi-l { display: block; font-size: 12.5px; color: rgba(243,245,249,.7); margin-bottom: 4px; }
+.st-kpi b { display: block; font-size: 24px; line-height: 1.2; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st-kpi.big b { font-size: 34px; }
+.st-kpi small { display: block; font-size: 12px; color: rgba(243,245,249,.65); margin-top: 4px; }
+.st-kpi.up b { color: #49d6a0; } .st-kpi.down b { color: #ff7b88; }
+.st-spark { position: absolute; right: 12px; top: 14px; width: 120px; height: 36px; }
+.st-spark polyline { fill: none; stroke: #f0b429; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.st-kpi.ringk { padding-right: 84px; }
+.st-ring { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 62px; height: 62px; }
+.st-ring circle { fill: none; stroke-width: 7; } .st-ring .bg { stroke: rgba(255,255,255,.12); }
+.st-ring .fg { stroke: #f0b429; transform: rotate(-90deg); transform-origin: 32px 32px; stroke-linecap: round; transition: stroke-dasharray .8s; }
+.st-ring .fg.up { stroke: #49d6a0; } .st-ring .fg.down { stroke: #ff7b88; }
+.st-ring .mark { stroke: #fff; stroke-width: 2.5; }
+
+.st-main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+.st-chart-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.st-chart-head h3 { margin: 0; }
+.st-chart .tc-tfs { margin: 0; }
+.st-chart .tc-chart { height: 440px; }
+.st-side { max-height: 700px; display: flex; flex-direction: column; }
+.st-side h3 { margin-top: 0; }
+.tc-list { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 2px; }
+.tc-card { font: inherit; text-align: left; cursor: pointer; display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "side px pnl" "when how how"; gap: 2px 10px; align-items: center;
+  padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); border-left: 4px solid var(--muted); background: var(--panel); color: var(--text); transition: transform .15s, box-shadow .15s; }
+.tc-card:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(20,30,50,.12); }
+.tc-card.win { border-left-color: var(--up); } .tc-card.loss { border-left-color: var(--down); } .tc-card.open { border-left-color: #f0b429; }
+.tc-card.sel { outline: 2px solid #f0b429; outline-offset: -1px; }
+.tc-side { grid-area: side; font-size: 12px; font-weight: 800; padding: 2px 8px; border-radius: 6px; color: #fff; }
+.tc-side.buy { background: #1f8a4c; } .tc-side.sell { background: #c2223b; }
+.tc-px { grid-area: px; font-size: 15px; font-weight: 700; }
+.tc-pnl { grid-area: pnl; font-size: 16px; } .tc-card.win .tc-pnl { color: var(--up); } .tc-card.loss .tc-pnl { color: var(--down); } .tc-card.open .tc-pnl { color: #d99a10; font-size: 13px; }
+.tc-when { grid-area: when; font-size: 12px; color: var(--muted); } .tc-how { grid-area: how; font-size: 12.5px; text-align: right; color: var(--muted); }
+.tc-empty { text-align: center; padding: 30px 10px; }
+.tc-res { position: absolute; transform: translateY(-50%); font: 700 11px/16px system-ui, sans-serif; padding: 1px 6px; border-radius: 4px; white-space: nowrap; color: #fff; }
+.tc-res.up { background: #1f8a4c; } .tc-res.down { background: #c2223b; }
+.cz-tag.tc-sel { outline: 2px solid #f0b429; z-index: 2; }
+
+.st-tfgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.st-tf { position: relative; font: inherit; text-align: left; cursor: pointer; padding: 12px 14px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel); color: var(--text); display: flex; flex-direction: column; gap: 6px; transition: transform .15s, box-shadow .15s; }
+.st-tf:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(20,30,50,.12); }
+.st-tf.on { border-color: #f0b429; box-shadow: 0 0 0 2px rgba(240,180,41,.35); }
+.st-tf.main { background: linear-gradient(180deg, rgba(240,180,41,.10), var(--panel) 60%); }
+.st-tf-head { display: flex; justify-content: space-between; align-items: center; font-size: 13px; } .st-tf-head b { font-size: 15px; }
+.st-tf-win b { font-size: 26px; } .st-tf-win small { color: var(--muted); font-size: 12px; margin-left: 6px; }
+.st-tf.good .st-tf-win b { color: var(--up); } .st-tf.bad .st-tf-win b { color: var(--down); }
+.st-bar { position: relative; height: 8px; border-radius: 99px; background: rgba(105,115,134,.18); }
+.st-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; background: linear-gradient(90deg, #0f9f6e, #49d6a0); }
+.st-tf.bad .st-bar i { background: linear-gradient(90deg, #c2223b, #ff7b88); } .st-tf.few .st-bar i { background: #9aa4b5; }
+.st-bar em { position: absolute; top: -4px; width: 2px; height: 16px; background: var(--text); border-radius: 2px; }
+.st-tf-meta, .st-tf-conf { font-size: 11.5px; color: var(--muted); }
+.st-tf-foot { display: flex; justify-content: space-between; font-size: 13px; padding-right: 44px; }
+.st-tf-open { font-size: 12.5px; color: #d99a10; font-weight: 600; }
+.st-tf-go { position: absolute; right: 12px; bottom: 10px; font-size: 12px; color: var(--muted); padding: 2px 6px; border-radius: 6px; }
+.st-tf-go:hover { background: rgba(105,115,134,.15); color: var(--text); }
+
+@media (max-width: 1100px) { .st-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } .st-kpi.big { grid-column: span 3; } .st-main { grid-template-columns: minmax(0, 1fr); } .st-side { max-height: none; } .tc-list { max-height: 520px; } }
+@media (max-width: 640px) { .st-hero { padding: 16px 14px; border-radius: 16px; } .st-title { font-size: 21px; } .st-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .st-kpi.big { grid-column: span 2; } .st-kpi b { font-size: 19px; } .st-kpi.big b { font-size: 28px; } .st-kpi { padding: 11px; } .st-kpi.ringk { padding-right: 62px; } .st-ring { width: 48px; height: 48px; } .st-spark { width: 90px; } .st-chart .tc-chart { height: 320px; } .st-tfgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .st-tf-win b { font-size: 21px; } }

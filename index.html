@@ -17,9 +17,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610091700">
-  <link rel="stylesheet" href="live.css?v=202610091700">
-  <link rel="stylesheet" href="theme.css?v=202610091700" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610091800">
+  <link rel="stylesheet" href="live.css?v=202610091800">
+  <link rel="stylesheet" href="theme.css?v=202610091800" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -255,35 +255,50 @@
       </section>
 
       <!-- 📊 Stats -->
-      <section id="tab-stats" class="tab" hidden>
+      <section id="tab-stats" class="tab st-dash" hidden>
 
-        <!-- Every recorded trade on the price chart (statsChart in main.js: renderTradeChart) -->
-        <section class="card" id="tcCard">
-          <h3>📈 ไม้จริงบนกราฟ <span class="tag neutral">ผลจริง ไม่แก้ย้อนหลัง</span></h3>
-          <p class="hint">เลือกกรอบเวลา (⭐ = ระบบหลัก) · ▲ จุดเข้าซื้อ ▼ จุดเข้าขาย · ✅ / ❌ จุดปิดพร้อมผล · กดไม้ในรายการเพื่อดูจุดเข้า SL TP บนกราฟ</p>
-          <div class="tc-tfs" id="tcTfs"></div>
-          <p class="tc-sum" id="tcSum"></p>
-          <div id="tcChart" class="tc-chart"></div>
-          <p class="tc-detail" id="tcDetail"></p>
-          <p class="small muted" id="tcNote"></p>
-          <div class="history tc-list" id="tcList"></div>
-          <button type="button" class="btn tc-open" id="tcOpen">เปิดหน้ากราฟกรอบนี้ →</button>
+        <!-- Dashboard (user, 9 Oct: "เปลี่ยนหน้าสถิติใหม่ทั้งหมด ดูธรรมดามาก"): headline numbers of the main system,
+             the trades on a price chart like the chart tab, recent trades, every timeframe as a card -->
+        <section class="st-hero">
+          <div class="st-hero-top">
+            <div><span class="st-eyebrow">📊 ผลงานจริง · ระบบหลัก</span><h2 class="st-title">สัญญาณ 30 นาที <span class="st-live"><i></i>บันทึกสด</span></h2></div>
+            <p class="small beat" id="statsBeat" hidden></p>
+          </div>
+          <div class="st-kpis" id="stKpis"></div>
         </section>
 
-        <!-- Live record vs what the backtest promised: is the system still working? -->
+        <div class="st-main">
+          <section class="card st-chart" id="tcCard">
+            <div class="st-chart-head">
+              <h3>📈 ไม้จริงบนกราฟ</h3>
+              <div class="tc-tfs" id="tcTfs"></div>
+            </div>
+            <p class="tc-sum" id="tcSum"></p>
+            <div id="tcChart" class="tc-chart"></div>
+            <p class="tc-detail" id="tcDetail"></p>
+            <p class="small muted" id="tcNote"></p>
+            <button type="button" class="btn tc-open" id="tcOpen">เปิดหน้ากราฟกรอบนี้ →</button>
+          </section>
+          <aside class="card st-side">
+            <h3>🧾 ไม้ล่าสุด <span class="muted small" id="tcListTf"></span></h3>
+            <div class="tc-list" id="tcList"></div>
+          </aside>
+        </div>
+
+        <!-- Live record vs what the test promised: is the system still working? -->
         <section class="card lv-card" id="lvCard">
-          <h3>🧪 ผลจริงเทียบกับที่ทดสอบไว้ — ระบบ 30 นาที</h3>
-          <p class="hint">ถ้าระบบยังใช้ได้ ผลจริงสะสมควรอยู่ในแถบสีเทา (ช่วงปกติจากผลทดสอบ) · หลุดใต้แถบ = ระบบอาจใช้ไม่ได้แล้ว ควรหยุดหรือลดขนาดไม้</p>
-          <p class="small beat" id="statsBeat" hidden></p>
+          <h3>🧪 ผลจริงเทียบกับที่ทดสอบไว้ — ระบบหลัก 30 นาที</h3>
+          <p class="hint">ถ้าระบบยังใช้ได้ ผลจริงสะสม (เส้นทอง) ควรอยู่ในแถบสีเทา (ช่วงปกติจากผลทดสอบ) · หลุดใต้แถบ = ระบบอาจใช้ไม่ได้แล้ว ควรหยุดหรือลดขนาดไม้</p>
           <div class="lv-status" id="lvStatus"></div>
           <div class="lv-grid"><div id="lvTiles" class="lv-tiles"></div><svg id="lvChart" class="lv-chart" viewBox="0 0 600 220" preserveAspectRatio="none"></svg></div>
           <div id="lvRecent"></div>
         </section>
 
         <section class="card" id="csCard">
-          <h3>📈 สัญญาณบนกราฟทุกกรอบเวลา — ผลจริง</h3>
-          <p class="hint">ระบบบน GitHub บันทึกทุกจุดเข้า (ลูกศรใหญ่ ซื้อ/ขาย) ของทุกกรอบเวลาจากราคาจริง ไม่แก้ย้อนหลัง · เทียบกับอัตราชนะจากการทดสอบ · ผลหักสเปรดตามที่ตั้งไว้ · ต้องมีอย่างน้อย ~20 ไม้ต่อกรอบถึงจะบอกได้ว่าแม่นจริงไหม</p>
-          <div class="cs-table" id="csTable"></div>
+          <h3>🧭 ทุกกรอบเวลา — ผลจริงเทียบผลทดสอบ</h3>
+          <p class="hint">กดการ์ดเพื่อดูไม้ของกรอบนั้นบนกราฟด้านบน · ต้องมีอย่างน้อย ~20 ไม้ต่อกรอบถึงจะบอกได้ว่าแม่นจริงไหม · ผลหักสเปรดตามที่ตั้งไว้</p>
+          <div class="st-tfgrid" id="csTable"></div>
+          <p class="small muted" id="csFoot"></p>
         </section>
 
         <details class="fold stats-more">
@@ -622,19 +637,19 @@
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610091700"></script>
-  <script src="auth.js?v=202610091700"></script>
-  <script src="indicators.js?v=202610091700"></script>
-  <script src="investing.js?v=202610091700"></script>
-  <script src="explain.js?v=202610091700"></script>
-  <script src="dailyplan.js?v=202610091700"></script>
-  <script src="signals.js?v=202610091700"></script>
-  <script src="intraday.js?v=202610091700"></script>
-  <script src="pwa.js?v=202610091700"></script>
-  <script src="ui.js?v=202610091700"></script>
-  <script src="main.js?v=202610091700"></script>
-  <script src="tradeplan.js?v=202610091700"></script>
-  <script src="chartsys.js?v=202610091700"></script>
-  <script src="chartzones.js?v=202610091700"></script>
+  <script src="config.js?v=202610091800"></script>
+  <script src="auth.js?v=202610091800"></script>
+  <script src="indicators.js?v=202610091800"></script>
+  <script src="investing.js?v=202610091800"></script>
+  <script src="explain.js?v=202610091800"></script>
+  <script src="dailyplan.js?v=202610091800"></script>
+  <script src="signals.js?v=202610091800"></script>
+  <script src="intraday.js?v=202610091800"></script>
+  <script src="pwa.js?v=202610091800"></script>
+  <script src="ui.js?v=202610091800"></script>
+  <script src="main.js?v=202610091800"></script>
+  <script src="tradeplan.js?v=202610091800"></script>
+  <script src="chartsys.js?v=202610091800"></script>
+  <script src="chartzones.js?v=202610091800"></script>
 </body>
 </html>
