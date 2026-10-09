@@ -2,30 +2,31 @@
 // site's current system (chartsys.js). Same trade rules as the site (SL / TP from SYS, hold limits), $0.4 spread,
 // 2 years (1d: 5, 1w: 4), 4 equal periods old → new. node indlab.js <projectDir>
 const fs = require('fs'), path = require('path');
-const ROOT = process.argv[2];
+const ROOT = path.resolve(process.argv[2] || path.join(__dirname, '..', '..'));
 const SIG = require(path.join(ROOT, 'signals.js'));
 global.TA = require(path.join(ROOT, 'indicators.js'));
 const INTRA = require(path.join(ROOT, 'intraday.js'));
 global.INTRA = INTRA;
 const CS = require(path.join(ROOT, 'chartsys.js'));
 const { IND } = require('./indlib.js');
+const DIR = process.env.DATA_DIR || __dirname; // price data + results (fetch.js writes the data)
 function group(bars, ms) { const out = []; for (const b of bars) { const t = Math.floor(b.time / ms) * ms, l = out[out.length - 1];
   if (l && l.time === t) { l.high = Math.max(l.high, b.high); l.low = Math.min(l.low, b.low); l.close = b.close; } else out.push({ ...b, time: t }); } return out; }
 function lb(b, t) { let lo = 0, hi = b.length; while (lo < hi) { const m = (lo + hi) >> 1; if (b[m].time < t) lo = m + 1; else hi = m; } return lo; }
 const before = (b, t, n = 260) => { const i = lb(b, t); return b.slice(Math.max(0, i - n), i); };
-const D = JSON.parse(fs.readFileSync(path.join(__dirname, 'bars2y.json'), 'utf8'));
-const L = JSON.parse(fs.readFileSync(path.join(__dirname, 'long.json'), 'utf8'));
+const D = JSON.parse(fs.readFileSync(path.join(DIR, 'bars2y.json'), 'utf8'));
+const L = JSON.parse(fs.readFileSync(path.join(DIR, 'long.json'), 'utf8'));
 const M = 60e3, H = 3600e3, DAY = 864e5, now = D.now;
 const B = { m5: D['5m'], m15: D['15m'], m30: D['30m'], h1: D['1h'], h4: D['4h'], h5: group(D['1h'], 5 * H), d1: L.d1, w1: L.w1 };
 const TF = { '5m': ['m5', 730], '15m': ['m5', 730], '30m': ['m5', 730], '1h': ['m5', 730], '5h': ['h1', 700], '1d': ['d1', 1900], '1w': ['d1', 1500] };
 const only = process.argv[3] ? process.argv[3].split(',') : Object.keys(TF);
-const out = fs.existsSync(path.join(__dirname, 'indlab.json')) ? JSON.parse(fs.readFileSync(path.join(__dirname, 'indlab.json'), 'utf8')) : {};
+const out = fs.existsSync(path.join(DIR, 'indlab.json')) ? JSON.parse(fs.readFileSync(path.join(DIR, 'indlab.json'), 'utf8')) : {};
 
 for (const tf of only) {
   const sys = CS.SYS[tf], [follow, days] = TF[tf], start = now - days * DAY;
   const [pk, dur] = sys.frames[0], P = B[pk], C = P.map((b) => b.close);
   // (1) the current system's decisions (cached)
-  const cache = path.join(__dirname, `decs-${tf}.json`);
+  const cache = path.join(DIR, `decs-${tf}.json`);
   let decs;
   if (fs.existsSync(cache)) decs = JSON.parse(fs.readFileSync(cache, 'utf8'));
   else {
@@ -83,6 +84,6 @@ for (const tf of only) {
     }
   }
   out[tf] = rows;
-  fs.writeFileSync(path.join(__dirname, 'indlab.json'), JSON.stringify(out));
+  fs.writeFileSync(path.join(DIR, 'indlab.json'), JSON.stringify(out));
   console.log(`${tf}: ${decs.length} decisions, ${rows.length} rows, ${Math.round((Date.now() - t0) / 1000)}s`);
 }

@@ -454,7 +454,12 @@ function renderChartSignals() {
     const bt = [sys.buy && `BUY ${sys.buy.win}%`, sys.sell && `SELL ${sys.sell.win}%`].filter(Boolean).join(' · ');
     const live = s.traded ? `${s.winRate}%` : '—';
     const cls = !s.traded ? '' : s.traded < 20 ? 'muted' : s.winRate >= 50 ? 'up' : 'down';
-    return `<tr><td>${TF_LABEL[tf]}</td><td class="mono">${s.traded}</td><td class="mono">${s.wins}–${s.losses}</td>
+    // Sides with a confirmation indicator (indicator study, 9 Oct): real result since it was added vs its test
+    const conf = [['BUY', sys.buy], ['SELL', sys.sell]].filter(([, c]) => c && c.confirm).map(([side, c]) => {
+      const since = Date.parse(c.since), cs2 = SIG.summary(tr.filter((t) => t.side === side && t.createdAt >= since), sp);
+      return `<small class="muted">${side} + ${CHARTSYS.CONFIRM[c.confirm].name} ตั้งแต่ ${new Date(since).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' })}: ${cs2.traded ? `${cs2.traded} ไม้ ชนะ ${cs2.winRate}%` : 'ยังไม่มีไม้ปิด'} (ทดสอบ ${c.win}%)</small>`;
+    }).join('');
+    return `<tr><td>${TF_LABEL[tf]}${conf ? `<br>${conf}` : ''}</td><td class="mono">${s.traded}</td><td class="mono">${s.wins}–${s.losses}</td>
       <td class="mono ${cls}">${live}${s.traded && s.traded < 20 ? ' <small>(น้อย)</small>' : ''}</td><td class="mono">${bt}</td>
       <td class="mono ${s.pnl > 0 ? 'up' : s.pnl < 0 ? 'down' : ''}">${s.traded ? money(s.pnl) : '—'}</td>
       <td>${open ? `${open.side === 'BUY' ? '🟢 ซื้อ' : '🔴 ขาย'} ${f2(open.entry)}` : ''}</td>

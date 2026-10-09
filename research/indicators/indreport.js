@@ -1,6 +1,6 @@
 // Reads indlab.json. Walk-forward honesty check: choose using the first 3 periods only, then look at period 4
 // (data the choice never saw). node indreport.js
-const o = require('./indlab.json');
+const o = require(require('path').join(process.env.DATA_DIR || __dirname, 'indlab.json'));
 const sum3 = (q) => q[0] + q[1] + q[2];
 const res = { alone: [], filter: [] };
 for (const [tf, rows] of Object.entries(o)) {

@@ -1,5 +1,5 @@
 // Replays the site's own code (CS.decide + CS.dirOf, with the new confirm filters) and compares with indlab.json
-const fs = require('fs'), path = require('path'); const ROOT = process.argv[2];
+const fs = require('fs'), path = require('path'); const ROOT = path.resolve(process.argv[2] || path.join(__dirname, '..', '..'));
 const SIG = require(path.join(ROOT, 'signals.js')); global.TA = require(path.join(ROOT, 'indicators.js'));
 const INTRA = require(path.join(ROOT, 'intraday.js')); global.INTRA = INTRA; const CS = require(path.join(ROOT, 'chartsys.js'));
 function group(bars, ms) { const out = []; for (const b of bars) { const t = Math.floor(b.time / ms) * ms, l = out[out.length - 1];

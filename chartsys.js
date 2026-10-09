@@ -5,21 +5,22 @@
 // direction. confirm (indicator research 9 Oct 2026: 28 well-known indicators × every timeframe, chosen on the first
 // 3 periods and checked on the 4th): a BUY also needs that indicator on the fast frame — 15m EMA 9 > EMA 21
 // (+$339 → +$465, win 54 → 56%), 5h ROC 12 up (+$1,458 → +$1,834, win 61 → 65%, better in all 4 periods). Other
-// timeframes: no indicator beat the current rules reliably, so none added. SL $15 × mult; TP1 $15 × mult (tp1) or TP $15/20/30 × mult. long = 5h/1d/1w: no session close,
+// timeframes: no indicator beat the current rules reliably, so none added. 5m SELL also needs SMA 20 < SMA 50 (+$136 →
+// +$353, win 51 → 52%, better in all 4 periods; added 9 Oct after the 5m run finished). SL $15 × mult; TP1 $15 × mult (tp1) or TP $15/20/30 × mult. long = 5h/1d/1w: no session close,
 // trades held up to `hold`.
 (function (root) {
   const INTRA = root.INTRA || (typeof require === 'function' ? require('./intraday.js') : null);
   const M = 60e3, H = 60 * M, DAY = 24 * H;
   const SYS = {
     '5m': { frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', H, 60, '1 ชม.']], span: '2 ปี',
-      buy: { th: 5, tp1: true, mult: 1, win: 53, q: [312, 448, 99, -452] }, sell: { th: 6, tp1: false, mult: 0.67, win: 51, q: [22, 31, -18, 101] },
+      buy: { th: 5, tp1: true, mult: 1, win: 53, q: [312, 448, 99, -452] }, sell: { th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T02:59:00+07:00', win: 52, q: [29, 92, 105, 126] },
       every: -1480 }, // taking every small arrow one at a time, SL / TP1 $15
-    '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { th: 6, tp1: true, mult: 1.5, confirm: 'ema921', win: 56, q: [261, 72, 84, 48] }, sellQ: [115, -233, -72, 204] },
+    '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { th: 6, tp1: true, mult: 1.5, confirm: 'ema921', since: '2026-10-09T09:40:00+07:00', win: 56, q: [261, 72, 84, 48] }, sellQ: [115, -233, -72, 204] },
     '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { th: 5, tp1: true, mult: 1, win: 57, q: [264, 462, 239, -7] }, sellQ: [129, -174, -58, 113] },
     '1h': { frames: [['h1', H, 60, '1 ชม.'], ['h4', 4 * H, 60, '4 ชม.'], ['h5', 5 * H, 40, '5 ชม.']], span: '2 ปี',
       buy: { th: 5, tp1: false, mult: 2, win: 57, q: [188, 181, 348, 57] }, sellQ: [-62, 4, -112, 8] },
     '5h': { frames: [['h5', 5 * H, 60, '5 ชม.'], ['d1', DAY, 60, '1 วัน']], span: '2 ปี', long: true, hold: 5 * DAY,
-      buy: { th: 3, tp1: false, mult: 4, confirm: 'roc12', win: 65, q: [483, 511, 635, 205] }, sellQ: [-72, -179, -6, 105] },
+      buy: { th: 3, tp1: false, mult: 4, confirm: 'roc12', since: '2026-10-09T09:40:00+07:00', win: 65, q: [483, 511, 635, 205] }, sellQ: [-72, -179, -6, 105] },
     '1d': { frames: [['d1', DAY, 60, '1 วัน'], ['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '5 ปี', long: true, hold: 20 * DAY,
       buy: { th: 3, tp1: true, mult: 8, win: 64, q: [128, 218, 1243, 966] }, sellQ: [92, -120, 0, 12] },
     '1w': { frames: [['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '4 ปี', long: true, hold: 84 * DAY, few: 23,
@@ -33,6 +34,7 @@
   const CONFIRM = {
     ema921: { name: 'EMA 9/21', wait: ' EMA 9 ตัดผ่าน EMA 21' },
     roc12: { name: 'ROC 12', wait: 'ราคาปิดสูง/ต่ำกว่าเมื่อ 12 แท่งก่อน' },
+    sma2050: { name: 'SMA 20/50', wait: ' SMA 20 ตัดผ่าน SMA 50' },
   };
   const confirmed = (c, dec, side) => !c.confirm || !dec.conf || dec.conf[c.confirm] === side;
   // Entry direction for a decision: only on a side that passed its test, never chasing outside the Bollinger band,
