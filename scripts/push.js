@@ -25,7 +25,8 @@ function toNote(text, i) {
   return { title, body, tag: `gs-${Date.now()}-${i}`, url: '/' };
 }
 
-async function push(texts) {
+// opts.adminsOnly: only the devices marked admin: true by middleware.js (e.g. "new member" messages)
+async function push(texts, opts = {}) {
   const { BLOB_READ_WRITE_TOKEN, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY } = process.env;
   if (!texts.length) return;
   if (!BLOB_READ_WRITE_TOKEN || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return console.log('push: not set up (keys missing) — skipped');
@@ -37,7 +38,8 @@ async function push(texts) {
     const notes = texts.map(toNote);
     let sent = 0, failed = 0;
     const dead = new Set();
-    for (const sub of data.subs) {
+    const targets = opts.adminsOnly ? data.subs.filter((s) => s.admin) : data.subs;
+    for (const sub of targets) {
       for (const n of notes) {
         try {
           await webpush.sendNotification({ endpoint: sub.endpoint, keys: sub.keys }, JSON.stringify(n), { TTL: 3600, urgency: 'high' });
@@ -51,8 +53,7 @@ async function push(texts) {
     }
     const removed = dead.size;
     if (removed) await writeSubs({ ...data, subs: data.subs.filter((s) => !dead.has(s.endpoint)) }).catch((e) => console.log(`push: couldn't remove old devices: ${e.message}`));
-    const users = data.subs;
-    console.log(`✓ push: ${sent} sent to ${users.length} device(s)${failed ? `, ${failed} failed` : ''}${removed ? `, ${removed} old removed` : ''}`);
+    console.log(`✓ push: ${sent} sent to ${targets.length} device(s)${failed ? `, ${failed} failed` : ''}${removed ? `, ${removed} old removed` : ''}`);
   } catch (e) {
     console.log(`⚠️ push failed: ${e.message}`);
   }
