@@ -65,10 +65,8 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
   store.trades = store.trades.map((t) => {
     if (SIG.isFinal(t)) return t;
     const r = keep(SIG.evaluate(t, (follow[t.tf] || C.m5).filter((b) => b.time >= t.createdAt), now));
-    if (SIG.isFinal(r) && NOTIFY.includes(r.tf) && !r.paused) {
-      const how = r.closedBy === 'sl' ? 'โดน SL' : r.closedBy === 'be' ? 'ออกที่ทุน' : r.hit ? `ถึง TP${r.hit}` : 'หมดเวลา ปิดที่ราคาตลาด';
-      texts.push(`${r.pnl > 0 ? '✅' : r.pnl < 0 ? '❌' : '➖'} ปิดไม้กราฟ ${TF_TH[r.tf]} · ${r.side === 'BUY' ? 'ซื้อ' : 'ขาย'} ${f2(r.entry)}\n${how} · ${signed(r.pnl)}/ออนซ์ (ก่อนหักสเปรด)`);
-    }
+    // Exits are recorded but not sent: LINE carries only entry signals and news warnings (user, 9 Oct 2026)
+    if (SIG.isFinal(r)) console.log(`${r.tf}: closed ${r.side} ${f2(r.entry)} ${r.closedBy || ''} ${signed(r.pnl)}`);
     return r;
   });
 
@@ -105,7 +103,8 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
     if (b) brakes[tf] = b;
     const was = (store.brakes || {})[tf];
     if (!NOTIFY.includes(tf) || !!was === !!b) continue;
-    texts.push(b
+    // recorded (the website shows ⛔) but not sent — LINE is entry signals and news warnings only
+    console.log(b
       ? `⛔ พักสัญญาณกราฟ ${TF_TH[tf]}: ${b.why}
 หยุดแจ้ง${b.until ? `ถึง ${when('1d', b.until)}` : 'จนกว่าผล 20 ไม้ล่าสุดจะกลับมาใกล้ผลทดสอบ'} · ระบบยังบันทึกต่อแบบไม่แจ้ง`
       : `✅ กลับมาแจ้งสัญญาณกราฟ ${TF_TH[tf]} แล้ว`);

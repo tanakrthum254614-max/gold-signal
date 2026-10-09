@@ -23,7 +23,7 @@ const SIG = require('../signals.js');
 const INTRA = require('../intraday.js');
 const { money } = require('../dailyplan.js');
 const { send } = require('./notify.js');
-const { at, sumLine, targetEvents } = require('./trade-events.js');
+const { at, targetEvents } = require('./trade-events.js');
 
 const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
 const SPREAD = +(process.env.SPREAD_USD || 0.4);
@@ -58,9 +58,8 @@ function newsWarning(n, open) {
     const sent = { ...(t.alerts || {}) };
     const lines = targetEvents(t, sent, now);
     store.trades[i] = { ...t, alerts: sent };
-    if (lines.length) {
-      if (SIG.isFinal(t)) lines.push(sumLine(SIG.summary(store.trades, SPREAD)), `ดูกราฟ: ${SITE_URL}/#chart`);
-      important.push(`⏱️ สัญญาณ 30 นาที — ไม้${t.side === 'BUY' ? 'ซื้อ' : 'ขาย'}ที่ ${money(t.entry)} (${at(t.createdAt)} น.)\n${lines.join('\n')}`);
+    if (lines.length) { // recorded, not sent (LINE = entry signals and news warnings only)
+      console.log(`⏱️ สัญญาณ 30 นาที — ไม้${t.side === 'BUY' ? 'ซื้อ' : 'ขาย'}ที่ ${money(t.entry)} (${at(t.createdAt)} น.)\n${lines.join('\n')}`);
     }
     console.log(`open trade ${t.id} ${t.side} status=${t.status} hit=${t.hit || 0} pnl=${t.pnl}`);
   }
@@ -77,7 +76,7 @@ function newsWarning(n, open) {
   if (data.source !== 'investing.com') {
     next.backupSince = state.backupSince || now;
     if (now - next.backupSince > 30 * 60e3 && (!state.backupWarned || now - state.backupWarned > 6 * 3600e3)) {
-      important.push('⚠️ ดึงข้อมูลจาก investing.com ไม่ได้มากกว่า 30 นาที — ตอนนี้ใช้ข้อมูลสำรอง (Binance PAXG) ราคาอาจต่างจาก investing.com เล็กน้อย');
+      console.log('⚠️ investing.com unreachable for over 30 minutes — using the Binance backup'); // not sent to members
       next.backupWarned = now;
     }
   } else delete next.backupSince;

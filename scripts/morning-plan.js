@@ -97,25 +97,6 @@ const title = (text) => txt(text, { weight: 'bold', size: 'sm', margin: 'lg' });
 const newsLines = (news) => (news.length
   ? news.map((n) => `${new Date(n.time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' })} น. ${n.title}`)
   : ['วันนี้ไม่มีข่าวแรงสหรัฐ']);
-const statsLine = (sum) => (sum.traded
-  ? `ชนะ ${sum.wins} · แพ้ ${sum.losses} (ชนะ ${sum.winRate}%) · กำไรสะสม ${signed(sum.pnl)}/ออนซ์ (หักสเปรด $${sum.spread}/ไม้)`
-  : 'เพิ่งเริ่มบันทึก — ยังไม่มีผลที่ปิดแล้ว');
-
-// The main system (chart 30m, chart-signals.json — the same record as the website and LINE since the merge on 9 Oct
-// 2026): its state and record go into the morning message. trades = that timeframe's trades.
-function intraRows(trades, now) {
-  if (!trades) return [];
-  const s = SIG.summary(trades, SPREAD), br = CS.brake(CS.SYS['30m'], trades, now);
-  return [
-    sep(),
-    title('⏱️ สัญญาณ 30 นาที (ระบบหลัก)'),
-    txt(br ? `⛔ พักแจ้ง${br.until ? `ถึง ${thaiTime(br.until)} น.` : ''} — ${br.why}`
-      : `พร้อมทำงาน · เข้าซื้อเมื่อแนวโน้ม 30 นาที · 1 ชม. · 5 ชม. ชี้ขึ้นชัด (+${CS.SYS['30m'].buy.th}) · SL $15 · TP $15 · LINE แจ้งตอนเข้าไม้`,
-    { size: 'xs', color: br ? C.down : C.text }),
-    txt(statsLine(s), { size: 'xs', color: C.muted }),
-  ];
-}
-
 function flexMessage(a, sig, prev, sum, bt, news, intra, now) {
   const buy = sig.side === 'BUY';
   const color = buy ? C.up : C.down;
@@ -140,9 +121,8 @@ function flexMessage(a, sig, prev, sum, bt, news, intra, now) {
       : `เปิดออเดอร์ ${buy ? 'Buy' : 'Sell'} ทันที (Market) · ตั้ง SL ${money(sig.sl)} · TP ${money(sig.tp)} — ถ้าถึง ${thaiTime(sig.expiresAt)} ยังไม่ปิด ให้ปิดเอง`, { size: 'xs', color: C.blue, margin: 'md' }),
     txt(lotLine(SIG.RULE.slUsd), { size: 'xs', color: C.muted }),
   ];
-  const btNet = bt ? bt.summary.pnl - (SPREAD * bt.summary.traded) : 0;
   const body = [
-    ...(prev ? [txt(`ผลสัญญาณครั้งก่อน (${prev.id}): ${resultText(prev)}`, { size: 'xs' })] : []),
+    // (no "previous result" line — LINE carries signals and news only)
     sep(),
     ...signalRows,
     sep(),
@@ -152,11 +132,7 @@ function flexMessage(a, sig, prev, sum, bt, news, intra, now) {
     title('📰 ข่าวแรงวันนี้ (เวลาไทย)'),
     ...newsLines(news).map((l) => txt(`• ${l}`, { size: 'xs', color: news.length ? C.wait : C.muted })),
     ...(news.length ? [txt('ช่วง ±30 นาทีรอบข่าว ราคาวิ่งแรง — ระวัง SL โดนกวาด', { size: 'xxs', color: C.muted })] : []),
-    sep(),
-    title(advisory ? '📊 ติดตามผลสูตรรายวัน (ไม่ได้แนะนำให้เข้า)' : '📊 ผลงานสัญญาณจริง'),
-    txt(statsLine(sum), { size: 'xs' }),
-    ...(bt ? [txt(`ทดสอบย้อนหลัง ${bt.days} วัน (จำลอง): ชนะ ${bt.summary.winRate}% · ${signed(btNet)}/ออนซ์ หลังหักสเปรด`, { size: 'xxs', color: C.muted })] : []),
-    ...intraRows(intra, now),
+    // no results / win-loss record in LINE any more (user, 9 Oct 2026: signals and news only)
     txt(`ข้อมูล: ${a.source} · ไม่ใช่คำแนะนำการลงทุน`, { size: 'xxs', color: C.muted, margin: 'lg' }),
   ];
   return {

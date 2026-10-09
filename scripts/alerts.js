@@ -8,7 +8,7 @@ const path = require('path');
 const SIG = require('../signals.js');
 const { money } = require('../dailyplan.js');
 const { send } = require('./notify.js');
-const { signed, at, sumLine, targetEvents } = require('./trade-events.js');
+const { at, targetEvents } = require('./trade-events.js');
 
 const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
 const SPREAD = +(process.env.SPREAD_USD || 0.4);
@@ -26,15 +26,6 @@ function entryText(s, price) {
   ].join('\n');
 }
 
-function exitText(s, sum) {
-  const win = s.status === 'win';
-  return [
-    win ? `✅ ถึงเป้าหมาย (TP) แล้ว! (${at(s.exitAt)} น.)` : `❌ โดนตัดขาดทุน (SL) (${at(s.exitAt)} น.)`,
-    `${s.side === 'BUY' ? 'ซื้อ' : 'ขาย'}ที่ ${money(s.entry)} → ปิดที่ ${money(s.exitPrice)} = ${signed(s.pnl)}/ออนซ์`,
-    `ผลงานสะสม: ชนะ ${sum.wins} · แพ้ ${sum.losses}${sum.winRate != null ? ` (ชนะ ${sum.winRate}%)` : ''} · ${signed(sum.pnl)}/ออนซ์`,
-    `ดูกราฟ: ${SITE_URL}/#chart`,
-  ].join('\n');
-}
 
 (async function main() {
   const data = JSON.parse(fs.readFileSync(path.resolve(process.argv[2] || 'data.json'), 'utf8'));
@@ -57,17 +48,9 @@ function exitText(s, sum) {
     messages.push({ type: 'text', text: entryText(s, price) });
     sent.entry = now;
   }
-  const others = store.signals.filter((_, j) => j !== i);
-  if (s.tps) {
-    const lines = targetEvents(s, sent, now);
-    if (lines.length) {
-      if (SIG.isFinal(s)) lines.push(sumLine(SIG.summary([...others, s], SPREAD)), `ดูกราฟ: ${SITE_URL}/#chart`);
-      messages.push({ type: 'text', text: lines.join('\n') });
-    }
-  } else if ((s.closedBy === 'tp' || s.closedBy === 'sl') && !sent.exit) {
-    messages.push({ type: 'text', text: exitText(s, SIG.summary([...others, s], SPREAD)) });
-    sent.exit = now;
-  }
+  // TP / SL / exit results are recorded but not sent (LINE = entry signals and news warnings only, user 9 Oct 2026)
+  if (s.tps) targetEvents(s, sent, now);
+  else if ((s.closedBy === 'tp' || s.closedBy === 'sl') && !sent.exit) sent.exit = now;
   console.log(`${s.id} ${s.side} status=${s.status} price=${price} new alerts=${messages.length}`);
 
   // Store the live status (final win/loss, or "active") so the site and stats match the alerts

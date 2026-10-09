@@ -23,7 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      SEND: ${{ github.event_name == 'schedule' || inputs.send }}
+      # The weekly results message is no longer sent (user, 9 Oct 2026: LINE = entry signals and news warnings only);
+      # the run still scores Friday's daily signal. A manual run can still send it (send = true).
+      SEND: ${{ inputs.send || false }}
       RECORD: "true"
       STATE_DIR: state
       SPREAD_USD: ${{ vars.SPREAD_USD || '0.4' }}
