@@ -137,7 +137,10 @@ function ago(ms) {
     const quiet = window.CZ_CLEAN && CZ_CLEAN();
     each((v) => { v.zone.applyOptions({ visible: !quiet }); v.zone.setData(zd); v.series.setMarkers(mk); });
     if (window.setChartDecor) setChartDecor(s.trades.filter((r) => r.createdAt >= chart[0].time));
-    const open = s.trades.find((r) => r.status === 'active');
+    // The recorded live trade (chart-signals.json — what LINE and the signals tab show) wins over this chart's own replay,
+    // so every part of the site agrees on whether the system is holding a trade
+    const rec = ((state.chartSig && state.chartSig.trades) || []).find((r) => r.tf === tf && !SIG.isFinal(r) && (r.expiresAt || Infinity) > Date.now());
+    const open = rec || s.trades.find((r) => r.status === 'active');
     window.CZ_OPEN = open || null;
     if (window.drawPositionBoxes) drawPositionBoxes();
     const line = (price, color, title, style) => each((v) => v.lines.push(v.series.createPriceLine({ price, color, title, lineStyle: style, lineWidth: 2, axisLabelVisible: true })));
@@ -182,8 +185,8 @@ function ago(ms) {
     else { head = `⏸ รอก่อน — คะแนน ${signedScore(d.score)} · BUY ต้อง +${B.th}${S ? ` · SELL ต้อง −${S.th}` : ''}`; cls = 'wait'; waitOnly = true; }
     const note = $('sigNote');
     if (note) note.innerHTML = open
-      ? `📌 <b>ระบบบนกราฟถือไม้${open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}อยู่</b> ตั้งแต่ ${when(sys, open.createdAt)} — ไม่ต้องเปิดไม้ใหม่ · การ์ดนี้คือบทวิเคราะห์ภาพรวม คนละระบบกับจุดเข้าบนกราฟ`
-      : 'การ์ดนี้คือบทวิเคราะห์ภาพรวม — คนละระบบกับจุดเข้าบนกราฟ (กล่องด้านซ้าย)';
+      ? `📌 <b>ระบบบนกราฟถือไม้${open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}อยู่</b> ตั้งแต่ ${when(sys, open.createdAt)} — ไม่ต้องเปิดไม้ใหม่`
+      : 'ตัวเลขเดียวกับช่อง Buy | Sell ทางซ้าย';
     const acc = (name, c, q) => {
       if (!c) return `<i class="cz-warn">${name}: ทดสอบไม่ผ่าน${q ? ` (${q.map(usd).join(' / ')})` : ''} — ไม่ให้สัญญาณ</i>`;
       const pos = c.q.filter((v) => v > 0).length;
@@ -195,13 +198,8 @@ function ago(ms) {
     // และบอกเปอร์เซ็นต์ของแต่ละอันว่าควรเข้าไหม"). % = how far the score has come toward that side's threshold
     // (100 = signal). A side that failed its backtest uses the Buy threshold mirrored, is labelled ⚠️ and is never
     // "ควรเข้า" — not recorded, no LINE.
-    const sideInfo = (side) => {
-      const c = side > 0 ? B : S, cc = c || B, L = levelsFor(cc, price, side);
-      const pct = !d ? 0 : dir === side ? 100 : Math.max(0, Math.min(c ? 99 : 100, Math.round(((side > 0 ? d.score : -d.score) / cc.th) * 100)));
-      const tested = !!c, go = tested && dir === side && !br;
-      const verdict = br && tested ? '⛔ พัก — ไม่เข้า' : go ? '✅ ควรเข้า' : !tested ? (pct >= 100 ? '⚠️ ถึงเกณฑ์ แต่ไม่แนะนำ' : '⚠️ ไม่แนะนำ') : '⏸ ยังไม่ควรเข้า';
-      return { side, c, L, pct, tested, go, verdict };
-    };
+    // Shared with the signals tab (main.js) so both always say the same: CHARTSYS.sideInfo
+    const sideInfo = (side) => ({ ...CHARTSYS.sideInfo(sys, d, side, br), L: levelsFor((side > 0 ? B : S) || B, price, side) });
     const sides = [sideInfo(1), sideInfo(-1)];
     const col = (x) => `<div class="cz-col ${x.side > 0 ? 'buy' : 'sell'}${x.go ? ' go' : ''}${x.tested ? '' : ' untested'}">
       <div class="cz-col-h"><b>${x.side > 0 ? '🟢 Buy' : '🔴 Sell'}</b><span class="cz-verdict">${x.verdict}</span></div>
@@ -211,9 +209,10 @@ function ago(ms) {
     const showPlans = !open && (sys.long || !(d && d.stale));
     const plan = showPlans ? `<div class="cz-two">${sides.map(col).join('')}</div>` : '';
     const mini = (x) => `<div class="cz-prog ${x.side > 0 ? 'buy' : 'sell'}${x.go ? ' live' : ''}${x.tested ? '' : ' untested'}"><span>${x.side > 0 ? 'Buy' : 'Sell'} <b>${x.pct}%</b> · ${x.verdict}</span><i><em style="width:${x.pct}%"></em></i></div>`;
-    if (note && !open) note.innerHTML = showPlans ? `${sides.map(mini).join('')}<small>จากระบบบนกราฟ · การ์ดนี้เป็นบทวิเคราะห์ภาพรวม</small>` : note.innerHTML;
+    if (note && !open) note.innerHTML = showPlans ? `${sides.map(mini).join('')}<small>ตัวเลขเดียวกับช่อง Buy | Sell ทางซ้าย${tf === '30m' ? ' และหน้าสัญญาณ (ระบบหลัก)' : ''}</small>` : note.innerHTML;
     const goSide = sides.find((x) => x.go);
     window.CZ_GO = open ? { side: open.side === 'SELL' ? -1 : 1, open: true } : goSide ? { side: goSide.side } : null;
+    window.CZ_SIDES = showPlans ? sides.map(({ side, pct, verdict, go, tested }) => ({ side, pct, verdict, go, tested })) : null; // side card (main.js)
     if (window.renderSignalHead) renderSignalHead();
     // On the chart only ONE box (user, 9 Oct: two boxes "ยังงง ต้องซื้อตรงไหน เอาแค่อันเดียวพอ"): the side that is
     // nearer its signal — a live signal first, then the higher %, then the side that passed its test. Both % stay in the card.

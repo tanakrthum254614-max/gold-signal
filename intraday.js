@@ -13,7 +13,10 @@
   // noChase: no entry while the fast frame closes outside its Bollinger band in the trade direction (price
   // stretched). 2-year test, four half-years after spread — 30m: +$128/+$455/+$302/−$159 → +$135/+$429/+$218/−$31,
   // 15m: +$28/+$543/+$366/−$175 → +$61/+$480/+$305/−$53 (smaller losses in the weak latest half-year, total ≈ same).
-  const RULE = { threshold: 5, slUsd: 15, tpUsd: [15, 20, 30], maxHoldMs: 24 * 3600e3, sides: 'buy', newsMin: 30, noChase: true, pause: { streak: 5, weekLoss: 60 } };
+  // tpUsd: TP1 only since 9 Oct 2026 — the same as the chart tab's 30m system (chartsys.js), which this rule now IS.
+  // 2-year test, buy +5, SL $15: TP1 $15 → 705 trades, 57% won, +$957 (264/462/239/−7) vs TP $15/20/30 → 565, 56%,
+  // +$663 (150/412/188/−87) — TP1 better in all 4 periods.
+  const RULE = { threshold: 5, slUsd: 15, tpUsd: [15], maxHoldMs: 24 * 3600e3, sides: 'buy', newsMin: 30, noChase: true, pause: { streak: 5, weekLoss: 60 } };
   const SLOT = 30 * 60e3;
   const STRENGTH = { strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 };
   const TREND_TH = { strong_buy: 'ขาขึ้นแรง', buy: 'ขาขึ้น', neutral: 'ไซด์เวย์', sell: 'ขาลง', strong_sell: 'ขาลงแรง' };

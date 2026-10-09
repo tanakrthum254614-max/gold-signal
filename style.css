@@ -394,6 +394,8 @@ h3 .tag { margin-left: 6px; vertical-align: 1px; }
 .sig-side small { font-size: 18px; color: var(--muted); font-weight: 600; margin-left: 6px; }
 .sig.buy .sig-side { color: var(--up); } .sig.sell .sig-side { color: var(--down); }
 .sig-status { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+.sig-main { font-size: 13.5px; color: var(--muted); margin: -8px 0 14px; padding: 8px 10px; border-radius: 10px; background: var(--panel-2, rgba(105,115,134,.08)); }
+.sig-main.clash { color: var(--down); background: var(--down-soft, rgba(224,66,79,.08)); }
 .st-win .sig-status { color: var(--up); } .st-loss .sig-status { color: var(--down); } .st-pending .sig-status, .st-expired .sig-status { color: var(--wait); } .st-active .sig-status { color: #4ea1ff; }
 
 .sig-nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }

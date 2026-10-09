@@ -60,6 +60,17 @@
     return tr;
   }
 
+  // One side's readiness for the UI — the chart tab, the signals tab and the chart side card all use this, so they always
+  // agree. pct = how far the score has come toward that side's threshold (100 = entry); a side that failed its test uses
+  // the Buy threshold mirrored and is never "ควรเข้า". br = the safety brake (brake()) or null.
+  function sideInfo(sys, dec, side, br) {
+    const c = side > 0 ? sys.buy : sys.sell, cc = c || sys.buy, dir = dirOf(sys, dec);
+    const pct = !dec ? 0 : dir === side ? 100 : Math.max(0, Math.min(c ? 99 : 100, Math.round(((side > 0 ? dec.score : -dec.score) / cc.th) * 100)));
+    const tested = !!c, go = tested && dir === side && !br;
+    const verdict = br && tested ? '⛔ พัก — ไม่เข้า' : go ? '✅ ควรเข้า' : !tested ? (pct >= 100 ? '⚠️ ถึงเกณฑ์ แต่ไม่แนะนำ' : '⚠️ ไม่แนะนำ') : '⏸ ยังไม่ควรเข้า';
+    return { side, c, pct, tested, go, verdict, key: br && tested ? 'bad' : go ? 'good' : !tested ? 'bad' : 'wait' };
+  }
+
   // Safety brake from the live record (chart-signals.json). Trades opened while paused are still recorded (paused:
   // true, no LINE), so a pause can lift by itself. Returns null, or { why, until } — until null = until the last 20 recover.
   // • 5 losses in a row → pause until next week's open (5h/1d/1w: 30 days); trades inside that pause don't count again
@@ -82,7 +93,7 @@
     return null;
   }
 
-  const CHARTSYS = { SYS, NONE, CONFIRM, usdList, levelsFor, maxScore, dirOf, stretched, unconfirmed, decide, trade, brake };
+  const CHARTSYS = { SYS, NONE, CONFIRM, usdList, levelsFor, maxScore, dirOf, stretched, unconfirmed, sideInfo, decide, trade, brake };
   if (typeof module !== 'undefined' && module.exports) module.exports = CHARTSYS;
   else root.CHARTSYS = CHARTSYS;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -14,7 +14,7 @@ const CAL_DAYS = Math.max(DAYS, +(process.argv[3] || 730));
 const API = 'https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT';
 const SYS = process.env.SYSTEM === '15'
   ? { name: '15m', slot: INTRA.SLOT15, frames: INTRA.FRAMES15, rule: INTRA.RULE15, fast: '15m', follow: '5m', file: 'backtest-15m.json' }
-  : { name: '30m', slot: INTRA.SLOT, frames: INTRA.FRAMES, rule: INTRA.RULE, fast: '30m', follow: '15m', file: 'backtest-30m.json' };
+  : { name: '30m', slot: INTRA.SLOT, frames: INTRA.FRAMES, rule: INTRA.RULE, fast: '30m', follow: '5m', file: 'backtest-30m.json' } // 5m like the live recorder (chart-run.js): 15m candles often can't tell whether SL or TP came first;
 // Experiments: TH=<threshold> SIDES=buy|both override the rule (e.g. SYSTEM=15 TH=4 SIDES=buy)
 if (process.env.TH || process.env.SIDES) SYS.rule = { ...SYS.rule, ...(process.env.TH ? { threshold: +process.env.TH } : {}), ...(process.env.SIDES ? { sides: process.env.SIDES } : {}) };
 if (process.env.OUT) SYS.file = process.env.OUT;

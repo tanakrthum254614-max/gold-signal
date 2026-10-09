@@ -330,23 +330,24 @@ function renderQuote(price) {
   $('updated').textContent = new Date().toLocaleTimeString('th-TH');
 }
 
-// The side card's big word follows the chart system when it has an entry (window.CZ_GO from chartzones.js) — otherwise
-// "รอก่อน" stayed up while the chart said Buy 100% (user, 8 Oct). investing.com's own verdict moves to the sub-line.
+// The side card's headline is ALWAYS the main system on this timeframe (chartzones.js: window.CZ_GO / CZ_SIDES) — the
+// same Buy / Sell / รอก่อน and % as the Buy | Sell columns (user, 9 Oct: "อยากให้ทุกส่วนสัมพันธ์กัน"). investing.com's
+// own verdict is only a small "ความเห็นภายนอก" line, and its reasons sit lower down as background.
 function renderSignalHead(plan = state.lastPlan) {
   if (!plan) return;
-  const g = window.CZ_GO, inv = ACTION_TH[plan.action];
-  const side = g ? (g.side > 0 ? 'BUY' : 'SELL') : plan.action;
-  $('signalCard').className = `card signal ${side}`;
-  // Just "Buy" / "Sell" (user, 8 Oct: shorter); the sub-line explains
-  $('action').textContent = !g ? inv[0] : `${g.open ? 'ถือ ' : ''}${g.side > 0 ? 'Buy' : 'Sell'}`;
-  $('actionSub').textContent = !g ? inv[1] : `ระบบบนกราฟ ${TF_LABEL[state.tf]} ${g.open ? 'ถือไม้อยู่ — ไม่ต้องเปิดไม้ใหม่' : 'ถึงจุดเข้า 100%'} · บทวิเคราะห์ investing.com: ${inv[0]}`;
+  const g = window.CZ_GO, S = window.CZ_SIDES, inv = ACTION_TH[plan.action];
+  $('signalCard').className = `card signal ${g ? (g.side > 0 ? 'BUY' : 'SELL') : 'WAIT'}`;
+  $('action').textContent = g ? `${g.open ? 'ถือ ' : ''}${g.side > 0 ? 'Buy' : 'Sell'}` : 'รอก่อน';
+  const main = g ? (g.open ? 'ระบบถือไม้อยู่ — ไม่ต้องเปิดไม้ใหม่' : 'ระบบถึงจุดเข้า 100%')
+    : S ? `ยังไม่ถึงจุดเข้า · Buy ${S[0].pct}% · Sell ${S[1].pct}%` : 'กำลังคำนวณ…';
+  $('actionSub').textContent = `${main} · ความเห็นภายนอก (investing.com): ${inv[0]}`;
 }
 window.renderSignalHead = renderSignalHead;
 
 function renderSignal(plan, htfKey) {
   state.lastPlan = plan;
   $('sigTf').textContent = TF_LABEL[state.tf];
-  $('sigSource').textContent = `อิง ${plan.basis}`;
+  $('sigSource').textContent = `ความเห็นภายนอก: ${plan.basis}`;
   renderSignalHead(plan);
   $('meterFill').style.width = `${plan.confidence}%`;
   const htech = state.tech && state.tech[htfKey];
@@ -357,19 +358,10 @@ function renderSignal(plan, htfKey) {
   const box = (label, value, cls = '', note = '') =>
     `<div class="${cls}"><label>${label}</label><span class="mono">${value}</span>${note ? `<small>${note}</small>` : ''}</div>`;
   let html = '';
-  if (plan.action !== 'WAIT') {
-    const buy = plan.action === 'BUY';
-    html += box(buy ? 'ซื้อที่ราคา' : 'ขายที่ราคา', f2(plan.entry), '', 'ราคาที่แนะนำให้เข้า');
-    html += box('จุดตัดขาดทุน (SL)', f2(plan.sl), 'sl', buy ? 'ถ้าราคาลงถึงจุดนี้ ให้ขายออกทันที' : 'ถ้าราคาขึ้นถึงจุดนี้ ให้ปิดออเดอร์ทันที');
-    html += box('เป้ากำไร 1 (TP1)', f2(plan.tp1), 'tp', plan.tp1Name ? `ที่${plan.tp1Name}` : '');
-    html += box('เป้ากำไร 2 (TP2)', f2(plan.tp2), 'tp', plan.tp2Name ? `ที่${plan.tp2Name}` : '');
-    html += box('ถ้าผิดทาง จะเสียสูงสุด', `${Math.abs(plan.entry - plan.sl).toFixed(2)} / ออนซ์`, 'wide', 'ตั้งจุดตัดขาดทุนไว้เสมอ เพื่อไม่ให้ขาดทุนบานปลาย');
-  } else {
-    if (plan.buyZone) html += box('จุดรอซื้อ', f2(plan.buyZone.price), 'tp', `${plan.buyZone.name}: ราคามักเด้งขึ้นแถวนี้`);
-    if (plan.sellZone) html += box('จุดรอขาย', f2(plan.sellZone.price), 'sl', `${plan.sellZone.name}: ราคามักถูกกดลงแถวนี้`);
-  }
-  if (plan.atr) html += box('ราคาแกว่งเฉลี่ย (ATR)', `±${f2(plan.atr)}`, plan.since ? '' : 'wide', 'ต่อ 1 แท่งเทียน');
-  if (plan.since) html += box('สัญญาณนี้เริ่มเมื่อ', new Date(plan.since).toLocaleTimeString('th-TH'));
+  // investing.com's own entry / SL / TP are not shown (they contradicted the main system's levels): only the zones
+  if (plan.buyZone) html += box('จุดรอซื้อ', f2(plan.buyZone.price), 'tp', `${plan.buyZone.name}: ราคามักเด้งขึ้นแถวนี้`);
+  if (plan.sellZone) html += box('จุดรอขาย', f2(plan.sellZone.price), 'sl', `${plan.sellZone.name}: ราคามักถูกกดลงแถวนี้`);
+  if (plan.atr) html += box('ราคาแกว่งเฉลี่ย (ATR)', `±${f2(plan.atr)}`, 'wide', 'ต่อ 1 แท่งเทียน');
   $('plan').innerHTML = html;
 
   $('reasons').innerHTML = plan.reasons.map((r) => `<li>${r}</li>`).join('') ||
@@ -466,7 +458,7 @@ function renderChartSignals() {
       <td>${br ? `<span class="down" title="${br.why}">⛔ พัก</span>` : '✅'}</td></tr>`;
   }).join('');
   el.innerHTML = `<table><thead><tr><th>กรอบ</th><th>ไม้ปิด</th><th>ชนะ–แพ้</th><th>ชนะจริง</th><th>ทดสอบ</th><th>กำไร/ออนซ์</th><th>ถืออยู่</th><th>สถานะ</th></tr></thead><tbody>${rows}</tbody></table>
-    <p class="small muted">เริ่มบันทึก ${new Date(cs.startedAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Bangkok' })} · หักสเปรด ${sp}/ไม้ · ราคาจาก investing.com (กรอบที่ไม่มีใช้ Binance ปรับให้เท่าราคาทอง) · แจ้ง LINE เฉพาะกรอบ 1 ชม. · 5 ชม. · 1 วัน · 1 สัปดาห์ · ⛔ พัก = แพ้ติดกัน 5 ไม้ หรือ 20 ไม้ล่าสุดชนะน้อยกว่าผลทดสอบเกิน 12% → หยุดแจ้ง/ไม่แนะนำเข้า แต่ยังบันทึกต่อ</p>`;
+    <p class="small muted">เริ่มบันทึก ${new Date(cs.startedAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Bangkok' })} · หักสเปรด ${sp}/ไม้ · ราคาจาก investing.com (กรอบที่ไม่มีใช้ Binance ปรับให้เท่าราคาทอง) · แจ้ง LINE กรอบ 30 นาที (ระบบหลัก) · 1 ชม. · 5 ชม. · 1 วัน · 1 สัปดาห์ · ⛔ พัก = แพ้ติดกัน 5 ไม้ หรือ 20 ไม้ล่าสุดชนะน้อยกว่าผลทดสอบเกิน 12% → หยุดแจ้ง/ไม่แนะนำเข้า แต่ยังบันทึกต่อ</p>`;
 }
 
 // LINE messages used this month (checked every morning by scripts/line-quota.js)
@@ -533,6 +525,7 @@ function renderSignalHome() {
     $('sgHow').innerHTML = `<li>วันที่ตลาดไม่ชัด การ “ไม่เทรด” ก็คือการรักษาเงินทุน</li><li>รอสัญญาณใหม่เช้าวันทำการถัดไป ${SIG.mt(Date.now(), '07:00')}</li>`;
     $('sgWhy').innerHTML = (s.why || []).map((l) => `<li>${l}</li>`).join('');
     renderMiniRecord();
+    renderDailyVsMain();
     return;
   }
   // Advisory days: a market overview, not a trade to copy (the levels are tracked for the record only)
@@ -612,10 +605,26 @@ function renderSignalHome() {
   $('sgWhy').innerHTML = (s.why || []).map((l) => `<li>${l}</li>`).join('') || '<li class="muted">—</li>';
 
   renderMiniRecord();
+  renderDailyVsMain();
   drawSignalLines(s);
 }
 
 // Home record box: the 30-minute system (the main signal)
+// The daily 07:00 overview against the main system (state.mainNow from renderIntra): one line under its status, and a
+// ⚠️ "ขัดกับระบบหลัก — ยึดระบบหลัก" when they point different ways (or the daily side is one the main system doesn't trade)
+function renderDailyVsMain() {
+  const el = $('sgMain'), m = state.mainNow, raw = state.signals[state.signals.length - 1];
+  if (!el) return;
+  if (!m || !raw || raw.status === 'skip') { el.innerHTML = ''; return; }
+  const d = raw.side === 'BUY' ? 1 : -1, mine = m.sides.find((x) => x.side === d);
+  const mainDir = m.open ? (m.open.side === 'BUY' ? 1 : -1) : (m.sides.find((x) => x.go) || {}).side || 0;
+  const clash = (mainDir && mainDir !== d) || !mine.tested;
+  const now = m.open ? `ถือไม้${m.open.side === 'BUY' ? 'ซื้อ' : 'ขาย'}อยู่` : mainDir ? `${mainDir > 0 ? 'Buy' : 'Sell'} ✅ ควรเข้า` : `รอก่อน · Buy ${m.sides[0].pct}% · Sell ${m.sides[1].pct}%`;
+  el.className = `sig-main${clash ? ' clash' : ''}`;
+  el.innerHTML = `${clash ? '⚠️ <b>ขัดกับระบบหลัก — ยึดระบบหลัก</b><br>' : '🔗 '}ระบบหลัก (30 นาที) ตอนนี้: ${now}`
+    + `${!mine.tested ? ` · ระบบหลักไม่เปิดฝั่ง${d > 0 ? 'ซื้อ' : 'ขาย'} (ทดสอบแล้วขาดทุน)` : ''}`;
+}
+
 function renderMiniRecord() {
   const sum = SIG.summary(intraTrades(), userSpread());
   $('msWin').textContent = sum.wins;
@@ -717,8 +726,8 @@ function renderLiveCheck() {
   $('lvStatus').textContent = st;
   const btWin = Math.round((B.filter((v) => v + sp > 0).length / B.length) * 100);
   const tile = (k, v, s) => `<div><span>${k}</span><b class="mono">${v}</b><small>${s}</small></div>`;
-  $('lvTiles').innerHTML = tile('ไม้จริง', n, n ? `ตั้งแต่ ${thaiDay(L[0].id.slice(0, 10))}` : 'ยังไม่มี')
-    + tile('ชนะจริง', n ? `${Math.round((wins / n) * 100)}%` : '—', `ทดสอบ ${btWin}%`)
+  $('lvTiles').innerHTML = tile('ไม้จริง', n, n ? `ตั้งแต่ ${tradeDay(L[0])}` : 'ยังไม่มี')
+    + tile('ชนะจริง', n ? `${Math.round((wins / n) * 100)}%` : '—', `ทดสอบ 1 ปี ${btWin}%`)
     + tile('ต่อไม้จริง', n ? money(act / n) : '—', `ทดสอบ ${money(avg)}`)
     + tile('รวมจริง', n ? money(act) : '—', n ? `ช่วงปกติ ${money(exp - band)} ถึง ${money(exp + band)}` : `หลัง 20 ไม้ ช่วงปกติ ${money(20 * avg - 2 * sd * Math.sqrt(20))} ถึง ${money(20 * avg + 2 * sd * Math.sqrt(20))}`);
   // Chart: expected line + ±2σ band over the next trades, live cumulative on top
@@ -1068,7 +1077,14 @@ function patchIntraCandles(now = Date.now()) {
   });
 }
 
-const intraTrades = () => ((state.intra && state.intra.trades) || []).map(live);
+// The main system = the chart tab's 30m system (chartsys.js, recorded in chart-signals.json) since 9 Oct 2026, when
+// the old 30-minute system (intraday.json, TP $15/20/30) was merged into it — so the signals tab, the chart tab, the
+// stats and LINE all show one system (user: "อยากให้ทุกส่วนสัมพันธ์กัน").
+const MAIN_TF = '30m';
+const mainSys = () => CHARTSYS.SYS[MAIN_TF];
+const intraTrades = () => ((state.chartSig && state.chartSig.trades) || []).filter((t) => t.tf === MAIN_TF).map(live);
+const oldIntraTrades = () => ((state.intra && state.intra.trades) || []).map(live);
+const tradeDay = (t) => thaiDay(SIG.thaiDate(t.createdAt));
 
 // ----- Trend strength meter: 13 segments for scores −6 … +6, and a card per voting timeframe -----
 const SM_FRAMES = [['m30', '30 นาที'], ['h1', '1 ชม.'], ['h5', '5 ชม.']];
@@ -1173,23 +1189,21 @@ function renderCycle() {
 
 // ----- Donuts: what happened historically to trades opened at this score -----
 const RING_R = 46, RING_C = 2 * Math.PI * RING_R;
-const DN_PARTS = [
-  ['s0', '#f07b84', 'ไม่ถึง TP1'], ['s1', '#8fdcbc', 'ถึง TP1 แล้วกลับ'],
-  ['s2', '#1fb47f', 'ถึง TP2'], ['s3', '#f0b429', 'ถึง TP3 ครบ'],
-];
+// Donut = one side of the main system: the ring fills to its readiness % (100 = entry), the center shows it, and the
+// legend shows that side's tested win rate — the same numbers as the chart tab's Buy | Sell columns
 function buildDonut(el, dir) {
   el.innerHTML = `
     <div class="dn-head"><span>${dir > 0 ? '🟢 ฝั่งซื้อ (BUY)' : '🔴 ฝั่งขาย (SELL)'}</span><span class="dn-verdict" data-k="verdict">—</span></div>
     <div class="dn-body">
       <div class="dn-ring">
         <svg viewBox="0 0 120 120"><circle class="dn-bg" cx="60" cy="60" r="${RING_R}"/>
-          ${DN_PARTS.map(([c]) => `<circle class="dn-seg ${c}" cx="60" cy="60" r="${RING_R}" stroke-dasharray="0 ${RING_C}" stroke-dashoffset="0"><title></title></circle>`).join('')}
+          <circle class="dn-seg ${dir > 0 ? 's2' : 's0'}" cx="60" cy="60" r="${RING_R}" stroke-dasharray="0 ${RING_C}" stroke-dashoffset="0"><title></title></circle>
         </svg>
-        <div class="dn-center"><b class="mono" data-k="win">—</b><small>จบกำไร</small></div>
+        <div class="dn-center"><b class="mono" data-k="win">—</b><small>ความพร้อมเข้า</small></div>
       </div>
       <ul class="dn-legend">
-        ${DN_PARTS.map(([c, color, label]) => `<li><i style="background:${color}"></i><span>${label}</span><b data-k="${c}">—</b></li>`).join('')}
-        <li class="tp1"><i style="background:transparent"></i><span>🎯 ถึง TP1 รวม</span><b data-k="tp1">—</b></li>
+        <li><span>ผลทดสอบ 2 ปี</span><b data-k="test">—</b></li>
+        <li><span>เกณฑ์เข้า</span><b data-k="th">—</b></li>
       </ul>
     </div>
     <div class="dn-lv" data-k="lv"></div>`;
@@ -1198,7 +1212,7 @@ function buildDonut(el, dir) {
 
 // Count a number up/down to its new value
 function countTo(el, to, fmt) {
-  const from = +(el.dataset.v || 0);
+  const from = +el.dataset.v || 0;
   el.dataset.v = to;
   const t0 = performance.now(), dur = 900;
   const step = (t) => {
@@ -1209,31 +1223,24 @@ function countTo(el, to, fmt) {
   requestAnimationFrame(step);
 }
 
-function updateDonut(el, dir, o, v, price) {
+// x = CHARTSYS.sideInfo(…) for this side (or null while loading), v = { key, th } verdict
+function updateDonut(el, dir, x, v, price) {
   if (!el.firstElementChild) buildDonut(el, dir);
   el.className = `card dn ${dir > 0 ? 'buy' : 'sell'} ${v.key}`;
   el.querySelector('[data-k="verdict"]').textContent = v.th;
-  const split = o && o.split ? o.split : [100, 0, 0, 0];
-  let start = 0;
-  el.querySelectorAll('.dn-seg').forEach((c, k) => {
-    const len = (Math.max(0, split[k]) / 100) * RING_C;
-    const gap = len > 3 ? 1.5 : 0; // thin gap between parts
-    c.setAttribute('stroke-dasharray', `${Math.max(0, len - gap)} ${RING_C}`);
-    c.setAttribute('stroke-dashoffset', `${-start}`);
-    c.style.opacity = o ? '' : '.25';
-    c.querySelector('title').textContent = `${DN_PARTS[k][2]} ${o ? split[k] : '—'}%`;
-    start += len;
-  });
+  const seg = el.querySelector('.dn-seg'), len = ((x ? x.pct : 0) / 100) * RING_C;
+  seg.setAttribute('stroke-dasharray', `${len} ${RING_C}`);
+  seg.style.opacity = x ? '' : '.25';
+  seg.querySelector('title').textContent = `ความพร้อมเข้า ${x ? x.pct : '—'}%`;
   const win = el.querySelector('[data-k="win"]');
-  if (o) {
-    if (+win.dataset.v !== o.winRate) countTo(win, o.winRate, (x) => `${Math.round(x)}%`);
-  } else { win.dataset.v = 0; win.textContent = '—'; }
-  DN_PARTS.forEach(([c], k) => { el.querySelector(`[data-k="${c}"]`).textContent = o ? `${Math.round(split[k])}%` : '—'; });
-  el.querySelector('[data-k="tp1"]').textContent = o ? `${Math.round(100 - split[0])}%` : '—';
-  const lv = price != null ? INTRA.levels(dir, price) : null;
-  el.querySelector('[data-k="lv"]').innerHTML = lv ? [
-    `<div class="sl"><label>🛑 SL</label><b class="mono">${f2(lv.sl)}</b><small>−$${INTRA.RULE.slUsd}</small></div>`,
-    ...lv.tps.map((tp, k) => `<div class="tp"><label>TP${k + 1}</label><b class="mono">${f2(tp)}</b><small>+$${INTRA.RULE.tpUsd[k]}</small></div>`),
+  if (x) { if (+win.dataset.v !== x.pct) countTo(win, x.pct, (n) => `${Math.round(n)}%`); } else { win.dataset.v = 'none'; win.textContent = '—'; }
+  const sys = mainSys(), c = dir > 0 ? sys.buy : sys.sell, cc = c || sys.buy;
+  el.querySelector('[data-k="test"]').textContent = c ? `ชนะ ${c.win}%` : 'ขาดทุน — ไม่ใช้';
+  el.querySelector('[data-k="th"]').textContent = `คะแนน ${dir > 0 ? '+' : '−'}${cc.th}${c && c.confirm ? ` + ${CHARTSYS.CONFIRM[c.confirm].name}` : ''}`;
+  const L = price != null ? CHARTSYS.levelsFor(cc, price, dir) : null, r = (n) => SIG.round(n);
+  el.querySelector('[data-k="lv"]').innerHTML = L ? [
+    `<div class="sl"><label>🛑 SL</label><b class="mono">${f2(r(L.sl))}</b><small>−$${Math.round(15 * cc.mult)}</small></div>`,
+    ...L.tps.map((tp, k) => `<div class="tp"><label>TP${k + 1}</label><b class="mono">${f2(r(tp))}</b><small>+$${CHARTSYS.usdList(cc)[k]}</small></div>`),
   ].join('') : '';
 }
 
@@ -1287,10 +1294,16 @@ function renderIntra() {
     ? `คะแนนสดจากแท่งที่กำลังวิ่ง · รอบล่าสุดแท่งปิดได้ ${signedScore(official.score)}`
     : `คะแนนสดจาก 3 กรอบเวลา · ระบบเข้าซื้อเมื่อแท่งปิดได้ +${INTRA.RULE.threshold}`;
 
-  const pause = state.intra && INTRA.paused(state.intra, now) ? state.intra.pause : null;
+  // Everything below comes from the main system (CHARTSYS 30m) — the same verdicts and % as the chart tab
+  const sys = mainSys(), br = CHARTSYS.brake(sys, trades, now);
+  const pause = br ? { reason: br.why, until: br.until } : null;
+  const offDir = official ? CHARTSYS.dirOf(sys, official) : 0;
+  const sides = [1, -1].map((s) => CHARTSYS.sideInfo(sys, dec, s, br));
+  state.mainNow = dec ? { sides, open } : null;
+  renderDailyVsMain();
   let call, cls;
   if (pause && !open) {
-    call = `🛑 ระบบพัก — ${pause.reason}`; cls = 'wait';
+    call = `⛔ ระบบพัก — ${pause.reason}`; cls = 'wait';
   } else if (open) {
     call = `📌 มีไม้${open.side === 'BUY' ? 'ซื้อ' : 'ขาย'}เปิดอยู่ — ถือต่อตามแผน`;
     cls = open.side === 'BUY' ? 'buy' : 'sell';
@@ -1302,24 +1315,20 @@ function renderIntra() {
     call = `🌙 ตลาดปิดอยู่ — เปิดอีกครั้ง${day ? ` ${day}` : ' '}${hhmm(at)} น.`; cls = 'wait';
   } else if (off === 'late') {
     call = '⏳ กำลังดึงข้อมูลกราฟล่าสุด…'; cls = 'wait';
-  } else if (official && official.dir) {
-    call = `${official.dir > 0 ? '🟢 ซื้อ' : '🔴 ขาย'}ได้ — ระบบกำลังส่งสัญญาณ`; cls = official.dir > 0 ? 'buy' : 'sell';
+  } else if (offDir) {
+    call = `${offDir > 0 ? '🟢 Buy' : '🔴 Sell'} ✅ ควรเข้า — ระบบกำลังส่งสัญญาณ`; cls = offDir > 0 ? 'buy' : 'sell';
   } else if (dec.news) {
     call = '⏸ ช่วงข่าวแรง — รอให้ข่าวผ่านไปก่อน'; cls = 'wait';
-  } else if (dec.dir) {
-    call = `⚡ ใกล้เข้า${dec.dir > 0 ? 'ซื้อ' : 'ขาย'} — ถ้าแท่งปิด ${hhmm(next)} น. ยังได้ ${signedScore(dec.score)} ระบบจะส่งสัญญาณ`; cls = 'wait';
+  } else if (CHARTSYS.dirOf(sys, dec)) {
+    call = `⚡ ใกล้เข้า — ถ้าแท่งปิด ${hhmm(next)} น. ยังได้ ${signedScore(dec.score)} ระบบจะส่งสัญญาณ`; cls = 'wait';
   } else {
-    const calib = state.bt30 && state.bt30.calibration;
-    const best = [[1, INTRA.odds(dec.score, calib, 'buy')], [-1, INTRA.odds(dec.score, calib, 'sell')]]
-      .filter(([, o]) => o && o.winRate >= 53).sort((a, b) => b[1].winRate - a[1].winRate)[0];
-    call = best ? `👉 ${best[0] > 0 ? 'ฝั่งซื้อ' : 'ฝั่งขาย'}ได้เปรียบกว่า · จบกำไร ≈ ${best[1].winRate}%` : '⏸ ทั้งสองฝั่งยังไม่คุ้ม — ใกล้ 50/50';
-    cls = 'wait';
+    call = `⏸ รอก่อน — Buy ${sides[0].pct}% · Sell ${sides[1].pct}%`; cls = 'wait';
   }
   $('intraCard').className = `card intra ${cls}`;
   $('inCall').textContent = call;
 
   if (pause && !open) {
-    $('inWhy').textContent = `ไม่เปิดไม้ใหม่จนถึง ${thaiTime(pause.until)} น. — เบรกฉุกเฉินเมื่อแพ้ ${INTRA.RULE.pause.streak} ไม้ติด หรือขาดทุนสัปดาห์ละ $${INTRA.RULE.pause.weekLoss}/ออนซ์`;
+    $('inWhy').textContent = `ไม่แนะนำเปิดไม้ใหม่${pause.until ? ` จนถึง ${thaiTime(pause.until)} น.` : ' จนกว่าผล 20 ไม้ล่าสุดจะกลับมาใกล้ผลทดสอบ'} — ระบบยังบันทึกต่อ`;
   } else if (dec) {
     const why = INTRA.reasons(dec);
     $('inWhy').textContent = why.slice(1).join(' · ') || (dec.dir ? 'ทั้ง 3 ช่วงเวลาชี้ไปทางเดียวกันชัดเจน' : '');
@@ -1330,19 +1339,15 @@ function renderIntra() {
 
   renderOpenTrade(open, price);
 
-  // Donuts: both sides at the live score
-  const calib = state.bt30 && state.bt30.calibration;
-  [[1, 'dnBuy', 'buy'], [-1, 'dnSell', 'sell']].forEach(([dir, id, side]) => {
-    const o = dec ? INTRA.odds(dec.score, calib, side) : null;
+  // Donuts: each side's readiness and verdict from the main system (same as the chart tab's Buy | Sell columns)
+  sides.forEach((x) => {
     const v = off === 'closed' ? { key: 'unknown', th: '🌙 ตลาดปิด' }
       : off === 'late' ? { key: 'unknown', th: '⏳ รอข้อมูลกราฟ' }
-      : pause ? { key: 'bad', th: '🛑 ระบบพัก' }
-      : dec && dec.news ? { key: 'bad', th: '⏸ งดเข้า (ช่วงข่าว)' } : INTRA.verdict(o);
-    updateDonut($(id), dir, o, v, price);
+      : dec && dec.news && x.tested ? { key: 'bad', th: '⏸ งดเข้า (ช่วงข่าว)' } : { key: x.key, th: x.verdict };
+    updateDonut($(x.side > 0 ? 'dnBuy' : 'dnSell'), x.side, dec ? x : null, v, price);
   });
-  const ob = dec && INTRA.odds(dec.score, calib, 'buy');
   $('dnNote').innerHTML = dec
-    ? `วงกลม = ผลจริงของไม้จำลอง<b>ย้อนหลัง 2 ปี</b>${ob ? ` (${ob.n.toLocaleString()} ครั้ง)` : ''} ที่เข้าตอนคะแนน <b>${signedScore(dec.score)}</b> เหมือนตอนนี้ · <b>จบกำไร</b> = ถึง TP1 หรือปิดตอนหมดเวลาแล้วมีกำไร · คะแนนและราคาเปลี่ยนตามตลาดสดทุก 3 วินาที · SL $${INTRA.RULE.slUsd} · TP $${INTRA.RULE.tpUsd.join(' / $')} จากราคาตอนนี้ · ไม้ที่บันทึกสถิติจริงเปิดเฉพาะฝั่งซื้อเมื่อแท่งปิดได้ +${INTRA.RULE.threshold}`
+    ? `วงกลม = <b>ความพร้อมเข้า</b> ของระบบหลัก (กรอบ 30 นาที — ตัวเดียวกับหน้ากราฟ) · 100% = ถึงจุดเข้า · <b>ผลทดสอบ</b> = ชนะกี่ % ใน 2 ปีที่ผ่านมา หลังหักสเปรด · ฝั่งที่ทดสอบแล้วขาดทุนขึ้น ⚠️ ไม่แนะนำ · ราคาเปลี่ยนตามตลาดสดทุก 3 วินาที`
     : '';
 
   $('inNews').innerHTML = newsTimelineHtml(now);
@@ -1621,7 +1626,7 @@ function renderIntraStats() {
     const buy = t.side === 'BUY';
     const res = t.status === 'win' || t.status === 'loss' ? money(t.pnl) : '';
     return `<div class="h-row ${t.status}">
-      <span class="h-date">${thaiDay(t.id.slice(0, 10))} ${hhmm(t.createdAt)}</span>
+      <span class="h-date">${tradeDay(t)} ${hhmm(t.createdAt)}</span>
       <span class="h-side ${buy ? 'buy' : 'sell'}">${buy ? 'ซื้อ' : 'ขาย'}</span>
       <span class="h-px mono">${f2(t.entry)}</span>
       <span class="h-st">${SIG.STATUS_TH[t.status]}${t.hit ? ` (TP${t.hit})` : ''}</span>
