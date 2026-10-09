@@ -37,7 +37,7 @@ const DAYS = 14;
 const FAPI = 'delicate-tapir-2101.clerk.accounts.dev';
 const SUBS = 'access/push-subs.json';
 // Served to everyone: the login page and what it shows / the browser asks for on its own
-const PUBLIC = /^\/(login\.html|logo\.svg|favicon\.ico|manifest\.webmanifest|robots\.txt|icons\/.*)$/;
+const PUBLIC = /^\/(login\.html|privacy\.html|logo\.svg|favicon\.ico|manifest\.webmanifest|robots\.txt|icons\/.*)$/;
 
 const enc = new TextEncoder();
 const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -88,14 +88,26 @@ function readCookie(request) {
   return m ? m[1] : null;
 }
 
-// The member { id, name, email } when the cookie is valid, else null
+// Members suspended from the back office (access/banned.json), cached briefly per instance: a suspension takes effect
+// within ~30 s even for someone already signed in
+const BANNED = 'access/banned.json';
+let banCache = { at: 0, ids: [] };
+async function bannedIds() {
+  if (Date.now() - banCache.at < 30e3) return banCache.ids;
+  banCache = { at: Date.now(), ids: (await readJson(BANNED, { ids: [] })).ids || [] };
+  return banCache.ids;
+}
+
+// The member { id, name, email } when the cookie is valid, else null ({ banned: true } when suspended)
 async function member(request) {
   const raw = readCookie(request);
   if (!raw || !process.env.ACCESS_SECRET) return null;
   const [data, exp, sig] = raw.split('.');
   if (!data || !exp || !sig || +exp < Date.now()) return null;
   if ((await sign(`${data}.${exp}`)) !== sig) return null;
-  try { return JSON.parse(decodeURIComponent(escape(atob(data)))); } catch (e) { return null; }
+  let m;
+  try { m = JSON.parse(decodeURIComponent(escape(atob(data)))); } catch (e) { return null; }
+  return (await bannedIds()).includes(m.id) ? { banned: true } : m;
 }
 
 // After signing in with Clerk: Authorization: Bearer <Clerk session token> → the site's cookie
@@ -103,6 +115,7 @@ async function session(request) {
   const token = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
   const id = await clerkUser(token);
   if (!id || !process.env.ACCESS_SECRET) return json({ ok: false, error: 'เข้าสู่ระบบไม่สำเร็จ' }, 401);
+  if ((await bannedIds()).includes(id)) return json({ ok: false, banned: true, error: 'บัญชีนี้ถูกระงับการใช้งาน' }, 403);
   let name = '', email = '';
   try { // name and email for the account page (the session token doesn't carry them)
     const r = await fetch(`https://api.clerk.com/v1/users/${encodeURIComponent(id)}`, { headers: { authorization: `Bearer ${(process.env.CLERK_SECRET_KEY || '').trim()}` } });
@@ -151,6 +164,11 @@ export default async function middleware(request) {
     return new Response(null, { status: 302, headers: { location: '/login.html?signout=1', 'set-cookie': cookieOut('', 0), 'cache-control': 'no-store' } });
   }
   const who = await member(request);
+  if (who && who.banned) { // suspended from the back office: signed out at once
+    const page = path === '/' || path.endsWith('.html') || (request.headers.get('accept') || '').includes('text/html');
+    const headers = { 'set-cookie': cookieOut('', 0), 'cache-control': 'no-store' };
+    return page ? new Response(null, { status: 302, headers: { ...headers, location: '/login.html?banned=1' } }) : json({ ok: false, banned: true }, 403, headers);
+  }
   if (!who) {
     const page = path === '/' || path.endsWith('.html') || (request.headers.get('accept') || '').includes('text/html');
     if (page) return new Response(null, { status: 302, headers: { location: '/login.html', 'cache-control': 'no-store' } });
@@ -166,6 +184,7 @@ export default async function middleware(request) {
     }
     if (path === '/api/admin/members') return adminMembers();
     if (path === '/api/admin/log') return json((await readJson(LOG, { events: [] })).events.slice().reverse());
+    if (path === '/api/admin/ban' && request.method === 'POST') return adminBan(request, who);
   }
   return next();
 }
@@ -189,6 +208,28 @@ async function logEvent(request, m, type) {
   all.events = all.events.slice(-5000);
   await writeJson(LOG, all);
 }
+// Suspend / restore a member (headers x-user-id, x-action: ban | unban): our list signs them out within ~30 s, and Clerk's
+// ban stops new sign-ins. Admins can't be suspended (no locking yourself out).
+async function adminBan(request, who) {
+  const id = request.headers.get('x-user-id') || '', action = request.headers.get('x-action');
+  if (!/^user_[A-Za-z0-9]+$/.test(id) || !['ban', 'unban'].includes(action)) return json({ ok: false, error: 'คำขอไม่ถูกต้อง' }, 400);
+  if (id === who.id) return json({ ok: false, error: 'ระงับบัญชีตัวเองไม่ได้' }, 400);
+  const key = (process.env.CLERK_SECRET_KEY || '').trim();
+  const u = await fetch(`https://api.clerk.com/v1/users/${id}`, { headers: { authorization: `Bearer ${key}` } });
+  if (!u.ok) return json({ ok: false, error: 'ไม่พบสมาชิก' }, 404);
+  const user = await u.json();
+  const email = ((user.email_addresses || []).find((e) => e.id === user.primary_email_address_id) || {}).email_address || '';
+  if (action === 'ban' && admins().includes(email.toLowerCase())) return json({ ok: false, error: 'ระงับแอดมินไม่ได้' }, 400);
+  const list = await readJson(BANNED, { ids: [] });
+  list.ids = (list.ids || []).filter((x) => x !== id);
+  if (action === 'ban') list.ids.push(id);
+  await writeJson(BANNED, list);
+  banCache = { at: 0, ids: [] }; // this instance sees it right away
+  const r = await fetch(`https://api.clerk.com/v1/users/${id}/${action}`, { method: 'POST', headers: { authorization: `Bearer ${key}` } });
+  await logEvent(request, { id, name: [user.first_name, user.last_name].filter(Boolean).join(' '), email }, action === 'ban' ? 'banned' : 'unbanned').catch(() => {});
+  return json({ ok: true, clerk: r.ok });
+}
+
 // Everyone who signed up (Clerk), with sign-in / visit counts from the access log
 async function adminMembers() {
   const key = (process.env.CLERK_SECRET_KEY || '').trim();
@@ -200,7 +241,8 @@ async function adminMembers() {
     users.push(...page);
     if (page.length < 500) break;
   }
-  const events = (await readJson(LOG, { events: [] })).events;
+  const events = (await readJson(LOG, { events: [] })).events.filter((e) => e.type === 'login' || e.type === 'visit');
+  const banned = await readJson(BANNED, { ids: [] }).then((b) => b.ids || []);
   const stats = new Map();
   events.forEach((e) => {
     const s = stats.get(e.id) || { logins: 0, visits: 0, lastSeen: 0, device: '', place: '' };
@@ -215,7 +257,7 @@ async function adminMembers() {
     return {
       id: u.id, email, name: [u.first_name, u.last_name].filter(Boolean).join(' '), image: u.image_url || '',
       method: (u.external_accounts || []).some((a) => /google/.test(a.provider)) ? 'Google' : 'อีเมล',
-      createdAt: u.created_at, lastSignInAt: u.last_sign_in_at || 0, lastActiveAt: u.last_active_at || 0, banned: !!u.banned,
+      createdAt: u.created_at, lastSignInAt: u.last_sign_in_at || 0, lastActiveAt: u.last_active_at || 0, banned: !!u.banned || banned.includes(u.id),
       admin: admins().includes(email.toLowerCase()), ...s,
     };
   }));

@@ -23,6 +23,8 @@
     #status { color: var(--muted); font-size: 15px; min-height: 1.5em; text-align: center; }
     #status.err { color: var(--down); }
     #signIn { width: 100%; display: flex; justify-content: center; }
+    .privacy { margin: 0; max-width: 400px; color: var(--muted); font-size: 12.5px; text-align: center; }
+    .privacy a { color: inherit; }
     .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; max-width: 400px; padding: 5px; border-radius: 14px; background: rgba(105,115,134,.14); }
     .tabs button { font: inherit; font-weight: 700; font-size: 15px; padding: 10px; border: 0; border-radius: 10px; cursor: pointer; background: transparent; color: var(--muted); }
     .tabs button.on { background: #fff; color: #1c2433; box-shadow: 0 2px 8px rgba(20,30,50,.12); }
@@ -36,6 +38,7 @@
     <div class="tabs" id="tabs" hidden><button type="button" class="on" data-mode="in">เข้าสู่ระบบ</button><button type="button" data-mode="up">สมัครสมาชิก</button></div>
     <p id="status">กำลังโหลด…</p>
     <div id="signIn"></div>
+    <p class="privacy">การสมัครและเข้าใช้งาน ถือว่ายอมรับการเก็บอีเมล บันทึกการเข้าใช้ (เวลา อุปกรณ์ เมืองโดยประมาณ) เพื่อดูแลระบบ · <a href="/privacy.html">นโยบายความเป็นส่วนตัว</a></p>
   </main>
   <script>
     // Members only: sign up / sign in with Clerk (email + password with an emailed code, or Google). Once signed in, the
@@ -89,6 +92,7 @@
         const token = await window.Clerk.session.getToken();
         const r = await fetch('/api/session', { method: 'POST', headers: { authorization: `Bearer ${token}` } });
         if (r.ok) { location.replace('/'); return; }
+        if (r.status === 403) { await window.Clerk.signOut().catch(() => {}); status('⛔ บัญชีนี้ถูกระงับการใช้งาน — ติดต่อผู้ดูแลที่ tanakrthum254614@gmail.com', true); return; }
         status('ยืนยันบัญชีไม่สำเร็จ ลองรีเฟรชหน้าอีกครั้ง', true);
       } catch (e) { status('เชื่อมต่อไม่ได้ ลองรีเฟรชหน้าอีกครั้ง', true); }
       entering = false;
@@ -107,6 +111,12 @@
       if (new URLSearchParams(location.search).has('signout') && Clerk.user) {
         await Clerk.signOut();
         history.replaceState(null, '', '/login.html');
+      }
+      if (new URLSearchParams(location.search).has('banned')) {
+        if (Clerk.user) await Clerk.signOut();
+        history.replaceState(null, '', '/login.html');
+        status('⛔ บัญชีนี้ถูกระงับการใช้งาน — ติดต่อผู้ดูแลที่ tanakrthum254614@gmail.com', true);
+        return;
       }
       if (Clerk.user) return enter();
       status('');

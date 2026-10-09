@@ -45,6 +45,8 @@
     .who img, .who .ph { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; background: var(--panel-2); display: grid; place-items: center; font-weight: 700; color: var(--muted); }
     .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 99px; border: 1px solid var(--line); }
     .pill.google { color: var(--blue); } .pill.email { color: var(--gold); } .pill.login { color: var(--up); } .pill.visit { color: var(--muted); }
+    .btn.act { padding: 5px 10px; font-size: 13px; } .btn.danger { color: var(--down); }
+    .pill.banned, .pill.unbanned { color: var(--down); } .pill.unbanned { color: var(--up); }
     .pill.admin { color: #fff; background: var(--gold-bg); border-color: transparent; color: #1c2433; } .pill.banned { color: var(--down); }
     .empty { color: var(--muted); padding: 24px; text-align: center; }
     .err { color: var(--down); }
@@ -73,7 +75,7 @@
         <span class="count" id="mCount"></span>
       </div>
       <div class="table-wrap"><table>
-        <thead><tr><th>สมาชิก</th><th>สมัครด้วย</th><th>สมัครเมื่อ</th><th>เข้าใช้ล่าสุด</th><th>ล็อกอิน</th><th>เข้าเว็บ (วัน·เครื่อง)</th><th>อุปกรณ์ / ที่อยู่ล่าสุด</th></tr></thead>
+        <thead><tr><th>สมาชิก</th><th>สมัครด้วย</th><th>สมัครเมื่อ</th><th>เข้าใช้ล่าสุด</th><th>ล็อกอิน</th><th>เข้าเว็บ (วัน·เครื่อง)</th><th>อุปกรณ์ / ที่อยู่ล่าสุด</th><th>จัดการ</th></tr></thead>
         <tbody id="mBody"></tbody>
       </table></div>
       <p class="note">กดแถวสมาชิกเพื่อดูบันทึกการเข้าใช้ของคนนั้น · “เข้าเว็บ” นับครั้งแรกของวันต่อเครื่อง · ข้อมูลอุปกรณ์/ที่อยู่เริ่มเก็บตั้งแต่ 8 ต.ค. 2569</p>
@@ -82,7 +84,7 @@
     <section class="card" id="logPane" hidden>
       <div class="filters">
         <input type="search" id="lQ" placeholder="ค้นหาชื่อ อีเมล อุปกรณ์ หรือที่อยู่…">
-        <select id="lType"><option value="">ทุกประเภท</option><option value="login">ล็อกอิน</option><option value="visit">เข้าเว็บ</option></select>
+        <select id="lType"><option value="">ทุกประเภท</option><option value="login">ล็อกอิน</option><option value="visit">เข้าเว็บ</option><option value="banned">ถูกระงับ</option><option value="unbanned">คืนสิทธิ์</option></select>
         <select id="lSince"><option value="">ช่วง: ทั้งหมด</option><option value="1">วันนี้</option><option value="7">7 วันล่าสุด</option><option value="30">30 วันล่าสุด</option></select>
         <button class="btn" id="lClear" type="button" hidden>✕ ล้างตัวกรองสมาชิก</button>
         <button class="btn" id="lCsv" type="button">⬇ CSV</button>
@@ -108,6 +110,7 @@
     const startOfDay = () => { const now = Date.now(); return now - ((now + 7 * 3600e3) % DAY); }; // midnight, Thai time
     const since = (v) => (!v ? 0 : v === '1' ? startOfDay() : Date.now() - +v * DAY);
     let members = [], log = [], onlyId = '';
+    const TYPE = { login: 'ล็อกอิน', visit: 'เข้าเว็บ', banned: 'ถูกระงับ', unbanned: 'คืนสิทธิ์' };
 
     function tiles() {
       const t0 = startOfDay(), w = Date.now() - 7 * DAY;
@@ -140,8 +143,9 @@
         <td>${when(last(m))}<small>${ago(last(m))}</small></td>
         <td class="mono">${m.logins}</td>
         <td class="mono">${m.visits}</td>
-        <td>${esc(m.device || '—')}<small>${esc(m.place || '')}</small></td></tr>`).join('')
-        : '<tr><td colspan="7" class="empty">ไม่พบสมาชิกตามตัวกรอง</td></tr>';
+        <td>${esc(m.device || '—')}<small>${esc(m.place || '')}</small></td>
+        <td>${m.admin ? '<small>—</small>' : m.banned ? `<button class="btn act" data-act="unban" data-id="${esc(m.id)}" type="button">↩ คืนสิทธิ์</button>` : `<button class="btn act danger" data-act="ban" data-id="${esc(m.id)}" type="button">⛔ ระงับ</button>`}</td></tr>`).join('')
+        : '<tr><td colspan="8" class="empty">ไม่พบสมาชิกตามตัวกรอง</td></tr>';
     }
 
     function filteredLog() {
@@ -156,7 +160,7 @@
       $('lBody').innerHTML = list.length ? list.slice(0, 1000).map((e) => `<tr>
         <td>${when(e.at)}<small>${ago(e.at)}</small></td>
         <td>${esc(e.name || '—')}<small>${esc(e.email)}</small></td>
-        <td><span class="pill ${e.type}">${e.type === 'login' ? 'ล็อกอิน' : 'เข้าเว็บ'}</span></td>
+        <td><span class="pill ${e.type}">${TYPE[e.type] || e.type}</span></td>
         <td>${esc(e.device)}</td>
         <td>${esc([e.city, e.country].filter(Boolean).join(', ') || '—')}</td></tr>`).join('')
         : '<tr><td colspan="5" class="empty">ยังไม่มีบันทึกตามตัวกรอง</td></tr>';
@@ -171,27 +175,44 @@
     $('mCsv').addEventListener('click', () => csv('gold-signal-members.csv', ['ชื่อ', 'อีเมล', 'สมัครด้วย', 'สมัครเมื่อ', 'เข้าใช้ล่าสุด', 'ล็อกอิน', 'เข้าเว็บ', 'อุปกรณ์ล่าสุด', 'ที่อยู่ล่าสุด'],
       filteredMembers().map((m) => [m.name, m.email, m.method, when(m.createdAt), when(Math.max(m.lastSeen || 0, m.lastActiveAt || 0, m.lastSignInAt || 0)), m.logins, m.visits, m.device, m.place])));
     $('lCsv').addEventListener('click', () => csv('gold-signal-access-log.csv', ['เวลา', 'ชื่อ', 'อีเมล', 'ประเภท', 'อุปกรณ์', 'เมือง', 'ประเทศ'],
-      filteredLog().map((e) => [when(e.at), e.name, e.email, e.type === 'login' ? 'ล็อกอิน' : 'เข้าเว็บ', e.device, e.city, e.country])));
+      filteredLog().map((e) => [when(e.at), e.name, e.email, TYPE[e.type] || e.type, e.device, e.city, e.country])));
 
     function tab(t) {
       document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
       $('membersPane').hidden = t !== 'members'; $('logPane').hidden = t !== 'log';
     }
     $('tabs').addEventListener('click', (e) => e.target.dataset.tab && tab(e.target.dataset.tab));
-    $('mBody').addEventListener('click', (e) => { const tr = e.target.closest('tr[data-id]'); if (!tr) return; onlyId = tr.dataset.id; renderLog(); tab('log'); });
+    // Suspend / restore: signs the member out within ~30 s and blocks new sign-ins (Clerk ban)
+    async function act(btn) {
+      const m = members.find((x) => x.id === btn.dataset.id), ban = btn.dataset.act === 'ban';
+      const who = m ? (m.name || m.email) : 'สมาชิกคนนี้';
+      if (!confirm(ban ? `ระงับการใช้งานของ ${who}?
+จะถูกออกจากระบบภายใน ~30 วินาที และล็อกอินใหม่ไม่ได้ (คืนสิทธิ์ได้ทีหลัง)` : `คืนสิทธิ์ให้ ${who}?`)) return;
+      btn.disabled = true;
+      try {
+        const r = await fetch('/api/admin/ban', { method: 'POST', headers: { 'x-user-id': btn.dataset.id, 'x-action': btn.dataset.act } });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j.error || 'ทำรายการไม่สำเร็จ');
+        await load();
+      } catch (e) { alert(e.message); btn.disabled = false; }
+    }
+    $('mBody').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-act]'); if (b) { e.stopPropagation(); act(b); return; }
+      const tr = e.target.closest('tr[data-id]'); if (!tr) return; onlyId = tr.dataset.id; renderLog(); tab('log');
+    });
     $('lClear').addEventListener('click', () => { onlyId = ''; renderLog(); });
     ['mQ', 'mMethod', 'mSince', 'mSort'].forEach((id) => $(id).addEventListener('input', renderMembers));
     ['lQ', 'lType', 'lSince'].forEach((id) => $(id).addEventListener('input', renderLog));
 
     async function load() {
-      $('mBody').innerHTML = '<tr><td colspan="7" class="empty">กำลังโหลด…</td></tr>';
+      $('mBody').innerHTML = '<tr><td colspan="8" class="empty">กำลังโหลด…</td></tr>';
       try {
         const [m, l] = await Promise.all([fetch('/api/admin/members', { cache: 'no-store' }), fetch('/api/admin/log', { cache: 'no-store' })]);
         if (m.status === 401 || m.status === 403) { location.replace('/'); return; }
         if (!m.ok || !l.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
         members = await m.json(); log = await l.json();
         tiles(); renderMembers(); renderLog();
-      } catch (e) { $('mBody').innerHTML = `<tr><td colspan="7" class="empty err">${esc(e.message)}</td></tr>`; }
+      } catch (e) { $('mBody').innerHTML = `<tr><td colspan="8" class="empty err">${esc(e.message)}</td></tr>`; }
     }
     $('reload').addEventListener('click', load);
     load();
