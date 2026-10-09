@@ -109,7 +109,7 @@
    "id": "30m-1791536400000",
    "createdAt": 1791536400000,
    "expiresAt": 1791575100000,
-   "status": "active",
+   "status": "loss",
    "entryAt": 1791536400000,
    "side": "BUY",
    "entry": 4187.82,
@@ -124,8 +124,11 @@
    "hitAt": [],
    "stop": 4172.82,
    "realized": 0,
-   "pnl": -8.48,
-   "last": 4179.34
+   "pnl": -15,
+   "last": 4179.34,
+   "closedBy": "sl",
+   "exitPrice": 4172.82,
+   "exitAt": 1791543900000
   },
   {
    "id": "1h-1791536400000",
@@ -146,10 +149,10 @@
    "hitAt": [],
    "stop": 4157.82,
    "realized": 0,
-   "pnl": -8.48,
-   "last": 4179.34
+   "pnl": -12.48,
+   "last": 4175.34
   }
  ],
  "brakes": {},
- "updatedAt": 1791544220924
+ "updatedAt": 1791544521198
 }
