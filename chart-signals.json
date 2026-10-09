@@ -72,10 +72,10 @@
    "hitAt": [],
    "stop": 4163.54,
    "realized": 0,
-   "pnl": -0.45,
-   "last": 4178.09
+   "pnl": 0.6,
+   "last": 4179.14
   }
  ],
  "brakes": {},
- "updatedAt": 1791519321145
+ "updatedAt": 1791519625981
 }
