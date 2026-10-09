@@ -40,6 +40,18 @@ for (const [tf, rows] of Object.entries(o)) {
 if (!found) lines.push('   — ไม่มี');
 short.push(found ? `🔎 มีตัวกรองใหม่น่าสนใจ ${found} แบบ — ดูรายงาน` : '🔎 ไม่มีตัวกรองใหม่ที่ผ่านเกณฑ์');
 lines.push('', 'หมายเหตุ: เป็นผลจากอดีต ทดสอบหลายตัวพร้อมกันย่อมมีบางตัวดูดีโดยบังเอิญ · รายงานเท่านั้น ไม่เปลี่ยนกติกาเอง');
+// The test numbers of the rules in use (confirm side = its filter row, else the plain system) → test-stats.json, which
+// the website, LINE and the safety brake read (CHARTSYS.applyStats)
+const stats = { at: Date.now(), tf: {} };
+for (const [tf, sys] of Object.entries(CS.SYS)) {
+  for (const [side, c] of [['BUY', sys.buy], ['SELL', sys.sell]]) {
+    if (!c || !o[tf]) continue;
+    const r = c.confirm ? o[tf].find((x) => x.mode === 'filter' && x.side === side && x.ind === NAME[c.confirm]) : o[tf].find((x) => x.mode === 'base' && x.side === side);
+    if (r && r.n) (stats.tf[tf] = stats.tf[tf] || {})[side] = { n: r.n, win: r.win, pnl: r.pnl, q: r.q };
+  }
+}
+fs.writeFileSync(path.join(ROOT, 'test-stats.json'), `${JSON.stringify(stats, null, 1)}
+`);
 const dir = path.join(__dirname, 'monthly');
 fs.mkdirSync(dir, { recursive: true });
 fs.writeFileSync(path.join(dir, `${month}.txt`), lines.join('\n') + '\n');

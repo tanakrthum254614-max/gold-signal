@@ -9,6 +9,8 @@ const CS = require('../chartsys.js');
 const { money } = require('../dailyplan.js');
 const { send } = require('./notify.js');
 const { signed } = require('./trade-events.js');
+// One set of test numbers everywhere (monthly study → test-stats.json)
+try { CS.applyStats(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'test-stats.json'), 'utf8'))); } catch (e) { /* keep chartsys.js numbers */ }
 
 const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
 const SPREAD = +(process.env.SPREAD_USD || 0.4);

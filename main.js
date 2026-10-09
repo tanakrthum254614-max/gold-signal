@@ -385,12 +385,15 @@ const thaiDay = (id) => new Date(`${id}T12:00:00+07:00`).toLocaleDateString('th-
 
 async function refreshSignals() {
   try {
-    const [sig, bt, intra, bt30, quota, bt15, chartSig] = await Promise.all([
+    const [sig, bt, intra, bt30, quota, bt15, chartSig, testStats] = await Promise.all([
       getJson('signals.json'), state.backtest ? null : getJson('backtest.json').catch(() => null),
       getJson('intraday.json').catch(() => null), state.bt30 ? null : getJson('backtest-30m.json').catch(() => null),
       getJson('quota.json').catch(() => null), state.bt15 ? null : getJson('backtest-15m.json').catch(() => null),
       getJson('chart-signals.json').catch(() => null),
+      state.testStats ? null : getJson('test-stats.json').catch(() => null),
     ]);
+    // One set of "ทดสอบ" numbers for every card (monthly study → test-stats.json → CHARTSYS.applyStats)
+    if (testStats) { state.testStats = testStats; CHARTSYS.applyStats(testStats); }
     if (bt15) state.bt15 = bt15;
     if (chartSig) state.chartSig = chartSig;
     renderQuota(quota);
@@ -714,8 +717,10 @@ function renderLiveCheck() {
   const sp = userSpread();
   const fin = (t) => t.status === 'win' || t.status === 'loss' || t.status === 'expired';
   const B = bt.trades.filter(fin).map((t) => t.pnl - sp);
-  const avg = B.reduce((a, v) => a + v, 0) / B.length;
-  const sd = Math.sqrt(B.reduce((a, v) => a + (v - avg) ** 2, 0) / B.length);
+  const avg1y = B.reduce((a, v) => a + v, 0) / B.length;
+  const sd = Math.sqrt(B.reduce((a, v) => a + (v - avg1y) ** 2, 0) / B.length); // spread of results per trade (1-year replay)
+  // Expected result per trade = the main test (test-stats.json, the same number as every other card); stats are after $0.4
+  const off = mainSys().buy, avg = off.n ? off.pnl / off.n - (sp - 0.4) : avg1y;
   const L = intraTrades().filter(fin).sort((x, y) => x.createdAt - y.createdAt);
   const n = L.length, act = L.reduce((a, t) => a + t.pnl - sp, 0), wins = L.filter((t) => t.pnl > 0).length;
   const exp = n * avg, band = 2 * sd * Math.sqrt(n), MIN = 20;
@@ -726,10 +731,9 @@ function renderLiveCheck() {
   else { st = `🟡 ผลจริงอยู่ในช่วงปกติของผลทดสอบ (${money(act)} vs คาด ${money(exp)}) — ระบบยังทำงานตามที่คาด`; cls = 'ok'; }
   $('lvStatus').className = `lv-status ${cls}`;
   $('lvStatus').textContent = st;
-  const btWin = Math.round((B.filter((v) => v + sp > 0).length / B.length) * 100);
   const tile = (k, v, s) => `<div><span>${k}</span><b class="mono">${v}</b><small>${s}</small></div>`;
   $('lvTiles').innerHTML = tile('ไม้จริง', n, n ? `ตั้งแต่ ${tradeDay(L[0])}` : 'ยังไม่มี')
-    + tile('ชนะจริง', n ? `${Math.round((wins / n) * 100)}%` : '—', `ทดสอบ 1 ปี ${btWin}%`)
+    + tile('ชนะจริง', n ? `${Math.round((wins / n) * 100)}%` : '—', `ทดสอบ ${off.win}%`)
     + tile('ต่อไม้จริง', n ? money(act / n) : '—', `ทดสอบ ${money(avg)}`)
     + tile('รวมจริง', n ? money(act) : '—', n ? `ช่วงปกติ ${money(exp - band)} ถึง ${money(exp + band)}` : `หลัง 20 ไม้ ช่วงปกติ ${money(20 * avg - 2 * sd * Math.sqrt(20))} ถึง ${money(20 * avg + 2 * sd * Math.sqrt(20))}`);
   // Chart: expected line + ±2σ band over the next trades, live cumulative on top
@@ -1204,7 +1208,7 @@ function buildDonut(el, dir) {
         <div class="dn-center"><b class="mono" data-k="win">—</b><small>ความพร้อมเข้า</small></div>
       </div>
       <ul class="dn-legend">
-        <li><span>ผลทดสอบ 2 ปี</span><b data-k="test">—</b></li>
+        <li><span data-k="testL">ผลทดสอบ</span><b data-k="test">—</b></li>
         <li><span>เกณฑ์เข้า</span><b data-k="th">—</b></li>
       </ul>
     </div>
@@ -1238,6 +1242,7 @@ function updateDonut(el, dir, x, v, price) {
   if (x) { if (+win.dataset.v !== x.pct) countTo(win, x.pct, (n) => `${Math.round(n)}%`); } else { win.dataset.v = 'none'; win.textContent = '—'; }
   const sys = mainSys(), c = dir > 0 ? sys.buy : sys.sell, cc = c || sys.buy;
   el.querySelector('[data-k="test"]').textContent = c ? `ชนะ ${c.win}%` : 'ขาดทุน — ไม่ใช้';
+  el.querySelector('[data-k="testL"]').textContent = `ผลทดสอบ ${sys.span}`;
   el.querySelector('[data-k="th"]').textContent = `คะแนน ${dir > 0 ? '+' : '−'}${cc.th}${c && c.confirm ? ` + ${CHARTSYS.CONFIRM[c.confirm].name}` : ''}`;
   const L = price != null ? CHARTSYS.levelsFor(cc, price, dir) : null, r = (n) => SIG.round(n);
   el.querySelector('[data-k="lv"]').innerHTML = L ? [
@@ -1638,7 +1643,8 @@ function renderIntraStats() {
   if (bt) {
     const b = SIG.summary(bt.trades, userSpread());
     $('inBtTiles').innerHTML = tilesHtml(b);
-    $('inBtNote').innerHTML = `ประมาณ <b>${bt.perDay} ไม้/วัน</b> · ${INTRA.RULE.sides === 'buy' ? 'เฉพาะฝั่งซื้อ · ' : ''}หักสเปรด $${b.spread}/ไม้แล้วเหลือ <b>${money(b.pnl)}</b>/ออนซ์ ใน ${bt.days} วัน`;
+    const off = mainSys().buy;
+    $('inBtNote').innerHTML = `ผลทดสอบหลัก (${mainSys().span}): ชนะ <b>${off.win}%</b>${off.n ? ` · ${off.n} ไม้ · ${money(off.pnl)}/ออนซ์` : ''} — ด้านล่างคือเฉพาะ<b>ช่วง 1 ปีล่าสุด</b> (เข้มกว่า: หลบข่าวด้วย) · ประมาณ <b>${bt.perDay} ไม้/วัน</b> · ${INTRA.RULE.sides === 'buy' ? 'เฉพาะฝั่งซื้อ · ' : ''}หักสเปรด $${b.spread}/ไม้แล้วเหลือ <b>${money(b.pnl)}</b>/ออนซ์ ใน ${bt.days} วัน`;
     plotEquity('inBtChart', bt.trades);
   }
 }

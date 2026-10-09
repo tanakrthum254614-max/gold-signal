@@ -71,6 +71,19 @@
     return { side, c, pct, tested, go, verdict, key: br && tested ? 'bad' : go ? 'good' : !tested ? 'bad' : 'wait' };
   }
 
+  // Test results refreshed by the monthly study (test-stats.json, written by research/indicators/monthly.js:
+  // { at, tf: { <tf>: { BUY: { n, win, pnl, q }, SELL: … } } }) — so every page, LINE and the safety brake show ONE set of
+  // "ทดสอบ" numbers for the rules in use. Only the numbers change here, never the rules (th, confirm, SL/TP).
+  function applyStats(st) {
+    if (!st || !st.tf) return;
+    for (const [tf, sides] of Object.entries(st.tf)) {
+      const sys = SYS[tf];
+      if (!sys) continue;
+      [['BUY', sys.buy], ['SELL', sys.sell]].forEach(([k, c]) => { const r = sides[k]; if (c && r && r.n) Object.assign(c, { win: r.win, q: r.q, n: r.n, pnl: r.pnl }); });
+    }
+    CHARTSYS.statsAt = st.at || 0;
+  }
+
   // Safety brake from the live record (chart-signals.json). Trades opened while paused are still recorded (paused:
   // true, no LINE), so a pause can lift by itself. Returns null, or { why, until } — until null = until the last 20 recover.
   // • 5 losses in a row → pause until next week's open (5h/1d/1w: 30 days); trades inside that pause don't count again
@@ -93,7 +106,7 @@
     return null;
   }
 
-  const CHARTSYS = { SYS, NONE, CONFIRM, usdList, levelsFor, maxScore, dirOf, stretched, unconfirmed, sideInfo, decide, trade, brake };
+  const CHARTSYS = { SYS, NONE, CONFIRM, usdList, levelsFor, maxScore, dirOf, stretched, unconfirmed, sideInfo, applyStats, decide, trade, brake };
   if (typeof module !== 'undefined' && module.exports) module.exports = CHARTSYS;
   else root.CHARTSYS = CHARTSYS;
 })(typeof window !== 'undefined' ? window : globalThis);

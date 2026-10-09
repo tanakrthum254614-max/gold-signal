@@ -13,6 +13,8 @@ const INTRA = require('../intraday.js');
 const CS = require('../chartsys.js');
 const { send } = require('./notify.js');
 const { signed } = require('./trade-events.js');
+// One set of test numbers everywhere (monthly study → test-stats.json)
+try { CS.applyStats(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'test-stats.json'), 'utf8'))); } catch (e) { /* keep chartsys.js numbers */ }
 
 const ROOT = path.join(__dirname, '..');
 const FILE = process.env.CHART_FILE || path.join(ROOT, 'chart-signals.json'); // CHART_FILE / CHART_NOW: tests only

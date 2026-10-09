@@ -13,6 +13,8 @@ const SIG = require('../signals.js');
 const INTRA = require('../intraday.js');
 global.INTRA = INTRA;
 const CS = require('../chartsys.js');
+// One set of test numbers everywhere (monthly study → test-stats.json)
+try { CS.applyStats(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'test-stats.json'), 'utf8'))); } catch (e) { /* keep chartsys.js numbers */ }
 const { sendFlex } = require('./notify.js');
 const { lotLine } = require('./trade-events.js');
 
