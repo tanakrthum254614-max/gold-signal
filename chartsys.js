@@ -13,7 +13,7 @@
   const M = 60e3, H = 60 * M, DAY = 24 * H;
   const SYS = {
     '5m': { frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', H, 60, '1 ชม.']], span: '2 ปี',
-      buy: { th: 5, tp1: true, mult: 1, win: 53, q: [312, 448, 99, -452] }, sell: { th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T02:59:00+07:00', win: 52, q: [29, 92, 105, 126] },
+      buy: { th: 5, tp1: true, mult: 1, win: 53, q: [312, 448, 99, -452] }, sell: { th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T09:54:00+07:00', win: 52, q: [29, 92, 105, 126] },
       every: -1480 }, // taking every small arrow one at a time, SL / TP1 $15
     '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { th: 6, tp1: true, mult: 1.5, confirm: 'ema921', since: '2026-10-09T09:40:00+07:00', win: 56, q: [261, 72, 84, 48] }, sellQ: [115, -233, -72, 204] },
     '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { th: 5, tp1: true, mult: 1, win: 57, q: [264, 462, 239, -7] }, sellQ: [129, -174, -58, 113] },
