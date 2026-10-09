@@ -214,7 +214,10 @@ function ago(ms) {
     const goSide = sides.find((x) => x.go);
     window.CZ_GO = open ? { side: open.side === 'SELL' ? -1 : 1, open: true } : goSide ? { side: goSide.side } : null;
     if (window.renderSignalHead) renderSignalHead();
-    window.CZ_PLANS = showPlans ? sides.map((x) => ({ side: x.side, entry: price, sl: x.L.sl, tps: x.L.tps, ok: x.go, note: `${x.side > 0 ? 'Buy' : 'Sell'} ${x.pct}% ${x.go ? '✅ เข้า' : br && x.tested ? '⛔' : x.tested ? '⏸' : '⚠️'}` })) : null;
+    // On the chart only ONE box (user, 9 Oct: two boxes "ยังงง ต้องซื้อตรงไหน เอาแค่อันเดียวพอ"): the side that is
+    // nearer its signal — a live signal first, then the higher %, then the side that passed its test. Both % stay in the card.
+    const best = [...sides].sort((a, b) => (b.go - a.go) || (b.pct - a.pct) || (b.tested - a.tested))[0];
+    window.CZ_PLANS = showPlans ? [best].map((x) => ({ side: x.side, entry: price, sl: x.L.sl, tps: x.L.tps, ok: x.go, note: `${x.side > 0 ? 'Buy' : 'Sell'} ${x.pct}% ${x.go ? '✅ เข้า' : br && x.tested ? '⛔' : x.tested ? '⏸' : '⚠️'}` })) : null;
     if (window.drawPositionBoxes) drawPositionBoxes();
     const calcBtn = calcArgs ? `<button type="button" class="btn cz-calc" data-calc="${calcArgs.map((v) => SIG.round(v)).join(',')}">🧮 คำนวณ lot จากสัญญาณนี้</button>` : '';
     const top = pill ? `${pill}${waitOnly ? '' : `<br><small>${head}</small>`}` : head;
@@ -254,14 +257,14 @@ function ago(ms) {
     if (t) return { be: !!t.hit, side: t.side === 'SELL' ? -1 : 1, entry: t.entry, sl: t.hit ? t.entry : t.sl, tps: t.tps, since: t.createdAt, who: 'ระบบที่ทดสอบแล้ว' };
     return null;
   }
-  // No open trade: where a Buy and a Sell would go in right now (window.CZ_PLANS from renderChartZones), drawn as two
-  // long / short boxes in the empty space right of the last candle, with the entry, SL and TP prices written on them
+  // No open trade: where the nearer side (Buy or Sell) would go in right now (window.CZ_PLANS from renderChartZones), drawn as a
+  // long / short box in the empty space right of the last candle, with the entry, SL and TP prices written on them
   function drawPlans(b, plans) {
     const ts = b.chart.timeScale(), y = (v) => b.series.priceToCoordinate(v);
     const right = b.chart.priceScale('right').width(), W = b.el.clientWidth - right;
     const bars = state.bars, lastX = ts.timeToCoordinate(bars[bars.length - 1].time + TZ);
     if (lastX == null || !W) return '';
-    const x0 = Math.max(0, Math.min(W - 104, lastX + 6)), colW = Math.max(96, Math.min(220, (W - x0 - 6) / plans.length));
+    const x0 = Math.max(0, Math.min(W - 132, lastX + 6)), colW = Math.max(126, Math.min(220, (W - x0 - 6) / plans.length));
     return plans.map((p, i) => {
       const x = x0 + i * (colW + 6), ye = y(p.entry), ys = y(p.sl), yt = y(p.tps[p.tps.length - 1]);
       if (ye == null || ys == null || yt == null) return '';
@@ -277,18 +280,23 @@ function ago(ms) {
   }
   function draw(b) {
     const p = currentPlan(), plans = !p && window.CZ_PLANS;
-    // Room on the right for the box while there is an entry (like a platform's position tool); the two plan boxes
-    // need ~260px whatever the zoom
+    // Room on the right for the box while there is an entry (like a platform's position tool); the plan box
+    // needs ~170px whatever the zoom
     const sp = b.chart.timeScale().options().barSpacing || 6;
     const plotW = b.el.clientWidth - b.chart.priceScale('right').width();
-    const need = plotW < 520 ? Math.round(plotW * 0.42) : 240; // phones: about half the plot
-    const off = p ? 8 : plans ? Math.min(80, Math.ceil(need / sp) + 1) : 6;
+    const need = plotW < 520 ? Math.max(136, Math.round(plotW * 0.5)) : 170; // one plan box, wide enough for "ถ้าเข้า Sell 4,125.45"
+    const off = p ? 8 : plans ? Math.min(240, Math.ceil(need / sp) + 1) : 6;
     if (b.off !== off) { b.off = off; b.chart.timeScale().applyOptions({ rightOffset: off }); }
     if (plans && state.bars.length) {
       // Showing the latest candles but without room for the boxes (a zoom or tab switch set the range): make room
       const ts = b.chart.timeScale(), r = ts.getVisibleLogicalRange(), n = state.bars.length;
       // at most every half second, so a clamped range can't loop; always draw afterwards
-      if (r && r.to >= n - 2 && r.to < n - 1 + off - 1 && Date.now() - (b.roomAt || 0) > 500) { b.roomAt = Date.now(); ts.setVisibleLogicalRange({ from: r.from, to: n - 1 + off }); }
+      // (a range set by a timeframe switch right after ours used to win — try once more after the half second)
+      // (at most 3 tries in a row, so a range the chart clamps can't loop)
+      if (r && r.to >= n - 2 && r.to < n - 1 + off - 1) {
+        if (Date.now() - (b.roomAt || 0) > 500) { b.roomAt = Date.now(); b.retry = 0; ts.setVisibleLogicalRange({ from: r.from, to: n - 1 + off }); }
+        else if (!b.retry && (b.tries = (b.tries || 0) + 1) <= 3) b.retry = setTimeout(() => draw(b), 600);
+      } else b.tries = 0;
       const html = drawPlans(b, plans);
       if (html !== b.html) { b.html = html; b.el.innerHTML = html; }
       return;

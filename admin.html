@@ -51,6 +51,18 @@
     .empty { color: var(--muted); padding: 24px; text-align: center; }
     .err { color: var(--down); }
     .note { color: var(--muted); font-size: 12.5px; margin-top: 10px; }
+    .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+    /* Phones: each member / log line becomes a card, everything visible without scrolling sideways */
+    @media (max-width: 700px) {
+      .table-wrap thead { display: none; }
+      .table-wrap table, .table-wrap tbody { display: block; }
+      .table-wrap tr { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 12px 4px; border-bottom: 1px solid var(--line); }
+      .table-wrap td { display: block; padding: 0; border: 0; white-space: normal; }
+      .table-wrap td[data-l]::before { content: attr(data-l); display: block; color: var(--muted); font-size: 11.5px; }
+      .table-wrap td.wide { grid-column: 1 / -1; }
+      .table-wrap td.empty { grid-column: 1 / -1; }
+      tr.click:hover td { background: none; }
+    }
     [hidden] { display: none !important; }
   </style>
 </head>
@@ -137,14 +149,14 @@
       $('mCount').textContent = `${list.length} จาก ${members.length} คน`;
       const last = (m) => Math.max(m.lastSeen || 0, m.lastActiveAt || 0, m.lastSignInAt || 0);
       $('mBody').innerHTML = list.length ? list.map((m) => `<tr class="click" data-id="${esc(m.id)}">
-        <td><div class="who">${m.image ? `<img src="${esc(m.image)}" alt="">` : `<span class="ph">${esc((m.name || m.email || '?')[0].toUpperCase())}</span>`}<div>${esc(m.name || '—')} ${m.admin ? '<span class="pill admin">แอดมิน</span>' : ''}${m.banned ? ' <span class="pill banned">ถูกแบน</span>' : ''}<small>${esc(m.email)}</small></div></div></td>
-        <td><span class="pill ${m.method === 'Google' ? 'google' : 'email'}">${esc(m.method)}</span></td>
-        <td>${when(m.createdAt)}<small>${ago(m.createdAt)}</small></td>
-        <td>${when(last(m))}<small>${ago(last(m))}</small></td>
-        <td class="mono">${m.logins}</td>
-        <td class="mono">${m.visits}</td>
-        <td>${esc(m.device || '—')}<small>${esc(m.place || '')}</small></td>
-        <td>${m.admin ? '<small>—</small>' : m.banned ? `<button class="btn act" data-act="unban" data-id="${esc(m.id)}" type="button">↩ คืนสิทธิ์</button>` : `<button class="btn act danger" data-act="ban" data-id="${esc(m.id)}" type="button">⛔ ระงับ</button>`}</td></tr>`).join('')
+        <td class="wide"><div class="who">${m.image ? `<img src="${esc(m.image)}" alt="">` : `<span class="ph">${esc((m.name || m.email || '?')[0].toUpperCase())}</span>`}<div>${esc(m.name || '—')} ${m.admin ? '<span class="pill admin">แอดมิน</span>' : ''}${m.banned ? ' <span class="pill banned">ถูกแบน</span>' : ''}<small>${esc(m.email)}</small></div></div></td>
+        <td data-l="สมัครด้วย"><span class="pill ${m.method === 'Google' ? 'google' : 'email'}">${esc(m.method)}</span></td>
+        <td data-l="สมัครเมื่อ">${when(m.createdAt)}<small>${ago(m.createdAt)}</small></td>
+        <td data-l="เข้าใช้ล่าสุด">${when(last(m))}<small>${ago(last(m))}</small></td>
+        <td class="mono" data-l="ล็อกอิน">${m.logins}</td>
+        <td class="mono" data-l="เข้าเว็บ (วัน·เครื่อง)">${m.visits}</td>
+        <td class="wide" data-l="อุปกรณ์ / ที่อยู่ล่าสุด">${esc(m.device || '—')}<small>${esc(m.place || '')}</small></td>
+        <td class="wide">${m.admin ? '<small>—</small>' : `<div class="acts">${m.banned ? `<button class="btn act" data-act="unban" data-id="${esc(m.id)}" type="button">↩ คืนสิทธิ์</button>` : `<button class="btn act danger" data-act="ban" data-id="${esc(m.id)}" type="button">⛔ ระงับ</button>`}</div>`}</td></tr>`).join('')
         : '<tr><td colspan="8" class="empty">ไม่พบสมาชิกตามตัวกรอง</td></tr>';
     }
 
@@ -158,11 +170,11 @@
       $('lClear').hidden = !onlyId;
       $('lCount').textContent = `${list.length} รายการ`;
       $('lBody').innerHTML = list.length ? list.slice(0, 1000).map((e) => `<tr>
-        <td>${when(e.at)}<small>${ago(e.at)}</small></td>
-        <td>${esc(e.name || '—')}<small>${esc(e.email)}</small></td>
-        <td><span class="pill ${e.type}">${TYPE[e.type] || e.type}</span></td>
-        <td>${esc(e.device)}</td>
-        <td>${esc([e.city, e.country].filter(Boolean).join(', ') || '—')}</td></tr>`).join('')
+        <td data-l="เวลา">${when(e.at)}<small>${ago(e.at)}</small></td>
+        <td data-l="ใคร">${esc(e.name || '—')}<small>${esc(e.email)}</small></td>
+        <td data-l="ประเภท"><span class="pill ${e.type}">${TYPE[e.type] || e.type}</span></td>
+        <td data-l="อุปกรณ์">${esc(e.device)}</td>
+        <td data-l="ที่อยู่">${esc([e.city, e.country].filter(Boolean).join(', ') || '—')}</td></tr>`).join('')
         : '<tr><td colspan="5" class="empty">ยังไม่มีบันทึกตามตัวกรอง</td></tr>';
     }
 
@@ -184,10 +196,11 @@
     $('tabs').addEventListener('click', (e) => e.target.dataset.tab && tab(e.target.dataset.tab));
     // Suspend / restore: signs the member out within ~30 s and blocks new sign-ins (Clerk ban)
     async function act(btn) {
-      const m = members.find((x) => x.id === btn.dataset.id), ban = btn.dataset.act === 'ban';
+      const m = members.find((x) => x.id === btn.dataset.id), a = btn.dataset.act;
       const who = m ? (m.name || m.email) : 'สมาชิกคนนี้';
-      if (!confirm(ban ? `ระงับการใช้งานของ ${who}?
-จะถูกออกจากระบบภายใน ~30 วินาที และล็อกอินใหม่ไม่ได้ (คืนสิทธิ์ได้ทีหลัง)` : `คืนสิทธิ์ให้ ${who}?`)) return;
+      const ask = a === 'ban' ? `ระงับการใช้งานของ ${who}?
+จะถูกออกจากระบบภายใน ~30 วินาที และล็อกอินใหม่ไม่ได้ (คืนสิทธิ์ได้ทีหลัง)` : `คืนสิทธิ์ให้ ${who}?`;
+      if (!confirm(ask)) return;
       btn.disabled = true;
       try {
         const r = await fetch('/api/admin/ban', { method: 'POST', headers: { 'x-user-id': btn.dataset.id, 'x-action': btn.dataset.act } });

@@ -4,7 +4,7 @@
 // Clerk's public keys and sets the site's own signed cookie (14 days). Without the cookie only /login.html and its icons
 // are served — no app code, no signal data. Also: /api/me, /api/logout, /api/push (web-push devices in the private Blob
 // store, access/push-subs.json, read by scripts/push.js), /api/visit, and the admin back office (/admin.html,
-// /api/admin/members, /api/admin/log — ADMIN_EMAILS only).
+// /api/admin/members, /api/admin/log, /api/admin/ban — ADMIN_EMAILS only), and the new-member queue (access/new-members.json).
 // Env: ACCESS_SECRET (cookie signing), CLERK_SECRET_KEY (names / emails), BLOB_READ_WRITE_TOKEN, ADMIN_EMAILS (comma list).
 // NO imports on purpose: Vercel does not ship node_modules with Routing Middleware (with @vercel/blob imported, production
 // failed "Cannot find module '@vercel/blob'", and a bundled copy wouldn't load as a module). The Blob store is reached
@@ -116,7 +116,7 @@ async function session(request) {
   const id = await clerkUser(token);
   if (!id || !process.env.ACCESS_SECRET) return json({ ok: false, error: 'เข้าสู่ระบบไม่สำเร็จ' }, 401);
   if ((await bannedIds()).includes(id)) return json({ ok: false, banned: true, error: 'บัญชีนี้ถูกระงับการใช้งาน' }, 403);
-  let name = '', email = '';
+  let name = '', email = '', created = 0, method = '';
   try { // name and email for the account page (the session token doesn't carry them)
     const r = await fetch(`https://api.clerk.com/v1/users/${encodeURIComponent(id)}`, { headers: { authorization: `Bearer ${(process.env.CLERK_SECRET_KEY || '').trim()}` } });
     if (r.ok) {
@@ -124,16 +124,21 @@ async function session(request) {
       const primary = (u.email_addresses || []).find((e) => e.id === u.primary_email_address_id) || (u.email_addresses || [])[0];
       email = primary ? primary.email_address : '';
       name = [u.first_name, u.last_name].filter(Boolean).join(' ') || email;
+      created = u.created_at || 0;
+      method = (u.external_accounts || []).some((a) => /google/.test(a.provider)) ? 'Google' : 'อีเมล';
     }
   } catch (e) { /* the cookie still works without them */ }
   const data = btoa(unescape(encodeURIComponent(JSON.stringify({ id, name, email }))));
   const exp = Date.now() + DAYS * 864e5;
   await logEvent(request, { id, name, email }, 'login').catch(() => {});
+  // Just signed up (account under 15 minutes old): queue a "new member" message for the admins (scripts/new-members.js)
+  if (created && Date.now() - created < 15 * 60e3 && !isAdmin({ email })) await queueNewMember(request, { id, name, email, method }).catch(() => {});
   return json({ ok: true }, 200, { 'set-cookie': cookieOut(`${data}.${exp}.${await sign(`${data}.${exp}`)}`, DAYS * 86400) });
 }
 
 // Web-push devices of the signed-in member: GET → their devices, POST {endpoint, keys, device} → add, DELETE {endpoint}
-async function pushApi(request, who) {
+async function pushApi(request, m) {
+  const who = m.id;
   const all = await readJson(SUBS, { subs: [] });
   const mine = () => all.subs.filter((s) => s.who === who);
   if (request.method === 'GET') return json({ subs: mine().map(({ endpoint, device, at }) => ({ endpoint, device, at })) });
@@ -147,7 +152,7 @@ async function pushApi(request, who) {
   all.subs = all.subs.filter((s) => s.endpoint !== body.endpoint);
   if (request.method === 'POST') {
     if (!body.keys || !body.keys.p256dh || !body.keys.auth) return json({ ok: false }, 400);
-    all.subs.unshift({ who, endpoint: body.endpoint, keys: body.keys, device: String(body.device || '').slice(0, 40), at: Date.now() });
+    all.subs.unshift({ who, ...(isAdmin(m) ? { admin: true } : {}), endpoint: body.endpoint, keys: body.keys, device: String(body.device || '').slice(0, 40), at: Date.now() });
     const keep = new Map(); // at most 5 devices per member
     all.subs = all.subs.filter((s) => { const n = (keep.get(s.who) || 0) + 1; keep.set(s.who, n); return n <= 5; });
   }
@@ -174,8 +179,11 @@ export default async function middleware(request) {
     if (page) return new Response(null, { status: 302, headers: { location: '/login.html', 'cache-control': 'no-store' } });
     return new Response('ต้องเข้าสู่ระบบก่อน', { status: 401, headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' } });
   }
-  if (path === '/api/me') return json({ name: who.name, email: who.email, admin: isAdmin(who) });
-  if (path === '/api/push') return pushApi(request, who.id);
+  if (path === '/api/me') {
+    if (isAdmin(who)) await markAdminDevices(who.id).catch(() => {});
+    return json({ name: who.name, email: who.email, admin: isAdmin(who) });
+  }
+  if (path === '/api/push') return pushApi(request, who);
   if (path === '/api/visit' && request.method === 'POST') { await logEvent(request, who, 'visit').catch(() => {}); return json({ ok: true }); }
   // Back office: members and the access log — admins only (ADMIN_EMAILS)
   if (path === '/admin.html' || path.startsWith('/api/admin/')) {
@@ -207,6 +215,26 @@ async function logEvent(request, m, type) {
   all.events.push({ at: Date.now(), type, id: m.id, name: m.name, email: m.email, device: device(h.get('user-agent') || ''), country: h.get('x-vercel-ip-country') || '', city });
   all.events = all.events.slice(-5000);
   await writeJson(LOG, all);
+}
+// "New member" messages for the admins: the sign-in queues one in access/new-members.json; scripts/new-members.js (GitHub
+// Actions, every 15 min) sends it as a push notification to the admins' devices (and to the owner's LINE if LINE_OWNER_ID
+// is set) and empties the queue. Admin devices are marked admin: true (when switched on, or on the admin's next visit).
+const NEWQ = 'access/new-members.json';
+async function queueNewMember(request, m) {
+  const h = request.headers;
+  let city = h.get('x-vercel-ip-city') || '';
+  try { city = decodeURIComponent(city); } catch (e) { /* keep raw */ }
+  const q = await readJson(NEWQ, { pending: [], sent: [] });
+  if (q.pending.some((p) => p.id === m.id) || (q.sent || []).includes(m.id)) return;
+  q.pending.push({ ...m, at: Date.now(), device: device(h.get('user-agent') || ''), place: [city, h.get('x-vercel-ip-country') || ''].filter(Boolean).join(', ') });
+  await writeJson(NEWQ, q);
+}
+let adminMarked = new Set(); // per instance: an admin's devices already checked
+async function markAdminDevices(id) {
+  if (adminMarked.has(id)) return;
+  const all = await readJson(SUBS, { subs: [] });
+  if (all.subs.some((s) => s.who === id && !s.admin)) await writeJson(SUBS, { ...all, subs: all.subs.map((s) => (s.who === id ? { ...s, admin: true } : s)) });
+  adminMarked.add(id);
 }
 // Suspend / restore a member (headers x-user-id, x-action: ban | unban): our list signs them out within ~30 s, and Clerk's
 // ban stops new sign-ins. Admins can't be suspended (no locking yourself out).
