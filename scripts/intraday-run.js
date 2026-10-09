@@ -59,7 +59,7 @@ function newsWarning(n, open) {
     const lines = targetEvents(t, sent, now);
     store.trades[i] = { ...t, alerts: sent };
     if (lines.length) {
-      if (SIG.isFinal(t)) lines.push(sumLine(SIG.summary(store.trades, SPREAD)), `ดูสถิติ: ${SITE_URL}/#stats`);
+      if (SIG.isFinal(t)) lines.push(sumLine(SIG.summary(store.trades, SPREAD)), `ดูกราฟ: ${SITE_URL}/#chart`);
       important.push(`⏱️ สัญญาณ 30 นาที — ไม้${t.side === 'BUY' ? 'ซื้อ' : 'ขาย'}ที่ ${money(t.entry)} (${at(t.createdAt)} น.)\n${lines.join('\n')}`);
     }
     console.log(`open trade ${t.id} ${t.side} status=${t.status} hit=${t.hit || 0} pnl=${t.pnl}`);

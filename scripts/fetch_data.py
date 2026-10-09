@@ -92,7 +92,7 @@ def m15_binance(session):
 
 
 CALENDAR = ("https://endpoints.investing.com/pd-instruments/v1/calendars/economic/events/occurrences"
-            "?domain_id=1&limit=60&country_ids=5&importances=high")
+            "?domain_id=1&limit=60&country_ids=5&importance=high")  # importance (singular): importances= is ignored and returned medium/low too
 
 
 def news(session):

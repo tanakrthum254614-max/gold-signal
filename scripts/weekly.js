@@ -95,7 +95,7 @@ function section(name, trades) {
     `รวมทั้งสัปดาห์: ${signed(total)}/ออนซ์ (หักสเปรด $${SPREAD}/ไม้แล้ว)`,
     `= ถ้าเทรดไม้ละ 0.01 lot ได้ ${signed(total)} · 0.10 lot ได้ ${signed(total * 10)}`];
   if (best && all.length > 1) lines.push(`ไม้ดีที่สุด: ${label(best)}`, `ไม้แย่ที่สุด: ${label(worst)}`);
-  lines.push(`เทียบสัปดาห์ก่อน: ${signed(prevTotal)} → ${total >= prevTotal ? 'ดีขึ้น ▲' : 'แย่ลง ▼'}`, '', `ดูสถิติทั้งหมด: ${SITE_URL}/#stats`);
+  lines.push(`เทียบสัปดาห์ก่อน: ${signed(prevTotal)} → ${total >= prevTotal ? 'ดีขึ้น ▲' : 'แย่ลง ▼'}`, '', `ดูสัญญาณ: ${SITE_URL}/#chart`);
   const text = lines.join('\n');
   console.log(text);
 

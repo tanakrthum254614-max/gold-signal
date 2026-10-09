@@ -17,9 +17,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610091900">
-  <link rel="stylesheet" href="live.css?v=202610091900">
-  <link rel="stylesheet" href="theme.css?v=202610091900" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610092100">
+  <link rel="stylesheet" href="live.css?v=202610092100">
+  <link rel="stylesheet" href="theme.css?v=202610092100" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -110,7 +110,7 @@
 
     <nav class="tabbar five" id="tabbar">
       <a href="#home" data-tab="home"><span>🎯</span>สัญญาณ</a>
-      <a href="#stats" data-tab="stats"><span>📊</span>สถิติ</a>
+      <a href="#stats" data-tab="stats"><span>📰</span>ข่าวสหรัฐ</a>
       <a href="#chart" data-tab="chart"><span>📈</span>กราฟ</a>
       <a href="#learn" data-tab="learn"><span>📖</span>วิธีใช้</a>
       <a href="#account" data-tab="account"><span>👤</span>บัญชี</a>
@@ -180,7 +180,6 @@
         </div>
 
         <div id="inTrade"></div>
-        <a class="lv-strip" id="lvStrip" href="#stats" hidden></a>
 
         <!-- Odds for each side, as donuts -->
         <h3 class="sec-title">🎯 ถ้าเข้าตอนนี้ — โอกาสแต่ละจุด <span class="lv-tag">สด</span></h3>
@@ -235,14 +234,6 @@
           </div>
 
           <div class="side-col">
-            <a class="card mini-stats" href="#stats">
-              <h3>ผลงานสัญญาณ 30 นาที (ระบบหลัก)</h3>
-              <div class="ms-big"><span class="win" id="msWin">0</span><small>ชนะ</small><span class="loss" id="msLoss">0</span><small>แพ้</small></div>
-              <p id="msLine" class="muted">เพิ่งเริ่มบันทึก</p>
-              <div class="dots" id="msDots"></div>
-              <span class="more">ดูสถิติทั้งหมด →</span>
-            </a>
-
             <div class="card market">
               <h3>ตลาดทองตอนนี้</h3>
               <div class="mk-price"><span class="mono" id="mkPrice">—</span> <small class="muted">ดอลลาร์/ออนซ์ (XAU/USD)</small></div>
@@ -255,94 +246,35 @@
       </section>
 
       <!-- 📊 Stats -->
+      <!-- 📰 US news stats (newsstats.js) — the site is for signals and US news (user, 9 Oct); no live-trade record here -->
       <section id="tab-stats" class="tab st-dash" hidden>
-
-        <!-- Dashboard (user, 9 Oct: "เปลี่ยนหน้าสถิติใหม่ทั้งหมด ดูธรรมดามาก"): headline numbers of the main system,
-             the trades on a price chart like the chart tab, recent trades, every timeframe as a card -->
-        <section class="st-hero">
+        <section class="st-hero ns-hero">
           <div class="st-hero-top">
-            <div><span class="st-eyebrow">📊 ผลงานจริง · ระบบหลัก</span><h2 class="st-title">สัญญาณ 30 นาที <span class="st-live"><i></i>บันทึกสด</span></h2></div>
-            <p class="small beat" id="statsBeat" hidden></p>
+            <div><span class="st-eyebrow">📰 สถิติข่าวเศรษฐกิจสหรัฐ · ข่าวที่มีผลกับราคาทอง</span><h2 class="st-title">ข่าวแรงสหรัฐ <span class="st-live"><i></i>อัปเดตสด</span></h2></div>
           </div>
-          <div class="st-kpis" id="stKpis"></div>
-        </section>
-
-        <div class="st-main">
-          <section class="card st-chart" id="tcCard">
-            <div class="st-chart-head">
-              <h3>📈 ไม้จริงบนกราฟ</h3>
-              <div class="tc-tfs" id="tcTfs"></div>
-            </div>
-            <p class="tc-sum" id="tcSum"></p>
-            <div id="tcChart" class="tc-chart"></div>
-            <p class="tc-detail" id="tcDetail"></p>
-            <p class="small muted" id="tcNote"></p>
-            <button type="button" class="btn tc-open" id="tcOpen">เปิดหน้ากราฟกรอบนี้ →</button>
-          </section>
-          <aside class="card st-side">
-            <h3>🧾 ไม้ล่าสุด <span class="muted small" id="tcListTf"></span></h3>
-            <div class="tc-list" id="tcList"></div>
-          </aside>
-        </div>
-
-        <!-- Live record vs what the test promised: is the system still working? -->
-        <section class="card lv-card" id="lvCard">
-          <h3>🧪 ผลจริงเทียบกับที่ทดสอบไว้ — ระบบหลัก 30 นาที</h3>
-          <p class="hint">ถ้าระบบยังใช้ได้ ผลจริงสะสม (เส้นทอง) ควรอยู่ในแถบสีเทา (ช่วงปกติจากผลทดสอบ) · หลุดใต้แถบ = ระบบอาจใช้ไม่ได้แล้ว ควรหยุดหรือลดขนาดไม้</p>
-          <div class="lv-status" id="lvStatus"></div>
-          <div class="lv-grid"><div id="lvTiles" class="lv-tiles"></div><svg id="lvChart" class="lv-chart" viewBox="0 0 600 220" preserveAspectRatio="none"></svg></div>
-          <div id="lvRecent"></div>
-        </section>
-
-        <section class="card" id="csCard">
-          <h3>🧭 ทุกกรอบเวลา — ผลจริงเทียบผลทดสอบ</h3>
-          <p class="hint">กดการ์ดเพื่อดูไม้ของกรอบนั้นบนกราฟด้านบน · ต้องมีอย่างน้อย ~20 ไม้ต่อกรอบถึงจะบอกได้ว่าแม่นจริงไหม · ผลหักสเปรดตามที่ตั้งไว้</p>
-          <div class="st-tfgrid" id="csTable"></div>
-          <p class="small muted" id="csFoot"></p>
-        </section>
-
-        <details class="fold stats-more">
-          <summary>ข้อมูลเพิ่มเติม — ทดสอบ 1 ปีล่าสุด · สูตรรายวัน · วิธีนับชนะ–แพ้</summary>
-        <section class="card bt">
-          <h3>⏱️ สัญญาณ 30 นาที — ทดสอบช่วง 1 ปีล่าสุด <span class="tag neutral">จำลอง</span></h3>
-          <p class="hint">ใช้โค้ดตัดสินใจชุดเดียวกับของจริง บนข้อมูล Binance PAXG (แท่ง 5 ชม. สร้างจากแท่ง 1 ชม.)</p>
-          <div class="tiles" id="inBtTiles"></div>
-          <p class="bt-note up" id="inBtNote"></p>
-          <div id="inBtChart" class="chart-eq"></div>
-        </section>
-
-        <h3 class="sec-title">🧭 สูตรรายวัน (ตลาดเปิด) — ข้อมูลประกอบ</h3>
-        <section class="card">
-          <h3>📅 สูตรรายวัน — ติดตามผล <span class="tag neutral">ไม่ได้แนะนำให้เข้า</span></h3>
-          <p class="hint" id="liveSince">บันทึกทุกสัญญาณที่ส่งจริง ไม่ตัดทิ้ง ไม่แก้ย้อนหลัง</p>
-          <div class="tiles" id="liveTiles"></div>
-          <div id="liveChart" class="chart-eq"></div>
+          <div class="ns-hero-grid">
+            <div class="ns-next" id="nsNext"><p class="muted">กำลังโหลดปฏิทินข่าว…</p></div>
+            <div class="st-kpis ns-kpis" id="nsKpis"></div>
+          </div>
         </section>
 
         <section class="card">
-          <h3>ประวัติสัญญาณ</h3>
-          <div class="history" id="history"><p class="muted">ยังไม่มีสัญญาณ</p></div>
-        </section>
-
-        <section class="card bt">
-          <h3>ทดสอบย้อนหลัง 1 ปี <span class="tag neutral">จำลอง</span></h3>
-          <p class="hint">ใช้กติกาเดียวกันกับสัญญาณจริง (ทุกวันทำการ · เข้าตอนตลาดเปิด · SL $15 · ปิด ⅓ ที่ TP $15 / $20 / $30 · ถึง TP1 แล้วเลื่อน SL ไปที่ทุน) ย้อนหลังทุกวันทำการ 1 ปี (ข้อมูลราคาจาก Binance PAXG และทิศทางจากเครื่องมือของเราเอง เพราะ investing.com ไม่เก็บผลวิเคราะห์ย้อนหลัง) กำไรหักสเปรดตามที่ตั้งไว้ในแท็บบัญชีแล้ว (ยังไม่รวมค่าคอมมิชชันของโบรก)</p>
-          <div class="tiles" id="btTiles"></div>
-          <p class="bt-note" id="btNote"></p>
-          <div id="btChart" class="chart-eq"></div>
+          <h3>📅 ข่าวที่จะออก 8 วันข้างหน้า</h3>
+          <p class="hint">เวลาไทย · เฉพาะข่าวความสำคัญสูงของสหรัฐจาก investing.com · “คาด” = ตัวเลขที่นักวิเคราะห์คาดไว้</p>
+          <div class="ns-list" id="nsWeek"></div>
         </section>
 
         <section class="card">
-          <h3>นับชนะ–แพ้ยังไง?</h3>
-          <ul class="why">
-            <li><b>✅ ชนะ</b> — ราคาถึง <b>TP1</b> ก่อน SL (จากนั้นนับต่อว่าไปถึง TP2 / TP3 หรือไม่)</li>
-            <li><b>❌ แพ้</b> — ราคาโดน <b>SL</b> ก่อนถึง TP1 (ถ้าแท่ง 15 นาทีเดียวโดนทั้งคู่ นับเป็นแพ้)</li>
-            <li><b>⏸ ไม่มีสัญญาณ</b> — วันที่ตลาดไม่ชัด ระบบไม่ให้เทรด ไม่นับชนะหรือแพ้</li>
-            <li><b>ปิดสิ้นวัน</b> — เข้าแล้วแต่ไม่ถึงทั้งเป้าและตัดขาดทุน ปิดที่ราคาเช้าวันถัดไป กำไร = ชนะ ขาดทุน = แพ้</li>
-            <li>กำไร/ขาดทุนคิดเป็น <b>ดอลลาร์ต่อทอง 1 ออนซ์</b> โดยปิด ⅓ ที่แต่ละ TP — ครบ 3 เป้า = <b>+$21.67</b> · โดน SL = <b>−$15</b></li>
-          </ul>
+          <h3>🧮 ข่าวไหนทำให้ทองวิ่งแรงที่สุด</h3>
+          <p class="hint">จากข่าวที่ออกแล้ว 60 วัน · *ไปตามตำรา = ข่าวดีกว่าคาดแล้วทองลง หรือแย่กว่าคาดแล้วทองขึ้น ใน 1 ชม. (ไม่นับข่าวที่ออกตามคาด)</p>
+          <div class="ns-table" id="nsTable"></div>
         </section>
-        </details>
+
+        <section class="card">
+          <h3>📊 ข่าวที่ออกแล้ว — ผลจริงเทียบคาด และทองขยับเท่าไร</h3>
+          <p class="hint">60 วันล่าสุด · <span class="ns-chip pos">ดีกว่าคาด</span> = ดีต่อดอลลาร์ ทองมักลง · <span class="ns-chip neg">แย่กว่าคาด</span> = ดอลลาร์อ่อน ทองมักขึ้น · ราคาทองหลังข่าววัดจากราคาตอนข่าวออก (PAXG แท่ง 5 นาที)</p>
+          <div class="ns-list" id="nsPast"></div>
+        </section>
       </section>
 
       <!-- 📈 Chart -->
@@ -506,7 +438,7 @@
             <li><b>บนกราฟ:</b> ▲ เขียว / ▼ แดง พร้อมป้ายราคา = จุดที่ระบบเข้าจริง · กล่องทางขวา = เขียวถึง TP แดงถึง SL · เส้นทอง/เขียว/แดงสั้น ๆ = ไม้ที่ปิดแล้ว (✓ ถึง TP · ✗ โดน SL)</li>
             <li><b>ดูประกอบเท่านั้น:</b> เส้นโค้งสีทอง = กรอบราคา · แถบแดง/เขียว = แนวต้าน/แนวรับ · “ความมั่นใจของ investing.com” ในการ์ดขวา — ไม่ใช่สัญญาณเข้า</li>
           </ol>
-          <p class="muted small">ปุ่ม “📊 แสดงเส้นอินดิเคเตอร์” เปิด EMA/Bollinger/ลูกศรทุกแท่งกลับมาได้ · ผลจริงของทุกกรอบดูได้ที่หน้าสถิติ · ทุกระบบไม่รับประกันกำไร ตั้ง SL ทุกครั้ง</p>
+          <p class="muted small">ปุ่ม “📊 แสดงเส้นอินดิเคเตอร์” เปิด EMA/Bollinger/ลูกศรทุกแท่งกลับมาได้ · ผลจริงของทุกกรอบดูได้ที่หน้ากราฟ (การ์ดของแต่ละกรอบ) · ทุกระบบไม่รับประกันกำไร ตั้ง SL ทุกครั้ง</p>
         </section>
 
         <section class="card">
@@ -554,7 +486,7 @@
         <section class="card">
           <h3>ข้อควรระวัง ⚠️</h3>
           <p>สัญญาณเป็นการวิเคราะห์ทางเทคนิคอัตโนมัติ <b>ไม่ใช่คำแนะนำการลงทุน</b> ไม่มีระบบไหนชนะทุกครั้ง
-            ดูผลจริงสะสมที่แท็บสถิติประกอบการตัดสินใจ และ <b>อย่าเสี่ยงเกิน 1–2% ของเงินทุนต่อครั้ง</b></p>
+            ดูผลทดสอบของแต่ละกรอบที่หน้ากราฟประกอบการตัดสินใจ และ <b>อย่าเสี่ยงเกิน 1–2% ของเงินทุนต่อครั้ง</b></p>
         </section>
       </section>
 
@@ -594,7 +526,7 @@
 
         <section class="card">
           <h3>ตั้งค่าการเทรดของฉัน ⚙️</h3>
-          <p class="muted small">ใช้คำนวณขนาดไม้ (lot) ในทุกสัญญาณ และหักสเปรดในหน้าสถิติ — บันทึกไว้กับบัญชีของคุณ</p>
+          <p class="muted small">ใช้คำนวณขนาดไม้ (lot) ในทุกสัญญาณ และหักสเปรดในผลทดสอบ — บันทึกไว้กับบัญชีของคุณ</p>
           <div class="settings">
             <label>ทุนในบัญชีเทรด
               <span class="row"><input id="setCap" type="number" min="0" step="100" placeholder="เช่น 1000"><select id="setCur"><option value="USD">ดอลลาร์ (USD)</option><option value="THB">บาท (THB)</option></select></span>
@@ -637,19 +569,20 @@
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610091900"></script>
-  <script src="auth.js?v=202610091900"></script>
-  <script src="indicators.js?v=202610091900"></script>
-  <script src="investing.js?v=202610091900"></script>
-  <script src="explain.js?v=202610091900"></script>
-  <script src="dailyplan.js?v=202610091900"></script>
-  <script src="signals.js?v=202610091900"></script>
-  <script src="intraday.js?v=202610091900"></script>
-  <script src="pwa.js?v=202610091900"></script>
-  <script src="ui.js?v=202610091900"></script>
-  <script src="main.js?v=202610091900"></script>
-  <script src="tradeplan.js?v=202610091900"></script>
-  <script src="chartsys.js?v=202610091900"></script>
-  <script src="chartzones.js?v=202610091900"></script>
+  <script src="config.js?v=202610092100"></script>
+  <script src="auth.js?v=202610092100"></script>
+  <script src="indicators.js?v=202610092100"></script>
+  <script src="investing.js?v=202610092100"></script>
+  <script src="explain.js?v=202610092100"></script>
+  <script src="dailyplan.js?v=202610092100"></script>
+  <script src="signals.js?v=202610092100"></script>
+  <script src="intraday.js?v=202610092100"></script>
+  <script src="pwa.js?v=202610092100"></script>
+  <script src="ui.js?v=202610092100"></script>
+  <script src="main.js?v=202610092100"></script>
+  <script src="tradeplan.js?v=202610092100"></script>
+  <script src="chartsys.js?v=202610092100"></script>
+  <script src="chartzones.js?v=202610092100"></script>
+  <script src="newsstats.js?v=202610092100"></script>
 </body>
 </html>

@@ -32,7 +32,7 @@ function exitText(s, sum) {
     win ? `✅ ถึงเป้าหมาย (TP) แล้ว! (${at(s.exitAt)} น.)` : `❌ โดนตัดขาดทุน (SL) (${at(s.exitAt)} น.)`,
     `${s.side === 'BUY' ? 'ซื้อ' : 'ขาย'}ที่ ${money(s.entry)} → ปิดที่ ${money(s.exitPrice)} = ${signed(s.pnl)}/ออนซ์`,
     `ผลงานสะสม: ชนะ ${sum.wins} · แพ้ ${sum.losses}${sum.winRate != null ? ` (ชนะ ${sum.winRate}%)` : ''} · ${signed(sum.pnl)}/ออนซ์`,
-    `ดูสถิติ: ${SITE_URL}/#stats`,
+    `ดูกราฟ: ${SITE_URL}/#chart`,
   ].join('\n');
 }
 
@@ -61,7 +61,7 @@ function exitText(s, sum) {
   if (s.tps) {
     const lines = targetEvents(s, sent, now);
     if (lines.length) {
-      if (SIG.isFinal(s)) lines.push(sumLine(SIG.summary([...others, s], SPREAD)), `ดูสถิติ: ${SITE_URL}/#stats`);
+      if (SIG.isFinal(s)) lines.push(sumLine(SIG.summary([...others, s], SPREAD)), `ดูกราฟ: ${SITE_URL}/#chart`);
       messages.push({ type: 'text', text: lines.join('\n') });
     }
   } else if ((s.closedBy === 'tp' || s.closedBy === 'sl') && !sent.exit) {
