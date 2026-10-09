@@ -49,7 +49,7 @@
   }
 
   const shareUrl = location.origin + location.pathname;
-  const shareText = 'ลองใช้ Gold Signal — สัญญาณเทรดทองวันละ 1 ครั้ง พร้อมสถิติชนะ–แพ้จริง';
+  const shareText = 'ลองใช้ Gold Signal — สัญญาณเทรดทองคำ Buy/Sell ทุกกรอบเวลา พร้อมจุดเข้า TP/SL และผลชนะ–แพ้จริง (สมัครสมาชิกฟรี)';
   $('shareLine').href = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
   $('shareCopy').addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(shareUrl); toast('คัดลอกลิงก์แล้ว ส่งให้เพื่อนได้เลย'); }
