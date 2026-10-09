@@ -785,6 +785,14 @@ function tcDraw() {
   if (html !== v.html) { v.html = html; v.el.innerHTML = html; }
 }
 
+// The view a timeframe opens on, applied once the chart has a width: set while the stats tab is hidden (width 0) the
+// chart fell back to its smallest bar spacing and kept it, so the candles showed as a thin strip on the right (9 Oct)
+function tcApplyRange() {
+  if (!tcView || !tcView.want || !$('tcChart').clientWidth) return;
+  tcView.chart.timeScale().setVisibleLogicalRange(tcView.want);
+  tcView.want = null;
+}
+
 async function renderTradeChart() {
   if (!$('tcCard') || !window.CHARTSYS) return;
   state.tc = state.tc || { tf: MAIN_TF, sel: null };
@@ -818,14 +826,14 @@ async function renderTradeChart() {
     const el = document.createElement('div'); el.className = 'pbox-layer cz-decor'; host.appendChild(el);
     tcView = { chart, series, el, lines: [], key: '', items: [] };
     chart.timeScale().subscribeVisibleLogicalRangeChange(tcDraw);
-    new ResizeObserver(tcDraw).observe(host);
+    new ResizeObserver(() => { tcApplyRange(); tcDraw(); }).observe(host);
     applyChartTheme();
   }
   const key = `${tf}|${bars.length}|${bars.length ? bars[bars.length - 1].time : 0}`;
   if (key !== tcView.key) {
     tcView.series.setData(bars.map((b) => ({ time: b.time + TZ, open: b.open, high: b.high, low: b.low, close: b.close })));
     // A new timeframe opens on the latest ~120 candles (all of them squeezed the trade tags into a pile)
-    if (!tcView.key.startsWith(`${tf}|`)) tcView.chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, bars.length - 120), to: bars.length + 4 });
+    if (!tcView.key.startsWith(`${tf}|`)) { tcView.want = { from: Math.max(0, bars.length - 120), to: bars.length + 4 }; tcApplyRange(); }
     tcView.key = key;
   }
   // What to draw: every trade inside the loaded candles
