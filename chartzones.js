@@ -318,8 +318,9 @@ function ago(ms) {
     const rect = (ya, yb, cls) => `<div class="pbox ${cls}" style="left:${x0}px;width:${W - x0}px;top:${Math.min(ya, yb)}px;height:${Math.max(2, Math.abs(ya - yb))}px"></div>`;
     const buy = p.side > 0, risk = Math.abs(p.entry - p.sl);
     // Tags sit at the right edge next to the price scale; spread apart vertically when prices are close
+    // (the big "🎯 ซื้อ 4,199.55 ระบบที่ทดสอบแล้ว · ตั้งแต่ …" entry tag was removed — user, 10 Oct: "เอาอันนี้ออก";
+    // the gold entry line and the price-scale label still show the entry)
     const tags = [
-      { y: ye, cls: `entry ${buy ? 'buy' : 'sell'}`, h: 30, html: `🎯 ${buy ? 'ซื้อ' : 'ขาย'} <b>${f2(p.entry)}</b> <small>${p.who}${p.since ? ` · ตั้งแต่ ${clock(p.since)} (${ago(p.since)})` : ''}</small>` },
       { y: ys, cls: 'sl', h: 20, html: p.be ? `SL ที่ทุน ${f2(p.sl)} · ถึง TP1 แล้ว ไม่มีทางขาดทุน` : `SL ${f2(p.sl)} · −${f2(risk)}` },
       ...p.tps.map((tp, i) => ({ y: y(tp), cls: 'tp', h: 20, html: `TP${i + 1} ${f2(tp)} · +$${f2(Math.abs(tp - p.entry))}${risk ? ` · ${(Math.abs(tp - p.entry) / risk).toFixed(1)}R` : ''}` })),
     ].filter((t) => t.y != null).sort((a, b2) => a.y - b2.y);

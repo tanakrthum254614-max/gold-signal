@@ -694,3 +694,17 @@ h3 .tag { margin-left: 6px; vertical-align: 1px; }
 .news-live a { margin-left: auto; font-weight: 700; color: inherit; }
 .news-live.soon { animation: nlPulse 2s infinite; }
 @keyframes nlPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(240,180,41,.0); } 50% { box-shadow: 0 0 0 4px rgba(240,180,41,.18); } }
+
+/* News items open to explain the release (newsstats.js) */
+details.ns-item > summary { list-style: none; cursor: pointer; }
+details.ns-item > summary::-webkit-details-marker { display: none; }
+.ns-open { margin-left: 8px; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
+.ns-open::after { content: ' ▾'; }
+details.ns-item[open] .ns-open::after { content: ' ▴'; }
+details.ns-item[open] .ns-open { color: #d99a10; border-color: rgba(240,180,41,.5); }
+.ns-about { margin: 8px 0 4px; padding: 10px 12px; border-radius: 10px; background: var(--panel-2, rgba(105,115,134,.08)); font-size: 13.5px; line-height: 1.65; }
+.ns-about p { margin: 0 0 6px; } .ns-about p:last-child { margin-bottom: 0; }
+.ns-en { color: var(--muted); font-size: 12.5px; }
+.ns-src { font-size: 12px; color: var(--muted); } .ns-src a { color: #d99a10; font-weight: 600; }
+.ns-next .ns-about { background: rgba(255,255,255,.07); color: #f3f5f9; } .ns-next .ns-en, .ns-next .ns-src { color: rgba(243,245,249,.7); }
+.ns-next .ns-open { color: rgba(243,245,249,.8); border-color: rgba(255,255,255,.25); }

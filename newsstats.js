@@ -9,7 +9,7 @@
   const CAL = 'https://endpoints.investing.com/pd-instruments/v1/calendars/economic/events/occurrences?domain_id=1&country_ids=5&importance=high&limit=300';
   const KL = 'https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT&interval=5m';
   const DAYS_BACK = 60;
-  const ns = { at: 0, past: [], next: [], loading: false, moves: new Map(), showPast: 10, showTable: 10 };
+  const ns = { at: 0, past: [], next: [], loading: false, moves: new Map(), showPast: 10, showTable: 10, openItems: new Set() };
   // Thai names for the releases that move gold most (matched on investing.com's English name)
   const TH = [
     [/nonfarm payrolls/i, 'การจ้างงานนอกภาคเกษตร (NFP)'], [/unemployment rate/i, 'อัตราว่างงาน'], [/core cpi/i, 'เงินเฟ้อพื้นฐาน (Core CPI)'],
@@ -23,6 +23,42 @@
     [/philadelphia fed/i, 'ดัชนีการผลิต Philadelphia Fed'], [/chicago pmi/i, 'PMI ชิคาโก'], [/meeting minutes/i, 'รายงานการประชุม Fed'], [/pmi/i, 'PMI'],
   ];
   const thName = (en) => { const m = TH.find(([re]) => re.test(en)); return m ? m[1] : ''; };
+  // What each release is, in plain Thai, and how gold usually reacts (opened by tapping a news item)
+  const ABOUT = [
+    [/nonfarm payrolls/i, 'จำนวนคนที่ได้งานใหม่ในสหรัฐเดือนที่แล้ว (ไม่นับภาคเกษตร) — ตัวเลขเศรษฐกิจที่ตลาดจับตามากที่สุด ออกวันศุกร์แรกของเดือน', 'มากกว่าคาด = เศรษฐกิจแข็ง ดอลลาร์แข็ง → ทองมักลง · น้อยกว่าคาด → ทองมักขึ้น · ทองวิ่งแรงมากใน 1–2 นาทีแรก'],
+    [/unemployment rate/i, 'สัดส่วนคนว่างงานต่อกำลังแรงงานทั้งหมดของสหรัฐ ออกพร้อม NFP', 'ว่างงานสูงกว่าคาด = เศรษฐกิจอ่อน Fed อาจลดดอกเบี้ย → ทองมักขึ้น'],
+    [/average hourly earnings/i, 'ค่าแรงเฉลี่ยต่อชั่วโมงของลูกจ้าง — บอกแรงกดดันเงินเฟ้อจากค่าจ้าง ออกพร้อม NFP', 'ค่าแรงขึ้นมากกว่าคาด = เงินเฟ้อสูง Fed อาจคงดอกเบี้ยสูง → ทองมักลง'],
+    [/core cpi/i, 'เงินเฟ้อพื้นฐาน: ราคาสินค้าและบริการที่ผู้บริโภคจ่าย ไม่รวมอาหารและพลังงานที่ผันผวน — ตัวที่ Fed ใช้ดูแนวโน้มเงินเฟ้อ', 'สูงกว่าคาด = Fed อาจคงหรือขึ้นดอกเบี้ย ดอลลาร์แข็ง → ทองมักลง · ต่ำกว่าคาด → ทองมักขึ้น'],
+    [/\bcpi\b/i, 'ดัชนีราคาผู้บริโภค: เงินเฟ้อทั่วไปของสหรัฐ (ราคาสินค้าและบริการเทียบเดือน/ปีก่อน)', 'เงินเฟ้อสูงกว่าคาด → ดอกเบี้ยอาจสูงนาน ทองมักลงในระยะสั้น · ต่ำกว่าคาด → ทองมักขึ้น'],
+    [/core pce/i, 'เงินเฟ้อจากการใช้จ่ายส่วนบุคคล ไม่รวมอาหารและพลังงาน — ตัวชี้วัดเงินเฟ้อที่ Fed ใช้ตั้งเป้า 2%', 'สูงกว่าคาด → ทองมักลง · ต่ำกว่าคาด → ทองมักขึ้น'],
+    [/\bpce\b/i, 'ดัชนีราคาการใช้จ่ายส่วนบุคคล (เงินเฟ้ออีกตัวที่ Fed ดู)', 'สูงกว่าคาด → ทองมักลง · ต่ำกว่าคาด → ทองมักขึ้น'],
+    [/\bppi\b/i, 'ดัชนีราคาผู้ผลิต: ราคาที่ผู้ผลิตขายสินค้า — มักส่งต่อเป็นเงินเฟ้อผู้บริโภคในเดือนถัดไป', 'สูงกว่าคาด = เงินเฟ้อกำลังมา → ทองมักลง'],
+    [/interest rate decision|fed rate/i, 'การประชุมคณะกรรมการ Fed ตัดสินอัตราดอกเบี้ยนโยบายของสหรัฐ (ประชุมปีละ 8 ครั้ง) ตามด้วยแถลงข่าวของประธาน Fed', 'ลดดอกเบี้ย / ส่งสัญญาณผ่อนคลาย → ทองมักขึ้นแรง · คงสูง / ส่งสัญญาณเข้ม → ทองมักลง · เป็นข่าวที่ทองวิ่งแรงที่สุด'],
+    [/meeting minutes|fomc/i, 'รายงานการประชุม Fed ครั้งก่อน (ออกหลังประชุม 3 สัปดาห์) — บอกว่ากรรมการคิดอย่างไรเรื่องดอกเบี้ย', 'ถ้าส่วนใหญ่อยากลดดอกเบี้ย → ทองมักขึ้น · อยากคงสูง → ทองมักลง'],
+    [/fed chair|powell|warsh/i, 'ประธาน Fed กล่าวสุนทรพจน์ / ตอบคำถาม — ตลาดฟังว่ามีสัญญาณเรื่องดอกเบี้ยไหม', 'พูดถึงการลดดอกเบี้ย → ทองมักขึ้น · เน้นคุมเงินเฟ้อ → ทองมักลง · ไม่มีตัวเลขคาด ทองอาจแกว่งทั้งสองทาง'],
+    [/\bgdp\b/i, 'ผลิตภัณฑ์มวลรวมในประเทศ: การเติบโตของเศรษฐกิจสหรัฐทั้งไตรมาส (ต่อปี)', 'โตมากกว่าคาด → ดอลลาร์แข็ง ทองมักลง · โตน้อย/หดตัว → ทองมักขึ้น'],
+    [/core retail sales/i, 'ยอดค้าปลีกไม่รวมรถยนต์ — ดูการใช้จ่ายของผู้บริโภคจริง ๆ (ผู้บริโภคคือ 2 ใน 3 ของเศรษฐกิจสหรัฐ)', 'มากกว่าคาด → ทองมักลง · น้อยกว่าคาด → ทองมักขึ้น'],
+    [/retail sales/i, 'ยอดขายของร้านค้าปลีกทั้งหมดในเดือนที่แล้ว — บอกกำลังซื้อของคนอเมริกัน', 'มากกว่าคาด → ทองมักลง · น้อยกว่าคาด → ทองมักขึ้น'],
+    [/initial jobless/i, 'จำนวนคนยื่นขอสวัสดิการว่างงานครั้งแรกในสัปดาห์ที่แล้ว (ออกทุกพฤหัส) — ดูตลาดแรงงานแบบรายสัปดาห์', 'คนขอมากกว่าคาด = ตลาดแรงงานอ่อน → ทองมักขึ้น'],
+    [/ism manufacturing prices|ism non-manufacturing prices|prices paid/i, 'ราคาวัตถุดิบที่ผู้จัดซื้อจ่าย (ส่วนหนึ่งของรายงาน ISM) — บอกแรงกดดันเงินเฟ้อ', 'สูงกว่าคาด → ทองมักลง'],
+    [/ism manufacturing/i, 'ดัชนีผู้จัดซื้อภาคการผลิตของ ISM — เกิน 50 = ภาคการผลิตขยายตัว ต่ำกว่า 50 = หดตัว', 'ดีกว่าคาด → ทองมักลง · แย่กว่าคาด → ทองมักขึ้น'],
+    [/ism non-manufacturing|ism services/i, 'ดัชนีผู้จัดซื้อภาคบริการของ ISM (ภาคบริการคือส่วนใหญ่ของเศรษฐกิจสหรัฐ) — เกิน 50 = ขยายตัว', 'ดีกว่าคาด → ทองมักลง · แย่กว่าคาด → ทองมักขึ้น'],
+    [/jolts/i, 'จำนวนตำแหน่งงานที่เปิดรับในสหรัฐ — บอกว่าบริษัทยังอยากจ้างคนแค่ไหน', 'ตำแหน่งงานมากกว่าคาด → ทองมักลง'],
+    [/adp/i, 'การจ้างงานภาคเอกชนจากบริษัท ADP (ออกก่อน NFP 2 วัน) — ใช้เดาทิศของ NFP', 'จ้างมากกว่าคาด → ทองมักลง'],
+    [/michigan/i, 'ความเชื่อมั่นผู้บริโภคจากผลสำรวจมหาวิทยาลัยมิชิแกน รวมถึงเงินเฟ้อที่คนคาดไว้', 'เชื่อมั่นสูง → ทองมักลงเล็กน้อย · คาดเงินเฟ้อสูง → ทองแกว่ง'],
+    [/cb consumer confidence/i, 'ความเชื่อมั่นผู้บริโภคจาก Conference Board — คนมั่นใจจะใช้จ่ายแค่ไหน', 'สูงกว่าคาด → ทองมักลงเล็กน้อย'],
+    [/durable goods/i, 'คำสั่งซื้อสินค้าคงทน (ใช้นานเกิน 3 ปี เช่น เครื่องจักร รถยนต์ เครื่องบิน) — บอกการลงทุนของธุรกิจ', 'มากกว่าคาด → ทองมักลง'],
+    [/existing home sales/i, 'ยอดขายบ้านมือสองในสหรัฐ — สะท้อนตลาดอสังหาฯ และผลของดอกเบี้ยเงินกู้', 'ผลต่อทองมักน้อย · แย่กว่าคาดมาก → ทองขึ้นเล็กน้อย'],
+    [/new home sales/i, 'ยอดขายบ้านสร้างใหม่ในสหรัฐ', 'ผลต่อทองมักน้อย'],
+    [/crude oil inventories/i, 'สต็อกน้ำมันดิบของสหรัฐรายสัปดาห์ (EIA, ทุกพุธ) — มีผลกับราคาน้ำมันโดยตรง', 'มีผลกับทองไม่มาก ส่วนใหญ่ผ่านมุมมองเงินเฟ้อ'],
+    [/auction/i, 'การประมูลพันธบัตรรัฐบาลสหรัฐ — ดูความต้องการซื้อหนี้สหรัฐ และผลตอบแทน (yield) ที่ได้', 'yield สูงขึ้น → ทองมักลง (ทองไม่มีดอกเบี้ย) · yield ลง → ทองมักขึ้น'],
+    [/philadelphia fed/i, 'ดัชนีภาคการผลิตเขต Philadelphia — เกิน 0 = ขยายตัว', 'ดีกว่าคาด → ทองมักลงเล็กน้อย'],
+    [/chicago pmi/i, 'ดัชนีผู้จัดซื้อเขตชิคาโก — เกิน 50 = ขยายตัว', 'ผลต่อทองมักน้อย'],
+    [/pmi/i, 'ดัชนีผู้จัดซื้อ (PMI) จาก S&P Global — เกิน 50 = ธุรกิจขยายตัว', 'ดีกว่าคาด → ทองมักลงเล็กน้อย'],
+  ];
+  const about = (en) => { const m = ABOUT.find(([re]) => re.test(en || '')); return m ? { what: m[1], gold: m[2] } : null; };
+  // investing.com's own description: HTML-escaped text with <BR/> tags
+  const plain = (s) => { const d = document.createElement('textarea'); d.innerHTML = s || ''; return d.value.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '').trim(); };
   const val = (v, o) => (v == null ? '—' : `${(+v).toLocaleString('en-US', { minimumFractionDigits: o.precision || 0, maximumFractionDigits: o.precision || 0 })}${o.unit || ''}`);
   const usd = (a) => (a === 'positive' ? { cls: 'pos', th: 'ดีกว่าคาด', gold: 'ดอลลาร์แข็ง → ทองมักลง' }
     : a === 'negative' ? { cls: 'neg', th: 'แย่กว่าคาด', gold: 'ดอลลาร์อ่อน → ทองมักขึ้น' } : { cls: 'neu', th: 'ตามคาด', gold: '' });
@@ -84,12 +120,20 @@
 
   function itemLine(o, withActual) {
     const e = o.ev, a = usd(o.actual_to_forecast), th = thName(e.short_name || e.long_name || '');
-    return `<div class="ns-item">
-      <div class="ns-name"><b>${th || e.event_translated || e.short_name || 'US data'}</b>${th ? `<small>${e.event_translated || e.short_name}</small>` : ''}${o.reference_period ? `<span class="ns-per">${o.reference_period}</span>` : ''}</div>
+    // Tap to read what the release is (plain Thai + how gold usually reacts + investing.com's own description and link)
+    const ab = about(e.short_name || e.long_name || e.event_translated), desc = plain(e.description);
+    const key = `${o.event_id}-${o.t}`, open = ns.openItems.has(key);
+    return `<details class="ns-item" data-key="${key}"${open ? ' open' : ''}><summary>
+      <div class="ns-name"><b>${th || e.event_translated || e.short_name || 'US data'}</b>${th ? `<small>${e.event_translated || e.short_name}</small>` : ''}${o.reference_period ? `<span class="ns-per">${o.reference_period}</span>` : ''}<span class="ns-open">อ่าน</span></div>
       <div class="ns-nums">${withActual ? `<span class="ns-act ${a.cls}">จริง <b class="mono">${val(o.actual, o)}</b></span>` : ''}
         <span>คาด <b class="mono">${val(o.forecast, o)}</b></span><span>ก่อนหน้า <b class="mono">${val(o.previous, o)}</b></span>
-        ${withActual ? `<span class="ns-chip ${a.cls}">${a.th}</span>` : ''}</div>
-    </div>`;
+        ${withActual ? `<span class="ns-chip ${a.cls}">${a.th}</span>` : ''}</div></summary>
+      <div class="ns-about">
+        ${ab ? `<p>📖 <b>คืออะไร:</b> ${ab.what}</p><p>🪙 <b>ผลกับทอง:</b> ${ab.gold}</p>` : ''}
+        ${desc ? `<p class="ns-en">${desc.length > 600 ? `${desc.slice(0, 600)}…` : desc}</p>` : ''}
+        <p class="ns-src">${e.source ? `แหล่งข้อมูล: ${e.source} · ` : ''}${e.page_link ? `<a href="https://www.investing.com${e.page_link}" target="_blank" rel="noopener">อ่านต่อ / ดูประวัติที่ investing.com ↗</a>` : ''}</p>
+      </div>
+    </details>`;
   }
 
   // Time left to a release: days / hours, then minutes:seconds in the last hour (ticks every second)
@@ -158,6 +202,12 @@
     ].map(([l, b, s]) => `<div class="st-kpi"><span class="st-kpi-l">${l}</span><b class="mono">${b}</b><small>${s}</small></div>`).join('');
   }
 
+  // keep opened news items open when the lists re-render (every 15 s around a release)
+  document.addEventListener('toggle', (e) => {
+    const d = e.target;
+    if (!d.classList || !d.classList.contains('ns-item')) return;
+    if (d.open) ns.openItems.add(d.dataset.key); else ns.openItems.delete(d.dataset.key);
+  }, true);
   document.addEventListener('click', (e) => {
     const b = e.target.closest('.ns-more');
     if (!b) return;
