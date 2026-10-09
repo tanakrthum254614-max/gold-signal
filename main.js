@@ -577,6 +577,8 @@ function renderSignalHome() {
   $('trNow').hidden = nowPx == null;
   if (nowPx != null) {
     $('trNow').style.left = `${pct(nowPx)}%`;
+    // Near either end the label hangs inward, so it is never cut off by the card edge
+    $('trNow').className = `track-now${pct(nowPx) > 80 ? ' edge-r' : pct(nowPx) < 20 ? ' edge-l' : ''}`;
     $('trNowLabel').textContent = `${final ? 'ปิดที่' : 'ตอนนี้'} ${f2(nowPx)}`;
   }
   $('trLeft').textContent = `🛑 ${f2(s.sl)}`;

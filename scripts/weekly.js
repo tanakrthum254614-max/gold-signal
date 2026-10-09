@@ -1,4 +1,5 @@
-// Saturday-morning weekly report (both systems, after spread) to LINE.
+// Saturday-morning weekly report (the main system = chart 30m, the daily overview, and the other chart timeframes;
+// after spread) to LINE.
 // Also scores any daily signal that expired after Friday's morning run (the morning job is off on weekends).
 // Usage: node scripts/weekly.js data.json      Env: SEND, RECORD, SPREAD_USD, SITE_URL, LINE_CHANNEL_ACCESS_TOKEN
 const fs = require('fs');
@@ -53,16 +54,24 @@ function section(name, trades) {
   const from = weekStart(now), prevFrom = from - 7 * DAY;
   const done = (t) => t.status === 'win' || t.status === 'loss';
   const inWeek = (list, a, b) => list.filter((t) => t.createdAt >= a && t.createdAt < b && done(t));
-  const i30 = section('⏱️ สัญญาณ 30 นาที', inWeek(intra.trades, from, now));
+  // Main system = the chart 30m record (the same as the website and LINE since the merge on 9 Oct 2026); the old
+  // 30-minute record (intraday.json) is listed apart and not counted
+  const main = chart.trades.filter((t) => t.tf === '30m');
+  const i30 = section('⏱️ สัญญาณ 30 นาที (ระบบหลัก)', inWeek(main, from, now));
+  const oldWeek = inWeek(intra.trades, from, now);
+  if (oldWeek.length) { const o = SIG.summary(oldWeek, SPREAD); i30.lines.push(`   (ระบบ 30 นาทีแบบเดิม ก่อนรวมระบบ: ${o.traded} ไม้ · ${signed(o.pnl)} — ไม่นับรวม)`); }
   // Advisory daily calls (overview only, SIG.RULE.advisory) are reported but not counted in the total
   const real = (list) => list.filter((t) => !t.advisory);
   const weekDaily = inWeek(daily.signals, from, now);
   const advisoryOnly = weekDaily.length && !real(weekDaily).length;
-  const d1 = section(advisoryOnly ? '📅 สูตรรายวัน (ข้อมูลประกอบ · ไม่นับรวม)' : '📅 สัญญาณรายวัน', weekDaily);
+  // Only the real daily signals are counted (and shown as such); overview days are listed apart so the lines add up to the total
+  const d1 = section(advisoryOnly ? '📅 สูตรรายวัน (ข้อมูลประกอบ · ไม่นับรวม)' : '📅 สัญญาณรายวัน', advisoryOnly ? weekDaily : real(weekDaily));
+  const advN = weekDaily.length - real(weekDaily).length;
+  if (!advisoryOnly && advN) d1.lines.push(`   (+ ภาพรวมรายวัน ${advN} วัน เป็นข้อมูลประกอบ — ไม่นับรวม)`);
   const total = i30.s.pnl + SIG.summary(real(weekDaily), SPREAD).pnl;
-  const prevTotal = SIG.summary(inWeek(intra.trades, prevFrom, from), SPREAD).pnl + SIG.summary(real(inWeek(daily.signals, prevFrom, from)), SPREAD).pnl;
+  const prevTotal = SIG.summary(inWeek(main, prevFrom, from), SPREAD).pnl + SIG.summary(real(inWeek(daily.signals, prevFrom, from)), SPREAD).pnl;
 
-  const all = [...inWeek(intra.trades, from, now), ...real(weekDaily)].map((t) => ({ ...t, net: t.pnl - SPREAD }));
+  const all = [...inWeek(main, from, now), ...real(weekDaily)].map((t) => ({ ...t, net: t.pnl - SPREAD }));
   const best = all.reduce((m, t) => (!m || t.net > m.net ? t : m), null);
   const worst = all.reduce((m, t) => (!m || t.net < m.net ? t : m), null);
   const label = (t) => `${day(t.createdAt)} ${t.side === 'BUY' ? 'ซื้อ' : 'ขาย'} ${money(t.entry)} → ${signed(t.net)}`;
@@ -71,13 +80,14 @@ function section(name, trades) {
   const TF_TH = { '5m': '5 นาที', '15m': '15 นาที', '30m': '30 นาที', '1h': '1 ชม.', '5h': '5 ชม.', '1d': '1 วัน', '1w': '1 สัปดาห์' };
   const chartLines = [];
   Object.entries(CS.SYS).forEach(([tf, sys]) => {
+    if (tf === '30m') return; // = the main system, above
     const all = chart.trades.filter((t) => t.tf === tf);
     const s = SIG.summary(inWeek(all, from, now), SPREAD), b = CS.brake(sys, all, now);
     if (!s.traded && !b) return;
     chartLines.push(`• ${TF_TH[tf]}: ${s.traded ? `${s.traded} ไม้ · ชนะ ${s.wins} แพ้ ${s.losses} · ${signed(s.pnl)}` : 'ไม่มีไม้'}${b ? ` · ⛔ พัก (${b.why})` : ''}`);
   });
-  if (chartLines.length) chartLines.unshift('📈 สัญญาณบนกราฟ (ผลจริง หักสเปรดแล้ว · ไม่รวมในยอดด้านล่าง)');
-  else chartLines.push('📈 สัญญาณบนกราฟ: ไม่มีไม้ในสัปดาห์นี้');
+  if (chartLines.length) chartLines.unshift('📈 สัญญาณบนกราฟกรอบอื่น (ผลจริง หักสเปรดแล้ว · ไม่รวมในยอดด้านล่าง)');
+  else chartLines.push('📈 สัญญาณบนกราฟกรอบอื่น: ไม่มีไม้ในสัปดาห์นี้');
 
   const lines = [`📊 สรุปผลสัปดาห์ ${day(from)} – ${day(now - DAY)}`, '', ...i30.lines, ...d1.lines, '', ...chartLines, '',
     `รวมทั้งสัปดาห์: ${signed(total)}/ออนซ์ (หักสเปรด $${SPREAD}/ไม้แล้ว)`,

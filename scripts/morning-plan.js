@@ -11,6 +11,8 @@ const EXPLAIN = require('../explain.js');
 const { money } = require('../dailyplan.js');
 const SIG = require('../signals.js');
 const INTRA = require('../intraday.js');
+global.INTRA = INTRA;
+const CS = require('../chartsys.js');
 const { sendFlex } = require('./notify.js');
 const { lotLine } = require('./trade-events.js');
 
@@ -97,17 +99,17 @@ const statsLine = (sum) => (sum.traded
   ? `ชนะ ${sum.wins} · แพ้ ${sum.losses} (ชนะ ${sum.winRate}%) · กำไรสะสม ${signed(sum.pnl)}/ออนซ์ (หักสเปรด $${sum.spread}/ไม้)`
   : 'เพิ่งเริ่มบันทึก — ยังไม่มีผลที่ปิดแล้ว');
 
-// The 30-minute system is the main signal: its state and record go into the morning message
-function intraRows(intra, now) {
-  if (!intra) return [];
-  const s = SIG.summary(intra.trades || [], SPREAD);
-  const paused = INTRA.paused(intra, now);
+// The main system (chart 30m, chart-signals.json — the same record as the website and LINE since the merge on 9 Oct
+// 2026): its state and record go into the morning message. trades = that timeframe's trades.
+function intraRows(trades, now) {
+  if (!trades) return [];
+  const s = SIG.summary(trades, SPREAD), br = CS.brake(CS.SYS['30m'], trades, now);
   return [
     sep(),
     title('⏱️ สัญญาณ 30 นาที (ระบบหลัก)'),
-    txt(paused ? `🛑 พักอยู่ถึง ${thaiTime(intra.pause.until)} น. — ${intra.pause.reason}`
-      : `พร้อมทำงาน · เข้าเมื่อแนวโน้ม 30 นาที · 1 ชม. · 5 ชม. ชี้ขึ้นชัด (+${INTRA.RULE.threshold}) · LINE แจ้งเมื่อมีจังหวะ ✅`,
-    { size: 'xs', color: paused ? C.down : C.text }),
+    txt(br ? `⛔ พักแจ้ง${br.until ? `ถึง ${thaiTime(br.until)} น.` : ''} — ${br.why}`
+      : `พร้อมทำงาน · เข้าซื้อเมื่อแนวโน้ม 30 นาที · 1 ชม. · 5 ชม. ชี้ขึ้นชัด (+${CS.SYS['30m'].buy.th}) · SL $15 · TP $15 · LINE แจ้งตอนเข้าไม้`,
+    { size: 'xs', color: br ? C.down : C.text }),
     txt(statsLine(s), { size: 'xs', color: C.muted }),
   ];
 }
@@ -215,7 +217,7 @@ function flexMessage(a, sig, prev, sum, bt, news, intra, now) {
   const close = INTRA.nextClose(now);
   const news = (data.news || []).filter((n) => n.time >= now && n.time <= close);
   console.log(`news today: ${news.length}`);
-  const intraFile = path.join(__dirname, '..', 'intraday.json');
-  const intra = fs.existsSync(intraFile) ? JSON.parse(fs.readFileSync(intraFile, 'utf8')) : null;
+  const chartFile = path.join(__dirname, '..', 'chart-signals.json');
+  const intra = fs.existsSync(chartFile) ? JSON.parse(fs.readFileSync(chartFile, 'utf8')).trades.filter((t) => t.tf === '30m') : null;
   await sendFlex(flexMessage(a, sig, prev, sum, bt, news, intra, now));
 })().catch((e) => { console.error(e); process.exit(1); });
