@@ -83,7 +83,12 @@
     const fi = an[0].ind, li = fi.close.length - 1, bbU = fi.bb.upper[li], bbL = fi.bb.lower[li];
     const bbPos = bbU > bbL ? (fi.close[li] - bbL) / (bbU - bbL) : 0.5;
     const stretched = !!rule.noChase && Math.abs(score) >= rule.threshold && sideOk && (score > 0 ? bbPos >= 1 : bbPos <= 0);
+    // Confirmation filters on the fast frame (chartsys.js `confirm`; indicator research 9 Oct 2026): +1 / −1 / 0
+    const cl = fi.close.filter((x) => x != null), n = cl.length;
+    const ema = (p) => cl.reduce((e, x, i) => (i ? x * (2 / (p + 1)) + e * (1 - 2 / (p + 1)) : x), 0);
+    const conf = { ema921: Math.sign(ema(9) - ema(21)), roc12: n > 12 ? Math.sign(cl[n - 1] - cl[n - 13]) : 0 };
     return {
+      conf,
       slot: slotOf(now), score, keys, lean, rule,
       // per frame: the indicator votes behind its trend (avg = mean vote −1…+1; ≥.5 strong, ≥.15 normal)
       frames: frames.map(([k, , , label], i) => ({ key: k, label, trend: keys[k], avg: an[i].score,
