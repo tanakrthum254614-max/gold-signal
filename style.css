@@ -548,3 +548,21 @@ h3 .tag { margin-left: 6px; vertical-align: 1px; }
 .beat { margin: 6px 0 0; }
 .beat.up { color: var(--up, #0f9f6e); }
 .beat.down { color: var(--down, #e0424f); }
+
+/* Stats: every recorded trade on the price chart (renderTradeChart) */
+.tc-tfs { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+.tc-tf { font: inherit; font-size: 14px; font-weight: 600; padding: 7px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2, var(--panel)); color: var(--text); cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; line-height: 1.2; }
+.tc-tf small { font-size: 11px; font-weight: 500; color: var(--muted); }
+.tc-tf.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+.tc-tf.on small { color: inherit; opacity: .75; }
+.tc-sum { margin: 0 0 10px; font-size: 14.5px; }
+.tc-chart { height: 360px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.tc-detail { margin: 10px 0 4px; padding: 10px 12px; border-radius: 10px; background: var(--panel-2, rgba(105,115,134,.08)); font-size: 14px; line-height: 1.7; }
+.tc-list { margin-top: 6px; }
+.tc-row { font: inherit; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); color: var(--text); cursor: pointer; border-radius: 8px; }
+.tc-row:hover, .tc-row.sel { background: var(--panel-2, rgba(105,115,134,.1)); }
+.tc-row.sel { outline: 2px solid var(--gold, #d99a10); outline-offset: -2px; }
+.tc-open { margin-top: 10px; }
+.cs-go { cursor: pointer; } .cs-go:hover td { background: var(--panel-2, rgba(105,115,134,.08)); } .cs-arrow { color: var(--muted); }
+.stats-more > summary { font-weight: 700; font-size: 15px; padding: 12px 4px; cursor: pointer; }
+@media (max-width: 640px) { .tc-chart { height: 280px; } .tc-tf { padding: 6px 9px; font-size: 13px; } }

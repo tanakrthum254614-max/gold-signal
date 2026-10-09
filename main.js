@@ -454,7 +454,7 @@ function renderChartSignals() {
       const since = Date.parse(c.since), cs2 = SIG.summary(tr.filter((t) => t.side === side && t.createdAt >= since), sp);
       return `<small class="muted">${side} + ${CHARTSYS.CONFIRM[c.confirm].name} ตั้งแต่ ${new Date(since).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' })}: ${cs2.traded ? `${cs2.traded} ไม้ ชนะ ${cs2.winRate}%` : 'ยังไม่มีไม้ปิด'} (ทดสอบ ${c.win}%)</small>`;
     }).join('');
-    return `<tr><td>${TF_LABEL[tf]}${conf ? `<br>${conf}` : ''}</td><td class="mono">${s.traded}</td><td class="mono">${s.wins}–${s.losses}</td>
+    return `<tr class="cs-go" data-tf="${tf}" title="เปิดหน้ากราฟกรอบนี้"><td>${TF_LABEL[tf]} <span class="cs-arrow">›</span>${conf ? `<br>${conf}` : ''}</td><td class="mono">${s.traded}</td><td class="mono">${s.wins}–${s.losses}</td>
       <td class="mono ${cls}">${live}${s.traded && s.traded < 20 ? ' <small>(น้อย)</small>' : ''}</td><td class="mono">${bt}</td>
       <td class="mono ${s.pnl > 0 ? 'up' : s.pnl < 0 ? 'down' : ''}">${s.traded ? money(s.pnl) : '—'}</td>
       <td>${open ? `${open.side === 'BUY' ? '🟢 ซื้อ' : '🔴 ขาย'} ${f2(open.entry)}` : ''}</td>
@@ -764,6 +764,146 @@ function renderLiveCheck() {
   $('lvStrip').innerHTML = `🧪 <b>ระบบยังใช้ได้ไหม?</b> ${n < MIN ? `ผลจริง ${n}/${MIN} ไม้ — ยังสรุปไม่ได้` : cls === 'bad' ? 'แย่กว่าที่ทดสอบไว้ — ระวัง' : cls === 'good' ? 'ดีกว่าที่ทดสอบไว้' : 'อยู่ในช่วงปกติ'} · 90 วันล่าสุดในการทดสอบ <b class="${cl(r90.pnl)}">${money(r90.pnl)}</b> <span>ดูรายละเอียด →</span>`;
 }
 
+// ---------- Stats: every recorded trade on the price chart (user, 9 Oct: the stats had numbers only, nothing that
+// showed the trades on a chart). Pick a timeframe (default 30m = the main system), see ▲▼ entries and ✅❌ exits on the
+// candles, tap a trade in the list → the chart moves to it with its entry / SL / TP lines and how it closed. ----------
+let tcView = null;
+const tcBars = {}; // tf → { at, bars }
+function tcTrades(tf) {
+  return ((state.chartSig && state.chartSig.trades) || []).filter((t) => t.tf === tf).map(live).sort((a, b) => b.createdAt - a.createdAt);
+}
+// The candle a moment falls in (bars: UTC seconds, ascending) → its index, or -1 when before the loaded window
+function tcBarAt(bars, ms) {
+  const s = ms / 1000;
+  let lo = 0, hi = bars.length - 1, k = -1;
+  while (lo <= hi) { const m = (lo + hi) >> 1; if (bars[m].time <= s) { k = m; lo = m + 1; } else hi = m - 1; }
+  return k;
+}
+function tcHow(t) {
+  if (t.status === 'active') return t.hit ? `ถึง TP${t.hit} แล้ว (SL ที่ทุน) — ยังถือ` : 'กำลังถือ';
+  if (t.status === 'win') return t.closedBy === 'tp' || t.hit ? `✅ ถึง TP${t.hit || 1}` : '✅ หมดเวลา ปิดมีกำไร';
+  if (t.status === 'loss') return t.closedBy === 'sl' ? '❌ โดน SL' : '❌ หมดเวลา ปิดขาดทุน';
+  return SIG.STATUS_TH[t.status] || t.status;
+}
+const tcDur = (ms) => { const m = Math.round(ms / 60e3); return m < 60 ? `${m} นาที` : m < 2880 ? `${Math.floor(m / 60)} ชม.${m % 60 ? ` ${m % 60} นาที` : ''}` : `${Math.round(m / 1440)} วัน`; };
+const tcWhen = (ms) => new Date(ms).toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
+
+async function renderTradeChart() {
+  if (!$('tcCard') || !window.CHARTSYS) return;
+  state.tc = state.tc || { tf: MAIN_TF, sel: null };
+  const tf = state.tc.tf, sys = CHARTSYS.SYS[tf], sp = userSpread();
+  const all = (state.chartSig && state.chartSig.trades) || [];
+  $('tcTfs').innerHTML = Object.keys(CHARTSYS.SYS).map((k) => {
+    const n = all.filter((t) => t.tf === k).length;
+    return `<button type="button" class="tc-tf${k === tf ? ' on' : ''}" data-tf="${k}">${TF_LABEL[k]}${k === MAIN_TF ? ' ⭐' : ''}<small>${n} ไม้</small></button>`;
+  }).join('');
+  const trades = tcTrades(tf), s = SIG.summary(trades, sp);
+  const test = [sys.buy && `BUY ${sys.buy.win}%`, sys.sell && `SELL ${sys.sell.win}%`].filter(Boolean).join(' · ');
+  const old = tf === MAIN_TF ? SIG.summary(oldIntraTrades(), sp) : null;
+  $('tcSum').innerHTML = `<b>${TF_LABEL[tf]}${tf === MAIN_TF ? ' (ระบบหลัก)' : ''}</b> · ${s.traded ? `ปิดแล้ว ${s.traded} ไม้ · ชนะ ${s.wins} แพ้ ${s.losses} (${s.winRate}%) · <b class="${s.pnl >= 0 ? 'up' : 'down'}">${money(s.pnl)}</b>/ออนซ์ หักสเปรดแล้ว` : 'ยังไม่มีไม้ที่ปิดแล้ว'}`
+    + ` · ทดสอบ ${test}${s.traded && s.traded < 20 ? ' · <span class="muted">ยังน้อยกว่า 20 ไม้ — ยังสรุปไม่ได้</span>' : ''}`
+    + (old && old.traded ? `<br><small class="muted">ระบบ 30 นาทีแบบเดิม (TP $15/20/30 · ถึง 9 ต.ค. 2569): ${old.traded} ไม้ · ชนะ ${old.wins}–${old.losses} (${old.winRate}%) · ${money(old.pnl)} — ไม่นับรวม</small>` : '');
+
+  // Candles of that timeframe (cached 2 minutes)
+  const c = tcBars[tf];
+  if (!c || Date.now() - c.at > 120e3) {
+    try { tcBars[tf] = { at: Date.now(), bars: (await loadBars(tf)).bars }; } catch (e) { tcBars[tf] = { at: Date.now(), bars: (c && c.bars) || [] }; }
+    if (state.tc.tf !== tf) return; // switched while loading
+  }
+  const bars = tcBars[tf].bars;
+  if (!tcView) {
+    const chart = LC.createChart($('tcChart'), chartBase(true));
+    const series = chart.addCandlestickSeries({ upColor: '#0f9f6e', downColor: '#e0424f', borderVisible: false, wickUpColor: '#0f9f6e', wickDownColor: '#e0424f' });
+    tcView = { chart, series, lines: [], key: '' };
+    applyChartTheme();
+  }
+  const key = `${tf}|${bars.length}|${bars.length ? bars[bars.length - 1].time : 0}`;
+  if (key !== tcView.key) {
+    tcView.series.setData(bars.map((b) => ({ time: b.time + TZ, open: b.open, high: b.high, low: b.low, close: b.close })));
+    if (!tcView.key.startsWith(`${tf}|`)) tcView.chart.timeScale().fitContent();
+    tcView.key = key;
+  }
+  // Markers: ▲ / ▼ at each entry, ✅ / ❌ with the result at each exit (only trades inside the loaded candles)
+  const mk = [];
+  trades.forEach((t) => {
+    const buy = t.side === 'BUY', i = tcBarAt(bars, t.createdAt);
+    if (i < 0) return;
+    mk.push({ time: bars[i].time + TZ, position: buy ? 'belowBar' : 'aboveBar', shape: buy ? 'arrowUp' : 'arrowDown', color: buy ? '#0f9f6e' : '#e0424f', text: buy ? 'ซื้อ' : 'ขาย' });
+    if (SIG.isFinal(t) && t.exitAt) {
+      const j = tcBarAt(bars, t.exitAt);
+      if (j >= 0) mk.push({ time: bars[j].time + TZ, position: buy ? 'aboveBar' : 'belowBar', shape: 'circle', color: t.pnl >= 0 ? '#0f9f6e' : '#e0424f', text: `${t.pnl >= 0 ? '✅' : '❌'} ${money(t.pnl - sp)}` });
+    }
+  });
+  tcView.series.setMarkers(mk.sort((a, b) => a.time - b.time));
+  const shown = trades.filter((t) => tcBarAt(bars, t.createdAt) >= 0).length;
+
+  // The list: newest first, tap → show on the chart
+  $('tcList').innerHTML = trades.length ? trades.slice(0, 50).map((t, k) => {
+    const buy = t.side === 'BUY', res = SIG.isFinal(t) ? money(t.pnl - sp) : '';
+    return `<button type="button" class="h-row tc-row ${t.status}${state.tc.sel === t.id ? ' sel' : ''}" data-id="${t.id}">
+      <span class="h-date">${tcWhen(t.createdAt)}</span>
+      <span class="h-side ${buy ? 'buy' : 'sell'}">${buy ? 'ซื้อ' : 'ขาย'}</span>
+      <span class="h-px mono">${f2(t.entry)}</span>
+      <span class="h-st">${tcHow(t)}</span>
+      <b class="h-pnl mono">${res}</b></button>`;
+  }).join('') : `<p class="muted">ยังไม่มีไม้ในกรอบ ${TF_LABEL[tf]} — ระบบเข้าเมื่อคะแนนถึงเกณฑ์${sys.buy && sys.buy.confirm ? ` และ ${CHARTSYS.CONFIRM[sys.buy.confirm].name} ยืนยัน` : ''} · ไม่มีไม้ไม่ได้แปลว่าระบบหยุด</p>`;
+  $('tcNote').textContent = trades.length && shown < trades.length
+    ? `กราฟแสดงช่วงล่าสุด ${bars.length} แท่ง — เห็นบนกราฟ ${shown} จาก ${trades.length} ไม้ (ไม้เก่ากว่านั้นดูในรายการ)` : '';
+  tcSelect(state.tc.sel && trades.find((t) => t.id === state.tc.sel));
+}
+
+// Show one trade: its lines, the chart moved to it, and a sentence on how it went
+function tcSelect(t) {
+  if (!tcView) return;
+  tcView.lines.forEach((l) => tcView.series.removePriceLine(l));
+  tcView.lines = [];
+  if (!t) { $('tcDetail').innerHTML = '<span class="muted">กดไม้ในรายการด้านล่าง เพื่อดูจุดเข้า SL และ TP บนกราฟ</span>'; return; }
+  const buy = t.side === 'BUY', sp = userSpread(), hit = t.hit || 0;
+  const line = (price, color, title, style) => tcView.lines.push(tcView.series.createPriceLine({ price, color, title, lineWidth: 2, lineStyle: style, axisLabelVisible: true }));
+  line(t.entry, '#d99a10', buy ? 'เข้าซื้อ' : 'เข้าขาย', LC.LineStyle.Solid);
+  line(t.sl, '#e0424f', 'SL', LC.LineStyle.Dashed);
+  t.tps.forEach((v, k) => line(v, '#0f9f6e', `TP${k + 1}`, LC.LineStyle.Dashed));
+  const bars = tcBars[t.tf] ? tcBars[t.tf].bars : [];
+  const i = tcBarAt(bars, t.createdAt), j = SIG.isFinal(t) && t.exitAt ? tcBarAt(bars, t.exitAt) : bars.length - 1;
+  if (i >= 0) tcView.chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, i - 30), to: Math.max(j, i) + 12 });
+  const risk = Math.abs(t.entry - t.sl);
+  const now = nowPrice(), open = !SIG.isFinal(t) && now != null ? SIG.round((buy ? 1 : -1) * (now - t.entry)) : null;
+  $('tcDetail').innerHTML = `${buy ? '🟢 ซื้อ' : '🔴 ขาย'} <b class="mono">${f2(t.entry)}</b> เมื่อ ${tcWhen(t.createdAt)}`
+    + ` · SL <b class="mono">${f2(t.sl)}</b> (−$${f2(risk)}) · ${t.tps.map((v, k) => `TP${k + 1} <b class="mono">${f2(v)}</b>`).join(' · ')}`
+    + (t.score != null ? ` · คะแนนตอนเข้า ${t.score > 0 ? '+' : ''}${t.score}` : '')
+    + `<br>${SIG.isFinal(t)
+      ? `${tcHow(t)} เมื่อ ${tcWhen(t.exitAt || t.expiresAt)} (ถือ ${tcDur((t.exitAt || t.expiresAt) - t.createdAt)}) → <b class="${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl - sp)}</b>/ออนซ์ หักสเปรดแล้ว${hit ? ` · ถึง TP${hit}` : ''}`
+      : `${tcHow(t)}${open != null ? ` · ตอนนี้ <b class="${open >= 0 ? 'up' : 'down'}">${money(open)}</b>/ออนซ์` : ''} · ปิดเองไม่เกิน ${tcWhen(t.expiresAt)}`}`
+    + `${t.paused ? '<br><span class="muted">ไม้นี้เข้าตอนระบบพักแจ้ง — บันทึกไว้แต่ไม่ได้ส่ง LINE</span>' : ''}`;
+}
+
+function bindTradeChart() {
+  if (!$('tcCard') || bindTradeChart.done) return;
+  bindTradeChart.done = true;
+  $('tcTfs').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-tf]');
+    if (!b) return;
+    state.tc = { tf: b.dataset.tf, sel: null };
+    renderTradeChart();
+  });
+  $('tcList').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-id]');
+    if (!b) return;
+    state.tc.sel = b.dataset.id;
+    document.querySelectorAll('#tcList .tc-row').forEach((r) => r.classList.toggle('sel', r.dataset.id === b.dataset.id));
+    tcSelect(tcTrades(state.tc.tf).find((t) => t.id === b.dataset.id));
+    $('tcChart').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+  $('tcOpen').addEventListener('click', () => { location.hash = 'chart'; setTf(state.tc.tf); });
+  // The per-timeframe table: a row opens that timeframe on the chart tab
+  $('csTable').addEventListener('click', (e) => {
+    const r = e.target.closest('tr[data-tf]');
+    if (!r) return;
+    location.hash = 'chart';
+    setTf(r.dataset.tf);
+  });
+}
+
 function renderStats() {
   renderLiveCheck();
   const list = liveSignals();
@@ -797,6 +937,8 @@ function renderStats() {
     plotEquity('btChart', bt.signals);
   }
   renderIntraStats();
+  bindTradeChart();
+  renderTradeChart();
 }
 
 // ---------- Live stream: investing.com's own price stream (SockJS, ~1 tick a second) ----------
@@ -1623,22 +1765,9 @@ function markChart15() {
 }
 
 function renderIntraStats() {
-  const trades = intraTrades();
-  const sum = SIG.summary(trades, userSpread());
+  // The main system's trades and the old 30-minute record are listed in the 📈 card (renderTradeChart)
   showBeat('statsBeat');
   renderChartSignals();
-  $('inLiveTiles').innerHTML = tilesHtml(sum);
-  plotEquity('inLiveChart', trades);
-  $('inHistory').innerHTML = trades.length ? trades.slice().reverse().slice(0, 50).map((t) => {
-    const buy = t.side === 'BUY';
-    const res = t.status === 'win' || t.status === 'loss' ? money(t.pnl) : '';
-    return `<div class="h-row ${t.status}">
-      <span class="h-date">${tradeDay(t)} ${hhmm(t.createdAt)}</span>
-      <span class="h-side ${buy ? 'buy' : 'sell'}">${buy ? 'ซื้อ' : 'ขาย'}</span>
-      <span class="h-px mono">${f2(t.entry)}</span>
-      <span class="h-st">${SIG.STATUS_TH[t.status]}${t.hit ? ` (TP${t.hit})` : ''}</span>
-      <b class="h-pnl mono">${res}</b></div>`;
-  }).join('') : '<p class="muted">ยังไม่มีไม้ — ระบบจะเข้าซื้อเมื่อแท่งปิดได้คะแนน +5 ขึ้นไป (ทั้ง 3 ช่วงเวลาชี้ขึ้นชัด) · ไม่มีไม้ไม่ได้แปลว่าระบบหยุด ดูสถานะด้านบน</p>';
   const bt = state.bt30;
   if (bt) {
     const b = SIG.summary(bt.trades, userSpread());
@@ -1804,7 +1933,7 @@ function applyChartTheme() {
     rightPriceScale: { borderColor: c.border }, timeScale: { borderColor: c.border },
     crosshair: { vertLine: { color: c.cross, labelBackgroundColor: c.label }, horzLine: { color: c.cross, labelBackgroundColor: c.label } },
   };
-  [mainChart, rsiChart, macdChart, ...Object.values(eqCharts).map((e) => e.chart), ...(s15Chart ? [s15Chart.chart] : [])].forEach((ch) => ch.applyOptions(opts));
+  [mainChart, rsiChart, macdChart, ...Object.values(eqCharts).map((e) => e.chart), ...(s15Chart ? [s15Chart.chart] : []), ...(tcView ? [tcView.chart] : [])].forEach((ch) => ch.applyOptions(opts));
   simpleChart.applyOptions({ ...opts, grid: { vertLines: { visible: false }, horzLines: { color: c.grid } } });
 }
 UI.on('theme', applyChartTheme);
