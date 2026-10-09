@@ -12,13 +12,16 @@
   const INTRA = root.INTRA || (typeof require === 'function' ? require('./intraday.js') : null);
   const M = 60e3, H = 60 * M, DAY = 24 * H;
   const SYS = {
-    '5m': { frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', H, 60, '1 ชม.']], span: '2 ปี',
-      buy: { th: 5, tp1: true, mult: 1, win: 53, q: [312, 448, 99, -452] }, sell: { th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T09:54:00+07:00', win: 52, q: [29, 92, 105, 126] },
+    // news: skip entries within ±30 minutes of high-impact US news. Tested with 2 years of investing.com's calendar (9 Oct
+    // 2026, research/indicators/newstest.js): it helps on 5m (BUY +$407 → +$554, 4/4 periods; SELL +$353 → +$451) and
+    // 1h (+$774 → +$792), but hurts 15m (+$465 → +$377) and 30m (+$957 → +$828) — so only 5m and 1h skip the news.
+    '5m': { news: true, frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', H, 60, '1 ชม.']], span: '2 ปี',
+      buy: { th: 5, tp1: true, mult: 1, win: 54, q: [331, 551, 104, -433] }, sell: { th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T09:54:00+07:00', win: 53, q: [39, 84, 156, 172] },
       every: -1480 }, // taking every small arrow one at a time, SL / TP1 $15
     '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { th: 6, tp1: true, mult: 1.5, confirm: 'ema921', since: '2026-10-09T09:40:00+07:00', win: 56, q: [261, 72, 84, 48] }, sellQ: [115, -233, -72, 204] },
     '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { th: 5, tp1: true, mult: 1, win: 57, q: [264, 462, 239, -7] }, sellQ: [129, -174, -58, 113] },
-    '1h': { frames: [['h1', H, 60, '1 ชม.'], ['h4', 4 * H, 60, '4 ชม.'], ['h5', 5 * H, 40, '5 ชม.']], span: '2 ปี',
-      buy: { th: 5, tp1: false, mult: 2, win: 57, q: [188, 181, 348, 57] }, sellQ: [-62, 4, -112, 8] },
+    '1h': { news: true, frames: [['h1', H, 60, '1 ชม.'], ['h4', 4 * H, 60, '4 ชม.'], ['h5', 5 * H, 40, '5 ชม.']], span: '2 ปี',
+      buy: { th: 5, tp1: false, mult: 2, win: 57, q: [192, 209, 359, 32] }, sellQ: [-62, 4, -112, 8] },
     '5h': { frames: [['h5', 5 * H, 60, '5 ชม.'], ['d1', DAY, 60, '1 วัน']], span: '2 ปี', long: true, hold: 5 * DAY,
       buy: { th: 3, tp1: false, mult: 4, confirm: 'roc12', since: '2026-10-09T09:40:00+07:00', win: 65, q: [483, 511, 635, 205] }, sellQ: [-72, -179, -6, 105] },
     '1d': { frames: [['d1', DAY, 60, '1 วัน'], ['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '5 ปี', long: true, hold: 20 * DAY,
@@ -40,7 +43,7 @@
   // Entry direction for a decision: only on a side that passed its test, never chasing outside the Bollinger band,
   // and with the side's confirmation indicator agreeing
   function dirOf(sys, dec) {
-    if (!dec || (!sys.long && (dec.stale || dec.lastHour || dec.news))) return 0;
+    if (!dec || (!sys.long && (dec.stale || dec.lastHour || (sys.news && dec.news)))) return 0;
     if (sys.buy && dec.score >= sys.buy.th) return dec.bbPos >= 1 || !confirmed(sys.buy, dec, 1) ? 0 : 1;
     if (sys.sell && dec.score <= -sys.sell.th) return dec.bbPos <= 0 || !confirmed(sys.sell, dec, -1) ? 0 : -1;
     return 0;
@@ -50,7 +53,7 @@
     || (sys.sell && dec.score <= -sys.sell.th && dec.bbPos > 0 && !confirmed(sys.sell, dec, -1)));
   const stretched = (sys, dec) => !!dec && ((sys.buy && dec.score >= sys.buy.th && dec.bbPos >= 1) || (sys.sell && dec.score <= -sys.sell.th && dec.bbPos <= 0));
   // Score at time t from closed candles (live = also the forming ones). data: { <frame key>: candles (ms) }
-  const decide = (sys, data, t, news, live) => INTRA.decideWith(sys.frames, NONE, data, t, sys.long ? null : news, live);
+  const decide = (sys, data, t, news, live) => INTRA.decideWith(sys.frames, NONE, data, t, sys.news ? news : null, live);
   // A trade for an entry at `price` (the last closed candle's close) decided at t
   function trade(sys, dec, dir, price, t) {
     const c = dir > 0 ? sys.buy : sys.sell, tr = INTRA.makeTrade({ ...dec, dir }, price, t), L = levelsFor(c, tr.entry, dir);

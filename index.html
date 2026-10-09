@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f3f5f9">
   <title>Gold Signal · สัญญาณเทรดทองคำ</title>
-  <meta name="description" content="สัญญาณเทรดทองคำ XAU/USD วันละ 1 สัญญาณ พร้อมจุดเข้า ตัดขาดทุน เป้าหมาย และสถิติชนะ–แพ้ที่บันทึกจริง">
+  <meta name="description" content="สัญญาณเทรดทองคำ XAU/USD ทุกกรอบเวลา (5 นาที – 1 สัปดาห์) Buy/Sell พร้อมจุดเข้า SL TP ที่ทดสอบย้อนหลังแล้ว และสถิติข่าวเศรษฐกิจสหรัฐที่มีผลกับทอง">
   <meta property="og:title" content="Gold Signal · สัญญาณเทรดทองคำ">
-  <meta property="og:description" content="วันละ 1 สัญญาณ · จุดเข้า / ตัดขาดทุน / เป้าหมาย · สถิติชนะ–แพ้จริง">
+  <meta property="og:description" content="สัญญาณ Buy/Sell ทองคำทุกกรอบเวลา · จุดเข้า / SL / TP ที่ทดสอบย้อนหลังแล้ว · สถิติข่าวสหรัฐที่ทำให้ทองวิ่ง">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
@@ -17,9 +17,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610092100">
-  <link rel="stylesheet" href="live.css?v=202610092100">
-  <link rel="stylesheet" href="theme.css?v=202610092100" id="themeLight">
+  <link rel="stylesheet" href="style.css?v=202610092200">
+  <link rel="stylesheet" href="live.css?v=202610092200">
+  <link rel="stylesheet" href="theme.css?v=202610092200" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -83,7 +83,7 @@
     <div class="login-intro">
       <div class="brand big"><img class="logo" src="logo.svg" alt=""><h1>Gold Signal</h1></div>
       <h2>อยากเทรดทองคำ<br>แต่ยังไม่มั่นใจ?</h2>
-      <p class="login-lead">ราคาทองสดทุกวินาที · สัญญาณเข้าซื้อ–ขายทุก 15 / 30 นาที พร้อมสถิติจริงว่าชนะกี่ครั้ง แพ้กี่ครั้ง</p>
+      <p class="login-lead">ราคาทองสดทุกวินาที · สัญญาณ Buy/Sell ทุกกรอบเวลาที่ทดสอบย้อนหลังแล้ว · สถิติข่าวเศรษฐกิจสหรัฐ</p>
       <ul>
         <li><span>🎯</span>บอกชัด: จุดเข้า · ตัดขาดทุน · เป้าหมาย</li>
         <li><span>📊</span>บันทึกผลทุกสัญญาณ ชนะ–แพ้ ไม่ปิดบัง</li>
@@ -438,14 +438,14 @@
             <li><b>บนกราฟ:</b> ▲ เขียว / ▼ แดง พร้อมป้ายราคา = จุดที่ระบบเข้าจริง · กล่องทางขวา = เขียวถึง TP แดงถึง SL · เส้นทอง/เขียว/แดงสั้น ๆ = ไม้ที่ปิดแล้ว (✓ ถึง TP · ✗ โดน SL)</li>
             <li><b>ดูประกอบเท่านั้น:</b> เส้นโค้งสีทอง = กรอบราคา · แถบแดง/เขียว = แนวต้าน/แนวรับ · “ความมั่นใจของ investing.com” ในการ์ดขวา — ไม่ใช่สัญญาณเข้า</li>
           </ol>
-          <p class="muted small">ปุ่ม “📊 แสดงเส้นอินดิเคเตอร์” เปิด EMA/Bollinger/ลูกศรทุกแท่งกลับมาได้ · ผลจริงของทุกกรอบดูได้ที่หน้ากราฟ (การ์ดของแต่ละกรอบ) · ทุกระบบไม่รับประกันกำไร ตั้ง SL ทุกครั้ง</p>
+          <p class="muted small">ปุ่ม “📊 แสดงเส้นอินดิเคเตอร์” เปิด EMA/Bollinger/ลูกศรทุกแท่งกลับมาได้ · ผลทดสอบของแต่ละกรอบอยู่ในการ์ด Buy | Sell เหนือกราฟ · ทุกระบบไม่รับประกันกำไร ตั้ง SL ทุกครั้ง</p>
         </section>
 
         <section class="card">
           <h3>ระบบช่วยกันพอร์ต 🛡️</h3>
           <ul class="why">
             <li><b>📈 สัญญาณ 30 นาทีเข้าเฉพาะฝั่งซื้อ</b> — สถิติ 2 ปี ฝั่งซื้อชนะ ~56–58% ส่วนฝั่งขายแค่ ~50% (เหมือนโยนเหรียญ) วันที่แนวโน้มลงระบบจะบอกให้รอ</li>
-            <li><b>📰 หลบข่าวแรงสหรัฐ</b> (Non-Farm, CPI, Fed ฯลฯ จาก investing.com) — ไม่เปิดไม้ใหม่ ±30 นาทีรอบข่าว และเตือนล่วงหน้า 30 นาที</li>
+            <li><b>📰 หลบข่าวแรงสหรัฐ</b> (Non-Farm, CPI, Fed ฯลฯ จาก investing.com) — กรอบ <b>5 นาที และ 1 ชม.</b> ไม่เปิดไม้ใหม่ ±30 นาทีรอบข่าว (ทดสอบ 2 ปีแล้วช่วยได้) ส่วนกรอบอื่นไม่งด เพราะทดสอบแล้วการหลบข่าวทำให้ผลแย่ลง · เตือนล่วงหน้า 30 นาที</li>
             <li><b>📏 คำนวณขนาดไม้ให้</b> — ใส่ทุนและ % ที่ยอมเสียในแท็บ <a href="#account">บัญชี</a> ทุกสัญญาณจะบอกว่าควรเข้ากี่ lot (0.01 lot = ทอง 1 ออนซ์)</li>
             <li><b>💸 หักสเปรดของโบรกคุณ</b> — สถิติทุกหน้าคิดกำไรหลังหักสเปรดแล้ว ตั้งค่าได้ในแท็บบัญชี</li>
             <li><b>📊 สรุปผลทุกเสาร์ 07:30</b> — สัปดาห์นี้กี่ไม้ ชนะ/แพ้ กำไรสุทธิ เทียบสัปดาห์ก่อน</li>
@@ -467,7 +467,7 @@
         <section class="card">
           <h3>ดาวความมั่นใจ ★</h3>
           <p>★★★★★ = แนวโน้มระยะสั้น กลาง และยาว ชี้ไปทางเดียวกันชัดเจน · ★ น้อย = แต่ละช่วงเวลาขัดกัน ควรลดขนาดออเดอร์หรือข้ามได้
-            <br><span class="muted small">ดาวไม่ได้รับประกันผล — ดูสถิติจริงประกอบเสมอ</span></p>
+            <br><span class="muted small">ดาวไม่ได้รับประกันผล — ดูผลทดสอบประกอบเสมอ</span></p>
         </section>
 
         <section class="card glossary">
@@ -569,20 +569,20 @@
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610092100"></script>
-  <script src="auth.js?v=202610092100"></script>
-  <script src="indicators.js?v=202610092100"></script>
-  <script src="investing.js?v=202610092100"></script>
-  <script src="explain.js?v=202610092100"></script>
-  <script src="dailyplan.js?v=202610092100"></script>
-  <script src="signals.js?v=202610092100"></script>
-  <script src="intraday.js?v=202610092100"></script>
-  <script src="pwa.js?v=202610092100"></script>
-  <script src="ui.js?v=202610092100"></script>
-  <script src="main.js?v=202610092100"></script>
-  <script src="tradeplan.js?v=202610092100"></script>
-  <script src="chartsys.js?v=202610092100"></script>
-  <script src="chartzones.js?v=202610092100"></script>
-  <script src="newsstats.js?v=202610092100"></script>
+  <script src="config.js?v=202610092200"></script>
+  <script src="auth.js?v=202610092200"></script>
+  <script src="indicators.js?v=202610092200"></script>
+  <script src="investing.js?v=202610092200"></script>
+  <script src="explain.js?v=202610092200"></script>
+  <script src="dailyplan.js?v=202610092200"></script>
+  <script src="signals.js?v=202610092200"></script>
+  <script src="intraday.js?v=202610092200"></script>
+  <script src="pwa.js?v=202610092200"></script>
+  <script src="ui.js?v=202610092200"></script>
+  <script src="main.js?v=202610092200"></script>
+  <script src="tradeplan.js?v=202610092200"></script>
+  <script src="chartsys.js?v=202610092200"></script>
+  <script src="chartzones.js?v=202610092200"></script>
+  <script src="newsstats.js?v=202610092200"></script>
 </body>
 </html>

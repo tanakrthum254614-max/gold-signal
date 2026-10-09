@@ -34,7 +34,7 @@ const bars = (rows) => (rows || []).map((b) => ({ time: b[0], open: b[1], high: 
 
 function newsWarning(n, open) {
   const lines = [`⚠️ อีกประมาณ 30 นาที (${at(n.time)} น.) มีข่าวแรงสหรัฐ`, `📰 ${n.title}`,
-    `ราคาทองอาจวิ่งแรง $20–50 ในไม่กี่นาที — ระบบงดเปิดไม้ใหม่ ±${INTRA.RULE.newsMin} นาทีรอบข่าว`];
+    `ราคาทองอาจวิ่งแรง $20–50 ในไม่กี่นาที — สัญญาณกรอบ 5 นาที และ 1 ชม. งดเปิดไม้ใหม่ ±${INTRA.RULE.newsMin} นาทีรอบข่าว`];
   if (open) lines.push(`📌 มีไม้${open.side === 'BUY' ? 'ซื้อ' : 'ขาย'}อยู่ที่ ${money(open.entry)} — พิจารณาปิดบางส่วนหรือเลื่อน SL ไปที่ทุนก่อนข่าว`);
   return lines.join('\n');
 }

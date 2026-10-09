@@ -40,6 +40,13 @@ for (const tf of only) {
     }
     fs.writeFileSync(cache, JSON.stringify(decs));
   }
+  // Timeframes that skip high-impact news live (sys.news) are tested the same way (news-hist.json from fetch_news.py)
+  const NF = path.join(DIR, 'news-hist.json');
+  if (sys.news && fs.existsSync(NF)) {
+    const nt = JSON.parse(fs.readFileSync(NF, 'utf8')).map((n) => ({ time: n.t })).sort((x, y) => x.time - y.time);
+    const near = (t) => { const i = lb(nt, t - 30 * 60e3); return i < nt.length && nt[i].time <= t + 30 * 60e3; };
+    decs = decs.filter((d) => !near(d.t));
+  }
   const FB = B[follow];
   // one trade at a time; c = side settings (th, tp1, mult)
   function sim(entries, side, c) {

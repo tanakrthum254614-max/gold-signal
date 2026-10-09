@@ -1123,8 +1123,10 @@ function renderIntra() {
   const trades = intraTrades();
   const open = trades.find((t) => t.status === 'active');
   const C = state.intraCandles;
-  const dec = C ? INTRA.decide(C, now, state.news, true) : null; // live: includes the forming candles
-  const official = C ? INTRA.decide(C, now, state.news) : null; // what the half-hourly check sees
+  // the main system (30m) doesn't skip news (tested: skipping hurt it) — so no news blackout here either
+  const nw = mainSys().news ? state.news : null;
+  const dec = C ? INTRA.decide(C, now, nw, true) : null; // live: includes the forming candles
+  const official = C ? INTRA.decide(C, now, nw) : null; // what the half-hourly check sees
   const price = nowPrice();
   const next = INTRA.slotOf(now) + INTRA.SLOT;
   $('inNext').textContent = `เช็กทางการรอบถัดไป ${hhmm(next)} น.`;

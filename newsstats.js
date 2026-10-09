@@ -102,7 +102,7 @@
       const left = mins < 60 ? `${mins} นาที` : mins < 1440 ? `${Math.floor(mins / 60)} ชม. ${mins % 60} นาที` : `${Math.floor(mins / 1440)} วัน ${Math.floor((mins % 1440) / 60)} ชม.`;
       $('nsNext').innerHTML = `<div class="ns-count"><span>ข่าวแรงถัดไป</span><b class="mono">${left}</b><small>${dayTime(n.t)} น.</small></div>
         <div class="ns-next-items">${n.items.map((o) => itemLine(o, false)).join('')}</div>
-        <p class="ns-warn">⚠️ ระบบสัญญาณงดเปิดไม้ใหม่ ±30 นาทีรอบข่าวนี้ — ราคาทองอาจวิ่งแรงในไม่กี่นาที</p>`;
+        <p class="ns-warn">⚠️ ราคาทองอาจวิ่งแรงในไม่กี่นาที · สัญญาณกรอบ ${window.CHARTSYS ? Object.entries(CHARTSYS.SYS).filter(([, s]) => s.news).map(([k]) => TF_LABEL[k]).join(' และ ') : '5 นาที และ 1 ชม.'} งดเปิดไม้ใหม่ ±30 นาทีรอบข่าวนี้ (กรอบอื่นทดสอบแล้วไม่ต้องหลบ)</p>`;
     } else $('nsNext').innerHTML = ns.at ? '<p class="muted">ไม่มีข่าวแรงของสหรัฐใน 8 วันข้างหน้า</p>' : '<p class="muted">กำลังโหลดปฏิทินข่าว…</p>';
     // 2) the coming week
     $('nsWeek').innerHTML = ns.next.length ? ns.next.map((g) => `<div class="ns-row">

@@ -35,6 +35,13 @@ jobs:
         with:
           node-version: "22"
       - run: npm install --omit=dev --no-audit --no-fund --no-package-lock
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Download US news history (for the timeframes that skip news)
+        run: python research/indicators/fetch_news.py
+        continue-on-error: true
       - name: Download prices
         run: node research/indicators/fetch.js
       - name: Run the study (all timeframes)
