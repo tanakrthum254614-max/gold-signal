@@ -1667,7 +1667,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { st
   every(POLL_DAILY, refreshDaily);
   every(60e3, refreshM15);
   every(60e3, refreshIntraCandles);
-  every(30 * 60e3, refreshNews);
+  every(5 * 60e3, refreshNews); // + newsstats.js polls every 15 s around a release
   every(60 * 60e3, refreshThb);
   every(5 * 60e3, refreshSignals);
   refreshBeat();

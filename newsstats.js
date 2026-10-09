@@ -92,15 +92,22 @@
     </div>`;
   }
 
+  // Time left to a release: days / hours, then minutes:seconds in the last hour (ticks every second)
+  function leftText(t) {
+    const s = Math.max(0, Math.round((t - Date.now()) / 1000)), m = Math.floor(s / 60);
+    if (s === 0) return 'กำลังออก…';
+    return m < 60 ? `${String(m).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
+      : m < 1440 ? `${Math.floor(m / 60)} ชม. ${m % 60} นาที` : `${Math.floor(m / 1440)} วัน ${Math.floor((m % 1440) / 60)} ชม.`;
+  }
+  function countdown() { const el = $('nsLeft'); if (el) el.textContent = leftText(+el.dataset.t); }
+
   function render() {
     if (!$('nsNext')) return;
     const now = Date.now();
     // 1) next release + countdown
     const n = ns.next[0];
     if (n) {
-      const mins = Math.max(0, Math.round((n.t - now) / 60e3));
-      const left = mins < 60 ? `${mins} นาที` : mins < 1440 ? `${Math.floor(mins / 60)} ชม. ${mins % 60} นาที` : `${Math.floor(mins / 1440)} วัน ${Math.floor((mins % 1440) / 60)} ชม.`;
-      $('nsNext').innerHTML = `<div class="ns-count"><span>ข่าวแรงถัดไป</span><b class="mono">${left}</b><small>${dayTime(n.t)} น.</small></div>
+      $('nsNext').innerHTML = `<div class="ns-count"><span>ข่าวแรงถัดไป</span><b class="mono" id="nsLeft" data-t="${n.t}">${leftText(n.t)}</b><small>${dayTime(n.t)} น.</small></div>
         <div class="ns-next-items">${n.items.map((o) => itemLine(o, false)).join('')}</div>
         <p class="ns-warn">⚠️ ราคาทองอาจวิ่งแรงในไม่กี่นาที · สัญญาณกรอบ ${window.CHARTSYS ? Object.entries(CHARTSYS.SYS).filter(([, s]) => s.news).map(([k]) => TF_LABEL[k]).join(' และ ') : '5 นาที และ 1 ชม.'} งดเปิดไม้ใหม่ ±30 นาทีรอบข่าวนี้ (กรอบอื่นทดสอบแล้วไม่ต้องหลบ)</p>`;
     } else $('nsNext').innerHTML = ns.at ? '<p class="muted">ไม่มีข่าวแรงของสหรัฐใน 8 วันข้างหน้า</p>' : '<p class="muted">กำลังโหลดปฏิทินข่าว…</p>';
@@ -158,5 +165,89 @@
     render();
   });
   window.renderNewsStats = function () { render(); load(); };
-  setInterval(() => { if (!$('tab-stats') || $('tab-stats').hidden) return; render(); load(); }, 60e3); // countdown + refresh
+
+  // ---------- Live (user, 9 Oct: "อยากให้เรียลไทม์ทุกอย่าง เช่นข่าวของสหรัฐเรียลไทม์") ----------
+  // • every second: the countdowns (news tab + the strip on every tab)
+  // • around a release (2 min before → 20 min after, until the actual is out): the calendar every 15 s
+  // • otherwise: the calendar every 5 minutes; the 60-day history every 10 minutes
+  // The strip (#newsLive, top of every tab): 15 minutes before → countdown; released → actual vs forecast and how far
+  // gold has moved since the release (live price − the 1-minute open at the release, Binance PAXG for that open)
+  const live = { at: 0, polling: false, open: new Map() };
+  async function releaseOpen(t) {
+    if (live.open.has(t)) return live.open.get(t);
+    live.open.set(t, null);
+    try {
+      const r = await fetch(`https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT&interval=1m&startTime=${t}&limit=1`);
+      const k = await r.json();
+      if (k[0] && k[0][0] >= t && k[0][0] < t + 60e3) {
+        // PAXG trades a few dollars off spot: line it up with the live price via the latest 1-minute candle
+        const r2 = await fetch('https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT&interval=1m&limit=1');
+        const k2 = await r2.json();
+        const off = state.livePrice != null && k2[0] ? state.livePrice - +k2[0][4] : 0;
+        live.open.set(t, +k[0][1] + off);
+      }
+    } catch (e) { live.open.delete(t); }
+    return live.open.get(t);
+  }
+  const hot = (now) => [...ns.next, ...ns.past.slice(0, 3)].some((g) => now > g.t - 2 * 60e3 && now < g.t + 20 * 60e3 && g.items.some((o) => o.actual == null));
+  async function pollNow() {
+    if (live.polling) return;
+    live.polling = true;
+    try {
+      const now = Date.now();
+      const list = await calendar(now - 864e5, now + 8 * 864e5);
+      const released = groupByTime(list.filter((o) => o.t <= now && o.actual != null));
+      const pending = groupByTime(list.filter((o) => o.t > now || o.actual == null)).filter((g) => g.t > now - 30 * 60e3).sort((a, b) => a.t - b.t);
+      // newly released groups go to the top of the history; groups still waiting for the actual stay "next"
+      released.forEach((g) => { const i = ns.past.findIndex((p) => p.t === g.t); if (i >= 0) ns.past[i].items = g.items; else ns.past.unshift(g); });
+      ns.past.sort((a, b) => b.t - a.t);
+      ns.next = pending;
+      live.at = now;
+      // the signal system skips trades around these (main.js state.news, same shape as refreshNews)
+      state.news = [...ns.next, ...released].filter((g) => g.t > now - 3 * 3600e3)
+        .map((g) => ({ time: g.t, title: [...new Set(g.items.map((o) => o.ev.short_name || 'US data'))].join(' · ').slice(0, 120) }))
+        .sort((a, b) => a.time - b.time);
+      render();
+    } catch (e) { /* keep what we have */ }
+    live.polling = false;
+  }
+  function strip() {
+    const el = $('newsLive');
+    if (!el) return;
+    const now = Date.now();
+    const soon = ns.next.find((g) => g.t > now && g.t - now <= 15 * 60e3);
+    const just = ns.past.find((g) => now - g.t >= 0 && now - g.t <= 30 * 60e3)
+      || ns.next.find((g) => g.t <= now && now - g.t <= 30 * 60e3); // released, actual not out yet
+    const g = just || soon;
+    if (!g) { el.hidden = true; return; }
+    const names = [...new Set(g.items.map((o) => thName(o.ev.short_name || '') || o.ev.event_translated || o.ev.short_name))].join(' · ');
+    el.hidden = false;
+    if (g === soon && !just) {
+      const s = Math.max(0, Math.round((g.t - now) / 1000));
+      el.className = 'news-live soon';
+      el.innerHTML = `<span class="nl-tag">⏰ ข่าวแรงกำลังมา</span><b class="mono">${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}</b><span class="nl-name">${names}</span>`
+        + `<span class="nl-nums">${g.items.slice(0, 3).map((o) => `คาด ${val(o.forecast, o)}`).join(' · ')}</span><a href="#stats">ดูข่าว ›</a>`;
+      return;
+    }
+    const out = g.items.filter((o) => o.actual != null);
+    const a = usd((out.find((o) => o.actual_to_forecast !== 'neutral') || out[0] || {}).actual_to_forecast);
+    const p0 = live.open.get(g.t), px = state.livePrice;
+    if (p0 === undefined) releaseOpen(g.t).then(strip);
+    const mv = p0 != null && px != null ? SIG.round(px - p0) : null;
+    el.className = `news-live out ${a.cls}`;
+    el.innerHTML = `<span class="nl-tag">🔴 ข่าวออกแล้ว ${hhmm(g.t)} น.</span><span class="nl-name">${names}</span>`
+      + (out.length ? `<span class="nl-nums">${out.slice(0, 3).map((o) => `จริง <b class="mono">${val(o.actual, o)}</b> / คาด ${val(o.forecast, o)}`).join(' · ')}</span><span class="ns-chip ${a.cls}">${a.th}</span>`
+        : '<span class="nl-nums">รอตัวเลขจริง… (เช็กทุก 15 วินาที)</span>')
+      + `<span class="nl-gold">ทองตั้งแต่ข่าวออก <b class="mono ${mv == null ? '' : mv >= 0 ? 'up' : 'down'}">${mv == null ? '…' : signed(mv)}</b></span><a href="#stats">ดูข่าว ›</a>`;
+  }
+  // Seconds: countdowns + the strip; the calendar on its own schedule
+  setInterval(() => {
+    const now = Date.now();
+    strip();
+    if (!$('tab-stats').hidden) countdown();
+    if (now - live.at > (hot(now) ? 15e3 : 5 * 60e3)) pollNow();
+    if (!$('tab-stats').hidden && now - ns.at > 10 * 60e3) load();
+  }, 1000);
+  // first load right away (the strip needs the calendar on every tab)
+  load().then(pollNow);
 })();
