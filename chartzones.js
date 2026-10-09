@@ -280,21 +280,23 @@ function ago(ms) {
   }
   function draw(b) {
     const p = currentPlan(), plans = !p && window.CZ_PLANS;
-    // Room on the right for the box while there is an entry (like a platform's position tool); the plan box
-    // needs ~170px whatever the zoom
-    const sp = b.chart.timeScale().options().barSpacing || 6;
+    // Room on the right for the box while there is an entry (like a platform's position tool): ~170px whatever the zoom.
+    // Bar spacing comes from what is on screen now (a zoom changes it), and room is made by SCROLLING, never by
+    // squeezing the candles — squeezing made the next pass ask for even more room, so after a zoom the candles ended up
+    // as a small heap on the left (user, 9 Oct: "พอซูมเข้าซูมออกกราฟเหลือเท่านี้เอง").
+    const ts = b.chart.timeScale(), r = ts.getVisibleLogicalRange(), n = state.bars.length;
     const plotW = b.el.clientWidth - b.chart.priceScale('right').width();
+    if (plotW <= 0) return; // hidden chart (the other mode): nothing to size, and a 0 width would give a negative offset
+    const sp = r && r.to > r.from ? plotW / (r.to - r.from) : ts.options().barSpacing || 6;
     const need = plotW < 520 ? Math.max(136, Math.round(plotW * 0.5)) : 170; // one plan box, wide enough for "ถ้าเข้า Sell 4,125.45"
-    const off = p ? 8 : plans ? Math.min(240, Math.ceil(need / sp) + 1) : 6;
-    if (b.off !== off) { b.off = off; b.chart.timeScale().applyOptions({ rightOffset: off }); }
-    if (plans && state.bars.length) {
-      // Showing the latest candles but without room for the boxes (a zoom or tab switch set the range): make room
-      const ts = b.chart.timeScale(), r = ts.getVisibleLogicalRange(), n = state.bars.length;
-      // at most every half second, so a clamped range can't loop; always draw afterwards
-      // (a range set by a timeframe switch right after ours used to win — try once more after the half second)
-      // (at most 3 tries in a row, so a range the chart clamps can't loop)
+    const off = p ? 8 : plans ? Math.max(6, Math.min(120, Math.ceil(need / sp) + 1)) : 6;
+    if (b.off !== off) { b.off = off; ts.applyOptions({ rightOffset: off }); }
+    if (plans && n) {
+      // Showing the latest candles without the room (a timeframe switch set the range): scroll left by the missing bars,
+      // same zoom. At most every half second, with up to 3 retries in a row (a switch can set its range right after ours)
       if (r && r.to >= n - 2 && r.to < n - 1 + off - 1) {
-        if (Date.now() - (b.roomAt || 0) > 500) { b.roomAt = Date.now(); b.retry = 0; ts.setVisibleLogicalRange({ from: r.from, to: n - 1 + off }); }
+        const d = n - 1 + off - r.to;
+        if (Date.now() - (b.roomAt || 0) > 500) { b.roomAt = Date.now(); b.retry = 0; ts.setVisibleLogicalRange({ from: r.from + d, to: r.to + d }); }
         else if (!b.retry && (b.tries = (b.tries || 0) + 1) <= 3) b.retry = setTimeout(() => draw(b), 600);
       } else b.tries = 0;
       const html = drawPlans(b, plans);
@@ -302,7 +304,7 @@ function ago(ms) {
       return;
     }
     if (!p || !state.bars.length) { b.html = b.el.innerHTML = ''; return; }
-    const ts = b.chart.timeScale(), y = (v) => b.series.priceToCoordinate(v);
+    const y = (v) => b.series.priceToCoordinate(v);
     // Plot width = chart width − right price scale (timeScale().width() is 0 when the time axis is hidden)
     const right = b.chart.priceScale('right').width(), W = b.el.clientWidth - right;
     // Start at the candle the call was made in (snapped to a candle time), or the left edge if it is off screen
