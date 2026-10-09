@@ -503,8 +503,8 @@
 /* ================= Position box on the chart (entry → SL red, entry → targets green) ================= */
 .pbox-layer { position: absolute; inset: 0; pointer-events: none; z-index: 3; overflow: hidden; }
 .pbox { position: absolute; }
-.pbox.loss { background: rgba(224,66,79,.14); border-top: 1px solid rgba(224,66,79,.35); border-bottom: 1px solid rgba(224,66,79,.35); }
-.pbox.win { background: rgba(15,159,110,.13); border-top: 1px solid rgba(15,159,110,.35); border-bottom: 1px solid rgba(15,159,110,.35); }
+.pbox.loss { background: rgba(240,62,79,.16); border-top: 1px solid rgba(240,62,79,.7); border-bottom: 1px solid rgba(240,62,79,.7); }
+.pbox.win { background: rgba(18,184,134,.15); border-top: 1px solid rgba(18,184,134,.7); border-bottom: 1px solid rgba(18,184,134,.7); }
 .pentry { position: absolute; height: 0; border-top: 3px solid #d99a10; box-shadow: 0 0 8px rgba(217,154,16,.8); margin-top: -1.5px; animation: pentryPulse 1.6s ease-in-out infinite; }
 @keyframes pentryPulse { 50% { box-shadow: 0 0 16px rgba(217,154,16,1); } }
 .ptag { position: absolute; transform: translateY(-50%); white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,.2); font-size: 11.5px; font-weight: 700; padding: 1px 7px; border-radius: 6px; color: #fff; font-family: 'JetBrains Mono', monospace; }
@@ -561,10 +561,10 @@ body.cz-clean .charts > .legend { display: none; }
 .cz-plan-side { font-weight: 700; min-width: 52px; }
 .cz-box .cz-plan-row span { color: var(--text); } .cz-box .cz-plan-row .cz-plan-side { color: inherit; }
 /* Both-side plan boxes right of the last candle */
-.pp.off > :not(.pp-status) { opacity: .65; }
-.pp-line { position: absolute; height: 0; border-top: 1px dashed rgba(15,159,110,.9); }
-.pp-lab { position: absolute; transform: translateY(-50%); font: 600 10.5px/14px system-ui, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
-.pp-lab.tp { color: #0f9f6e; } .pp-lab.sl { color: #e0424f; } .pp-lab.note { color: var(--muted); font-weight: 500; font-size: 10px; }
+.pp.off > .pbox { opacity: .75; } /* labels stay fully readable */
+.pp-line { position: absolute; height: 0; border-top: 2px dashed #12b886; }
+.pp-lab { position: absolute; transform: translateY(-50%); font: 700 11.5px/15px system-ui, sans-serif; text-shadow: 0 0 3px var(--bg), 0 0 3px var(--bg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+.pp-lab.tp { color: #12b886; } .pp-lab.sl { color: #f03e4f; } .pp-lab.note { color: var(--muted); font-weight: 500; font-size: 10px; }
 .pp-lab.en { color: #fff; border-radius: 3px; padding: 0 3px; font-size: 11px; } .pp-lab.en.buy { background: #1f8a4c; } .pp-lab.en.sell { background: #c2223b; }
 @media (max-width: 520px) { .pp-lab { font-size: 9.5px; } .pp-lab.en { font-size: 10px; } .pp-lab.note { display: none; } }
 .pp-status { position: absolute; transform: translateY(-100%); text-align: center; font: 700 11.5px/1.3 system-ui, sans-serif; color: var(--wait); white-space: normal; padding: 2px 4px; }

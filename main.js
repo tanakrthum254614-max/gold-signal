@@ -143,13 +143,15 @@ const mainChart = LC.createChart($('mainChart'), chartBase(false, true));
 const rsiChart = LC.createChart($('rsiChart'), chartBase(false));
 const macdChart = LC.createChart($('macdChart'), chartBase(true));
 
+// Crisp candles (user, 10 Oct: 'เส้นกราฟคมชัดกว่านี้'): solid borders in the body colour, brighter green / red
 const candles = mainChart.addCandlestickSeries({
-  upColor: '#0f9f6e', downColor: '#e0424f', borderVisible: false,
-  wickUpColor: '#0f9f6e', wickDownColor: '#e0424f',
+  upColor: '#12b886', downColor: '#f03e4f', borderVisible: true, borderUpColor: '#12b886', borderDownColor: '#f03e4f',
+  wickUpColor: '#12b886', wickDownColor: '#f03e4f',
 });
 const lineOpts = (color, extra = {}) => ({ color, lineWidth: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false, ...extra });
-const ema20S = mainChart.addLineSeries(lineOpts('#2f6fed', { lineWidth: 1.5 }));
-const ema50S = mainChart.addLineSeries(lineOpts('#9b51e0', { lineWidth: 1.5 }));
+// whole-pixel widths: 1.5 px lines are anti-aliased across two pixels and look blurry
+const ema20S = mainChart.addLineSeries(lineOpts('#2f6fed', { lineWidth: 2 }));
+const ema50S = mainChart.addLineSeries(lineOpts('#9b51e0', { lineWidth: 2 }));
 const bbU = mainChart.addLineSeries(lineOpts('#a3acba', { lineWidth: 1, lineStyle: LC.LineStyle.Dashed }));
 const bbL = mainChart.addLineSeries(lineOpts('#a3acba', { lineWidth: 1, lineStyle: LC.LineStyle.Dashed }));
 
@@ -158,8 +160,8 @@ rsiS.createPriceLine({ price: 70, color: '#e0424f', lineWidth: 1, lineStyle: LC.
 rsiS.createPriceLine({ price: 30, color: '#0f9f6e', lineWidth: 1, lineStyle: LC.LineStyle.Dashed, axisLabelVisible: false });
 
 const histS = macdChart.addHistogramSeries({ priceLineVisible: false, lastValueVisible: false });
-const macdS = macdChart.addLineSeries(lineOpts('#2f6fed', { lineWidth: 1.5 }));
-const sigS = macdChart.addLineSeries(lineOpts('#f2a93b', { lineWidth: 1.5 }));
+const macdS = macdChart.addLineSeries(lineOpts('#2f6fed', { lineWidth: 2 }));
+const sigS = macdChart.addLineSeries(lineOpts('#f2a93b', { lineWidth: 2 }));
 
 // Simple chart: a plain price line with the latest signal's entry / stop / target
 const simpleChart = LC.createChart($('simpleChart'), {

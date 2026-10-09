@@ -420,8 +420,9 @@ function ago(ms) {
   }
   function init() {
     if (views.length || typeof mainChart === 'undefined') return;
-    const ln = (color, style) => mainChart.addLineSeries({ color, lineWidth: 1.5, lineStyle: style, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
-    view(mainChart, candles, 'mainChart', { up: ln('rgba(216,190,120,.85)', 0), mid: ln('rgba(216,190,120,.55)', 2), lo: ln('rgba(216,190,120,.85)', 0) });
+    // whole-pixel, opaque lines (1.5 px semi-transparent ones looked blurry)
+    const ln = (color, style) => mainChart.addLineSeries({ color, lineWidth: 2, lineStyle: style, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
+    view(mainChart, candles, 'mainChart', { up: ln('#d8b45a', 0), mid: ln('rgba(216,180,90,.8)', 2), lo: ln('#d8b45a', 0) });
     view(simpleChart, areaS, 'simpleChart', null);
   }
   function draw(v) {
