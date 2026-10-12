@@ -260,3 +260,7 @@ table.st td small { display: block; }
   .zn::-webkit-scrollbar { display: none; }
   .zn button { flex: none; font-size: 13px; padding: 7px 12px; }
 }
+
+/* Inside the Gold Signal site: use the whole width of the tab (user, 12 Oct: "ขยายให้เต็มขอบจอ") */
+.embedded main { max-width: none; padding-left: 16px; padding-right: 16px; }
+.embedded .top { padding-left: 16px; padding-right: 16px; }
