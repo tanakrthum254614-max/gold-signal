@@ -2,11 +2,11 @@
 const SQ = {};  // ราคาสดล่าสุดของหุ้น
 const pct2 = v => v == null ? '—' : (v > 0 ? '+' : '') + v.toFixed(Math.abs(v) >= 10 ? 1 : 2) + '%';  // v เป็น % อยู่แล้ว
 const heat = (v, scale, seq) => {
-  if (v == null) return 'rgb(40,36,58)';
-  if (seq) { const a = Math.max(0, Math.min(1, v / scale)); return `rgb(${Math.round(40 + 211 * a)},${Math.round(36 + 155 * a)},${Math.round(58 - 22 * a)})`; }
+  if (v == null) return 'rgb(38,44,56)';
+  if (seq) { const a = Math.max(0, Math.min(1, v / scale)); return `rgb(${Math.round(38 + 213 * a)},${Math.round(44 + 147 * a)},${Math.round(56 - 20 * a)})`; }
   const k = Math.max(-1, Math.min(1, v / scale)), a = Math.abs(k);
   const [r, g, b] = k >= 0 ? [22, 163, 74] : [220, 38, 38];
-  return `rgb(${Math.round(40 + (r - 40) * a)},${Math.round(36 + (g - 36) * a)},${Math.round(58 + (b - 58) * a)})`;
+  return `rgb(${Math.round(38 + (r - 38) * a)},${Math.round(44 + (g - 44) * a)},${Math.round(56 + (b - 56) * a)})`;
 };
 const liveCh = s => SQ[s] ? SQ[s].ch * 100 : null;
 const stockOf = s => window.dash?.stockMap?.[s];
