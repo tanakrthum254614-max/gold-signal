@@ -363,7 +363,7 @@
    "id": "1h-1791774000000",
    "createdAt": 1791774000000,
    "expiresAt": 1791834300000,
-   "status": "active",
+   "status": "loss",
    "entryAt": 1791774000000,
    "side": "BUY",
    "entry": 4205.44,
@@ -378,10 +378,13 @@
    "hitAt": [],
    "stop": 4175.44,
    "realized": 0,
-   "pnl": -29.26,
-   "last": 4176.18
+   "pnl": -30,
+   "last": 4176.18,
+   "closedBy": "sl",
+   "exitPrice": 4175.44,
+   "exitAt": 1791792900000
   }
  ],
  "brakes": {},
- "updatedAt": 1791793407286
+ "updatedAt": 1791793521321
 }
