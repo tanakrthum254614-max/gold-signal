@@ -95,17 +95,29 @@ function ago(ms) {
   const sec = (t) => Math.floor(t / 1000) + TZ;
   const usd = (v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US')}`;
 
+  // Direction of THIS chart's timeframe (user, 12 Oct: "ไม่เห็นมีลูกศรขึ้นลง เขียว = ขึ้น แดง = ลง แดงไม่เคยเห็นเลย"): the
+  // score's lean mixes in the bigger timeframes, so in a long uptrend it stayed "up" while this chart fell. Here: the
+  // chart frame's own indicator vote (avg ≥ ±0.15), else EMA 9 vs EMA 21 on it. 1 up · −1 down · 0 unknown.
+  const fdir = (dec) => { if (!dec) return 0; const a = dec.frames && dec.frames[0] ? dec.frames[0].avg : 0;
+    return Math.abs(a) >= 0.15 ? Math.sign(a) : (dec.conf && dec.conf.ema921) || 0; };
+  window.CZ_FDIR = fdir;
   function markers(sys, trades, from, decs) {
     const out = [];
-    // every closed candle: small up / down arrow from the score's lean (no text; entries get the big labelled ones)
+    // An arrow where this timeframe turns: green ▲ = turned up, red ▼ = turned down (shown in both views; entries get
+    // the big labelled ones). The indicator view also gets a faint dot-arrow on every candle in between.
     const taken = new Set(trades.map((r) => r.createdAt));
     const quiet = window.CZ_CLEAN && CZ_CLEAN();
+    let prev = 0;
     decs.forEach(({ t, dec }) => {
-      if (quiet) return;
-      if (t < from || !dec || (!sys.long && dec.stale) || !dec.lean || taken.has(t)) return;
-      const up = dec.lean > 0;
-      out.push({ time: sec(t), position: up ? 'belowBar' : 'aboveBar', shape: up ? 'arrowUp' : 'arrowDown', size: 0.5,
-        color: up ? 'rgba(15,159,110,.55)' : 'rgba(224,66,79,.55)' });
+      if (!dec || (!sys.long && dec.stale)) return;
+      const dir = fdir(dec); if (!dir) return;
+      const turn = prev && dir !== prev; prev = dir;
+      if (t < from || taken.has(t)) return;
+      const up = dir > 0;
+      if (turn) out.push({ time: sec(t), position: up ? 'belowBar' : 'aboveBar', shape: up ? 'arrowUp' : 'arrowDown', size: 1,
+        color: up ? '#0f9f6e' : '#e0424f' });
+      else if (!quiet) out.push({ time: sec(t), position: up ? 'belowBar' : 'aboveBar', shape: up ? 'arrowUp' : 'arrowDown', size: 0.5,
+        color: up ? 'rgba(15,159,110,.45)' : 'rgba(224,66,79,.45)' });
     });
     trades.forEach((r) => {
       if (r.createdAt < from) return;
@@ -161,7 +173,7 @@ function ago(ms) {
     // Kept short on purpose (user, 8 Oct: "คำเยอะไป"): direction · % to an entry · the one plan; the rest is folded
     let pill = '', pillFull = '';
     if (lastC && (sys.long || !(d && d.stale))) {
-      const up = lastC.dec.lean > 0, dn = lastC.dec.lean < 0;
+      const fd = fdir(lastC.dec), up = fd > 0, dn = fd < 0; // this timeframe's own direction (same as the arrows)
       pill = `<span class="cz-5m ${up ? 'up' : dn ? 'down' : 'flat'}">${up ? '▲ ขึ้น' : dn ? '▼ ลง' : '• ทรงตัว'}</span> ${TF_LABEL[tf]} · รอบถัดไป ${when(sys, lastC.t + dur)}`;
       pillFull = `ทิศกรอบ ${TF_LABEL[tf]}: แท่ง ${when(sys, lastC.t - dur)} ปิดแล้ว · คะแนน ${signedScore(lastC.dec.score)}/±${max}`;
     }
