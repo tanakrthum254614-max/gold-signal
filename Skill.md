@@ -68,6 +68,18 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 ## 📖 หน้าวิธีใช้: อ่านหน้ากราฟยังไง (8 ต.ค. 2569 · เวอร์ชัน 202610082200)
 - แทนหัวข้อ "⏱️ สัญญาณ 15 นาที (ดูบนเว็บเท่านั้น)" (อธิบายการ์ดที่ลบแล้ว) ด้วย "📈 อ่านหน้ากราฟยังไง" `ol.learn-steps` 5 ข้อ: กรอบเวลา → ช่อง Buy|Sell (% + ✅⏸⚠️⛔) → เข้าเฉพาะ ✅ + 🧮 → ลูกศร/ป้าย/กล่อง TP-SL/เส้นไม้ที่ปิด → สิ่งที่ดูประกอบเท่านั้น · เมื่อเปลี่ยนหน้ากราฟอีก ให้อัปเดตหัวข้อนี้ด้วย
 
+## 🗂️ ข้อมูลสัญญาณย้ายไป branch `data` — โควตา Vercel ไม่เต็มอีก (12 ต.ค. 2569 · commit 110666c)
+- ปัญหา: ทุกครั้งที่ check-loop บันทึกไม้ ("Signal update" ทุก ~5 นาที) = commit บน main = Vercel deploy ทั้งเว็บ · Hobby ให้ 100 deploy/วัน → 12 ต.ค. เต็ม ("Deployment rate limited — retry in 24 hours") งานแก้เว็บค้าง + ข้อมูลไม้บนเว็บค้าง
+- ใหม่: `signals.json intraday.json chart-signals.json quota.json backtest.json backtest-30m.json backtest-15m.json` อยู่บน **branch `data`** (main เก็บแต่โค้ด — สำเนาบน main หยุดอัปเดตตั้งแต่ 110666c ใช้เป็น fallback เท่านั้น)
+  - `vercel.json`: `git.deploymentEnabled.data = false` → push ไป data ไม่สร้าง deploy
+  - `scripts/data-branch.sh`: `data_load` (ดึงไฟล์จาก origin/data มาไว้ใน working tree; fetch depth 50 + refspec `+refs/heads/data:refs/remotes/origin/data` เพราะ actions/checkout clone แค่ main) · `data_save "msg"` (git worktree บน DATA_BASE → commit → rebase บน origin/data → push HEAD:data, retry 3 ครั้ง — แก้บรรทัดเดียวกันพร้อมกัน = fail แล้วรอบหน้าลองใหม่ เหมือนเดิม) · DATA_BASE ส่งข้าม step ผ่าน GITHUB_ENV
+  - check-loop.sh: `data_load` ต้นทุก check, `data_save` แทน git commit/pull/push · morning-plan.yml / weekly-summary.yml: step "Load signal data" หลัง checkout + `data_save` ตอนบันทึก · monthly-research ยังอยู่บน main (test-stats.json เดือนละครั้ง)
+  - `middleware.js`: สมาชิกที่ล็อกอินขอ `/signals.json` ฯลฯ → ดึงจาก raw.githubusercontent.com/…/data (`?t=` เปลี่ยนทุก 10 วิ ทะลุ cache 5 นาทีของ GitHub, เก็บในเครื่อง 10 วิ, header `x-gs-data: data-branch`) · GitHub ล่ม → ไฟล์ที่ deploy ไว้ (`next()`) · ไม่ล็อกอิน = 401 เหมือนเดิม
+- ผล: ข้อมูลไม้บนเว็บสดขึ้น (ไม่ต้องรอ deploy) · Vercel deploy เฉพาะตอนแก้โค้ด
+- ทดสอบ: middleware ในเครื่อง (cookie จริง) ได้ 200 จาก GitHub ~0.3 วิ, ครั้งที่สอง 1 ms, ไม่มี cookie 401 · sandbox 2 runner บันทึกพร้อมกันคนละไฟล์ผ่าน, ไฟล์เดียวกันชน = fail ตามคาด, worktree ลบสะอาด
+- ตอนสลับ: push โค้ด → รอรันเก่า (โค้ดเก่า) จบ 16:20 → สร้าง data จาก main ล่าสุด → ไม่มีรันเก่าค้างในคิว · thander1 deploy ได้อีกครั้ง 16:12 (งานวันนี้ขึ้นครบ)
+- ⚠️ zframes `models/gold_model.py` อ่าน signals.json / chart-signals.json จากโฟลเดอร์ Traeding ในเครื่อง → ถ้าอยากได้ผลล่าสุด `git fetch origin data` แล้ว `git show origin/data:chart-signals.json`
+
 ## ✂️ เอากล่อง ATR ออกจากการ์ดสัญญาณ (12 ต.ค. 2569 · เวอร์ชัน 202610122300)
 - ผู้ใช้ (รูปกล่อง "ราคาแกว่งเฉลี่ย (ATR) ±11.34 ต่อ 1 แท่งเทียน"): "เอาอันนี้ออก" → ลบบรรทัด box ATR ใน renderSignal (main.js) · `.plan:empty { display: none }` กันช่องว่าง (จุดรอซื้อ/ขายของ investing ยังแสดงถ้ามี)
 
