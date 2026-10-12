@@ -1,5 +1,5 @@
 // frame ชุดที่ 2: กราฟเลือกช่วงเวลา, เกจ, yield curve, แท่งเปรียบเทียบ, การ์ดราคาสด (Hyperliquid)
-const COLORS = ['#e8b64c', '#4ea1ff', '#34d399', '#c4b5fd', '#fb923c', '#f472b6', '#cbd5e1']; // gold first, like the Gold Signal site
+const COLORS = ['#c4b5fd', '#fbbf24', '#34d399', '#60a5fa', '#fb923c', '#f472b6', '#cbd5e1'];
 const DAY = 86400000;
 const fmtNum = (v, f = 'num', d) => {
   if (v == null || !Number.isFinite(v)) return '—';
@@ -81,7 +81,7 @@ Object.assign(FRAMES, {
 
   curve: f => {
     const toPts = arr => arr.map((p, i) => ({ t: i, v: p.v }));
-    const lines = [{ name: f.nowLabel || 'ล่าสุด', points: toPts(f.now), color: '#e8b64c' }];
+    const lines = [{ name: f.nowLabel || 'ล่าสุด', points: toPts(f.now), color: '#c4b5fd' }];
     if (f.prev) lines.push({ name: f.prev.label, points: toPts(f.prev.points), color: '#8b7fb0', dash: true, width: 1.4 });
     const chart = lineChart(lines, { h: f.height || 120, fmt: 'pct', dec: 2 }).replace(/<div class="xl">.*?<\/div><\/div>$/s, '</div>');
     return `<div class="sh"><div><div class="big ${tcls(f.tone)}">${esc(f.headline)}</div><div class="muted">${esc(f.sub || '')}</div></div></div>${chart}
@@ -99,7 +99,7 @@ Object.assign(FRAMES, {
     let lo = f.min, bands = '';
     for (const b of f.bands || []) { bands += arc(lo, b.to, b.color, 3); lo = b.to; }
     const band = (f.bands || []).find(b => f.value <= b.to) || f.bands?.at(-1);
-    const col = band?.color || '#e8b64c';
+    const col = band?.color || '#c4b5fd';
     return `<div class="gauge"><svg viewBox="0 0 200 150">${arc(f.min, f.max, 'rgba(255,255,255,.08)', 14)}${arc(f.min, f.value, col, 14)}${bands.replace(/stroke-width="3"/g, 'stroke-width="3" opacity=".55" transform="translate(0,0)"')}
       <text x="100" y="98" text-anchor="middle" font-size="34" font-weight="700" fill="${col}">${esc(fmtNum(f.value, 'num', f.decimals ?? 2))}</text>
       <text x="100" y="120" text-anchor="middle" font-size="11" fill="var(--dim)" letter-spacing="1.5">${esc(band?.name || '')}</text></svg>

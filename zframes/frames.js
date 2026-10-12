@@ -53,8 +53,8 @@ const FRAMES = {
     const marks = (f.marks || []).map(m => `<line x1="${pad}" x2="${W - 60}" y1="${y(m.price)}" y2="${y(m.price)}" stroke="var(--${m.tone === 'up' ? 'up' : m.tone === 'down' ? 'down' : 'muted'})" stroke-dasharray="4 4" opacity=".7"/>`).join('') +
       labels.map(l => `<text x="${W - 56}" y="${l.ly}" fill="${l.fill}" font-size="11">${esc(l.text)}</text>`).join('');
     return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="${esc(f.title)}">
-      <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e8b64c" stop-opacity=".35"/><stop offset="1" stop-color="#e8b64c" stop-opacity="0"/></linearGradient></defs>
-      <path d="${d}L${x(P.length - 1)},${H}L${x(0)},${H}Z" fill="url(#g)"/><path d="${d}" fill="none" stroke="#e8b64c" stroke-width="1.8"/>${marks}
+      <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#c4b5fd" stop-opacity=".35"/><stop offset="1" stop-color="#c4b5fd" stop-opacity="0"/></linearGradient></defs>
+      <path d="${d}L${x(P.length - 1)},${H}L${x(0)},${H}Z" fill="url(#g)"/><path d="${d}" fill="none" stroke="#c4b5fd" stroke-width="1.8"/>${marks}
       <circle cx="${x(P.length - 1)}" cy="${y(last.c)}" r="3.5" fill="#fff"/></svg>
       <div class="muted">${new Date(P[0].t).toLocaleDateString('th-TH')} – ${new Date(last.t).toLocaleDateString('th-TH')}</div>`;
   },
