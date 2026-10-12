@@ -42,7 +42,7 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 - ปรับหัวข้อ การ์ด ปุ่มช่วงเวลา และจอเล็กให้อ่านง่ายขึ้น; ตรวจหน้า gold จริงแล้ว 72 แท่ง เปลี่ยน 5m→1m ได้ ไม่มี JavaScript error; หน้า spx 38 การ์ด และ lint ทั้ง 4 หน้าใช้ได้
 - เมื่อแก้งาน zframes เสร็จแต่ละครั้ง ให้บันทึกการเปลี่ยนแปลงและผลตรวจใน [zframes/Skill.md](../zframes/Skill.md)
 
-- 12 ต.ค.: ปุ่มหมวด (Live, Cockpit, Technicals, Macro, Context …) เป็นแท็บ แสดงทีละหน้า ไม่เลื่อนลง ทั้ง 4 แดชบอร์ด · ไฟล์ `zframes/app.js`, `zframes/style.css` (v=2026101204) · ภาษาไทย: ปุ่ม/หัวข้อ/ชื่อการ์ดแปลใน `zframes/app.js` (`thDash`) + สถานะ RSI ใน `live.js` (v=2026101205)
+- 12 ต.ค.: ปุ่มหมวด (Live, Cockpit, Technicals, Macro, Context …) เป็นแท็บ แสดงทีละหน้า ไม่เลื่อนลง ทั้ง 4 แดชบอร์ด · ไฟล์ `zframes/app.js`, `zframes/style.css` (v=2026101204) · ภาษาไทย: ปุ่ม/หัวข้อ/ชื่อการ์ดแปลใน `zframes/app.js` (`thDash`) + สถานะ RSI ใน `live.js` (v=2026101205) · 12 ต.ค.: ราคาทองในแดชบอร์ด = ราคาสดของเว็บ (investing.com) — main.js `window.GS_LIVE()`, `zframes/site-live.js` `siteGold()` ป้อน xyz:GOLD + spot:XAU ทุก 250 ms; ฟีดอื่น (Hyperliquid/gold-api) เติมได้แค่ prev/vol/OI · ผู้ใช้: "ยังไม่เรียลไทม์ ไม่ตรงกัน" (หัวเว็บ 4,185.50 vs แดชบอร์ด 4,185.30/4,185.25, แท่งเทียน "ช้า 24 วิ")
 ---
 
 ## 0. ทำงานเสร็จแล้วต้องทำต่อ (ทุกครั้ง)
