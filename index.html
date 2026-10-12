@@ -17,7 +17,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610122500">
+  <link rel="stylesheet" href="style.css?v=202610122600">
   <link rel="stylesheet" href="live.css?v=202610121500">
   <link rel="stylesheet" href="theme.css?v=202610121500" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
@@ -72,8 +72,11 @@
       <div class="sp-sparks" aria-hidden="true"><i style="--a:0deg;--d:84px"></i><i style="--a:50deg;--d:62px"></i><i style="--a:72deg;--d:84px"></i><i style="--a:122deg;--d:62px"></i><i style="--a:144deg;--d:84px"></i><i style="--a:194deg;--d:62px"></i><i style="--a:216deg;--d:84px"></i><i style="--a:266deg;--d:62px"></i><i style="--a:288deg;--d:84px"></i><i style="--a:338deg;--d:62px"></i></div>
     </div>
     <h1 class="sp-title" aria-label="Gold Signal"><span style="--i:0">G</span><span style="--i:1">o</span><span style="--i:2">l</span><span style="--i:3">d</span><span class="sp" style="--i:4"> </span><span style="--i:5">S</span><span style="--i:6">i</span><span style="--i:7">g</span><span style="--i:8">n</span><span style="--i:9">a</span><span style="--i:10">l</span></h1>
-    <!-- Only the logo, the name and the % (user, 12 Oct: "หน้าตอนโหลด ดูเยอะเกินไป พวกคำต่างๆ") -->
+    <!-- Short and balanced (user, 12 Oct: long step sentences were "เยอะเกินไป", logo + % alone "น้อยไป"): a short tagline,
+         the %, and three chips that tick off as the price, the chart data and the signals arrive -->
+    <p class="sp-sub">สัญญาณเทรดทองคำ · เรียลไทม์</p>
     <div class="sp-pct mono" id="splashPct" role="status" aria-label="กำลังโหลด">0%</div>
+    <ul class="sp-chips" id="splashChips" aria-hidden="true"><li data-at="60">ราคาสด</li><li data-at="80">ข้อมูลกราฟ</li><li data-at="100">สัญญาณ</li></ul>
   </div>
 
   <!-- Sign-in page -->
@@ -503,7 +506,7 @@
   <div class="toast" id="toast" hidden></div>
 
   <script src="config.js?v=202610121500"></script>
-  <script src="auth.js?v=202610122500"></script>
+  <script src="auth.js?v=202610122600"></script>
   <script src="indicators.js?v=202610121500"></script>
   <script src="investing.js?v=202610121500"></script>
   <script src="explain.js?v=202610121500"></script>

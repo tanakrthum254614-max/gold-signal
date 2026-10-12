@@ -12,7 +12,7 @@
   // Progress ring (r = 72) + a counting percentage — no step texts (user, 12 Oct: too many words on the loading screen)
   const RING = 2 * Math.PI * 72;
   // Shown for at least MIN_MS so the logo animation plays once
-  const MIN_MS = 1500;
+  const MIN_MS = 2000;
   let shown = 0, target = 0, raf = 0, startAt = Date.now();
   function count() {
     shown += Math.max(0.6, (target - shown) * 0.06);
@@ -29,6 +29,14 @@
     head.setAttribute('cx', (80 + 72 * Math.cos(a)).toFixed(2));
     head.setAttribute('cy', (80 + 72 * Math.sin(a)).toFixed(2));
     head.classList.toggle('on', shown > 0.5 && shown < 100);
+    // chips: done (✓) once the ring passes their mark, the next one pulses as "loading"
+    let active = false;
+    document.querySelectorAll('#splashChips li').forEach((li) => {
+      const done = shown >= +li.dataset.at;
+      li.classList.toggle('done', done);
+      li.classList.toggle('on', !done && !active);
+      if (!done) active = true;
+    });
     raf = shown < target ? requestAnimationFrame(count) : 0;
   }
   window.SPLASH = {
