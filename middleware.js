@@ -160,6 +160,25 @@ async function pushApi(request, m) {
   return json({ ok: true });
 }
 
+// Signal records live on the repo's `data` branch (scripts/data-branch.sh), not main, so the 5-minute recorder no longer
+// redeploys the site (Vercel Hobby: 100 deployments a day — used up on 12 Oct 2026). Members get these files fresh from
+// that branch; the copies deployed with the site are only a fallback if GitHub can't be reached. The query string busts
+// GitHub's 5-minute CDN cache at most once per 10 s per file, and each instance keeps a copy for 10 s.
+const DATA = /^\/(signals|intraday|chart-signals|quota|backtest|backtest-30m|backtest-15m)\.json$/;
+const RAW = 'https://raw.githubusercontent.com/tanakrthum254614-max/gold-signal/data';
+const dataCache = new Map();
+async function dataFile(path) {
+  const now = Date.now(), hit = dataCache.get(path);
+  let text = hit && now - hit.at < 10e3 ? hit.text : null;
+  if (text == null) {
+    const r = await fetch(`${RAW}${path}?t=${Math.floor(now / 10e3)}`, { cache: 'no-store' });
+    if (!r.ok) return null;
+    text = await r.text();
+    dataCache.set(path, { at: now, text });
+  }
+  return new Response(text, { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-gs-data': 'data-branch' } });
+}
+
 export default async function middleware(request) {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -195,6 +214,7 @@ export default async function middleware(request) {
     if (path === '/api/admin/log') return json((await readJson(LOG, { events: [] })).events.slice().reverse());
     if (path === '/api/admin/ban' && request.method === 'POST') return adminBan(request, who);
   }
+  if (DATA.test(path)) { const r = await dataFile(path).catch(() => null); if (r) return r; }
   return next();
 }
 

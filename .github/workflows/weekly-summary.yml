@@ -37,6 +37,9 @@ jobs:
       SITE_URL: https://gold-signal-ten.vercel.app
     steps:
       - uses: actions/checkout@v4
+      # Signal data lives on the data branch (scripts/data-branch.sh) so these commits don't redeploy the website
+      - name: Load signal data
+        run: source scripts/data-branch.sh && data_load
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -53,12 +56,10 @@ jobs:
         run: node scripts/weekly.js data.json
       - name: Save results
         run: |
-          git add signals.json
-          git diff --cached --quiet && exit 0
           git config user.name "tanakrthum254614-max"
           git config user.email "$(gh api users/tanakrthum254614-max --jq '"\(.id)+\(.login)@users.noreply.github.com"')"
-          git commit -m "Weekly summary $(TZ=Asia/Bangkok date +%F)"
-          ok=0; for i in 1 2 3; do git pull --rebase -q && git push && { ok=1; break; }; sleep 5; done; [ "$ok" = 1 ]
+          source scripts/data-branch.sh
+          data_save "Weekly summary $(TZ=Asia/Bangkok date +%F)"
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Tell the owner if this failed

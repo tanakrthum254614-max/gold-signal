@@ -112,5 +112,10 @@
         }
       ]
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "data": false
+    }
+  }
 }
