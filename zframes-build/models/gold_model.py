@@ -48,23 +48,39 @@ def post_json(url, body, timeout=15):
         return json.loads(r.read().decode("utf-8"))
 
 
+FRED_CACHE = os.path.join(ROOT, "models", "cache", "fred")
+
+
 def fred(sid, days=800):
-    """อ่าน series จาก FRED (ไม่ต้องใช้ API key) → [{t, v}]"""
+    """อ่าน series จาก FRED (ไม่ต้องใช้ API key) → [{t, v}]
+    FRED drops / stalls requests from busy servers (GitHub Actions): 2 quick tries, and if both fail the last good copy
+    (models/cache/fred, kept between runs) — FRED series are daily or monthly, so a copy from yesterday is still right."""
     start = (datetime.now(TH) - timedelta(days=days)).strftime("%Y-%m-%d")
     req = urllib.request.Request(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}&cosd={start}", headers=UA)
-    for attempt in range(3):  # FRED drops some requests when many arrive at once (seen from GitHub Actions)
-        try:
-            with urllib.request.urlopen(req, timeout=30) as r:
-                rows = list(csv.reader(io.StringIO(r.read().decode("utf-8"))))[1:]
-            break
-        except Exception:
-            if attempt == 2: raise
-            time.sleep(2 + attempt * 4)
-    out = []
-    for d, v in rows:
-        if v not in ("", "."):
-            out.append({"t": int(datetime.strptime(d, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp() * 1000), "v": float(v)})
-    return out
+    path = os.path.join(FRED_CACHE, f"{sid}.json")
+    try:
+        for attempt in range(2):
+            try:
+                with urllib.request.urlopen(req, timeout=15) as r:
+                    rows = list(csv.reader(io.StringIO(r.read().decode("utf-8"))))[1:]
+                break
+            except Exception:
+                if attempt == 1: raise
+                time.sleep(3)
+        out = []
+        for d, v in rows:
+            if v not in ("", "."):
+                out.append({"t": int(datetime.strptime(d, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp() * 1000), "v": float(v)})
+        if out:
+            os.makedirs(FRED_CACHE, exist_ok=True)
+            with open(path, "w", encoding="utf-8") as fh: json.dump(out, fh)
+        return out
+    except Exception:
+        # last good copy from an earlier run, else the copy committed with the code (models/fred-seed, 13 Oct 2026)
+        for p in (path, os.path.join(ROOT, "models", "fred-seed", f"{sid}.json")):
+            if os.path.exists(p):
+                with open(p, encoding="utf-8") as fh: return json.load(fh)
+        raise
 
 
 def hl_daily(coin, days=400):
