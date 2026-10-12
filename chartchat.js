@@ -25,12 +25,12 @@
   if (!slot) return;
   slot.insertAdjacentHTML('beforeend', `
     <section class="cc-panel" id="ccPanel" aria-label="แชทถามจุดเข้า">
-      <header class="cc-head"><b>💬 ถามระบบ: เข้าตรงไหนดี</b></header>
+      <header class="cc-head"><b>💬 ถามจุดเข้า Buy / Sell</b></header>
       <div class="cc-tfs" id="ccTfs" role="group" aria-label="ถามกรอบเวลา"><span>กรอบ:</span><button type="button" data-tf="">ตามกราฟ <small id="ccScreen"></small></button>${CHAT_TFS.map((t) => `<button type="button" data-tf="${t}">${nameOf(t)}</button>`).join('')}</div>
       <div class="cc-log" id="ccLog" aria-live="polite"></div>
       <div class="cc-quick" id="ccQuick">${QUICK.map(([t, k]) => `<button type="button" data-q="${k}">${t}</button>`).join('')}</div>
       <form class="cc-form" id="ccForm"><input id="ccIn" autocomplete="off" placeholder="เช่น ซื้อที่ 4150 ได้ไหม · Sell 5 นาทีเมื่อไร"><button type="submit" class="btn">ส่ง</button></form>
-      <p class="cc-foot">ตอบจากระบบที่ทดสอบแล้วของแต่ละกรอบ (ตัวเดียวกับช่อง Buy | Sell บนกราฟ) · ไม่ใช่คำแนะนำการลงทุน</p>
+      <p class="cc-foot">ตอบจากระบบที่ทดสอบแล้ว · ไม่ใช่คำแนะนำการลงทุน</p>
     </section>`);
   const log = $('ccLog'), panel = $('ccPanel');
 
@@ -43,10 +43,6 @@
     $('ccScreen').textContent = `(${nameOf(state.tf)})`;
     $('ccTfs').querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.tf === target));
   }
-  function greet() {
-    paintTfs();
-    if (!log.children.length) say('bot', `สวัสดีครับ เลือกกรอบด้านบน (5 นาที · 15 นาที · 30 นาที · 1 ชม.) แล้วถามได้เลย เช่น <b>“ตอนนี้ควรเข้าไหม”</b> <b>“สรุป 4 กรอบ”</b> <b>“Sell กรอบไหนดี”</b> หรือพิมพ์ราคาที่อยากเข้า <b>“ซื้อที่ ${nowPrice() ? Math.round(nowPrice() - 10) : 4150} ได้ไหม”</b><br><small>พิมพ์ชื่อกรอบในคำถามก็ได้ เช่น “Buy 15 นาทีได้ไหม”</small>`);
-  }
   // pro view: in the signal card · simple view: under the chart
   function place() {
     const pro = $('chartPro'), simple = $('chartSimple');
@@ -56,7 +52,7 @@
   }
   [$('chartPro'), $('chartSimple')].filter(Boolean).forEach((el) => new MutationObserver(place).observe(el, { attributes: true, attributeFilter: ['hidden'] }));
   place();
-  greet();
+  paintTfs(); // no greeting message (user, 12 Oct: "เอาอันนี้ออก ให้กล่องถามตอบกระชับขึ้น") — an empty log shows one short hint (CSS)
   $('ccTfs').addEventListener('click', (e) => { const b = e.target.closest('button[data-tf]'); if (!b) return; target = b.dataset.tf; paintTfs(); });
   $('ccQuick').addEventListener('click', (e) => { const b = e.target.closest('button[data-q]'); if (b) ask(b.textContent, b.dataset.q); });
   $('ccForm').addEventListener('submit', (e) => { e.preventDefault(); const t = $('ccIn').value.trim(); if (!t) return; $('ccIn').value = ''; ask(t); });

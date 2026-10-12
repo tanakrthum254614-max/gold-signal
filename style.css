@@ -632,10 +632,10 @@ details.ns-item[open] .ns-open { color: #d99a10; border-color: rgba(240,180,41,.
 .ns-next .ns-open { color: rgba(243,245,249,.8); border-color: rgba(255,255,255,.25); }
 
 /* Chart Q&A chat (chartchat.js) — inside the chart's signal card (simple view: a card under the chart) */
-.cc-panel { margin-top: 14px; display: flex; flex-direction: column; height: 520px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.cc-panel { margin-top: 12px; display: flex; flex-direction: column; height: 400px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .cc-panel.cc-under { margin-top: 16px; background: var(--panel); border-radius: var(--radius); }
-.cc-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
-.cc-head b { flex: 1; font-size: 15px; }
+.cc-head { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.cc-head b { flex: 1; font-size: 14px; }
 .cc-log { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; overscroll-behavior: contain; }
 .cc-msg { max-width: 94%; padding: 9px 11px; border-radius: 12px; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
 .cc-msg.me { align-self: flex-end; background: var(--gold); color: #1c2433; border-bottom-right-radius: 4px; }
@@ -651,7 +651,7 @@ details.ns-item[open] .ns-open { color: #d99a10; border-color: rgba(240,180,41,.
 .cc-form input { flex: 1; min-width: 0; font: inherit; font-size: 14px; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
 .cc-form input:focus { outline: none; border-color: var(--gold); }
 .cc-foot { margin: 0; padding: 0 10px 10px; font-size: 11px; color: var(--muted); }
-@media (max-width: 899px) { .cc-panel { height: 480px; } .cc-form input { font-size: 16px; } }
+@media (max-width: 899px) { .cc-panel { height: 420px; } .cc-form input { font-size: 16px; } }
 .cc-tfs { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; font-size: 12.5px; color: var(--muted); }
 .cc-tfs::-webkit-scrollbar { display: none; }
 .cc-tfs button { flex: none; font: inherit; font-size: 12.5px; cursor: pointer; color: var(--text); background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 5px 9px; }
@@ -667,10 +667,9 @@ details.ns-item[open] .ns-open { color: #d99a10; border-color: rgba(240,180,41,.
   .layout { align-items: stretch; }
   .layout > .charts { display: flex; flex-direction: column; }
   .layout > .charts > .chart-main { flex: 1 1 440px; min-height: 440px; height: auto; }
-  /* …and the other way round: when the chart column is taller, the chat in the signal card takes the extra room */
-  .layout > aside > .signal { flex: 1; display: flex; flex-direction: column; }
-  .layout > aside > .signal > #ccSlot { flex: 1; display: flex; flex-direction: column; }
-  .layout > aside > .signal > #ccSlot > .cc-panel { flex: 1 1 520px; min-height: 520px; height: auto; }
+  /* …and the other way round: when the chart column is taller, the support / resistance card under the (compact) chat
+     takes the extra room */
+  .layout > aside > .card:last-child { flex: 1; }
 }
 .layout2 > .side > .card:last-child { flex: 1; } /* right column ends level with the indicator table */
 .plan:empty { display: none; } /* ATR box removed (12 Oct) — no empty gap when there are no zones */
@@ -687,3 +686,8 @@ details.ns-item[open] .ns-open { color: #d99a10; border-color: rgba(240,180,41,.
 .sp-chips li.done::before { content: "✓"; width: auto; height: auto; background: none; font-weight: 800; color: var(--up); }
 @keyframes chipPulse { 50% { opacity: .3; transform: scale(.7); } }
 @media (prefers-reduced-motion: reduce) { .sp-chips, .sp-chips li.on::before { animation: none; } }
+.cc-log:empty { justify-content: center; }
+.cc-log:empty::before { content: "เลือกกรอบด้านบน แล้วกดคำถามหรือพิมพ์ถาม"; color: var(--muted); font-size: 12.5px; text-align: center; }
+.cc-tfs { padding: 6px 10px; }
+/* lot calculator in the lower row's right column (half width): results in 3 columns */
+.layout2 .tp-calc-out { grid-template-columns: repeat(3, minmax(0, 1fr)); }

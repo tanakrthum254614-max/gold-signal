@@ -17,7 +17,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610122600">
+  <link rel="stylesheet" href="style.css?v=202610122700">
   <link rel="stylesheet" href="live.css?v=202610121500">
   <link rel="stylesheet" href="theme.css?v=202610121500" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
@@ -361,22 +361,13 @@
           <ul class="reasons" id="reasons" hidden></ul>
           <ul class="reasons warn" id="warns" hidden></ul>
         </section>
+        <section class="card">
+          <h3>แนวรับ–แนวต้าน · <span id="pvTf">—</span></h3>
+          <p class="hint">🔴 <b>แนวต้าน</b> = ระดับที่ราคามักขึ้นไปชนแล้วถูกกดลง · 🟢 <b>แนวรับ</b> = ระดับที่ราคามักลงมาแล้วเด้งขึ้น (คำนวณแบบ Pivot Points ของ investing.com)</p>
+          <ul class="levels" id="levels"></ul>
+        </section>
       </aside>
     </main>
-
-    <!-- Lot calculator (moved here from the signals tab, 8 Oct; the chart's 🧮 button fills it) -->
-    <section class="card tp calc-card" id="calcCard">
-      <h3>🧮 คำนวณขนาดไม้ก่อนเข้า</h3>
-        <div class="tp-calc" id="tpCalc">
-          <div class="tp-side"><button type="button" class="on" data-side="1">🟢 ซื้อ</button><button type="button" data-side="-1">🔴 ขาย</button></div>
-          <label>จุดเข้า<input id="cEntry" type="number" step="0.01" inputmode="decimal"></label>
-          <label>SL<input id="cSl" type="number" step="0.01" inputmode="decimal"></label>
-          <label>TP<input id="cTp" type="number" step="0.01" inputmode="decimal"></label>
-          <button type="button" class="btn" id="cNow">ใช้ราคาตอนนี้</button>
-          <div class="tp-calc-out" id="cOut"></div>
-        </div>
-        <p class="muted small tp-note">⚠️ จุดเข้าที่ผ่านการทดสอบย้อนหลังคือสัญญาณบนกราฟด้านบน (กดปุ่ม 🧮 ในกล่องเหนือกราฟเพื่อใส่ค่าให้) ตั้ง SL ทุกครั้ง และไม่เสี่ยงเกิน 1–2% ของทุนต่อไม้</p>
-    </section>
 
     <section class="card wide-card">
       <h3>ภาพรวมทุกกรอบเวลา <span class="muted small">— ข้อมูลจาก investing.com · <span id="techTime">—</span></span></h3>
@@ -398,7 +389,8 @@
           <tbody></tbody>
         </table>
       </section>
-      <!-- right column: moving averages + support / resistance (moved from the side, 12 Oct: "ทำให้สมดุล ไม่เว้นช่องว่าง") -->
+      <!-- right column: moving averages + lot calculator (12 Oct: the chat in the side card got compact, so support /
+           resistance went back to the side column and the calculator sits here — both rows stay level) -->
       <div class="side">
         <section class="card">
           <h3>เส้นค่าเฉลี่ยราคา · <span class="tfName">—</span> <span class="tag" id="maSum"></span></h3>
@@ -408,10 +400,18 @@
             <tbody></tbody>
           </table>
         </section>
-        <section class="card">
-          <h3>แนวรับ–แนวต้าน · <span id="pvTf">—</span></h3>
-          <p class="hint">🔴 <b>แนวต้าน</b> = ระดับที่ราคามักขึ้นไปชนแล้วถูกกดลง · 🟢 <b>แนวรับ</b> = ระดับที่ราคามักลงมาแล้วเด้งขึ้น (คำนวณแบบ Pivot Points ของ investing.com)</p>
-          <ul class="levels" id="levels"></ul>
+        <!-- Lot calculator (the chart's 🧮 button fills it and scrolls here) -->
+        <section class="card tp calc-card" id="calcCard">
+          <h3>🧮 คำนวณขนาดไม้ก่อนเข้า</h3>
+            <div class="tp-calc" id="tpCalc">
+              <div class="tp-side"><button type="button" class="on" data-side="1">🟢 ซื้อ</button><button type="button" data-side="-1">🔴 ขาย</button></div>
+              <label>จุดเข้า<input id="cEntry" type="number" step="0.01" inputmode="decimal"></label>
+              <label>SL<input id="cSl" type="number" step="0.01" inputmode="decimal"></label>
+              <label>TP<input id="cTp" type="number" step="0.01" inputmode="decimal"></label>
+              <button type="button" class="btn" id="cNow">ใช้ราคาตอนนี้</button>
+              <div class="tp-calc-out" id="cOut"></div>
+            </div>
+            <p class="muted small tp-note">⚠️ จุดเข้าที่ผ่านการทดสอบย้อนหลังคือสัญญาณบนกราฟด้านบน (กดปุ่ม 🧮 ในกล่องเหนือกราฟเพื่อใส่ค่าให้) ตั้ง SL ทุกครั้ง และไม่เสี่ยงเกิน 1–2% ของทุนต่อไม้</p>
         </section>
       </div>
     </section>
@@ -520,6 +520,6 @@
   <script src="chartsys.js?v=202610121500"></script>
   <script src="chartzones.js?v=202610122200"></script>
   <script src="newsstats.js?v=202610121500"></script>
-  <script src="chartchat.js?v=202610122100"></script>
+  <script src="chartchat.js?v=202610122700"></script>
 </body>
 </html>
