@@ -660,3 +660,16 @@ details.ns-item[open] .ns-open { color: #d99a10; border-color: rgba(240,180,41,.
 .cc-tfs button.on small { color: inherit; }
 .cc-typing { color: var(--muted); font-style: italic; }
 .reasons[hidden] { display: none; } /* investing.com reasons: replaced by the chart chat */
+
+/* Balanced chart page (user, 12 Oct: "ทำให้สมดุลกัน ไม่เว้นช่องว่าง"): the chart card stretches to the side card's height
+   and the main chart takes the extra room (lightweight-charts autoSize follows its box) */
+@media (min-width: 1081px) {
+  .layout { align-items: stretch; }
+  .layout > .charts { display: flex; flex-direction: column; }
+  .layout > .charts > .chart-main { flex: 1 1 440px; min-height: 440px; height: auto; }
+  /* …and the other way round: when the chart column is taller, the chat in the signal card takes the extra room */
+  .layout > aside > .signal { flex: 1; display: flex; flex-direction: column; }
+  .layout > aside > .signal > #ccSlot { flex: 1; display: flex; flex-direction: column; }
+  .layout > aside > .signal > #ccSlot > .cc-panel { flex: 1 1 520px; min-height: 520px; height: auto; }
+}
+.layout2 > .side > .card:last-child { flex: 1; } /* right column ends level with the indicator table */
