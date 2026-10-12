@@ -658,3 +658,10 @@ details.ns-item[open] .ns-open { color: #d99a10; border-color: rgba(240,180,41,.
   .cc-panel { right: 8px; left: 8px; width: auto; bottom: calc(70px + env(safe-area-inset-bottom)); height: min(70vh, calc(100vh - 150px)); }
   .cc-form input { font-size: 16px; } /* no iOS zoom on focus */
 }
+.cc-tfs { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; font-size: 12.5px; color: var(--muted); }
+.cc-tfs::-webkit-scrollbar { display: none; }
+.cc-tfs button { flex: none; font: inherit; font-size: 12.5px; cursor: pointer; color: var(--text); background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 5px 9px; }
+.cc-tfs button small { color: var(--muted); }
+.cc-tfs button.on { background: var(--gold); border-color: var(--gold); color: #1c2433; font-weight: 700; }
+.cc-tfs button.on small { color: inherit; }
+.cc-typing { color: var(--muted); font-style: italic; }

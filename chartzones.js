@@ -63,6 +63,23 @@ function ago(ms) {
     return { decs, trades, current: CHARTSYS.decide(sys, data, now, state.news, true) };
   }
 
+  // Any timeframe right now, without switching the chart (chart chat, user 12 Oct: "ขยายแชท 5 / 15 / 30 นาที / 1 ชม."):
+  // the same decide / sideInfo / brake / recorded trade as the chart card would show for it. fast = that timeframe's own
+  // candles (ms) when they aren't already loaded (5m is only loaded while the chart shows 5m).
+  window.CZ_TFNOW = function (tf, fast) {
+    const sys = SYS[tf]; if (!sys) return null;
+    const k0 = sys.frames[0][0], t = Date.now();
+    const data = Object.fromEntries(sys.frames.map(([k]) => [k, frameBars(k)]));
+    if (tf === state.tf && state.bars.length) data[k0] = ms(state.bars); else if (fast) data[k0] = fast;
+    const d = CHARTSYS.decide(sys, data, t, state.news, true);
+    const fb = data[k0] || [], price = nowPrice() != null ? nowPrice() : fb.length ? fb[fb.length - 1].close : null;
+    const live = ((state.chartSig && state.chartSig.trades) || []).filter((r) => r.tf === tf);
+    const br = CHARTSYS.brake(sys, live, t);
+    const open = live.find((r) => !SIG.isFinal(r) && (r.expiresAt || Infinity) > t) || null;
+    const sides = [1, -1].map((side) => ({ ...CHARTSYS.sideInfo(sys, d, side, br), L: price != null ? levelsFor((side > 0 ? sys.buy : sys.sell) || sys.buy, price, side) : null }));
+    return { tf, price, d, sides, open, br, sellNo: false, stretched: !!(d && stretched(sys, d)), unconf: !!(d && CHARTSYS.unconfirmed(sys, d)), at: t, bars: fb, live };
+  };
+
   // Drawn on both chart views: trader (candles) and simple (price area)
   const views = [];
   function getViews() {
@@ -473,6 +490,7 @@ function ago(ms) {
     if (html !== v.html) { v.html = html; v.el.innerHTML = html; }
   }
   // Called by renderChartZones with the tested systems' entries: [{ createdAt, side: 'BUY' | 'SELL' }]
+  window.CZ_ZONES_OF = (bars) => { const e = envelope(bars); return { zones: zones(bars), env: e[e.length - 1] || null }; }; // chart chat
   window.setChartDecor = function (trades) {
     init();
     const bars = state.bars;
