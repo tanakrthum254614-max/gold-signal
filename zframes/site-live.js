@@ -45,7 +45,7 @@ function siteGold() {
 function setSiteQuote(key, patch) {
   if(!Number.isFinite(patch.px) || patch.px<=0)return;
   // the site's price owns gold: other feeds only add their extra fields (previous close, volume, open interest…)
-  if (GOLD_KEYS.includes(key) && patch.src !== 'site' && siteGold()) { const { px, t, src, ...rest } = patch; QS[key] = { ...(QS[key] || {}), ...rest }; if (QS[key].prev && QS[key].px) QS[key].ch = QS[key].px / QS[key].prev - 1; return; }
+  if (GOLD_KEYS.includes(key) && patch.src !== 'site' && siteGold()) { const { px, t, src, ...rest } = patch; if (siteGold().prev) delete rest.prev; /* the day's % from the site's previous close too */ QS[key] = { ...(QS[key] || {}), ...rest }; if (QS[key].prev && QS[key].px) QS[key].ch = QS[key].px / QS[key].prev - 1; return; }
   const old=QS[key]||{}, q=QS[key]={...old,...patch};
   const changed = old.px !== q.px || old.t !== q.t;
   if(q.prev)q.ch=q.px/q.prev-1;
@@ -118,7 +118,7 @@ connectLive = function(id) {
     siteSpark(run,stocks);siteTimers.push(setInterval(()=>siteSpark(run,stocks),60000));
   }
   // gold from the site, 4 times a second (only when it changed)
-  siteTimers.push(setInterval(()=>{if(run!==siteRun)return;const g=siteGold();if(!g)return;for(const k of GOLD_KEYS)if(QS[k]?.px!==g.px||Date.now()-(QS[k]?.t||0)>5000)setSiteQuote(k,{px:g.px,t:Date.now(),src:'site'});},250));
+  siteTimers.push(setInterval(()=>{if(run!==siteRun)return;const g=siteGold();if(!g)return;for(const k of GOLD_KEYS)if(QS[k]?.px!==g.px||Date.now()-(QS[k]?.t||0)>5000)setSiteQuote(k,{px:g.px,t:Date.now(),src:'site',...(g.prev?{prev:g.prev}:{})});},250));
   siteContext(run);siteMids(run);if(id==='gold')siteSpot(run);
   siteTimers.push(setInterval(()=>siteContext(run),5000));
   siteTimers.push(setInterval(()=>{if(hl.readyState!==WebSocket.OPEN||Date.now()-hlLast>10000)siteMids(run);},1000));

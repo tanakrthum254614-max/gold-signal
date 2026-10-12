@@ -26,7 +26,8 @@ const ACTION_TH = {
 
 // The dashboard tab (/zframes, same origin, in an iframe) reads the site's live gold price from here so every gold number
 // on the site — header, tab title, chart, dashboard — is the same investing.com tick
-window.GS_LIVE = () => ({ px: state.livePrice, t: state.tickAt, fresh: typeof streamFresh === 'function' && streamFresh() });
+window.GS_LIVE = () => { let prev = null; try { prev = prevClose(); } catch (e) { /* daily candles not loaded yet */ }
+  return { px: state.livePrice, t: state.tickAt, prev: prev && prev.close, fresh: typeof streamFresh === 'function' && streamFresh() }; };
 const state = {
   tf: '1h', bars: [], daily: [], tech: null, techAt: null, source: null,
   locked: null, lastPrice: null, chartKey: '', pivotKey: '', busy: false, zoneKey: '', signals: [], m15: [], backtest: null, intra: null, bt30: null, intraCandles: null, news: [], thb: null,

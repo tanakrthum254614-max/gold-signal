@@ -102,6 +102,7 @@ function showZone(id) {
   if (!dash.zones.some(z => z.id === id)) id = dash.zones[0].id;
   document.querySelectorAll('#app .zone').forEach(el => { el.hidden = el.id !== id; });
   document.querySelectorAll('#app .zn button').forEach(b => b.classList.toggle('on', b.dataset.zone === id));
+  const on = document.querySelector('#app .zn button.on'); if (on && on.parentElement.scrollWidth > on.parentElement.clientWidth) on.parentElement.scrollTo({ left: on.offsetLeft - (on.parentElement.clientWidth - on.offsetWidth) / 2, behavior: 'smooth' });
   params.set('z', id); history.replaceState(null, '', '?' + params);
   try { localStorage.setItem('zf-zone', JSON.stringify({ ...zoneMem(), [current]: id })); } catch {}
   // charts drawn while hidden measure 0 px: let them re-measure now that the page is visible
