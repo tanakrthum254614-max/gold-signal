@@ -79,6 +79,8 @@ def fred(sid, days=800):
         # last good copy from an earlier run, else the copy committed with the code (models/fred-seed, 13 Oct 2026)
         for p in (path, os.path.join(ROOT, "models", "fred-seed", f"{sid}.json")):
             if os.path.exists(p):
+                print(f"fred {sid}: FRED did not answer — using the stored copy ({os.path.basename(os.path.dirname(p))})", file=sys.stderr)
+                if not any("FRED ไม่ตอบ" in w for w in warnings): warnings.append("FRED ไม่ตอบ — ตัวเลขมหภาคบางตัวใช้ค่าล่าสุดที่เก็บไว้ (ดูวันที่บนการ์ด)")
                 with open(p, encoding="utf-8") as fh: return json.load(fh)
         raise
 
