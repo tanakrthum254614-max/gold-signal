@@ -308,8 +308,24 @@
    "closedBy": "eod",
    "exitPrice": 4196.71,
    "exitAt": 1791574800000
+  },
+  {
+   "id": "5m-1791765000000",
+   "createdAt": 1791765000000,
+   "expiresAt": 1791834300000,
+   "status": "active",
+   "entryAt": 1791765000000,
+   "side": "BUY",
+   "entry": 4209.06,
+   "sl": 4194.06,
+   "tps": [
+    4224.06
+   ],
+   "tp": 4224.06,
+   "score": 5,
+   "tf": "5m"
   }
  ],
  "brakes": {},
- "updatedAt": 1791575120755
+ "updatedAt": 1791765021310
 }
