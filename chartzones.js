@@ -218,6 +218,8 @@ function ago(ms) {
     window.CZ_GO = open ? { side: open.side === 'SELL' ? -1 : 1, open: true } : goSide ? { side: goSide.side } : null;
     window.CZ_SIDES = showPlans ? sides.map(({ side, pct, verdict, go, tested }) => ({ side, pct, verdict, go, tested })) : null; // side card (main.js)
     if (window.renderSignalHead) renderSignalHead();
+    // Snapshot for the chart Q&A chat (chartchat.js): it answers only from what this card shows
+    window.CZ_NOW = { tf, price, d, sides, open: open || null, br, sellNo, stretched: !!(d && stretched(sys, d)), unconf: !!(d && CHARTSYS.unconfirmed(sys, d)), at: Date.now() };
     // On the chart only ONE box (user, 9 Oct: two boxes "ยังงง ต้องซื้อตรงไหน เอาแค่อันเดียวพอ"): the side that is
     // nearer its signal — a live signal first, then the higher %, then the side that passed its test. Both % stay in the card.
     const best = [...sides].sort((a, b) => (b.go - a.go) || (b.pct - a.pct) || (b.tested - a.tested))[0];
@@ -464,6 +466,7 @@ function ago(ms) {
     const bars = state.bars;
     if (!bars.length) return;
     const env = envelope(bars), zn = zones(bars);
+    window.CZ_LEVELS = { zones: zn, env: env[env.length - 1] || null }; // for the chart chat
     const at = new Map(bars.map((b) => [b.time * 1000, b]));
     tags = trades.map((r) => {
       // tag on the candle the entry was decided on (the one that just closed), under its low / over its high

@@ -1589,6 +1589,7 @@ function newsTimelineHtml(now) {
 }
 
 function renderLevels(lv, price) {
+  state.pivotLv = lv; // chart chat
   $('pvTf').textContent = TF_LABEL[state.tf];
   const items = lv.slice().sort((a, b) => b.price - a.price);
   const rows = items.map((x) => `<li class="${x.price > price ? 'res' : 'sup'}"><span>${INV.levelLabel(x, price)}</span><span class="mono">${f2(x.price)}</span></li>`);
