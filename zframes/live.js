@@ -150,7 +150,7 @@ const CALC = {
   'gold.trend': f => ({ ...f, rows: goldTrend().map(r => ({ tf: r.tf, score: r.score, max: r.max, rsi: +r.rsi.toFixed(1), note: `EMA20 ${fmtNum(r.e20, 'num', 0)}${r.e50 ? ' · EMA50 ' + fmtNum(r.e50, 'num', 0) : ''}${r.e200 ? ' · EMA200 ' + fmtNum(r.e200, 'num', 0) : ''}` })) }),
   'gold.rsi': f => {
     const r = liveTA(window.dash.gold.state1d, goldPx())?.rsi; if (r == null) return f;
-    return { ...f, headline: r.toFixed(0), sub: (r >= 70 ? 'Overbought' : r <= 30 ? 'Oversold' : 'Neutral') + ' · สด', lines: withLast(f.lines, r) };
+    return { ...f, headline: r.toFixed(0), sub: (r >= 70 ? 'ซื้อมากเกิน (Overbought)' : r <= 30 ? 'ขายมากเกิน (Oversold)' : 'กลาง ๆ') + ' · สด', lines: withLast(f.lines, r) };
   },
   'gold.price': f => { const px = goldPx(); return { ...f, headline: usd(px), lines: withLast(f.lines, px), ranges: f.ranges.map(r => r.lines ? { ...r, lines: withLast(r.lines, px) } : r) }; },
   'gold.peers': f => {
@@ -183,7 +183,7 @@ const CALC = {
       { label: 'สัญญาณรายตัว (สด)', text: Object.entries(B.sig).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · ') }]) };
   },
   'idx.price': f => { const I = liveIndex(); return { ...f, headline: fmtNum(I.px, 'num', 2), change: { text: `วันนี้ ${pad(I.d)} · 1 ปี ${pad(I.ch1y)}`, tone: I.d >= 0 ? 'up' : 'down' }, lines: withLast(f.lines, I.px) }; },
-  'idx.rsi': f => { const I = liveIndex(); return { ...f, headline: I.rsi.toFixed(0), sub: (I.rsi >= 70 ? 'Overbought' : I.rsi <= 30 ? 'Oversold' : 'Neutral') + ' · สด', lines: withLast(f.lines, I.rsi) }; },
+  'idx.rsi': f => { const I = liveIndex(); return { ...f, headline: I.rsi.toFixed(0), sub: (I.rsi >= 70 ? 'ซื้อมากเกิน (Overbought)' : I.rsi <= 30 ? 'ขายมากเกิน (Oversold)' : 'กลาง ๆ') + ' · สด', lines: withLast(f.lines, I.rsi) }; },
   'idx.breadth': f => { const B = breadthLive(); return { ...f, headline: `${B.e50?.toFixed(0)}%`, sub: `เหนือ EMA200 ${B.e200?.toFixed(0)}% · ใกล้จุดสูงสุด ${B.near} ตัว · RSI≥70 ${B.ob} · ≤30 ${B.os}`, lines: withLast(f.lines, B.e50) }; },
   'idx.sectors': f => ({ ...f, rows: sectorsLive(f.metric).map(g => ({ label: `${g.sector} (${g.n})`, value: g.v, display: pct2(g.v) })) }),
   'idx.signals': f => ({ ...f, rows: Object.entries(breadthLive().sig).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ label: k, value: v, display: String(v), color: '#c4b5fd' })) }),

@@ -2,6 +2,32 @@ const $ = s => document.querySelector(s);
 const params = new URLSearchParams(location.search);
 let current = params.get('d') || 'gold', mtime = 0, dash = null, extra = '';
 
+// ---------- ภาษาไทย (ผู้ใช้ 12 ต.ค.: "ขอภาษาไทย") ----------
+const ZONE_TH = { live: 'ราคาสด', cockpit: 'ภาพรวม', tech: 'เทคนิค', macro: 'เศรษฐกิจมหภาค', context: 'ข่าวและข้อมูล', heatmap: 'แผนที่ตลาด', stocks: 'หุ้นทุกตัว', screens: 'คัดหุ้น' };
+const TH_WORDS = [
+  ['Fund Manager Research Terminal', 'ห้องวิเคราะห์แบบผู้จัดการกองทุน'], ['Fund manager cockpit', 'ภาพรวมแบบผู้จัดการกองทุน'],
+  ['Dividend cockpit', 'ภาพรวมหุ้นปันผล'], ['Dividend heatmap', 'แผนที่ตลาดหุ้นปันผล'], ['DIVIDEND', 'หุ้นปันผล'], ['GOLD —', 'ทองคำ —'],
+  ['Live market', 'ตลาดสด'], ['Live —', 'ราคาสด —'], ['Price & technicals', 'ราคาและเทคนิค'], ['Macro backdrop', 'ภาพเศรษฐกิจมหภาค'],
+  ['Context & systems', 'ข่าว ผลงาน และระบบ'], ['Heatmap —', 'แผนที่ตลาด —'], [' heatmap', ' แผนที่ตลาด'], ['Screens —', 'คัดหุ้น —'],
+  ['Price liveline', 'เส้นราคาสด'], ['Price ticker', 'กระดานราคา'], ['Asset profile', 'ข้อมูลสินทรัพย์'], ['Snapshot', 'ภาพรวมตอนนี้'],
+  ['Cockpit —', 'ภาพรวม —'], ['Investment view', 'มุมมองการลงทุน'], ['Scenarios', 'ฉากทัศน์ราคา'], ['Thesis', 'เหตุผลหลัก'],
+  ['Action matrix', 'แผนปฏิบัติ'], ['Rates board', 'กระดานอัตราดอกเบี้ย'], ['Yield curve', 'เส้นผลตอบแทนพันธบัตร'],
+  ['Real yield', 'ดอกเบี้ยแท้จริง'], ['Credit spread', 'ส่วนต่างดอกเบี้ยหุ้นกู้'], ['Inflation pulse', 'ชีพจรเงินเฟ้อ'],
+  ['Index level', 'ระดับดัชนี'], ['VIX gauge', 'มาตรวัดความกลัว VIX'], ['Breadth:', 'ความกว้างตลาด:'], ['Div score', 'คะแนนปันผล'],
+  ['tick-by-tick', 'ทุก tick'], ['Neutral', 'กลาง'], [' vs ', ' เทียบ '], ['Context', 'ข่าวและข้อมูล'],
+];
+const thText = (s) => (typeof s !== 'string' ? s : TH_WORDS.reduce((t, [en, th]) => t.split(en).join(th), s));
+function thDash(d) {
+  d.title = thText(d.title); d.subtitle = thText(d.subtitle);
+  (d.zones || []).forEach((z) => {
+    z.short = ZONE_TH[z.id] || thText(z.short); z.title = thText(z.title); z.subtitle = thText(z.subtitle);
+    (z.frames || []).forEach((f) => {
+      ['title', 'subtitle', 'sub'].forEach((k) => { if (typeof f[k] === 'string') f[k] = thText(f[k]); });
+      if (f.source === 'realized') f.source = 'คำนวณจากราคาจริง';
+    });
+  });
+}
+
 async function j(url) { const r = await fetch(url); if (!r.ok) throw new Error(r.status); return r.json(); }
 
 async function loadList() {
@@ -22,6 +48,7 @@ async function load() {
     $('#app').innerHTML = `<p class="pad muted">ยังไม่มี dashboard "${esc(current)}" — พิมพ์ <b>/zframes วิเคราะห์ทองคำ</b> ใน Claude Code</p>`;
     return;
   }
+  thDash(dash); // Thai labels
   window.dash = dash;
   dash.stockMap = Object.fromEntries((dash.stocks || []).map(x => [x.s, x]));
   FRAME_DATA.length = 0;
