@@ -58,11 +58,17 @@ def fred(sid, days=800):
     start = (datetime.now(TH) - timedelta(days=days)).strftime("%Y-%m-%d")
     req = urllib.request.Request(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}&cosd={start}", headers=UA)
     path = os.path.join(FRED_CACHE, f"{sid}.json")
+    key = os.environ.get("FRED_API_KEY", "").strip()
+    if key:  # the official API (free key) answers servers that the fredgraph.csv page ignores (GitHub Actions)
+        req = urllib.request.Request(f"https://api.stlouisfed.org/fred/series/observations?series_id={sid}&observation_start={start}"
+                                     f"&api_key={key}&file_type=json", headers=UA)
     try:
         for attempt in range(2):
             try:
                 with urllib.request.urlopen(req, timeout=15) as r:
-                    rows = list(csv.reader(io.StringIO(r.read().decode("utf-8"))))[1:]
+                    body = r.read().decode("utf-8")
+                rows = ([[o["date"], o["value"]] for o in json.loads(body).get("observations", [])] if key
+                        else list(csv.reader(io.StringIO(body)))[1:])
                 break
             except Exception:
                 if attempt == 1: raise

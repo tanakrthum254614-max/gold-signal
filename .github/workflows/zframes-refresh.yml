@@ -32,4 +32,7 @@ jobs:
         run: bash scripts/zframes-refresh.sh
         env:
           GH_TOKEN: ${{ github.token }}
+          # FRED ignores GitHub's servers on its public CSV page; with a free API key (secret FRED_API_KEY,
+          # https://fred.stlouisfed.org/docs/api/api_key.html) the official API is used. Without it: the stored copy.
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
       # No LINE notice on failure: LINE messages go to every follower, and a stale dashboard keeps yesterday's data
