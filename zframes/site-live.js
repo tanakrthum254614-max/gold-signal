@@ -36,8 +36,16 @@ function decodeYahoo(b64) {
 }
 
 let siteRun = 0, siteTimers = [], siteSockets = [];
+// Inside the Gold Signal site: gold comes from the site's own live price (investing.com stream, the price in the header
+// and the tab title) instead of Hyperliquid, so the numbers match everywhere and update on every tick
+const GOLD_KEYS = ['xyz:GOLD', 'spot:XAU'];
+function siteGold() {
+  try { const P = window.parent; if (!P || P === window || typeof P.GS_LIVE !== 'function') return null; const g = P.GS_LIVE(); return g && g.px > 0 && Date.now() - (g.t || 0) < 60000 ? g : null; } catch { return null; }
+}
 function setSiteQuote(key, patch) {
   if(!Number.isFinite(patch.px) || patch.px<=0)return;
+  // the site's price owns gold: other feeds only add their extra fields (previous close, volume, open interest…)
+  if (GOLD_KEYS.includes(key) && patch.src !== 'site' && siteGold()) { const { px, t, src, ...rest } = patch; QS[key] = { ...(QS[key] || {}), ...rest }; if (QS[key].prev && QS[key].px) QS[key].ch = QS[key].px / QS[key].prev - 1; return; }
   const old=QS[key]||{}, q=QS[key]={...old,...patch};
   const changed = old.px !== q.px || old.t !== q.t;
   if(q.prev)q.ch=q.px/q.prev-1;
@@ -109,6 +117,8 @@ connectLive = function(id) {
     ys.onclose=()=>{if(run===siteRun)siteTimers.push(setTimeout(()=>connectLive(id),3000));};
     siteSpark(run,stocks);siteTimers.push(setInterval(()=>siteSpark(run,stocks),60000));
   }
+  // gold from the site, 4 times a second (only when it changed)
+  siteTimers.push(setInterval(()=>{if(run!==siteRun)return;const g=siteGold();if(!g)return;for(const k of GOLD_KEYS)if(QS[k]?.px!==g.px||Date.now()-(QS[k]?.t||0)>5000)setSiteQuote(k,{px:g.px,t:Date.now(),src:'site'});},250));
   siteContext(run);siteMids(run);if(id==='gold')siteSpot(run);
   siteTimers.push(setInterval(()=>siteContext(run),5000));
   siteTimers.push(setInterval(()=>{if(hl.readyState!==WebSocket.OPEN||Date.now()-hlLast>10000)siteMids(run);},1000));

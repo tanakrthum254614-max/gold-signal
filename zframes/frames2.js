@@ -175,7 +175,7 @@ const quoteTime = q => {
   if (!Number.isFinite(raw)) return 0;
   return raw < 1e12 ? raw * 1000 : raw;
 };
-const quoteSource = q => ({ hl: 'Hyperliquid', 'hl-ws': 'Hyperliquid WebSocket', 'hl-poll': 'Hyperliquid', stream: 'Yahoo stream', spark: 'Yahoo', mt5: 'Exness MT5', 'gold-api': 'gold-api.com' }[q?.src] || q?.src || 'ราคาอ้างอิง');
+const quoteSource = q => ({ site: 'investing.com (ราคาเดียวกับหัวเว็บ Gold Signal)', hl: 'Hyperliquid', 'hl-ws': 'Hyperliquid WebSocket', 'hl-poll': 'Hyperliquid', stream: 'Yahoo stream', spark: 'Yahoo', mt5: 'Exness MT5', 'gold-api': 'gold-api.com' }[q?.src] || q?.src || 'ราคาอ้างอิง');
 
 function candleReadout(el, row, detail) {
   if (!row) return;
