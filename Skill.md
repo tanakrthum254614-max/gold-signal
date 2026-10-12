@@ -3,6 +3,14 @@ name: gold-signal
 description: คู่มือโปรเจค Gold Signal — เว็บ/ระบบสัญญาณเทรดทองคำ XAU/USD (investing.com) สัญญาณรายวัน 07:00 + สัญญาณทุก 30 นาที แจ้งเตือน LINE และบันทึกสถิติชนะ–แพ้ ใช้เมื่อจะแก้ไข ทดสอบ หรือ deploy โปรเจคนี้
 ---
 
+## ZFrames บน Gold Signal (12 ต.ค. 2569)
+
+- หน้าแดชบอร์ดสำหรับสมาชิก: `/zframes/index.html` เลือก GOLD, Nasdaq 100, S&P 500 และหุ้นปันผลจากเมนู "แดชบอร์ด" ของเว็บหลัก
+- ข้อมูลวิเคราะห์ใน `zframes/dashboards/*.json` เป็น snapshot ณ เวลาที่ระบุบนหน้าเว็บ; ราคา Hyperliquid ผ่าน WebSocket และแท่งเทียนผ่าน candleSnapshot, หุ้น Yahoo ผ่าน WebSocket โดยใช้ `/api/zframes/quotes` สำหรับราคาเริ่มต้นและสำรอง
+- API ราคาหุ้นอยู่หลังการตรวจสมาชิกใน `middleware.js`; ไม่รวมสถานะ EA/บัญชี Exness จากเครื่องส่วนตัวในไฟล์ที่เผยแพร่
+- เมื่ออัปเดตข้อมูลวิเคราะห์ ให้บันทึก JSON ใหม่ แล้ว deploy พร้อมตรวจหน้า desktop/mobile และสถานะราคาสด
+
+
 # Gold Signal — สัญญาณเทรดทองคำ XAU/USD
 
 ## ขอบเขตงานเดิมและไฟล์งานใหม่
@@ -23,6 +31,15 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 | ล็อกอิน | **สมาชิกเท่านั้น** (8 ต.ค. 2569) — Clerk dev instance `delicate-tapir-2101` (สมัครด้วยอีเมล+รหัสผ่าน ยืนยันโค้ดทางอีเมล หรือ Google) บน `login.html` → ตรวจฝั่งเซิร์ฟเวอร์ใน `middleware.js` · `?demo=1` เลิกใช้แล้ว · ระบบรหัส GOLD-… ถูกลบแล้ว |
 | LINE OA | `@279arudw` · เพิ่มเพื่อน https://line.me/R/ti/p/@279arudw |
 | Secret | GitHub Actions secret `LINE_CHANNEL_ACCESS_TOKEN` (Channel access token *long-lived* จากแท็บ Messaging API) |
+
+## 🧭 งานที่ทำเพิ่ม: zframes Dashboard (12 ต.ค. 2569 · v0.5.1)
+
+- งานวิเคราะห์แยกอยู่ที่ `D:\โปรเจคทันเดอร์\zframes`; รายละเอียดและประวัติอยู่ใน [zframes/Skill.md](../zframes/Skill.md) เปิดด้วย `Start-zframes.cmd` หรือ http://127.0.0.1:37263/?d=gold (มีหน้า `ndx`, `spx`, `div`)
+- zframes อ่าน `signals.json` และ `chart-signals.json` ของ Gold Signal เพื่อแสดงผลสัญญาณย้อนหลัง; ไม่แก้กติกา Gold Signal, ไม่ส่ง LINE และไม่ส่งคำสั่งซื้อขาย
+- ราคาสดใช้ Yahoo stream สำหรับหุ้น และ Hyperliquid WebSocket สำหรับสินทรัพย์ `xyz`; HTTP ทุก 1 วินาทีเป็นทางสำรองเมื่อ WebSocket หลุด ข้อมูลส่งถึงหน้าเว็บผ่าน SSE และดูสถานะได้ที่ `/api/hub`
+- กราฟแท่งเทียนทองเลือก 1m/5m/15m/1h แสดงราคาเปิด–สูง–ต่ำ–ปิด ชี้แท่งเพื่อดูย้อนหลัง พร้อมป้ายอายุข้อมูลจริง; แท่งล่าสุดขยับตามราคา mid และซิงก์ OHLC จาก Hyperliquid ทุก 15 วินาที
+- ปรับหัวข้อ การ์ด ปุ่มช่วงเวลา และจอเล็กให้อ่านง่ายขึ้น; ตรวจหน้า gold จริงแล้ว 72 แท่ง เปลี่ยน 5m→1m ได้ ไม่มี JavaScript error; หน้า spx 38 การ์ด และ lint ทั้ง 4 หน้าใช้ได้
+- เมื่อแก้งาน zframes เสร็จแต่ละครั้ง ให้บันทึกการเปลี่ยนแปลงและผลตรวจใน [zframes/Skill.md](../zframes/Skill.md)
 
 ---
 

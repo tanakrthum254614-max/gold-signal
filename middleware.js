@@ -185,6 +185,7 @@ export default async function middleware(request) {
   }
   if (path === '/api/push') return pushApi(request, who);
   if (path === '/api/visit' && request.method === 'POST') { await logEvent(request, who, 'visit').catch(() => {}); return json({ ok: true }); }
+  if (path === '/api/zframes/quotes' && request.method === 'GET') return zframesQuotes(request);
   // Back office: members and the access log — admins only (ADMIN_EMAILS)
   if (path === '/admin.html' || path.startsWith('/api/admin/')) {
     if (!isAdmin(who)) {
@@ -195,6 +196,39 @@ export default async function middleware(request) {
     if (path === '/api/admin/ban' && request.method === 'POST') return adminBan(request, who);
   }
   return next();
+}
+
+// Initial and fallback Yahoo prices for the member dashboard. Yahoo blocks browser HTTP CORS.
+async function zframesQuotes(request) {
+  const symbols = (new URL(request.url).searchParams.get('symbols') || '').split(',').filter(Boolean);
+  if (!Array.isArray(symbols) || symbols.length > 100 || symbols.some(s => typeof s !== 'string' || !/^\^?[A-Z0-9.\-]{1,12}$/.test(s)))
+    return json({ error: 'Invalid symbols' }, 400);
+  const unique = [...new Set(symbols)].map(s => s.replace('.', '-'));
+  const chunks = [];
+  for (let i = 0; i < unique.length; i += 20) chunks.push(unique.slice(i, i + 20));
+  const out = {};
+  for (let i = 0; i < chunks.length; i += 5) {
+    await Promise.all(chunks.slice(i, i + 5).map(async chunk => {
+      try {
+        const url = 'https://query1.finance.yahoo.com/v7/finance/spark?symbols=' + chunk.map(encodeURIComponent).join(',') + '&range=1d&interval=5m&includePrePost=true';
+        const r = await fetch(url, { headers: { 'user-agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
+        if (!r.ok) return;
+        const data = await r.json();
+        for (const item of data.spark?.result || []) {
+          const meta = item.response?.[0]?.meta;
+          if (!meta) continue;
+          const now = Date.now()/1000, p = meta.currentTradingPeriod;
+          const hours = !p ? 'closed' : now >= p.regular.start && now < p.regular.end ? 'open' : now >= p.pre.start && now < p.pre.end ? 'pre' : now >= p.post.start && now < p.post.end ? 'post' : 'closed';
+          const px = Number(meta.fulldayPrice && hours !== 'open' ? meta.fulldayPrice : meta.regularMarketPrice);
+          const prev = Number(meta.chartPreviousClose ?? meta.previousClose);
+          if (!Number.isFinite(px) || px <= 0) continue;
+          const key = item.symbol.replace(/^([A-Z]+)-([A-Z])$/, '$1.$2');
+          out[key] = { px, prev, ch: prev ? px/prev-1 : 0, t: meta.regularMarketTime*1000, hours, src: 'spark', hi: meta.regularMarketDayHigh, lo: meta.regularMarketDayLow, vol: meta.regularMarketVolume };
+        }
+      } catch {}
+    }));
+  }
+  return json({ at: Date.now(), q: out });
 }
 
 // ---------- Back office ----------
