@@ -19,17 +19,20 @@
     ['SL / TP เท่าไร', 'sltp'], ['แนวรับ–แนวต้าน', 'levels'], ['ผลทดสอบ / ผลจริง', 'stats'], ['มีข่าวไหม', 'news'], ['ไม้ที่ถืออยู่', 'tfs'],
   ];
 
-  tab.insertAdjacentHTML('beforeend', `
-    <button type="button" class="cc-fab" id="ccFab" aria-expanded="false" aria-controls="ccPanel">💬 ถามจุดเข้า</button>
-    <section class="cc-panel" id="ccPanel" hidden aria-label="แชทถามจุดเข้า">
-      <header class="cc-head"><b>💬 ถามระบบ: เข้าตรงไหนดี</b><button type="button" class="cc-x" id="ccClose" aria-label="ปิด">✕</button></header>
+  // Inside the chart's signal card (user, 12 Oct: "เอาถามตอบอยู่ตรงนี้แทน" — where investing.com's reasons were); the
+  // simple view has no side card, so there it sits under the chart
+  const slot = $('ccSlot');
+  if (!slot) return;
+  slot.insertAdjacentHTML('beforeend', `
+    <section class="cc-panel" id="ccPanel" aria-label="แชทถามจุดเข้า">
+      <header class="cc-head"><b>💬 ถามระบบ: เข้าตรงไหนดี</b></header>
       <div class="cc-tfs" id="ccTfs" role="group" aria-label="ถามกรอบเวลา"><span>กรอบ:</span><button type="button" data-tf="">ตามกราฟ <small id="ccScreen"></small></button>${CHAT_TFS.map((t) => `<button type="button" data-tf="${t}">${nameOf(t)}</button>`).join('')}</div>
       <div class="cc-log" id="ccLog" aria-live="polite"></div>
       <div class="cc-quick" id="ccQuick">${QUICK.map(([t, k]) => `<button type="button" data-q="${k}">${t}</button>`).join('')}</div>
       <form class="cc-form" id="ccForm"><input id="ccIn" autocomplete="off" placeholder="เช่น ซื้อที่ 4150 ได้ไหม · Sell 5 นาทีเมื่อไร"><button type="submit" class="btn">ส่ง</button></form>
       <p class="cc-foot">ตอบจากระบบที่ทดสอบแล้วของแต่ละกรอบ (ตัวเดียวกับช่อง Buy | Sell บนกราฟ) · ไม่ใช่คำแนะนำการลงทุน</p>
     </section>`);
-  const log = $('ccLog'), panel = $('ccPanel'), fab = $('ccFab');
+  const log = $('ccLog'), panel = $('ccPanel');
 
   function say(who, html) {
     log.insertAdjacentHTML('beforeend', `<div class="cc-msg ${who}">${html}</div>`);
@@ -40,19 +43,23 @@
     $('ccScreen').textContent = `(${nameOf(state.tf)})`;
     $('ccTfs').querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.tf === target));
   }
-  function open(on) {
-    panel.hidden = !on; fab.setAttribute('aria-expanded', String(on)); fab.classList.toggle('on', on);
-    if (!on) return;
+  function greet() {
     paintTfs();
     if (!log.children.length) say('bot', `สวัสดีครับ เลือกกรอบด้านบน (5 นาที · 15 นาที · 30 นาที · 1 ชม.) แล้วถามได้เลย เช่น <b>“ตอนนี้ควรเข้าไหม”</b> <b>“สรุป 4 กรอบ”</b> <b>“Sell กรอบไหนดี”</b> หรือพิมพ์ราคาที่อยากเข้า <b>“ซื้อที่ ${nowPrice() ? Math.round(nowPrice() - 10) : 4150} ได้ไหม”</b><br><small>พิมพ์ชื่อกรอบในคำถามก็ได้ เช่น “Buy 15 นาทีได้ไหม”</small>`);
-    if (matchMedia('(min-width: 700px)').matches) $('ccIn').focus();
   }
-  fab.addEventListener('click', () => open(panel.hidden));
-  $('ccClose').addEventListener('click', () => open(false));
+  // pro view: in the signal card · simple view: under the chart
+  function place() {
+    const pro = $('chartPro'), simple = $('chartSimple');
+    const host = pro && !pro.hidden ? slot : simple || slot;
+    if (panel.parentElement !== host) host.appendChild(panel);
+    panel.classList.toggle('cc-under', host !== slot);
+  }
+  [$('chartPro'), $('chartSimple')].filter(Boolean).forEach((el) => new MutationObserver(place).observe(el, { attributes: true, attributeFilter: ['hidden'] }));
+  place();
+  greet();
   $('ccTfs').addEventListener('click', (e) => { const b = e.target.closest('button[data-tf]'); if (!b) return; target = b.dataset.tf; paintTfs(); });
   $('ccQuick').addEventListener('click', (e) => { const b = e.target.closest('button[data-q]'); if (b) ask(b.textContent, b.dataset.q); });
   $('ccForm').addEventListener('submit', (e) => { e.preventDefault(); const t = $('ccIn').value.trim(); if (!t) return; $('ccIn').value = ''; ask(t); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) open(false); });
 
   // ---------- one timeframe, right now ----------
   const fastCache = {}; // 5m candles when the chart isn't on 5m (refetched after 60 s)

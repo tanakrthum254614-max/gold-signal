@@ -17,7 +17,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=202610122000">
+  <link rel="stylesheet" href="style.css?v=202610122100">
   <link rel="stylesheet" href="live.css?v=202610121500">
   <link rel="stylesheet" href="theme.css?v=202610121500" id="themeLight">
   <script>/* apply the saved theme before the first paint */ try { if (localStorage.getItem("gs-theme") === "dark") { document.getElementById("themeLight").disabled = true; document.querySelector("meta[name=theme-color]").content = "#0d1016"; } } catch (e) {}</script>
@@ -355,9 +355,11 @@
 
           <div class="plan" id="plan"></div>
 
-          <h3>ความเห็นภายนอก (investing.com) — ข้อมูลประกอบ</h3>
-          <ul class="reasons" id="reasons"></ul>
-          <ul class="reasons warn" id="warns"></ul>
+          <!-- The chart chat sits here (user, 12 Oct: "เอาถามตอบอยู่ตรงนี้แทน") in place of investing.com's reasons list;
+               the lists stay (hidden) because main.js still fills them -->
+          <div id="ccSlot"></div>
+          <ul class="reasons" id="reasons" hidden></ul>
+          <ul class="reasons warn" id="warns" hidden></ul>
         </section>
 
         <section class="card">
@@ -591,6 +593,6 @@
   <script src="chartsys.js?v=202610121500"></script>
   <script src="chartzones.js?v=202610122000"></script>
   <script src="newsstats.js?v=202610121500"></script>
-  <script src="chartchat.js?v=202610122000"></script>
+  <script src="chartchat.js?v=202610122100"></script>
 </body>
 </html>

@@ -631,33 +631,27 @@ details.ns-item[open] .ns-open { color: #d99a10; border-color: rgba(240,180,41,.
 .ns-next .ns-about { background: rgba(255,255,255,.07); color: #f3f5f9; } .ns-next .ns-en, .ns-next .ns-src { color: rgba(243,245,249,.7); }
 .ns-next .ns-open { color: rgba(243,245,249,.8); border-color: rgba(255,255,255,.25); }
 
-/* Chart tab Q&A chat (chartchat.js) — floating button + panel, only on the chart tab */
-.cc-fab { position: fixed; right: 20px; bottom: 24px; z-index: 35; border: 1px solid var(--gold); background: var(--gold); color: #1c2433; font: inherit; font-weight: 700; font-size: 14px; padding: 11px 16px; border-radius: 99px; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.28); }
-.cc-fab.on { background: var(--panel); color: var(--gold); }
-.cc-panel { position: fixed; right: 20px; bottom: 80px; z-index: 36; width: min(400px, calc(100vw - 32px)); height: min(560px, calc(100vh - 120px)); display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 18px 50px rgba(0,0,0,.35); overflow: hidden; }
-.cc-panel[hidden] { display: none; }
-.cc-head { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+/* Chart Q&A chat (chartchat.js) — inside the chart's signal card (simple view: a card under the chart) */
+.cc-panel { margin-top: 14px; display: flex; flex-direction: column; height: 520px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.cc-panel.cc-under { margin-top: 16px; background: var(--panel); border-radius: var(--radius); }
+.cc-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
 .cc-head b { flex: 1; font-size: 15px; }
-.cc-x { border: 0; background: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 2px 6px; }
-.cc-log { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; overscroll-behavior: contain; }
-.cc-msg { max-width: 92%; padding: 9px 12px; border-radius: 12px; font-size: 13.5px; line-height: 1.6; overflow-wrap: anywhere; }
+.cc-log { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; overscroll-behavior: contain; }
+.cc-msg { max-width: 94%; padding: 9px 11px; border-radius: 12px; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
 .cc-msg.me { align-self: flex-end; background: var(--gold); color: #1c2433; border-bottom-right-radius: 4px; }
-.cc-msg.bot { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.cc-msg.bot { align-self: flex-start; background: var(--panel); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.cc-under .cc-msg.bot { background: var(--panel-2); }
 .cc-msg small { color: var(--muted); }
 .cc-at { display: block; margin-top: 4px; font-size: 11px; color: var(--muted); }
-.cc-quick { display: flex; gap: 6px; overflow-x: auto; padding: 8px 12px 0; scrollbar-width: none; }
-.cc-quick::-webkit-scrollbar { display: none; }
-.cc-quick button { flex: none; font: inherit; font-size: 12.5px; cursor: pointer; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 99px; padding: 6px 11px; }
+.cc-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px 0; max-height: 92px; overflow-y: auto; }
+.cc-quick button { flex: none; font: inherit; font-size: 12px; cursor: pointer; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 99px; padding: 5px 10px; }
+.cc-under .cc-quick button { background: var(--panel-2); }
 .cc-quick button:hover { border-color: var(--gold); }
-.cc-form { display: flex; gap: 6px; padding: 8px 12px; }
-.cc-form input { flex: 1; min-width: 0; font: inherit; font-size: 14px; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; }
+.cc-form { display: flex; gap: 6px; padding: 8px 10px; }
+.cc-form input { flex: 1; min-width: 0; font: inherit; font-size: 14px; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
 .cc-form input:focus { outline: none; border-color: var(--gold); }
-.cc-foot { margin: 0; padding: 0 12px 10px; font-size: 11px; color: var(--muted); }
-@media (max-width: 899px) {
-  .cc-fab { right: 14px; bottom: calc(76px + env(safe-area-inset-bottom)); }
-  .cc-panel { right: 8px; left: 8px; width: auto; bottom: calc(70px + env(safe-area-inset-bottom)); height: min(70vh, calc(100vh - 150px)); }
-  .cc-form input { font-size: 16px; } /* no iOS zoom on focus */
-}
+.cc-foot { margin: 0; padding: 0 10px 10px; font-size: 11px; color: var(--muted); }
+@media (max-width: 899px) { .cc-panel { height: 480px; } .cc-form input { font-size: 16px; } }
 .cc-tfs { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; font-size: 12.5px; color: var(--muted); }
 .cc-tfs::-webkit-scrollbar { display: none; }
 .cc-tfs button { flex: none; font: inherit; font-size: 12.5px; cursor: pointer; color: var(--text); background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 5px 9px; }
@@ -665,3 +659,4 @@ details.ns-item[open] .ns-open { color: #d99a10; border-color: rgba(240,180,41,.
 .cc-tfs button.on { background: var(--gold); border-color: var(--gold); color: #1c2433; font-weight: 700; }
 .cc-tfs button.on small { color: inherit; }
 .cc-typing { color: var(--muted); font-style: italic; }
+.reasons[hidden] { display: none; } /* investing.com reasons: replaced by the chart chat */
