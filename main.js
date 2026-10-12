@@ -88,7 +88,7 @@ async function refreshPrice() {
   try {
     const { bars, source } = await loadBars(tf);
     if (tf !== state.tf) return; // timeframe switched while loading
-    state.bars = bars;
+    state.bars = withOlder(tf, bars);
     state.source = source;
     patchChartBars(); // REST candles lag the stream: put the live price on the newest one
     if (!streamFresh()) setConn(source === 'investing' ? 'live' : 'backup',
@@ -682,6 +682,63 @@ const num = (s) => (s == null ? null : +String(s).replace(/,/g, ''));
 
 // Put the live price on the chart's newest candle (a new candle when its period has rolled over)
 const TF_MS = { '5m': 5 * 60e3, '15m': 15 * 60e3, '30m': 30 * 60e3, '1h': 3600e3, '5h': 5 * 3600e3, '1d': 864e5, '1w': 7 * 864e5 };
+
+// ---------- Scroll back in time (user, 12 Oct: "อยากให้เลื่อนย้อนไปดูของวันอื่นได้") ----------
+// investing.com's chart API only returns the latest 160 candles. When the chart is scrolled to its left edge, older
+// candles come from Binance PAXG (the site's backup source), shifted onto the investing.com price where the two
+// overlap, and are kept per timeframe so the 3-second refresh doesn't drop them. Up to MAX_OLDER candles per timeframe.
+const MAX_OLDER = 3000;
+state.older = {}; // tf → older candles (UTC seconds, ascending)
+let olderBusy = false;
+async function loadOlder() {
+  const tf = state.tf, bars = state.bars;
+  if (olderBusy || bars.length < 2 || (state.older[tf] || []).length >= MAX_OLDER) return;
+  // not right after a timeframe switch, and only on this timeframe's candles (the old ones stay until the new arrive)
+  if (Date.now() - (state.tfAt || 0) < 2500 || Math.abs((bars[bars.length - 1].time - bars[bars.length - 2].time) * 1000 - TF_MS[tf]) > TF_MS[tf] * 0.5 && tf !== '1w' && tf !== '1d') return;
+  olderBusy = true;
+  try {
+    const first = bars[0], dur = TF_MS[tf], five = tf === '5h';
+    const iv = five ? '1h' : tfOf(tf).bn, limit = five ? 1000 : 500;
+    // include the candle at `first` so the price offset can be measured on the overlap
+    const k = await getJson(`https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval=${iv}&endTime=${first.time * 1000 + (five ? dur : 0)}&limit=${limit}`);
+    let rows = k.map((x) => ({ time: x[0] / 1000, open: +x[1], high: +x[2], low: +x[3], close: +x[4] }));
+    if (five) { // build 5-hour candles aligned with investing.com's (counted from the first one on screen)
+      const g = [], step = dur / 1000;
+      rows.forEach((b) => {
+        const t = first.time - Math.ceil((first.time - b.time) / step) * step, l = g[g.length - 1];
+        if (l && l.time === t) { l.high = Math.max(l.high, b.high); l.low = Math.min(l.low, b.low); l.close = b.close; } else g.push({ ...b, time: t });
+      });
+      rows = g;
+    }
+    const same = rows.find((b) => b.time === first.time);
+    const off = same ? first.close - same.close : (state.olderOff || {})[tf] || 0;
+    state.olderOff = { ...(state.olderOff || {}), [tf]: off };
+    rows = rows.filter((b) => b.time < first.time).map((b) => ({ ...b, open: b.open + off, high: b.high + off, low: b.low + off, close: b.close + off }));
+    if (!rows.length || tf !== state.tf) return;
+    state.older[tf] = [...rows, ...(state.older[tf] || [])];
+    // keep the view where it was: everything shifts right by the candles added on the left
+    const ts = mainChart.timeScale(), r = ts.getVisibleLogicalRange();
+    state.bars = [...rows, ...state.bars];
+    render();
+    if (r) ts.setVisibleLogicalRange({ from: r.from + rows.length, to: r.to + rows.length });
+    const sr = simpleChart.timeScale().getVisibleLogicalRange();
+    if (sr) simpleChart.timeScale().setVisibleLogicalRange({ from: sr.from + rows.length, to: sr.to + rows.length });
+  } catch (e) { /* try again on the next scroll */ }
+  finally { olderBusy = false; }
+}
+// Older candles go back in front of every refresh of the latest ones
+const withOlder = (tf, bars) => {
+  const old = state.older[tf] || [];
+  return old.length && bars.length ? [...old.filter((b) => b.time < bars[0].time), ...bars] : bars;
+};
+// only when the view is dragged past the oldest candle (the opening view starts at it: no automatic chain of loads)
+// Only after the person drags / scrolls / touches the chart (a chart that just appeared or re-fitted also reports a range
+// past its start), and only the chart on screen
+let userScrollAt = 0;
+['mainChart', 'simpleChart'].forEach((id) => ['pointerdown', 'wheel', 'touchstart'].forEach((ev) => $(id).addEventListener(ev, () => { userScrollAt = Date.now(); }, { passive: true })));
+[[mainChart, 'mainChart'], [simpleChart, 'simpleChart']].forEach(([c, id]) => c.timeScale().subscribeVisibleLogicalRangeChange((r) => {
+  if (r && r.from < -3 && Date.now() - userScrollAt < 4000 && $(id).offsetParent && $(id).clientWidth > 0) loadOlder();
+}));
 function patchChartBars(now = Date.now()) {
   const bars = state.bars, price = state.livePrice;
   if (!bars.length || price == null || !streamFresh()) return false;
@@ -1584,6 +1641,7 @@ function markTf() {
 function setTf(tf) {
   if (!tf || tf === state.tf) return;
   state.tf = tf;
+  state.tfAt = Date.now(); // scroll-back loading waits a moment (the chart re-fits)
   state.locked = null;
   markTf();
   renderTechTables();

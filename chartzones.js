@@ -42,9 +42,13 @@ function ago(ms) {
     const decs = [], trades = [];
     let busy = 0;
     const last = Math.floor(now / dur) * dur;
+    // Older candles loaded by scrolling back (main.js loadOlder) can be earlier than the slower frames' data: no
+    // decision is possible there, so skip them instead of retrying every second
+    const ready = Math.max(0, ...sys.frames.slice(1).map(([k, d, min]) => { const b = data[k] || []; return b.length >= min ? b[min - 1].time + d : Infinity; }));
     for (let i = 60; i < chart.length; i++) {
       const t = chart[i].time; // decision at the open of candle i = on candles closed before it
       if (t > last) break;
+      if (t < ready) { decs.push({ t, dec: null }); continue; }
       const key = `${tf}|${t}`;
       let dec = cache.get(key);
       // empty result = data still loading: don't cache it, try again next time
@@ -263,7 +267,7 @@ function ago(ms) {
     const ts = b.chart.timeScale(), y = (v) => b.series.priceToCoordinate(v);
     const right = b.chart.priceScale('right').width(), W = b.el.clientWidth - right;
     const bars = state.bars, lastX = ts.timeToCoordinate(bars[bars.length - 1].time + TZ);
-    if (lastX == null || !W) return '';
+    if (lastX == null || !W || lastX > W) return ''; // looking at history (latest candle off screen): no plan box
     const x0 = Math.max(0, Math.min(W - 132, lastX + 6)), colW = Math.max(126, Math.min(220, (W - x0 - 6) / plans.length));
     return plans.map((p, i) => {
       const x = x0 + i * (colW + 6), ye = y(p.entry), ys = y(p.sl), yt = y(p.tps[p.tps.length - 1]);
@@ -335,16 +339,19 @@ function ago(ms) {
     if (html !== b.html) { b.html = html; b.el.innerHTML = html; } // only when something moved: no flicker
   }
   // Keep every drawn entry / SL / TP inside the price scale, so no label sits off the chart
-  function fitPlans(series) {
+  function fitPlans(series, chart) {
     series.applyOptions({ autoscaleInfoProvider: (orig) => {
       const r = orig(); if (!r || !r.priceRange) return r;
+      // looking back in time (latest candle off screen): fit the candles only, not today's plan / trade levels
+      const v = chart.timeScale().getVisibleLogicalRange();
+      if (v && v.to < state.bars.length - 2) return r;
       const t = window.CZ_OPEN, ps = [...(window.CZ_PLANS || []).flatMap((p) => [p.sl, ...p.tps]), ...(t ? [t.sl, ...t.tps] : [])].filter(Number.isFinite);
       if (!ps.length) return r;
       return { ...r, priceRange: { minValue: Math.min(r.priceRange.minValue, ...ps), maxValue: Math.max(r.priceRange.maxValue, ...ps) } };
     } });
   }
   window.drawPositionBoxes = function () {
-    if (!boxes.length && typeof mainChart !== 'undefined') { overlay(mainChart, candles, 'mainChart'); overlay(simpleChart, areaS, 'simpleChart'); fitPlans(candles); fitPlans(areaS); }
+    if (!boxes.length && typeof mainChart !== 'undefined') { overlay(mainChart, candles, 'mainChart'); overlay(simpleChart, areaS, 'simpleChart'); fitPlans(candles, mainChart); fitPlans(areaS, simpleChart); }
     boxes.forEach(draw);
   };
 })();
