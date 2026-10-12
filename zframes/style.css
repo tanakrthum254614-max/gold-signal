@@ -246,3 +246,11 @@ td.fu { animation: fu .9s; } td.fd { animation: fd .9s; }
 @keyframes fu { from { background: rgba(52,211,153,.35); } } @keyframes fd { from { background: rgba(251,113,133,.35); } }
 .act.hit { background: rgba(251,191,36,.08); border-radius: 6px; padding-left: 6px; border-left: 3px solid var(--warn); }
 table.st td small { display: block; }
+
+/* Zone tabs: one page at a time */
+.zn { position: sticky; top: 0; z-index: 5; padding: 8px 0; background: linear-gradient(180deg, rgba(14,9,30,.96), rgba(14,9,30,.86)); backdrop-filter: blur(6px); }
+.zn button { font: inherit; cursor: pointer; color: var(--dim); font-size: 13px; font-weight: 600; border: 1px solid var(--line); border-radius: 99px; padding: 7px 14px; background: rgba(9,6,20,.65); }
+.zn button:hover { color: #fff; border-color: var(--acc); }
+.zn button.on { color: #1b1030; background: var(--acc); border-color: var(--acc); box-shadow: 0 0 0 3px rgba(139,92,246,.3); }
+.zone[hidden] { display: none !important; }
+.zone { margin-top: 18px; }

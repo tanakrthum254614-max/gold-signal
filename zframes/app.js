@@ -28,9 +28,10 @@ async function load() {
   document.title = `zframes · ${dash.title}`;
   $('#stamp').textContent = 'ข้อมูลวิเคราะห์ ณ ' + new Date(dash.generatedAt).toLocaleString('th-TH');
   $('#app').innerHTML = `<h1 class="dash">${esc(dash.title)}</h1><div class="dsub">${esc(dash.subtitle || '')}</div><div class="data-note">ราคาที่มีฟีดจะอัปเดตอัตโนมัติ · วันที่วิเคราะห์และข้อมูลพื้นฐานเป็นภาพรวม ณ เวลาที่ระบุ · ดูสถานะราคาสดที่แถบด้านบน</div>` +
-    `<nav class="zn">${dash.zones.map(z => `<a href="#${esc(z.id)}">${esc(z.short || z.title)}</a>`).join('')}</nav>` +
-    dash.zones.map(z => `<div class="zone" id="${esc(z.id)}"><h2>${esc(z.title)}</h2><div class="zsub">${esc(z.subtitle || '')}</div>
+    `<nav class="zn">${dash.zones.map(z => `<button type="button" data-zone="${esc(z.id)}">${esc(z.short || z.title)}</button>`).join('')}</nav>` +
+    dash.zones.map(z => `<div class="zone" id="${esc(z.id)}" hidden><h2>${esc(z.title)}</h2><div class="zsub">${esc(z.subtitle || '')}</div>
       <div class="grid">${z.frames.map(renderFrame).join('')}</div></div>`).join('');
+  showZone(params.get('z') || zoneMem()[current] || dash.zones[0]?.id);
   $('#ticker').innerHTML = `<div class="track"></div>`;
   LIVE.start();
   STOCKS.start();
@@ -66,7 +67,26 @@ window.paintTicker = Q => {
   t.innerHTML = items + items;  // ซ้ำ 2 รอบเพื่อให้วิ่งต่อเนื่อง
 };
 
-$('#pick').addEventListener('change', e => { current = e.target.value; params.set('d', current); history.replaceState(null, '', '?' + params); load(); });
+// One zone (Live / Cockpit / Technicals / …) on screen at a time — the buttons switch pages instead of scrolling.
+// The last zone per dashboard is remembered (?z= in the URL, and this browser's storage).
+function zoneMem() { try { return JSON.parse(localStorage.getItem('zf-zone') || '{}'); } catch { return {}; } }
+function showZone(id) {
+  if (!dash?.zones?.length) return;
+  if (!dash.zones.some(z => z.id === id)) id = dash.zones[0].id;
+  document.querySelectorAll('#app .zone').forEach(el => { el.hidden = el.id !== id; });
+  document.querySelectorAll('#app .zn button').forEach(b => b.classList.toggle('on', b.dataset.zone === id));
+  params.set('z', id); history.replaceState(null, '', '?' + params);
+  try { localStorage.setItem('zf-zone', JSON.stringify({ ...zoneMem(), [current]: id })); } catch {}
+  // charts drawn while hidden measure 0 px: let them re-measure now that the page is visible
+  requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+}
+$('#app').addEventListener('click', e => {
+  const b = e.target.closest('.zn button'); if (!b) return;
+  showZone(b.dataset.zone);
+  const nav = document.querySelector('#app .zn');
+  if (nav && nav.getBoundingClientRect().top < 0) nav.scrollIntoView({ block: 'start' });
+});
+$('#pick').addEventListener('change', e => { current = e.target.value; params.set('d', current); params.delete('z'); history.replaceState(null, '', '?' + params); load(); });
 $('#ver').textContent = 'เว็บสมาชิก';
 loadList().then(load);
 setInterval(tick, 1000);
