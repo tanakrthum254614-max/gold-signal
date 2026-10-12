@@ -328,10 +328,54 @@
    "hitAt": [],
    "stop": 4194.06,
    "realized": 0,
-   "pnl": -2.19,
-   "last": 4206.87
+   "pnl": -5.54,
+   "last": 4203.52
+  },
+  {
+   "id": "30m-1791774000000",
+   "createdAt": 1791774000000,
+   "expiresAt": 1791834300000,
+   "status": "active",
+   "entryAt": 1791774000000,
+   "side": "BUY",
+   "entry": 4205.49,
+   "sl": 4190.49,
+   "tps": [
+    4220.49
+   ],
+   "tp": 4220.49,
+   "score": 5,
+   "tf": "30m",
+   "hit": 0,
+   "hitAt": [],
+   "stop": 4190.49,
+   "realized": 0,
+   "pnl": -1.97,
+   "last": 4203.52
+  },
+  {
+   "id": "1h-1791774000000",
+   "createdAt": 1791774000000,
+   "expiresAt": 1791834300000,
+   "status": "active",
+   "entryAt": 1791774000000,
+   "side": "BUY",
+   "entry": 4205.44,
+   "sl": 4175.44,
+   "tps": [
+    4235.44
+   ],
+   "tp": 4235.44,
+   "score": 5,
+   "tf": "1h",
+   "hit": 0,
+   "hitAt": [],
+   "stop": 4175.44,
+   "realized": 0,
+   "pnl": -1.92,
+   "last": 4203.52
   }
  ],
  "brakes": {},
- "updatedAt": 1791773721388
+ "updatedAt": 1791777921156
 }
