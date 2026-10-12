@@ -68,6 +68,18 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 ## 📖 หน้าวิธีใช้: อ่านหน้ากราฟยังไง (8 ต.ค. 2569 · เวอร์ชัน 202610082200)
 - แทนหัวข้อ "⏱️ สัญญาณ 15 นาที (ดูบนเว็บเท่านั้น)" (อธิบายการ์ดที่ลบแล้ว) ด้วย "📈 อ่านหน้ากราฟยังไง" `ol.learn-steps` 5 ข้อ: กรอบเวลา → ช่อง Buy|Sell (% + ✅⏸⚠️⛔) → เข้าเฉพาะ ✅ + 🧮 → ลูกศร/ป้าย/กล่อง TP-SL/เส้นไม้ที่ปิด → สิ่งที่ดูประกอบเท่านั้น · เมื่อเปลี่ยนหน้ากราฟอีก ให้อัปเดตหัวข้อนี้ด้วย
 
+## 📊 แดชบอร์ด: อัปเดตเองทุกเช้า + การ์ดสัญญาณ / ข่าว / ผลจริงสด (13 ต.ค. 2569 · commits 86d4b65 → bad1228+)
+- ผู้ใช้: "ในส่วนของแดชบอร์ด มีอะไรอยากเพิ่มเติม ที่สำคัญจริงๆ" → เสนอ 3 ข้อ → "ทำมาหมดเลย"
+- **1) อัปเดตตัวเลขทุกเช้า** — `zframes-build/` = สำเนาโค้ด /zframes (build_dashboard.py + models gold/ndx/stocks/div + notes; Python มาตรฐาน ไม่ต้อง pip) · `.github/workflows/zframes-refresh.yml` ทุกวัน 06:00 ไทย (cron 0 23 UTC) + กดเองได้ → `scripts/zframes-refresh.sh`: data_load → สร้าง 4 แดชบอร์ด → ถ้าการ์ดน้อยกว่าเมื่อวาน (แหล่งข้อมูลล่ม) เก็บไฟล์เดิม → data_save ลง branch data (ไม่ deploy) · middleware เสิร์ฟ `/zframes/dashboards/(gold|ndx|spx|div).json` จาก branch data
+  - บนเซิร์ฟเวอร์ไม่มี MT5/EA (APPDATA ว่าง) → ไม่มีการ์ด EA / ข่าว MT5 / ข้อมูลบัญชี และไม่ขึ้นคำเตือน "อ่าน snapshot.json ไม่ได้" · **ห้ามคัดลอก dashboards ที่ build ในเครื่องที่มี MT5 ขึ้นเว็บ** (มี EA GoldTraderLive / บัญชี Exness) — ถ้าจะ build ในเครื่องให้ตั้ง `APPDATA=""`
+  - Binance `api.binance.com` ตอบ 451 กับเครื่อง GitHub (สหรัฐ) → fallback `data-api.binance.vision`
+  - FRED ไม่ตอบ/ช้ากับเครื่อง GitHub → `fred()` ลอง 2 ครั้ง (timeout 15 วิ) แล้วใช้สำเนา `models/cache/fred` (actions/cache) หรือ `models/fred-seed` (commit ไว้ 13 ต.ค.) + log "FRED did not answer" + คำเตือนบนแดชบอร์ด · แต่ละแดชบอร์ดใช้ ~3 นาที (รอบแรก FRED ล้ม → การ์ดหาย 6 ใบ → แก้แล้ว)
+  - `dash.notesAsOf` (วันที่ notes) → หัวแดชบอร์ด "ตัวเลขอัปเดต <เวลา> · บทวิเคราะห์ <x วันก่อน>" (> 3 วัน = สีเตือน ⚠️) · บทวิเคราะห์ (notes) เปลี่ยนเฉพาะตอน Claude เขียนใหม่: แก้ `D:\โปรเจคทันเดอร์\zframes\notes\*.json` แล้วคัดลอกไป `Traeding/zframes-build/notes/` + push (รอบเช้าถัดไปใช้ หรือกด Run workflow)
+- **2) การ์ด "สัญญาณ Gold Signal ตอนนี้"** (แดชบอร์ดทองคำ, แท็บราคาสด, กว้าง 2 ช่อง) — `zframes/site-cards.js` อ่าน `parent.GS_SIGNALS()` (chartchat.js: snapAll 5m/15m/30m/1h) ทุก 15 วิ: ทิศ · Buy % · Sell % · สถานะ (ถือ/พัก/งดข่าว/เข้าได้/รอ) + ปุ่ม "เปิดหน้ากราฟ →"
+- **3) การ์ด "ข่าวแรงสหรัฐที่จะออก"** ทุกแดชบอร์ด (ทอง 1 ช่อง, หุ้น/ปันผล เต็มแถว) — `parent.GS_NEWS()` (state.news) นับถอยหลังทุกวินาที · ±30 นาที = "⚠️ ช่วงข่าวออก"
+- การ์ด "ผลจริงของ Gold Signal" นับใหม่สดจาก `parent.GS_RECORD()` (state.chartSig + state.signals) ทุก 60 วิ — ตรงกับหน้าเว็บ
+- นอกเว็บ (runtime ในเครื่อง) ไม่มี parent hooks → ไม่มีการ์ดเพิ่ม · ทดสอบ `gold-signal-tools/zcards.cjs` ไม่มี error
+
 ## ↔️ แดชบอร์ดเต็มความกว้าง (12 ต.ค. 2569 · zframes style ?v=2026101211 · iframe v=202610122800)
 - ผู้ใช้ (รูป Nasdaq heatmap มีขอบว่างซ้ายขวา): "ขยายให้เต็มขอบจอ" → `zframes/style.css`: `.embedded main { max-width: none; padding 16px }` (เดิม max-width 1500px กึ่งกลาง) · เฉพาะตอนฝังในเว็บ (`?embed=1` → html.embedded) · วัด 1670px: เนื้อหา 1670 / heatmap 1600 · 1200px ไม่ล้น
 
