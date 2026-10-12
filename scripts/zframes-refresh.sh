@@ -15,7 +15,12 @@ build() { # asset, model command…
   local a="$1"; shift
   echo "── $a ──"
   if (cd zframes-build && timeout 900 python "$@" && python build_dashboard.py "$a"); then
-    cp "zframes-build/dashboards/$a.json" "zframes/dashboards/$a.json" && done_list="$done_list $a"
+    # a source that failed today (FRED, Yahoo…) drops cards: then keep yesterday's complete dashboard
+    if node -e 'const c=(f)=>{try{return JSON.parse(require("fs").readFileSync(f)).zones.reduce((n,z)=>n+z.frames.length,0)}catch(e){return 0}};const n=c(process.argv[1]),o=c(process.argv[2]);console.log("cards",n,"(was",o+")");process.exit(n>=o?0:1)' "zframes-build/dashboards/$a.json" "zframes/dashboards/$a.json"; then
+      cp "zframes-build/dashboards/$a.json" "zframes/dashboards/$a.json" && done_list="$done_list $a"
+    else
+      echo "⚠️ $a came out with fewer cards — keeping the previous dashboard"
+    fi
   else
     echo "⚠️ $a failed — keeping the previous dashboard"
   fi

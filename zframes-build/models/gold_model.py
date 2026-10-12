@@ -52,8 +52,14 @@ def fred(sid, days=800):
     """อ่าน series จาก FRED (ไม่ต้องใช้ API key) → [{t, v}]"""
     start = (datetime.now(TH) - timedelta(days=days)).strftime("%Y-%m-%d")
     req = urllib.request.Request(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}&cosd={start}", headers=UA)
-    with urllib.request.urlopen(req, timeout=30) as r:
-        rows = list(csv.reader(io.StringIO(r.read().decode("utf-8"))))[1:]
+    for attempt in range(3):  # FRED drops some requests when many arrive at once (seen from GitHub Actions)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                rows = list(csv.reader(io.StringIO(r.read().decode("utf-8"))))[1:]
+            break
+        except Exception:
+            if attempt == 2: raise
+            time.sleep(2 + attempt * 4)
     out = []
     for d, v in rows:
         if v not in ("", "."):
@@ -69,8 +75,12 @@ def hl_daily(coin, days=400):
 
 
 def klines(interval, limit):
-    url = f"https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval={interval}&limit={limit}"
-    rows = get_json(url)
+    # api.binance.com answers 451 to US servers (GitHub Actions) — data-api.binance.vision is Binance's public market-data host
+    q = f"/api/v3/klines?symbol=PAXGUSDT&interval={interval}&limit={limit}"
+    try:
+        rows = get_json("https://api.binance.com" + q)
+    except Exception:
+        rows = get_json("https://data-api.binance.vision" + q)
     return [{"t": r[0], "o": float(r[1]), "h": float(r[2]), "l": float(r[3]), "c": float(r[4])} for r in rows]
 
 
@@ -227,7 +237,7 @@ def macro_block(d1=None):
     """ข้อมูลมหภาคจาก FRED (ใช้ร่วมกันทุก dashboard) — d1 = แท่งรายวันทองสำหรับ correlation กับ real yield"""
     ids = ["EFFR", "SOFR", "DFEDTARU", "DFEDTARL", "DGS3MO", "DGS2", "DGS5", "DGS10", "DGS30", "DFII10", "T10YIE",
            "DTWEXBGS", "BAMLH0A0HYM2", "BAMLC0A0CM", "CPIAUCSL", "VIXCLS", "SP500"]
-    with ThreadPoolExecutor(8) as ex:
+    with ThreadPoolExecutor(4) as ex:
         F = dict(zip(ids, ex.map(lambda i: _safe(fred, i), ids)))
     miss = [i for i in ids if not F.get(i)]
     if miss: warnings.append("FRED ดึงไม่ได้: " + ", ".join(miss))
