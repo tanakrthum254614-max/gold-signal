@@ -368,7 +368,6 @@ function renderSignal(plan, htfKey) {
   // investing.com's own entry / SL / TP are not shown (they contradicted the main system's levels): only the zones
   if (plan.buyZone) html += box('จุดรอซื้อ', f2(plan.buyZone.price), 'tp', `${plan.buyZone.name}: ราคามักเด้งขึ้นแถวนี้`);
   if (plan.sellZone) html += box('จุดรอขาย', f2(plan.sellZone.price), 'sl', `${plan.sellZone.name}: ราคามักถูกกดลงแถวนี้`);
-  if (plan.atr) html += box('ราคาแกว่งเฉลี่ย (ATR)', `±${f2(plan.atr)}`, 'wide', 'ต่อ 1 แท่งเทียน');
   $('plan').innerHTML = html;
 
   $('reasons').innerHTML = plan.reasons.map((r) => `<li>${r}</li>`).join('') ||

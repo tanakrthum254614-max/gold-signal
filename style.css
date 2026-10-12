@@ -673,3 +673,4 @@ details.ns-item[open] .ns-open { color: #d99a10; border-color: rgba(240,180,41,.
   .layout > aside > .signal > #ccSlot > .cc-panel { flex: 1 1 520px; min-height: 520px; height: auto; }
 }
 .layout2 > .side > .card:last-child { flex: 1; } /* right column ends level with the indicator table */
+.plan:empty { display: none; } /* ATR box removed (12 Oct) — no empty gap when there are no zones */
