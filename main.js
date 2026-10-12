@@ -28,6 +28,10 @@ const ACTION_TH = {
 // on the site — header, tab title, chart, dashboard — is the same investing.com tick
 window.GS_LIVE = () => { let prev = null; try { prev = prevClose(); } catch (e) { /* daily candles not loaded yet */ }
   return { px: state.livePrice, t: state.tickAt, prev: prev && prev.close, fresh: typeof streamFresh === 'function' && streamFresh() }; };
+// …and the dashboard's own cards (zframes/site-cards.js, 12 Oct): the US news calendar and the recorded trades, the same
+// ones the news tab and the signals tab show
+window.GS_NEWS = () => state.news || [];
+window.GS_RECORD = () => ({ chart: state.chartSig, daily: state.signals });
 const state = {
   tf: '1h', bars: [], daily: [], tech: null, techAt: null, source: null,
   locked: null, lastPrice: null, chartKey: '', pivotKey: '', busy: false, zoneKey: '', signals: [], m15: [], backtest: null, intra: null, bt30: null, intraCandles: null, news: [], thb: null,

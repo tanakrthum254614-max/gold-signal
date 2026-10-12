@@ -49,11 +49,12 @@ async function load() {
     return;
   }
   thDash(dash); // Thai labels
+  window.SITE_CARDS?.inject(dash); // inside the Gold Signal site: signals / news / live record cards (site-cards.js)
   window.dash = dash;
   dash.stockMap = Object.fromEntries((dash.stocks || []).map(x => [x.s, x]));
   FRAME_DATA.length = 0;
   document.title = `zframes · ${dash.title}`;
-  $('#stamp').textContent = 'ข้อมูลวิเคราะห์ ณ ' + new Date(dash.generatedAt).toLocaleString('th-TH');
+  if (window.SITE_CARDS) SITE_CARDS.stamp(dash); else $('#stamp').textContent = 'ข้อมูลวิเคราะห์ ณ ' + new Date(dash.generatedAt).toLocaleString('th-TH');
   $('#app').innerHTML = `<h1 class="dash">${esc(dash.title)}</h1><div class="dsub">${esc(dash.subtitle || '')}</div><div class="data-note">ราคาที่มีฟีดจะอัปเดตอัตโนมัติ · วันที่วิเคราะห์และข้อมูลพื้นฐานเป็นภาพรวม ณ เวลาที่ระบุ · ดูสถานะราคาสดที่แถบด้านบน</div>` +
     `<nav class="zn">${dash.zones.map(z => `<button type="button" data-zone="${esc(z.id)}">${esc(z.short || z.title)}</button>`).join('')}</nav>` +
     dash.zones.map(z => `<div class="zone" id="${esc(z.id)}" hidden><h2>${esc(z.title)}</h2><div class="zsub">${esc(z.subtitle || '')}</div>
@@ -65,6 +66,7 @@ async function load() {
   connectLive(current);
   if (dash.kind === 'gold') loadGoldTF();
   tick();
+  window.SITE_CARDS?.start();
   if (params.get('s') && !document.querySelector('.modal')) openStock(params.get('s').toUpperCase());  // ?d=ndx&s=NVDA
 }
 

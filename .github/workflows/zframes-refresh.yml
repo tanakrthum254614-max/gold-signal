@@ -1,0 +1,35 @@
+name: Dashboards refresh
+
+on:
+  # 06:00 Thai time every day (after the US close): fresh numbers for the member dashboards
+  schedule:
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: zframes-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # Yahoo dividend details (crumb + quoteSummary) are cached ~20 h by div_model.py
+      - uses: actions/cache@v4
+        with:
+          path: zframes-build/models/cache
+          key: zframes-cache-${{ github.run_id }}
+          restore-keys: zframes-cache-
+      - name: Build the four dashboards and save them to the data branch
+        run: bash scripts/zframes-refresh.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
+      # No LINE notice on failure: LINE messages go to every follower, and a stale dashboard keeps yesterday's data

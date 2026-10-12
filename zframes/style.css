@@ -264,3 +264,27 @@ table.st td small { display: block; }
 /* Inside the Gold Signal site: use the whole width of the tab (user, 12 Oct: "ขยายให้เต็มขอบจอ") */
 .embedded main { max-width: none; padding-left: 16px; padding-right: 16px; }
 .embedded .top { padding-left: 16px; padding-right: 16px; }
+
+/* Site-only cards (site-cards.js) */
+.gs-call { font-size: 13px; padding: 7px 10px; border-radius: 8px; background: rgba(255,255,255,.04); margin-bottom: 8px; }
+.gs-call.go { background: rgba(52,211,153,.14); color: var(--up); font-weight: 700; }
+table.gs-sig { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.gs-sig th { text-align: left; color: var(--muted); font-weight: 500; font-size: 11.5px; padding: 4px 6px; }
+table.gs-sig td { padding: 6px; border-top: 1px solid var(--line); white-space: nowrap; }
+.gs-bar { display: inline-block; width: 60px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.08); overflow: hidden; vertical-align: middle; margin-right: 6px; }
+.gs-bar i { display: block; height: 100%; background: var(--up); }
+.gs-bar.s i { background: var(--down); }
+.gs-bar.untested i { opacity: .4; }
+.gs-bar.go { box-shadow: 0 0 0 2px rgba(52,211,153,.5); }
+.gs-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; font-size: 11.5px; }
+.gs-open { font: inherit; font-size: 12px; cursor: pointer; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 99px; padding: 4px 10px; }
+.gs-open:hover { border-color: var(--acc); }
+ul.gs-news { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+ul.gs-news li { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 13px; padding: 6px 8px; border-radius: 8px; background: rgba(255,255,255,.03); }
+ul.gs-news li .t { color: var(--dim); font-size: 12px; } ul.gs-news li b { font-weight: 600; }
+ul.gs-news li .c { grid-column: 2; color: var(--muted); font-size: 12px; }
+ul.gs-news li.soon .c { color: var(--warn); }
+ul.gs-news li.live { background: rgba(251,191,36,.14); } ul.gs-news li.live .c { color: var(--warn); font-weight: 700; }
+ul.gs-news.wide { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.notes-age.old { color: var(--warn); font-weight: 700; }
+@media (max-width: 560px) { table.gs-sig td, table.gs-sig th { padding: 5px 3px; } .gs-bar { width: 34px; } }

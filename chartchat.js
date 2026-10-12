@@ -348,4 +348,13 @@
     busy = false;
   }
   window.CC_ASK = ask; // tests
+  // The gold dashboard's "สัญญาณ Gold Signal ตอนนี้" card (zframes/site-cards.js) reads the same four timeframes as
+  // "สรุป 4 กรอบ" here — plain numbers only
+  window.GS_SIGNALS = async () => (await snapAll()).map(({ tf, n }) => {
+    if (!n) return { tf, label: nameOf(tf), loading: true };
+    const side = (s) => { const x = n.sides.find((y) => y.side === s); return { pct: x.pct, verdict: x.verdict, go: x.go, tested: x.tested }; };
+    return { tf, label: nameOf(tf), price: n.price, score: n.d.score, dir: window.CZ_FDIR ? CZ_FDIR(n.d) : 0,
+      buy: side(1), sell: side(-1), open: n.open ? { side: n.open.side, entry: n.open.entry, sl: n.open.hit ? n.open.entry : n.open.sl, tps: n.open.tps } : null,
+      pause: n.br ? n.br.why : null, news: !!(n.d.news && sysOf(n).news) };
+  });
 })();

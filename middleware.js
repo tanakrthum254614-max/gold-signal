@@ -164,7 +164,7 @@ async function pushApi(request, m) {
 // redeploys the site (Vercel Hobby: 100 deployments a day — used up on 12 Oct 2026). Members get these files fresh from
 // that branch; the copies deployed with the site are only a fallback if GitHub can't be reached. The query string busts
 // GitHub's 5-minute CDN cache at most once per 10 s per file, and each instance keeps a copy for 10 s.
-const DATA = /^\/(signals|intraday|chart-signals|quota|backtest|backtest-30m|backtest-15m)\.json$/;
+const DATA = /^\/(signals|intraday|chart-signals|quota|backtest|backtest-30m|backtest-15m|zframes\/dashboards\/(?:gold|ndx|spx|div))\.json$/; // + dashboards refreshed each morning
 const RAW = 'https://raw.githubusercontent.com/tanakrthum254614-max/gold-signal/data';
 const dataCache = new Map();
 async function dataFile(path) {
