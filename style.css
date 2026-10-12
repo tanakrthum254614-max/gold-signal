@@ -674,3 +674,6 @@ details.ns-item[open] .ns-open { color: #d99a10; border-color: rgba(240,180,41,.
 }
 .layout2 > .side > .card:last-child { flex: 1; } /* right column ends level with the indicator table */
 .plan:empty { display: none; } /* ATR box removed (12 Oct) — no empty gap when there are no zones */
+
+/* Loading screen: logo, name and % only (12 Oct) — a little more room around the % now that the texts are gone */
+.splash .sp-pct { margin-top: 10px; }

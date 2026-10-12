@@ -9,13 +9,13 @@
     } catch (e) { return false; }
   })();
 
-  // Progress ring (r = 72) + a counting percentage + a list of finished steps
+  // Progress ring (r = 72) + a counting percentage — no step texts (user, 12 Oct: too many words on the loading screen)
   const RING = 2 * Math.PI * 72;
-  // Shown for at least MIN_MS, and the ring fills slowly, so every step can be read
-  const MIN_MS = 4000;
-  let shown = 0, target = 0, raf = 0, lastText = '', startAt = Date.now();
+  // Shown for at least MIN_MS so the logo animation plays once
+  const MIN_MS = 1500;
+  let shown = 0, target = 0, raf = 0, startAt = Date.now();
   function count() {
-    shown += Math.max(0.25, (target - shown) * 0.035);
+    shown += Math.max(0.6, (target - shown) * 0.06);
     if (shown >= target) shown = target;
     const pct = Math.round(shown), el = $('splashPct');
     // Bump the number every 25%
@@ -32,15 +32,7 @@
     raf = shown < target ? requestAnimationFrame(count) : 0;
   }
   window.SPLASH = {
-    step(text, pct) {
-      if (lastText && lastText !== text) {
-        const li = document.createElement('li');
-        li.textContent = lastText;
-        $('splashSteps').appendChild(li);
-        while ($('splashSteps').children.length > 3) $('splashSteps').firstChild.remove();
-      }
-      lastText = text;
-      $('splashText').textContent = text;
+    step(text, pct) { // text: kept for the callers, no longer shown
       if (pct != null && pct > target) {
         target = pct;
         if (!raf) raf = requestAnimationFrame(count);
