@@ -323,9 +323,15 @@
    ],
    "tp": 4224.06,
    "score": 5,
-   "tf": "5m"
+   "tf": "5m",
+   "hit": 0,
+   "hitAt": [],
+   "stop": 4194.06,
+   "realized": 0,
+   "pnl": -3.64,
+   "last": 4205.42
   }
  ],
  "brakes": {},
- "updatedAt": 1791765021310
+ "updatedAt": 1791765321467
 }
