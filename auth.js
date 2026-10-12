@@ -1,6 +1,13 @@
 // Loading screen + who is signed in (members — Clerk on /login.html, checked by middleware.js). Exposes SPLASH and AUTH.
 (function () {
   const $ = (id) => document.getElementById(id);
+  const skipSplash = (() => {
+    try {
+      const skip = sessionStorage.getItem('gs-skip-splash-once') === '1';
+      sessionStorage.removeItem('gs-skip-splash-once');
+      return skip;
+    } catch (e) { return false; }
+  })();
 
   // Progress ring (r = 72) + a counting percentage + a list of finished steps
   const RING = 2 * Math.PI * 72;
@@ -63,6 +70,7 @@
   function showApp() {
     $('login').hidden = true;
     $('app').hidden = false;
+    if (skipSplash) $('splash').classList.add('gone');
   }
   async function start() {
     SPLASH.step('กำลังตรวจสอบการเข้าสู่ระบบ…', 15);

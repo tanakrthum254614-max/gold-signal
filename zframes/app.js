@@ -66,7 +66,7 @@ window.paintTicker = Q => {
   t.innerHTML = items + items;  // ซ้ำ 2 รอบเพื่อให้วิ่งต่อเนื่อง
 };
 
-$('#pick').addEventListener('change', e => { current = e.target.value; history.replaceState(null, '', '?d=' + current); load(); });
+$('#pick').addEventListener('change', e => { current = e.target.value; params.set('d', current); history.replaceState(null, '', '?' + params); load(); });
 $('#ver').textContent = 'เว็บสมาชิก';
 loadList().then(load);
 setInterval(tick, 1000);

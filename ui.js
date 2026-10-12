@@ -1,7 +1,7 @@
 // App shell: tabs, account page, sharing
 (function () {
   const $ = (id) => document.getElementById(id);
-  const TABS = ['home', 'stats', 'chart', 'learn', 'account'];
+  const TABS = ['home', 'stats', 'chart', 'zframes', 'learn', 'account'];
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage unavailable */ } },
@@ -17,6 +17,8 @@
   function showTab(tab) {
     TABS.forEach((t) => { $(`tab-${t}`).hidden = t !== tab; });
     document.querySelectorAll('#tabbar a').forEach((a) => a.classList.toggle('on', a.dataset.tab === tab));
+    document.querySelector('.content').classList.toggle('zframes-view', tab === 'zframes');
+    if (tab === 'zframes' && !$('zframesFrame').hasAttribute('src')) $('zframesFrame').src = $('zframesFrame').dataset.src;
     window.scrollTo(0, 0);
     emit(`tab:${tab}`);
   }

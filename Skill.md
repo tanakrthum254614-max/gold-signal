@@ -5,6 +5,7 @@ description: คู่มือโปรเจค Gold Signal — เว็บ/�
 
 ## ZFrames บน Gold Signal (12 ต.ค. 2569)
 
+- เมนู “แดชบอร์ด” ใช้ hash `#zframes` ในแอปหลักและแสดง `/zframes/index.html?embed=1` ใน iframe เดียวกัน จึงสลับไปแท็บสัญญาณ/กราฟได้โดยไม่โหลดเว็บใหม่; หน้า ZFrames แบบเปิดตรงมีปุ่มกลับ `/#home` และตั้ง `gs-skip-splash-once` ใน sessionStorage เพื่อข้ามภาพเริ่มต้นหนึ่งครั้ง
 - หน้าแดชบอร์ดสำหรับสมาชิก: `/zframes/index.html` เลือก GOLD, Nasdaq 100, S&P 500 และหุ้นปันผลจากเมนู "แดชบอร์ด" ของเว็บหลัก
 - ข้อมูลวิเคราะห์ใน `zframes/dashboards/*.json` เป็น snapshot ณ เวลาที่ระบุบนหน้าเว็บ; ราคา Hyperliquid ผ่าน WebSocket และแท่งเทียนผ่าน candleSnapshot, หุ้น Yahoo ผ่าน WebSocket โดยใช้ `/api/zframes/quotes` สำหรับราคาเริ่มต้นและสำรอง
 - API ราคาหุ้นอยู่หลังการตรวจสมาชิกใน `middleware.js`; ไม่รวมสถานะ EA/บัญชี Exness จากเครื่องส่วนตัวในไฟล์ที่เผยแพร่
