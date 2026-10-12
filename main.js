@@ -99,11 +99,12 @@ async function refreshPrice() {
   }
 }
 
-async function refreshTech() {
+// list: the timeframes to ask for (default all 8). The ones on screen are refreshed every 15 s, all of them every minute.
+async function refreshTech(list = TECH_TFS) {
   // Small batches instead of 8 parallel requests, and never throw away data we already have
   const tfs = {};
-  for (let i = 0; i < TECH_TFS.length; i += 3) {
-    const batch = TECH_TFS.slice(i, i + 3);
+  for (let i = 0; i < list.length; i += 3) {
+    const batch = list.slice(i, i + 3);
     const rs = await Promise.allSettled(batch.map((tf) => investing(`/technical/analysis/${PAIR_ID}/${tf}`)));
     rs.forEach((r, j) => { if (r.status === 'fulfilled' && r.value.summary) tfs[batch[j]] = r.value; });
   }
@@ -1696,7 +1697,8 @@ UI.on('tab:chart', () => setTimeout(() => {
 function every(ms, fn) {
   setInterval(() => { if (!document.hidden) fn(); }, ms);
 }
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { startStream(); refreshTick(); refreshTech(); refreshPrice(); refreshIntraCandles(); } });
+// back from another tab / app (timers sleep while hidden): catch up on everything at once
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { startStream(); refreshTick(); refreshTech(); refreshPrice(); refreshIntraCandles(); refreshM15(); refreshSignals(); refreshNews(); refreshBeat(); } });
 
 (async function init() {
   await AUTH.ready;
@@ -1723,13 +1725,15 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { st
   every(POLL_PRICE, () => { if (!streamFresh() || ++ticks % 7 === 0) refreshTick(); });
   every(POLL_PRICE, () => { if (location.hash === '#chart' || ++prices % 20 === 0) refreshPrice(); });
   setInterval(() => { if (state.tickAt) renderLiveStatus(); renderCycle(); }, 1000);
-  every(POLL_TECH, refreshTech);
+  every(POLL_TECH, () => refreshTech());
+  // realtime-ish (user, 12 Oct: "เรียลไทม์ทุกอย่าง"): the timeframe on screen + its higher one every 15 s (2 requests)
+  every(15e3, () => refreshTech([...new Set([state.tf, HIGHER[state.tf]])].filter(Boolean)));
   every(POLL_DAILY, refreshDaily);
   every(60e3, refreshM15);
   every(60e3, refreshIntraCandles);
   every(5 * 60e3, refreshNews); // + newsstats.js polls every 15 s around a release
   every(60 * 60e3, refreshThb);
-  every(5 * 60e3, refreshSignals);
+  every(60e3, refreshSignals); // recorded signals / open trades (the recorder commits every 5 min)
   refreshBeat();
-  every(5 * 60e3, refreshBeat);
+  every(60e3, refreshBeat);
 })();
