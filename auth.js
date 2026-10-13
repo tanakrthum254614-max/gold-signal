@@ -12,7 +12,7 @@
   // Progress ring (r = 72) + a counting percentage — no step texts (user, 12 Oct: too many words on the loading screen)
   const RING = 2 * Math.PI * 72;
   // Shown for at least MIN_MS so the logo animation plays once
-  const MIN_MS = 2000;
+  const MIN_MS = 1200;
   let shown = 0, target = 0, raf = 0, startAt = Date.now();
   function count() {
     shown += Math.max(0.6, (target - shown) * 0.06);

@@ -6,7 +6,7 @@
 # Env: LOOP_MINUTES, plus everything the scripts need (LINE token, SEND, RECORD, STATE_DIR, OUTBOX…)
 set -u
 END=$(( $(date +%s) + ${LOOP_MINUTES:-0} * 60 ))
-runs=0; fails=0
+runs=0; fails=0; savefails=0; worstsave=0
 
 # Signal data is read from / saved to the data branch (scripts/data-branch.sh), so these commits don't redeploy the site
 source scripts/data-branch.sh
@@ -26,7 +26,10 @@ check() {
   node scripts/chart-run.js data.json || rc=1   # every chart-timeframe signal → chart-signals.json
   node scripts/flush.js   # everything from this check as one LINE request
   # Save results onto the data branch (no website deployment)
-  data_save "Signal update $(TZ=Asia/Bangkok date '+%F %H:%M')" || rc=1
+  if data_save "Signal update $(TZ=Asia/Bangkok date '+%F %H:%M')"; then savefails=0; else
+    rc=1; savefails=$((savefails + 1)); [ "$savefails" -gt "$worstsave" ] && worstsave=$savefails
+    echo "⚠️ saving to the data branch failed ($savefails in a row)"
+  fi
   return $rc
 }
 
@@ -40,4 +43,5 @@ while :; do
 done
 echo "done: $runs checks, $fails failed"
 # Fail the run (→ LINE notice) only when every check in it failed
-[ "$fails" -lt "$runs" ]
+# …or when saving failed 3 checks in a row (records would be lost) — the watchdog (scripts/watchdog.js) tells the admins
+[ "$fails" -lt "$runs" ] && [ "$worstsave" -lt 3 ]

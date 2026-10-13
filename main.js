@@ -1717,12 +1717,17 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { st
     refreshThb(), refreshNews(), refreshM15(), refreshDaily(), refreshPrice(),
     refreshTick().then(() => SPLASH.step('ได้ราคาสดแล้ว · กำลังโหลดสถิติ 2 ปี…', 60)),
     refreshSignals().then(refreshIntraCandles).then(() => SPLASH.step('กำลังคำนวณโอกาสแต่ละจุด…', 80)),
-    refreshTech().then(() => SPLASH.step('กำลังวิเคราะห์ทุกกรอบเวลา…', 90)),
+    // only the timeframe on screen + the one above it before the page shows (1 batch, not 3 — the full 8-timeframe
+    // investing.com analysis took ~8 s and held the loading screen); the rest loads right after, in the background
+    refreshTech([...new Set([state.tf, HIGHER[state.tf]])].filter(Boolean)).then(() => SPLASH.step('กำลังวิเคราะห์ทุกกรอบเวลา…', 90)),
   ];
-  await Promise.all(pending);
-  render();
+  // never more than 4 s on the loading screen: a slow source fills in when it arrives (each refresh re-renders)
+  const all = Promise.allSettled(pending);
+  await Promise.race([all, sleep(4000)]);
+  try { render(); } catch (e) { console.error(e); }
   UI.start();
   SPLASH.hide();
+  all.then(() => { try { render(); } catch (e) { console.error(e); } refreshTech(); });
   // Home is real time: live price every 3 s, trend candles every 30 s. The trader chart reloads
   // every 3 s only while it's on screen.
   // Live price: investing.com's stream (~1 tick a second). 1-minute candles every 3 s only while the

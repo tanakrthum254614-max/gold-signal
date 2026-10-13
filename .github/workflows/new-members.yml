@@ -7,6 +7,10 @@ on:
     - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read # the watchdog reads the price-alerts runs
+
 concurrency:
   group: new-members
   cancel-in-progress: false
@@ -32,3 +36,7 @@ jobs:
           node-version: "22"
       - run: npm install --omit=dev --no-audit --no-fund --no-package-lock
       - run: node scripts/new-members.js
+      # Is the signal recorder still checking every 5 minutes? Tells the admins only (scripts/watchdog.js)
+      - run: node scripts/watchdog.js
+        env:
+          GH_TOKEN: ${{ github.token }}
