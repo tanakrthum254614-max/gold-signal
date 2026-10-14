@@ -11,12 +11,14 @@
 
   // Progress ring (r = 72) + a counting percentage — no step texts (user, 12 Oct: too many words on the loading screen)
   const RING = 2 * Math.PI * 72;
-  // Shown for at least MIN_MS so the logo animation plays once (14 Oct: 1200 → 2800 → 4000 ms, user: "ช้านิดนึง", "ช้ากว่านี้อีกนิด")
-  const MIN_MS = 4000;
+  // Shown for at least MIN_MS so the logo animation plays once (14 Oct: 1200 → 2800 → 4000 → 6000 → 8000 ms — the user
+  // asked for slower four times: "ช้านิดนึง", "ช้ากว่านี้อีกนิด", "ช้ากว่านี้อีก", "ให้หน่วงกว่านี้"). The ring (and the
+  // loading candles, splashfx.js) can't run ahead of the clock, so they fill evenly over the whole MIN_MS.
+  const MIN_MS = 8000;
   let shown = 0, target = 0, raf = 0, startAt = Date.now();
   function count() {
-    shown += Math.max(0.25, (target - shown) * 0.025); // eased slower (14 Oct, twice)
-    if (shown >= target) shown = target;
+    const goal = Math.min(target, ((Date.now() - startAt) / MIN_MS) * 100); // paced by the clock
+    if (shown < goal) shown = Math.min(goal, shown + Math.max(0.16, (goal - shown) * 0.05));
     const pct = Math.round(shown), el = $('splashPct');
     // Bump the number every 25%
     if (Math.floor(pct / 25) > Math.floor(parseInt(el.textContent, 10) / 25)) {
@@ -37,7 +39,7 @@
       li.classList.toggle('on', !done && !active);
       if (!done) active = true;
     });
-    raf = shown < target ? requestAnimationFrame(count) : 0;
+    raf = shown < target ? requestAnimationFrame(count) : 0; // keeps running while the clock holds it back
   }
   window.SPLASH = {
     step(text, pct) { // text: kept for the callers, no longer shown
