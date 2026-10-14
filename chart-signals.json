@@ -5,7 +5,6 @@
    "id": "5m-1791482400000",
    "createdAt": 1791482400000,
    "expiresAt": 1791488700000,
-   "status": "win",
    "entryAt": 1791482400000,
    "side": "BUY",
    "entry": 4130.55,
@@ -16,15 +15,21 @@
    "tp": 4145.55,
    "score": 5,
    "tf": "5m",
+   "status": "loss",
    "hit": 0,
    "hitAt": [],
    "stop": 4115.55,
    "realized": 0,
-   "pnl": 2,
-   "last": 4129.99,
    "closedBy": "eod",
-   "exitPrice": 4132.55,
-   "exitAt": 1791488400000
+   "exitPrice": 4129.990000000001,
+   "exitAt": 1791488400000,
+   "pnl": -0.56,
+   "was": {
+    "status": "win",
+    "pnl": 2,
+    "closedBy": "eod",
+    "fix": "offset 14 Oct 2026"
+   }
   },
   {
    "id": "5m-1791504000000",
@@ -134,7 +139,6 @@
    "id": "1h-1791536400000",
    "createdAt": 1791536400000,
    "expiresAt": 1791575100000,
-   "status": "win",
    "entryAt": 1791536400000,
    "side": "BUY",
    "entry": 4187.82,
@@ -145,21 +149,26 @@
    "tp": 4217.82,
    "score": 5,
    "tf": "1h",
+   "status": "win",
    "hit": 0,
    "hitAt": [],
    "stop": 4157.82,
    "realized": 0,
-   "pnl": 8.89,
-   "last": 4196.24,
    "closedBy": "eod",
-   "exitPrice": 4196.71,
-   "exitAt": 1791574800000
+   "exitPrice": 4194.31,
+   "exitAt": 1791574800000,
+   "pnl": 6.49,
+   "was": {
+    "status": "win",
+    "pnl": 8.89,
+    "closedBy": "eod",
+    "fix": "offset 14 Oct 2026"
+   }
   },
   {
    "id": "30m-1791547200000",
    "createdAt": 1791547200000,
    "expiresAt": 1791575100000,
-   "status": "loss",
    "entryAt": 1791547200000,
    "side": "BUY",
    "entry": 4182.76,
@@ -170,21 +179,28 @@
    "tp": 4197.76,
    "score": 5,
    "tf": "30m",
-   "hit": 0,
-   "hitAt": [],
-   "stop": 4167.76,
+   "status": "win",
+   "hit": 1,
+   "hitAt": [
+    1791571500000
+   ],
+   "stop": 4182.76,
    "realized": 0,
-   "pnl": -15,
-   "last": 4171.03,
-   "closedBy": "sl",
-   "exitPrice": 4167.76,
-   "exitAt": 1791550200000
+   "closedBy": "tp",
+   "exitPrice": 4197.76,
+   "exitAt": 1791571500000,
+   "pnl": 15,
+   "was": {
+    "status": "loss",
+    "pnl": -15,
+    "closedBy": "sl",
+    "fix": "offset 14 Oct 2026"
+   }
   },
   {
    "id": "5m-1791547800000",
    "createdAt": 1791547800000,
    "expiresAt": 1791575100000,
-   "status": "loss",
    "entryAt": 1791547800000,
    "side": "BUY",
    "entry": 4182.93,
@@ -195,21 +211,26 @@
    "tp": 4197.93,
    "score": 5,
    "tf": "5m",
+   "status": "win",
    "hit": 0,
    "hitAt": [],
    "stop": 4167.93,
    "realized": 0,
-   "pnl": -15,
-   "last": 4171.03,
-   "closedBy": "sl",
-   "exitPrice": 4167.93,
-   "exitAt": 1791550200000
+   "closedBy": "eod",
+   "exitPrice": 4192.150000000001,
+   "exitAt": 1791574800000,
+   "pnl": 9.22,
+   "was": {
+    "status": "loss",
+    "pnl": -15,
+    "closedBy": "sl",
+    "fix": "offset 14 Oct 2026"
+   }
   },
   {
    "id": "5m-1791555600000",
    "createdAt": 1791555600000,
    "expiresAt": 1791575100000,
-   "status": "loss",
    "entryAt": 1791555600000,
    "side": "BUY",
    "entry": 4194.58,
@@ -220,15 +241,21 @@
    "tp": 4209.58,
    "score": 6,
    "tf": "5m",
+   "status": "win",
    "hit": 0,
    "hitAt": [],
    "stop": 4179.58,
    "realized": 0,
-   "pnl": -15,
-   "last": 4184.39,
-   "closedBy": "sl",
-   "exitPrice": 4179.58,
-   "exitAt": 1791555900000
+   "closedBy": "eod",
+   "exitPrice": 4198.76,
+   "exitAt": 1791574800000,
+   "pnl": 4.18,
+   "was": {
+    "status": "loss",
+    "pnl": -15,
+    "closedBy": "sl",
+    "fix": "offset 14 Oct 2026"
+   }
   },
   {
    "id": "30m-1791556200000",
@@ -261,7 +288,6 @@
    "id": "5m-1791559200000",
    "createdAt": 1791559200000,
    "expiresAt": 1791575100000,
-   "status": "win",
    "entryAt": 1791559200000,
    "side": "BUY",
    "entry": 4189.35,
@@ -272,23 +298,26 @@
    "tp": 4204.35,
    "score": 5,
    "tf": "5m",
-   "hit": 1,
-   "hitAt": [
-    1791571500000
-   ],
-   "stop": 4189.35,
+   "status": "win",
+   "hit": 0,
+   "hitAt": [],
+   "stop": 4174.35,
    "realized": 0,
-   "pnl": 15,
-   "last": 4200.3,
-   "closedBy": "tp",
-   "exitPrice": 4204.35,
-   "exitAt": 1791571500000
+   "closedBy": "eod",
+   "exitPrice": 4196.6,
+   "exitAt": 1791574800000,
+   "pnl": 7.25,
+   "was": {
+    "status": "win",
+    "pnl": 15,
+    "closedBy": "tp",
+    "fix": "offset 14 Oct 2026"
+   }
   },
   {
    "id": "30m-1791570600000",
    "createdAt": 1791570600000,
    "expiresAt": 1791575100000,
-   "status": "win",
    "entryAt": 1791570600000,
    "side": "BUY",
    "entry": 4196.48,
@@ -299,15 +328,21 @@
    "tp": 4211.48,
    "score": 5,
    "tf": "30m",
+   "status": "loss",
    "hit": 0,
    "hitAt": [],
    "stop": 4181.48,
    "realized": 0,
-   "pnl": 0.23,
-   "last": 4196.24,
    "closedBy": "eod",
-   "exitPrice": 4196.71,
-   "exitAt": 1791574800000
+   "exitPrice": 4196.26,
+   "exitAt": 1791574800000,
+   "pnl": -0.22,
+   "was": {
+    "status": "win",
+    "pnl": 0.23,
+    "closedBy": "eod",
+    "fix": "offset 14 Oct 2026"
+   }
   },
   {
    "id": "5m-1791765000000",
@@ -388,7 +423,6 @@
    "id": "5m-1791821400000",
    "createdAt": 1791821400000,
    "expiresAt": 1791834300000,
-   "status": "loss",
    "entryAt": 1791821400000,
    "side": "SELL",
    "entry": 4165.66,
@@ -399,15 +433,21 @@
    "tp": 4155.66,
    "score": -6,
    "tf": "5m",
+   "status": "loss",
    "hit": 0,
    "hitAt": [],
    "stop": 4175.66,
    "realized": 0,
-   "pnl": -0.71,
-   "last": 4166.99,
    "closedBy": "eod",
-   "exitPrice": 4166.370000000001,
-   "exitAt": 1791834000000
+   "exitPrice": 4166.860000000001,
+   "exitAt": 1791834000000,
+   "pnl": -1.2,
+   "was": {
+    "status": "loss",
+    "pnl": -0.71,
+    "closedBy": "eod",
+    "fix": "offset 14 Oct 2026"
+   }
   },
   {
    "id": "5m-1791853500000",
@@ -436,7 +476,6 @@
    "id": "5m-1791853800000",
    "createdAt": 1791853800000,
    "expiresAt": 1791920700000,
-   "status": "loss",
    "entryAt": 1791853800000,
    "side": "SELL",
    "entry": 4164.4,
@@ -447,21 +486,28 @@
    "tp": 4154.4,
    "score": -6,
    "tf": "5m",
-   "hit": 0,
-   "hitAt": [],
-   "stop": 4174.4,
+   "status": "win",
+   "hit": 1,
+   "hitAt": [
+    1791855900000
+   ],
+   "stop": 4164.4,
    "realized": 0,
-   "pnl": -10,
-   "last": 4167.92,
-   "closedBy": "sl",
-   "exitPrice": 4174.4,
-   "exitAt": 1791853800000
+   "closedBy": "tp",
+   "exitPrice": 4154.4,
+   "exitAt": 1791855900000,
+   "pnl": 10,
+   "was": {
+    "status": "loss",
+    "pnl": -10,
+    "closedBy": "sl",
+    "fix": "offset 14 Oct 2026"
+   }
   },
   {
    "id": "5m-1791855000000",
    "createdAt": 1791855000000,
    "expiresAt": 1791920700000,
-   "status": "win",
    "entryAt": 1791855000000,
    "side": "SELL",
    "entry": 4155.98,
@@ -472,17 +518,21 @@
    "tp": 4145.98,
    "score": -6,
    "tf": "5m",
-   "hit": 1,
-   "hitAt": [
-    1791855900000
-   ],
-   "stop": 4155.98,
+   "status": "loss",
+   "hit": 0,
+   "hitAt": [],
+   "stop": 4165.98,
    "realized": 0,
-   "pnl": 10,
-   "last": 4156.31,
-   "closedBy": "tp",
-   "exitPrice": 4145.98,
-   "exitAt": 1791855900000
+   "closedBy": "sl",
+   "exitPrice": 4165.98,
+   "exitAt": 1791856500000,
+   "pnl": -10,
+   "was": {
+    "status": "win",
+    "pnl": 10,
+    "closedBy": "tp",
+    "fix": "offset 14 Oct 2026"
+   }
   },
   {
    "id": "5m-1791856500000",
@@ -638,7 +688,6 @@
    "id": "5m-1791939600000",
    "createdAt": 1791939600000,
    "expiresAt": 1792007100000,
-   "status": "win",
    "entryAt": 1791939600000,
    "side": "SELL",
    "entry": 4155.82,
@@ -650,17 +699,21 @@
    "score": -6,
    "tf": "5m",
    "paused": true,
-   "hit": 1,
-   "hitAt": [
-    1791939600000
-   ],
-   "stop": 4155.82,
+   "status": "loss",
+   "hit": 0,
+   "hitAt": [],
+   "stop": 4165.82,
    "realized": 0,
-   "pnl": 10,
-   "last": 4151.09,
-   "closedBy": "tp",
-   "exitPrice": 4145.82,
-   "exitAt": 1791939600000
+   "closedBy": "sl",
+   "exitPrice": 4165.82,
+   "exitAt": 1791946500000,
+   "pnl": -10,
+   "was": {
+    "status": "win",
+    "pnl": 10,
+    "closedBy": "tp",
+    "fix": "offset 14 Oct 2026"
+   }
   },
   {
    "id": "5m-1791943500000",
@@ -692,7 +745,6 @@
    "id": "5m-1791958200000",
    "createdAt": 1791958200000,
    "expiresAt": 1792007100000,
-   "status": "loss",
    "entryAt": 1791958200000,
    "side": "SELL",
    "entry": 4146,
@@ -704,13 +756,23 @@
    "score": -6,
    "tf": "5m",
    "paused": true,
-   "closedBy": "sl",
-   "exitPrice": 4156,
-   "exitAt": 1791958200000,
-   "hit": 0,
-   "hitAt": [],
-   "stop": 4156,
-   "pnl": -10
+   "status": "win",
+   "hit": 1,
+   "hitAt": [
+    1791963000000
+   ],
+   "stop": 4146,
+   "realized": 0,
+   "closedBy": "tp",
+   "exitPrice": 4136,
+   "exitAt": 1791963000000,
+   "pnl": 10,
+   "was": {
+    "status": "loss",
+    "pnl": -10,
+    "closedBy": "sl",
+    "fix": "offset 14 Oct 2026"
+   }
   },
   {
    "id": "5m-1791960000000",
@@ -744,7 +806,6 @@
    "id": "5m-1791963000000",
    "createdAt": 1791963000000,
    "expiresAt": 1792007100000,
-   "status": "loss",
    "entryAt": 1791963000000,
    "side": "SELL",
    "entry": 4146.67,
@@ -756,15 +817,23 @@
    "score": -6,
    "tf": "5m",
    "paused": true,
-   "hit": 0,
-   "hitAt": [],
-   "stop": 4156.67,
+   "status": "win",
+   "hit": 1,
+   "hitAt": [
+    1791972000000
+   ],
+   "stop": 4146.67,
    "realized": 0,
-   "pnl": -10,
-   "last": 4152.65,
-   "closedBy": "sl",
-   "exitPrice": 4156.67,
-   "exitAt": 1791965700000
+   "closedBy": "tp",
+   "exitPrice": 4136.67,
+   "exitAt": 1791972000000,
+   "pnl": 10,
+   "was": {
+    "status": "loss",
+    "pnl": -10,
+    "closedBy": "sl",
+    "fix": "offset 14 Oct 2026"
+   }
   },
   {
    "id": "5m-1791967800000",
@@ -824,5 +893,5 @@
    "until": 1792368000000
   }
  },
- "updatedAt": 1791974122112
+ "updatedAt": 1791974289374
 }
