@@ -74,3 +74,33 @@ html.dark .ds-tick { animation: tmTick .7s ease-out; }
 html.dark .cc-panel { border-radius: 8px; background: var(--panel-2); }
 html.dark .cc-msg { border-radius: 6px; }
 html.dark .cc-form input { border-radius: 6px; background: var(--bg); }
+
+/* Colour back (14 Oct, user on the account tab: "ดูธรรมดาไม่มีสีสันเลย"): coloured buttons were flattened to grey by the
+   generic html.dark .btn rule above — restore them in exchange colours, and give each account section its own accent */
+html.dark .btn.gold { background: var(--gold); border-color: var(--gold); color: #0b0e11; font-weight: 700; }
+html.dark .btn.gold:hover { background: #fcd535; border-color: #fcd535; }
+html.dark .btn.line { background: #06c755; border-color: #06c755; color: #fff; font-weight: 700; }
+html.dark .btn.line:hover { background: #05b34c; }
+html.dark .btn.danger { background: var(--down-soft); border-color: rgba(246, 70, 93, .55); color: var(--down); font-weight: 700; }
+html.dark .btn.danger:hover { background: rgba(246, 70, 93, .2); }
+html.dark #setSave, html.dark #pwaPush, html.dark #shareCopy { background: var(--gold); border-color: var(--gold); color: #0b0e11; font-weight: 700; }
+html.dark .seg button.on { background: var(--gold) !important; color: #0b0e11 !important; box-shadow: none !important; }
+
+/* account: sections with a coloured top edge + tinted heading chip; readable width on very wide screens */
+html.dark #tab-account { --acc: var(--gold); max-width: 1180px; margin-inline: auto; }
+@media (min-width: 1100px) {
+  html.dark #tab-account { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+  html.dark #tab-account > * { margin-top: 0 !important; }
+  html.dark #tab-account > .profile, html.dark #tab-account > .wide, html.dark #tab-account > p, html.dark #tab-account > .admin-link { grid-column: 1 / -1; }
+}
+html.dark #tab-account > section.card { border-top: 3px solid var(--acc); }
+html.dark #tab-account > section.card:nth-of-type(2) { --acc: #a78bfa; }
+html.dark #tab-account > section.card:nth-of-type(3) { --acc: #38bdf8; }
+html.dark #tab-account > section.card:nth-of-type(4) { --acc: var(--gold); }
+html.dark #tab-account > section.card:nth-of-type(5) { --acc: #06c755; }
+html.dark #tab-account > section.card:nth-of-type(6) { --acc: #f472b6; }
+html.dark #tab-account > section.card > h3 { display: inline-flex; align-items: center; gap: 8px; color: var(--acc); }
+html.dark #tab-account > section.card > h3::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--acc); box-shadow: 0 0 10px var(--acc); }
+html.dark #tab-account > .profile { border-top: 0; background: linear-gradient(110deg, rgba(240, 185, 11, .22), rgba(240, 185, 11, .04) 45%, var(--panel) 75%); border-color: rgba(240, 185, 11, .35); }
+html.dark #tab-account .avatar.big { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--gold); }
+html.dark #tab-account .settings input:focus, html.dark #tab-account .settings select:focus { outline: 2px solid var(--gold); }
