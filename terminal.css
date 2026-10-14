@@ -13,8 +13,13 @@ html.dark body::before, html.dark body::after, html.dark #dsDust { display: none
 
 /* panels */
 html.dark .card, html.dark .quote { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: none; }
+/* status cards keep their coloured frame + soft tint (user 14 Oct: "ขอกรอบตรงนี้กลับมาแบบเดิม") */
+html.dark .signal.BUY, html.dark .sig.buy, html.dark .intra.buy { border-color: var(--up); background: linear-gradient(180deg, var(--up-soft), var(--panel) 45%); }
+html.dark .signal.SELL, html.dark .sig.sell, html.dark .intra.sell { border-color: var(--down); background: linear-gradient(180deg, var(--down-soft), var(--panel) 45%); }
+html.dark .signal.WAIT, html.dark .sig.skip { border-color: var(--wait); background: linear-gradient(180deg, rgba(240, 185, 11, .10), var(--panel) 45%); }
 html.dark .card { padding: 14px 16px; }
-html.dark .tab > .card:hover, html.dark .tab > section.card:hover { border-color: var(--line-2); box-shadow: none; transform: none; }
+html.dark .tab > .card:hover, html.dark .tab > section.card:hover { box-shadow: none; transform: none; }
+html.dark .tab > .card:not(.signal):not(.sig):not(.intra):hover { border-color: var(--line-2); }
 html.dark .tab:not([hidden]) > * { animation: dsFade .25s ease-out backwards; }
 html.dark .card h3 { font-size: 15px; font-weight: 600; }
 html.dark .sec-title { font-size: 15px; font-weight: 600; color: var(--text); margin: 18px 2px 8px; padding-left: 10px; border-left: 3px solid var(--gold); }
