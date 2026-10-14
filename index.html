@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="live.css?v=202610141600">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
-  <link rel="stylesheet" href="terminal.css?v=202610150000">
+  <link rel="stylesheet" href="terminal.css?v=202610150900">
   <link rel="stylesheet" href="splash.css?v=202610150500">
   <script>/* apply the saved theme before the first paint */ var gsT = "dark"; try { gsT = localStorage.getItem("gs-theme") === "light" ? "light" : "dark"; } catch (e) {} /* dark trading terminal = default since 14 Oct 2026 */ if (gsT === "dark") { document.getElementById("themeLight").disabled = true; document.documentElement.classList.add("dark"); document.querySelector("meta[name=theme-color]").content = "#0b0e11"; }</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -113,13 +113,14 @@
       </div>
     </header>
 
+    <!-- line icons instead of emoji (user 14 Oct: emoji menu looked "ทำเล่น", not professional) -->
     <nav class="tabbar six" id="tabbar">
-      <a href="#home" data-tab="home"><span>🎯</span>สัญญาณ</a>
-      <a href="#stats" data-tab="stats"><span>📰</span>ข่าวสหรัฐ</a>
-      <a href="#chart" data-tab="chart"><span>📈</span>กราฟ</a>
-      <a href="#zframes" data-tab="zframes"><span>📊</span>แดชบอร์ด</a>
-      <a href="#journal" data-tab="journal"><span>📓</span>สมุดเทรด</a>
-      <a href="#account" data-tab="account"><span>👤</span>บัญชี</a>
+      <a href="#home" data-tab="home"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>สัญญาณ</a>
+      <a href="#stats" data-tab="stats"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span>ข่าวสหรัฐ</a>
+      <a href="#chart" data-tab="chart"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M9 5v4"/><rect x="7" y="9" width="4" height="6" rx="1"/><path d="M9 15v2"/><path d="M17 3v2"/><rect x="15" y="5" width="4" height="8" rx="1"/><path d="M17 13v3"/></svg></span>กราฟ</a>
+      <a href="#zframes" data-tab="zframes"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span>แดชบอร์ด</a>
+      <a href="#journal" data-tab="journal"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>สมุดเทรด</a>
+      <a href="#account" data-tab="account"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.66V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.66"/></svg></span>บัญชี</a>
     </nav>
 
     <div class="install-bar" id="installBar" hidden>
@@ -542,7 +543,7 @@
 
         <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610150800 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610150900 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
