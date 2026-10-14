@@ -1,7 +1,7 @@
 // App shell: tabs, account page, sharing
 (function () {
   const $ = (id) => document.getElementById(id);
-  const TABS = ['home', 'stats', 'chart', 'zframes', 'account']; // วิธีใช้ tab removed (user, 12 Oct: "เอาวิธีใช้ออก")
+  const TABS = ['home', 'stats', 'chart', 'zframes', 'journal', 'account']; // 📓 journal added 14 Oct (journal.js) // วิธีใช้ tab removed (user, 12 Oct: "เอาวิธีใช้ออก")
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage unavailable */ } },

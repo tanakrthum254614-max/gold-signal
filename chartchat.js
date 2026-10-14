@@ -4,6 +4,8 @@
 // (window.CZ_NOW / CZ_LEVELS from chartzones.js), the others from window.CZ_TFNOW (same decide / sideInfo / brake /
 // recorded trade) and CZ_ZONES_OF (same zones / price envelope). Plus pivots (state.pivotLv, screen tf only), news
 // (state.news) and the live record (state.chartSig). No AI service, nothing sent anywhere.
+// 🤖 Coach mode (14 Oct 2026): a second mode where typed questions go to the AI coach (api/coach.mjs) with the same
+// four-timeframe snapshot, upcoming news and the member's settings attached; the server adds their trade journal.
 (function () {
   const $ = (id) => document.getElementById(id);
   const tab = $('tab-chart');
@@ -25,12 +27,12 @@
   if (!slot) return;
   slot.insertAdjacentHTML('beforeend', `
     <section class="cc-panel" id="ccPanel" aria-label="แชทถามจุดเข้า">
-      <header class="cc-head"><b>💬 ถามจุดเข้า Buy / Sell</b></header>
+      <header class="cc-head"><b id="ccTitle">💬 ถามจุดเข้า Buy / Sell</b><span class="cc-mode" id="ccMode" role="group" aria-label="โหมดแชท"><button type="button" data-mode="sys" class="on">ระบบ</button><button type="button" data-mode="ai">🤖 โค้ช AI</button></span></header>
       <div class="cc-tfs" id="ccTfs" role="group" aria-label="ถามกรอบเวลา"><span>กรอบ:</span><button type="button" data-tf="">ตามกราฟ <small id="ccScreen"></small></button>${CHAT_TFS.map((t) => `<button type="button" data-tf="${t}">${nameOf(t)}</button>`).join('')}</div>
       <div class="cc-log" id="ccLog" aria-live="polite"></div>
       <div class="cc-quick" id="ccQuick">${QUICK.map(([t, k]) => `<button type="button" data-q="${k}">${t}</button>`).join('')}</div>
       <form class="cc-form" id="ccForm"><input id="ccIn" autocomplete="off" placeholder="เช่น ซื้อที่ 4150 ได้ไหม · Sell 5 นาทีเมื่อไร"><button type="submit" class="btn">ส่ง</button></form>
-      <p class="cc-foot">ตอบจากระบบที่ทดสอบแล้ว · ไม่ใช่คำแนะนำการลงทุน</p>
+      <p class="cc-foot" id="ccFoot">ตอบจากระบบที่ทดสอบแล้ว · ไม่ใช่คำแนะนำการลงทุน</p>
     </section>`);
   const log = $('ccLog'), panel = $('ccPanel');
 
@@ -55,7 +57,48 @@
   paintTfs(); // no greeting message (user, 12 Oct: "เอาอันนี้ออก ให้กล่องถามตอบกระชับขึ้น") — an empty log shows one short hint (CSS)
   $('ccTfs').addEventListener('click', (e) => { const b = e.target.closest('button[data-tf]'); if (!b) return; target = b.dataset.tf; paintTfs(); });
   $('ccQuick').addEventListener('click', (e) => { const b = e.target.closest('button[data-q]'); if (b) ask(b.textContent, b.dataset.q); });
-  $('ccForm').addEventListener('submit', (e) => { e.preventDefault(); const t = $('ccIn').value.trim(); if (!t) return; $('ccIn').value = ''; ask(t); });
+  $('ccForm').addEventListener('submit', (e) => { e.preventDefault(); const t = $('ccIn').value.trim(); if (!t) return; $('ccIn').value = ''; if (mode === 'ai') coach(t); else ask(t); });
+  $('ccMode').addEventListener('click', (e) => { const b = e.target.closest('button[data-mode]'); if (b) setMode(b.dataset.mode); });
+
+  // ---------- 🤖 AI coach mode ----------
+  let mode = 'sys';
+  const history = [];
+  function setMode(m) {
+    mode = m;
+    $('ccMode').querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
+    panel.classList.toggle('cc-ai', m === 'ai');
+    $('ccTitle').textContent = m === 'ai' ? '🤖 พี่โค้ช AI' : '💬 ถามจุดเข้า Buy / Sell';
+    $('ccIn').placeholder = m === 'ai' ? 'เล่าให้พี่โค้ชฟัง เช่น แพ้ติดกัน 3 ไม้ ควรทำยังไง' : 'เช่น ซื้อที่ 4150 ได้ไหม · Sell 5 นาทีเมื่อไร';
+    $('ccFoot').textContent = m === 'ai' ? 'AI อ่านสัญญาณตอนนี้ + สมุดเทรดของคุณ · อาจผิดพลาดได้ · ไม่ใช่คำแนะนำการลงทุน' : 'ตอบจากระบบที่ทดสอบแล้ว · ไม่ใช่คำแนะนำการลงทุน';
+  }
+  // the coach's reply is plain text: escape, then keep line breaks and **bold**
+  const plain = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+  async function coach(text) {
+    if (busy) return;
+    busy = true;
+    say('me', esc(text));
+    say('bot', '<span class="cc-typing">พี่โค้ชกำลังคิด…</span>');
+    const wait = log.lastElementChild;
+    let signals = [];
+    try { signals = await window.GS_SIGNALS(); } catch (e) { /* send without */ }
+    const t = Date.now();
+    const news = (state.news || []).filter((x) => x.time > t - 3600e3 && x.time < t + 24 * 3600e3).slice(0, 5).map((x) => ({ title: x.title, time: `${hhmm(x.time)} น. (${x.time > t ? `อีก ${mins(x.time - t)}` : 'ออกแล้ว'})` }));
+    const st = window.UI ? UI.settings() : null;
+    try {
+      const r = await fetch('/api/coach', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin',
+        body: JSON.stringify({ message: text, history: history.slice(-8), context: { price: nowPrice(), signals, news, settings: st } }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.ok) {
+        wait.innerHTML = r.status === 402 ? `⭐ ${esc(j.error || 'สำหรับสมาชิก PRO')} — <a href="#account">ดูแพ็กเกจ</a>` : `ขอโทษครับ ${esc(j.error || 'โค้ชไม่ว่างชั่วคราว')}`;
+      } else {
+        history.push({ role: 'user', content: text }, { role: 'assistant', content: j.reply });
+        wait.innerHTML = `${plain(j.reply)}<span class="cc-at">${hhmm(Date.now())} น. · 🤖 โค้ช AI${j.left != null ? ` · เหลือ ${j.left} คำถามวันนี้` : ''}</span>`;
+      }
+    } catch (e) { wait.textContent = 'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง'; }
+    log.scrollTop = log.scrollHeight;
+    busy = false;
+  }
+  window.CC_COACH = (text) => { setMode('ai'); panel.scrollIntoView({ behavior: 'smooth', block: 'center' }); coach(text); };
 
   // ---------- one timeframe, right now ----------
   const fastCache = {}; // 5m candles when the chart isn't on 5m (refetched after 60 s)

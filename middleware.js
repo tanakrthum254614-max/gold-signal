@@ -6,6 +6,9 @@
 // store, access/push-subs.json, read by scripts/push.js), /api/visit, and the admin back office (/admin.html,
 // /api/admin/members, /api/admin/log, /api/admin/ban — ADMIN_EMAILS only), and the new-member queue (access/new-members.json).
 // Env: ACCESS_SECRET (cookie signing), CLERK_SECRET_KEY (names / emails), BLOB_READ_WRITE_TOKEN, ADMIN_EMAILS (comma list).
+// 14 Oct 2026: routes that need request bodies are Vercel Functions in api/ (journal, articles, coach, pro, pay/*; shared
+// code in lib/gs.mjs) — this file lets members through to them (next()), lets Stripe reach /api/pay/webhook, hides lib/,
+// and, when PRO_ENABLED=1, keeps the ZFrames dashboard for PRO members (proOk / proWall at the bottom).
 // NO imports on purpose: Vercel does not ship node_modules with Routing Middleware (with @vercel/blob imported, production
 // failed "Cannot find module '@vercel/blob'", and a bundled copy wouldn't load as a module). The Blob store is reached
 // with plain fetch — the same requests @vercel/blob makes (reads: the store host with ?cache=0; writes: the Blob API).
@@ -38,6 +41,8 @@ const FAPI = 'delicate-tapir-2101.clerk.accounts.dev';
 const SUBS = 'access/push-subs.json';
 // Served to everyone: the login page and what it shows / the browser asks for on its own
 const PUBLIC = /^\/(login\.html|privacy\.html|logo\.svg|favicon\.ico|manifest\.webmanifest|robots\.txt|icons\/.*)$/;
+// Stripe calls this one itself (no cookie) — api/pay/webhook.mjs refuses anything without a valid Stripe signature
+const WEBHOOK = '/api/pay/webhook';
 
 const enc = new TextEncoder();
 const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -183,6 +188,8 @@ export default async function middleware(request) {
   const url = new URL(request.url);
   const path = url.pathname;
   if (PUBLIC.test(path)) return next();
+  if (path === WEBHOOK && request.method === 'POST') return next();
+  if (path.startsWith('/lib/')) return new Response('Not found', { status: 404 }); // server code for api/ — not a page
   if (path === '/api/session' && request.method === 'POST') return session(request);
   if (path === '/api/logout') {
     return new Response(null, { status: 302, headers: { location: '/login.html?signout=1', 'set-cookie': cookieOut('', 0), 'cache-control': 'no-store' } });
@@ -204,6 +211,8 @@ export default async function middleware(request) {
   }
   if (path === '/api/push') return pushApi(request, who);
   if (path === '/api/visit' && request.method === 'POST') { await logEvent(request, who, 'visit').catch(() => {}); return json({ ok: true }); }
+  // PRO paywall (only when PRO_ENABLED=1 and PRO_FEATURES has "dashboard"): the ZFrames dashboard and its price API
+  if ((path.startsWith('/zframes/') || path.startsWith('/api/zframes/')) && !(await proOk(who, 'dashboard'))) return proWall(path);
   if (path === '/api/zframes/quotes' && request.method === 'GET') return zframesQuotes(request);
   // Back office: members and the access log — admins only (ADMIN_EMAILS)
   if (path === '/admin.html' || path.startsWith('/api/admin/')) {
@@ -343,4 +352,22 @@ async function adminMembers() {
       admin: admins().includes(email.toLowerCase()), ...s,
     };
   }));
+}
+
+// ---------- PRO (access/pro.json, written by api/pay/webhook.mjs and api/pro.mjs — same rules as lib/gs.mjs proOf) ----------
+let proCache = { at: 0, users: {} };
+async function proOk(m, feature) {
+  if (process.env.PRO_ENABLED !== '1') return true;
+  if (!(process.env.PRO_FEATURES || 'ai,dashboard').split(',').map((s) => s.trim()).includes(feature)) return true;
+  if (isAdmin(m)) return true;
+  if (Date.now() - proCache.at > 30e3) proCache = { at: Date.now(), users: (await readJson('access/pro.json', { users: {} })).users || {} };
+  const u = proCache.users[m.id];
+  return !!(u && u.until > Date.now());
+}
+function proWall(path) {
+  if (!path.endsWith('.html')) return json({ ok: false, pro: true, error: 'สำหรับสมาชิก PRO' }, 402);
+  return new Response(`<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>สมาชิก PRO</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0d1016;color:#e6e9ef;font-family:system-ui,sans-serif;text-align:center;padding:16px}a{display:inline-block;margin-top:14px;padding:10px 18px;border-radius:10px;background:#e8b64c;color:#1c2433;font-weight:700;text-decoration:none}</style></head>
+<body><div><div style="font-size:44px">⭐</div><h2>แดชบอร์ดสำหรับสมาชิก PRO</h2><p>ภาพรวมทองคำ หุ้น Nasdaq 100 · S&amp;P 500 และหุ้นปันผล อัปเดตทุกเช้า</p><a href="/#account" target="_top">ดูแพ็กเกจ PRO</a></div></body></html>`,
+  { status: 402, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
 }

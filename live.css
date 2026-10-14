@@ -628,3 +628,58 @@ body.cz-clean .charts > .legend { display: none; }
 }
 @media (min-width: 1700px) { .demo-bar { margin: 10px 28px 0; } }
 .admin-link { text-decoration: none; margin-bottom: 10px; }
+
+/* ---------- 📓 Journal · 📝 Articles · ⭐ PRO · 🤖 coach mode (14 Oct 2026, journal.js / chartchat.js) ---------- */
+#tab-journal .up, .pro-card .up { color: var(--up); } #tab-journal .down { color: var(--down); }
+#tab-journal > .card + .card { margin-top: 14px; }
+.jr-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.jr-title h3 { margin: 0; }
+.jr-tools { display: flex; gap: 6px; }
+.jr-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.jr-kpis > div { background: var(--panel-2); border-radius: 12px; padding: 10px 12px; min-width: 0; }
+.jr-kpis small { display: block; color: var(--muted); font-size: 12.5px; }
+.jr-kpis b { font-size: 22px; font-family: "IBM Plex Mono", monospace; }
+.jr-moods { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 4px; }
+.jr-moods li { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; border-bottom: 1px dashed var(--line); padding: 4px 0; }
+.jr-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px 12px; }
+.jr-form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); min-width: 0; }
+.jr-form label small { font-size: 11.5px; }
+.jr-form input, .jr-form select, .jr-form textarea { font: inherit; font-size: 15px; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; width: 100%; min-width: 0; box-sizing: border-box; }
+.jr-form textarea { resize: vertical; }
+.jr-form .jr-wide { grid-column: 1 / -1; }
+.jr-form .jr-check { flex-direction: row; align-items: center; gap: 8px; color: var(--text); font-size: 14px; }
+.jr-form .jr-check input { width: auto; }
+.jr-btns { display: flex; gap: 8px; }
+.jr-list { list-style: none; margin: 0; padding: 0; }
+.jr-item { border-bottom: 1px solid var(--line); padding: 10px 2px; }
+.jr-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.jr-res { margin-left: auto; }
+.jr-side { font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 99px; color: #fff; background: var(--up); }
+.jr-side.sell { background: var(--down); }
+.jr-note { margin: 6px 0 0; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.jr-lesson { color: var(--gold); }
+.jr-acts { display: flex; gap: 6px; margin-top: 6px; }
+.btn.act { padding: 5px 10px; font-size: 13px; }
+.jr-empty { padding: 18px 0; }
+@media (max-width: 600px) { .jr-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .jr-form { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.art { border-bottom: 1px solid var(--line); padding: 8px 0; }
+.art summary { cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; list-style: none; }
+.art summary::-webkit-details-marker { display: none; }
+.art summary small { margin-left: auto; }
+.art-tag { font-size: 12px; color: var(--muted); }
+.art-body { padding: 6px 2px 4px; font-size: 15px; overflow-wrap: anywhere; }
+.art-body h4 { margin: 12px 0 4px; } .art-body p { margin: 6px 0; } .art-body ul { margin: 6px 0; padding-left: 20px; }
+
+.pro-card { border-color: var(--gold); }
+.pro-status { font-weight: 700; color: var(--gold); margin: 0 0 6px; }
+.pro-feats { margin: 0 0 12px; padding-left: 20px; }
+.pro-plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 8px; }
+.pro-plan { background: var(--panel-2); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.pro-plan .mono { font-size: 22px; font-weight: 700; }
+
+.cc-mode { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: var(--panel-2); border: 1px solid var(--line); }
+.cc-mode button { border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 12.5px; padding: 3px 9px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
+.cc-mode button.on { background: var(--gold); color: #1c2433; font-weight: 700; }
+.cc-ai .cc-quick, .cc-ai .cc-tfs { display: none; }
+.cc-ai .cc-log:empty::before { content: "เล่าให้พี่โค้ชฟังได้เลย — ขาดทุน หัวร้อน หรืออยากให้ช่วยดูสมุดเทรด"; }

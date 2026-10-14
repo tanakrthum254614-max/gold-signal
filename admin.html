@@ -64,6 +64,19 @@
       tr.click:hover td { background: none; }
     }
     [hidden] { display: none !important; }
+    /* 📝 articles editor · ⭐ PRO (14 Oct 2026) */
+    .tabs { flex-wrap: wrap; }
+    .ed { display: grid; gap: 10px; margin-bottom: 14px; }
+    .ed input, .ed select, .ed textarea { font: inherit; font-size: 15px; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; width: 100%; box-sizing: border-box; }
+    .ed textarea { min-height: 220px; resize: vertical; }
+    .ed .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .ed .row select, .ed .row input[type=number] { width: auto; }
+    .ed label.chk { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; }
+    .btn.gold { background: var(--gold-bg); border-color: transparent; color: #1c2433; }
+    .art-row { display: flex; gap: 10px; align-items: center; padding: 10px 2px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+    .art-row b { flex: 1; min-width: 200px; }
+    .preview { border: 1px dashed var(--line); border-radius: 12px; padding: 10px 14px; }
+    .preview h4 { margin: 10px 0 4px; } .preview p { margin: 6px 0; }
   </style>
 </head>
 <body>
@@ -75,7 +88,7 @@
   </header>
   <main>
     <div class="tiles" id="tiles"></div>
-    <div class="tabs" id="tabs"><button type="button" class="on" data-tab="members">👥 สมาชิก</button><button type="button" data-tab="log">📋 บันทึกการเข้าใช้</button></div>
+    <div class="tabs" id="tabs"><button type="button" class="on" data-tab="members">👥 สมาชิก</button><button type="button" data-tab="log">📋 บันทึกการเข้าใช้</button><button type="button" data-tab="articles">📝 บทความ</button><button type="button" data-tab="pro">⭐ PRO</button></div>
 
     <section class="card" id="membersPane">
       <div class="filters">
@@ -108,7 +121,41 @@
       </table></div>
       <p class="note">เก็บล่าสุด 5,000 รายการ · ที่อยู่มาจาก Vercel (ประเทศ/เมืองโดยประมาณ) ไม่ได้เก็บ IP</p>
     </section>
+    <section class="card" id="articlesPane" hidden>
+      <form class="ed" id="aForm">
+        <input id="aTitle" maxlength="140" placeholder="หัวข้อบทความ" required>
+        <textarea id="aBody" maxlength="20000" placeholder="เนื้อหา — ขึ้นบรรทัดใหม่ได้ · ## หัวข้อย่อย · **ตัวหนา** · - รายการ · วางลิงก์ได้" required></textarea>
+        <div class="row">
+          <select id="aTag"><option value="analysis">📈 บทวิเคราะห์</option><option value="lesson">🎓 ความรู้</option><option value="news">📰 ข่าว</option><option value="update">🔔 อัปเดตระบบ</option></select>
+          <label class="chk"><input type="checkbox" id="aPub" checked> เผยแพร่ทันที</label>
+          <label class="chk"><input type="checkbox" id="aPin"> 📌 ปักหมุด</label>
+          <button class="btn gold" type="submit" id="aSave">บันทึก</button>
+          <button class="btn" type="button" id="aNew" hidden>+ เขียนเรื่องใหม่</button>
+          <button class="btn" type="button" id="aPrev">👁 ดูตัวอย่าง</button>
+        </div>
+        <div class="preview" id="aPreview" hidden></div>
+      </form>
+      <div id="aList"></div>
+      <p class="note">บทความขึ้นแท็บ “ข่าวสหรัฐ” ของสมาชิกทันทีที่บันทึก (ไม่ต้อง deploy) · บทความล่าสุด 2 เรื่องที่เผยแพร่ ถูกส่งให้โค้ช AI ใช้ประกอบคำตอบด้วย</p>
+    </section>
+
+    <section class="card" id="proPane" hidden>
+      <p id="pState" class="note" style="margin-top:0"></p>
+      <form class="ed" id="pForm"><div class="row">
+        <select id="pWho" style="flex:1;min-width:220px"></select>
+        <input id="pDays" type="number" min="1" max="3650" value="30"> <span>วัน</span>
+        <button class="btn gold" type="submit">⭐ ให้สิทธิ์ / ต่ออายุ</button>
+      </div></form>
+      <div class="table-wrap"><table>
+        <thead><tr><th>สมาชิก</th><th>ถึงวันที่</th><th>แบบ</th><th>ช่องทาง</th><th>จัดการ</th></tr></thead>
+        <tbody id="pBody"></tbody>
+      </table></div>
+      <h3 style="margin:18px 0 6px;font-size:15px">ประวัติการชำระ / ให้สิทธิ์</h3>
+      <div class="table-wrap"><table><tbody id="pHist"></tbody></table></div>
+      <p class="note">บัตรและ PromptPay ผ่าน Stripe เปิดสิทธิ์อัตโนมัติ · ช่องนี้ใช้ให้สิทธิ์เอง เช่น โอนเงินตรง หรือแจก</p>
+    </section>
   </main>
+  <script src="journal.js?v=202610140100"></script>
   <script>
     const $ = (id) => document.getElementById(id);
     const DAY = 864e5;
@@ -192,7 +239,93 @@
     function tab(t) {
       document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
       $('membersPane').hidden = t !== 'members'; $('logPane').hidden = t !== 'log';
+      $('articlesPane').hidden = t !== 'articles'; $('proPane').hidden = t !== 'pro';
+      if (t === 'articles') loadArticles();
+      if (t === 'pro') loadPro();
     }
+    async function api(path, opt = {}) {
+      const r = await fetch(path, { ...opt, headers: { 'content-type': 'application/json' }, cache: 'no-store' });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || j.ok === false) throw new Error(j.error || `ผิดพลาด ${r.status}`);
+      return j;
+    }
+
+    // ---------- 📝 Articles (api/articles.mjs) ----------
+    let articles = [], editId = null;
+    const TAG = { analysis: '📈 บทวิเคราะห์', lesson: '🎓 ความรู้', news: '📰 ข่าว', update: '🔔 อัปเดตระบบ' };
+    function renderArticles() {
+      $('aList').innerHTML = articles.length ? articles.map((a) => `<div class="art-row" data-id="${esc(a.id)}">
+        <span class="pill ${a.published ? 'login' : 'visit'}">${a.published ? 'เผยแพร่' : 'ร่าง'}</span>${a.pinned ? '📌' : ''}
+        <b>${esc(a.title)}</b><small class="note" style="margin:0">${TAG[a.tag] || ''} · ${when(a.updated)}</small>
+        <button class="btn act" type="button" data-a="edit">แก้ไข</button><button class="btn act danger" type="button" data-a="del">ลบ</button></div>`).join('')
+        : '<p class="empty">ยังไม่มีบทความ</p>';
+    }
+    function editArticle(a) {
+      editId = a ? a.id : null;
+      $('aTitle').value = a ? a.title : ''; $('aBody').value = a ? a.body : '';
+      $('aTag').value = a ? a.tag : 'analysis'; $('aPub').checked = a ? a.published : true; $('aPin').checked = a ? a.pinned : false;
+      $('aSave').textContent = a ? 'บันทึกการแก้ไข' : 'บันทึก'; $('aNew').hidden = !a; $('aPreview').hidden = true;
+    }
+    async function loadArticles() {
+      try { articles = (await api('/api/articles?all=1')).items; renderArticles(); } catch (e) { $('aList').innerHTML = `<p class="empty err">${esc(e.message)}</p>`; }
+    }
+    $('aForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const article = { id: editId || undefined, title: $('aTitle').value, body: $('aBody').value, tag: $('aTag').value, published: $('aPub').checked, pinned: $('aPin').checked };
+      $('aSave').disabled = true;
+      try { articles = (await api('/api/articles', { method: editId ? 'PUT' : 'POST', body: JSON.stringify({ article }) })).items; renderArticles(); editArticle(null); }
+      catch (err) { alert(err.message); }
+      $('aSave').disabled = false;
+    });
+    $('aNew').addEventListener('click', () => editArticle(null));
+    $('aPrev').addEventListener('click', () => {
+      const p = $('aPreview'); p.hidden = !p.hidden;
+      if (!p.hidden) p.innerHTML = `<h3 style="margin:4px 0">${esc($('aTitle').value)}</h3>${window.GS_MD ? GS_MD($('aBody').value) : esc($('aBody').value)}`;
+    });
+    $('aList').addEventListener('click', async (e) => {
+      const b = e.target.closest('button[data-a]'); if (!b) return;
+      const a = articles.find((x) => x.id === b.closest('[data-id]').dataset.id);
+      if (b.dataset.a === 'edit') { editArticle(a); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+      if (!confirm(`ลบบทความ “${a.title}”?`)) return;
+      try { articles = (await api(`/api/articles?id=${encodeURIComponent(a.id)}`, { method: 'DELETE' })).items; renderArticles(); } catch (err) { alert(err.message); }
+    });
+
+    // ---------- ⭐ PRO (api/pro.mjs) ----------
+    let pro = { users: {}, history: [] };
+    const SRC = { card: '💳 บัตร', promptpay: '📱 PromptPay', admin: '🛠️ แอดมิน' };
+    const nameOf = (id) => { const m = members.find((x) => x.id === id); return m ? `${m.name || ''} ${m.email}`.trim() : id; };
+    const HT = { promptpay: '📱 จ่าย PromptPay', subscribe: '💳 สมัครแบบบัตร', renew: '💳 ต่ออายุ', cancel: '✕ ยกเลิก', update: 'อัปเดต', grant: '⭐ แอดมินให้สิทธิ์', revoke: '✕ แอดมินยกเลิก' };
+    async function loadPro() {
+      try {
+        const [st, list] = await Promise.all([api('/api/pro'), api('/api/pro?list=1')]);
+        pro = list;
+        const pr = st.prices || {};
+        const priceTxt = ['month', 'year'].map((k) => (pr[k] ? `${k === 'month' ? 'เดือน' : 'ปี'} ${(pr[k].amount / 100).toLocaleString('th-TH')} ${esc(pr[k].currency.toUpperCase())}` : '')).filter(Boolean).join(' · ') || 'ยังไม่ตั้ง';
+        $('pState').innerHTML = `ระบบเก็บเงิน: <b>${st.enabled ? '🟢 เปิด (PRO_ENABLED=1)' : '⚪ ปิด — ทุกคนใช้ฟีเจอร์ PRO ได้ฟรี'}</b> · PRO ปลดล็อก: ${esc(st.features.join(', '))} · ราคาใน Stripe: ${priceTxt}`;
+        $('pWho').innerHTML = members.filter((m) => !m.admin).map((m) => `<option value="${esc(m.id)}">${esc(m.name || '—')} · ${esc(m.email)}</option>`).join('');
+        const rows = Object.entries(pro.users).sort((a, b) => b[1].until - a[1].until);
+        $('pBody').innerHTML = rows.length ? rows.map(([id, u]) => `<tr><td class="wide" data-l="สมาชิก">${esc(nameOf(id))}</td>
+          <td data-l="ถึงวันที่">${when(u.until)}<small>${u.until > Date.now() ? '🟢 ใช้งานอยู่' : 'หมดแล้ว'}</small></td>
+          <td data-l="แบบ">${u.plan === 'year' ? 'รายปี' : u.plan === 'month' ? 'รายเดือน' : '—'}${u.sub ? '<small>ต่ออายุอัตโนมัติ</small>' : ''}</td>
+          <td data-l="ช่องทาง">${SRC[u.source] || esc(u.source || '')}</td>
+          <td class="wide">${u.until > Date.now() ? `<button class="btn act danger" type="button" data-revoke="${esc(id)}">ยกเลิกสิทธิ์</button>` : ''}</td></tr>`).join('')
+          : '<tr><td colspan="5" class="empty">ยังไม่มีสมาชิก PRO</td></tr>';
+        $('pHist').innerHTML = pro.history.slice(0, 100).map((h) => `<tr><td data-l="เวลา">${when(h.at)}</td><td data-l="ใคร">${esc(nameOf(h.uid))}</td>
+          <td data-l="รายการ">${HT[h.type] || esc(h.type)}${h.days ? ` ${h.days} วัน` : ''}${h.amount ? ` · ${(h.amount / 100).toLocaleString('th-TH')} ${esc((h.currency || '').toUpperCase())}` : ''}${h.by ? `<small>${esc(h.by)}</small>` : ''}</td></tr>`).join('')
+          || '<tr><td class="empty">ยังไม่มี</td></tr>';
+      } catch (e) { $('pState').textContent = e.message; }
+    }
+    $('pForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const uid = $('pWho').value, days = +$('pDays').value;
+      if (!uid || !confirm(`ให้สิทธิ์ PRO ${days} วัน แก่ ${nameOf(uid)}?`)) return;
+      try { await api('/api/pro', { method: 'POST', body: JSON.stringify({ uid, days }) }); loadPro(); } catch (err) { alert(err.message); }
+    });
+    $('pBody').addEventListener('click', async (e) => {
+      const b = e.target.closest('button[data-revoke]'); if (!b) return;
+      if (!confirm(`ยกเลิกสิทธิ์ PRO ของ ${nameOf(b.dataset.revoke)} ตอนนี้?`)) return;
+      try { await api('/api/pro', { method: 'POST', body: JSON.stringify({ uid: b.dataset.revoke, revoke: true }) }); loadPro(); } catch (err) { alert(err.message); }
+    });
     $('tabs').addEventListener('click', (e) => e.target.dataset.tab && tab(e.target.dataset.tab));
     // Suspend / restore: signs the member out within ~30 s and blocks new sign-ins (Clerk ban)
     async function act(btn) {
