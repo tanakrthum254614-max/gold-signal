@@ -19,13 +19,13 @@
     W = innerWidth; H = innerHeight;
     cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const n = small() ? 18 : 42;
+    const n = small() ? 30 : 80;
     dots = Array.from({ length: n }, () => spawn(true));
   }
   function spawn(anywhere) {
     return {
       x: Math.random() * W, y: anywhere ? Math.random() * H : H + 10,
-      r: 0.6 + Math.random() * 1.8, vy: 6 + Math.random() * 16, vx: -4 + Math.random() * 8,
+      r: 0.8 + Math.random() * 2.4, vy: 6 + Math.random() * 16, vx: -4 + Math.random() * 8,
       t: Math.random() * Math.PI * 2, tw: 0.6 + Math.random() * 1.6,
     };
   }
@@ -38,7 +38,7 @@
     for (const d of dots) {
       d.y -= d.vy * dt; d.x += d.vx * dt + Math.sin(d.t) * 0.15; d.t += d.tw * dt;
       if (d.y < -10 || d.x < -10 || d.x > W + 10) Object.assign(d, spawn(false));
-      const a = 0.25 + 0.35 * (0.5 + 0.5 * Math.sin(d.t * 2)); // twinkle
+      const a = 0.35 + 0.5 * (0.5 + 0.5 * Math.sin(d.t * 2)); // twinkle
       const g = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.r * 4);
       g.addColorStop(0, `rgba(240, 180, 41, ${a})`);
       g.addColorStop(1, 'rgba(240, 180, 41, 0)');
