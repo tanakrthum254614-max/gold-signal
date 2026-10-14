@@ -1,0 +1,67 @@
+/* Loading screen as a broker app booting (14 Oct 2026). Same look in both themes (dark, like the terminal). The old
+   lightning-logo splash rules in live.css / theme.css no longer match anything except .splash itself. */
+.splash.bk {
+  --bk-bg: #0b0e11; --bk-panel: #161a1e; --bk-line: #2b3139; --bk-text: #eaecef; --bk-muted: #848e9c;
+  --bk-gold: #f0b90b; --bk-up: #0ecb81; --bk-down: #f6465d;
+  justify-content: space-between; align-items: stretch; gap: 0; padding: 0; text-align: left;
+  background: radial-gradient(70% 55% at 50% 42%, rgba(240, 185, 11, .10), transparent 70%), var(--bk-bg); color: var(--bk-text);
+}
+.bk-chart { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .55; pointer-events: none; }
+.bk-top, .bk-foot { position: relative; z-index: 1; }
+
+/* top bar */
+.bk-top { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--bk-line); background: rgba(22, 26, 30, .85); }
+.bk-brand { display: inline-flex; align-items: center; gap: 10px; font-size: 17px; }
+.bk-pill { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 4px; background: rgba(240, 185, 11, .12); color: var(--bk-gold); }
+.bk-pill i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: bkBlink 1s ease-in-out infinite; }
+.bk-pill.live { background: rgba(14, 203, 129, .12); color: var(--bk-up); }
+.bk-pill.live i { animation: pulse 1.4s infinite; }
+@keyframes bkBlink { 50% { opacity: .2; } }
+
+/* ticker card */
+.bk-card { position: relative; z-index: 1; align-self: center; width: min(440px, calc(100% - 32px)); padding: 22px 24px 18px; border-radius: 12px;
+  background: rgba(22, 26, 30, .92); border: 1px solid var(--bk-line); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, .9), 0 0 0 1px rgba(240, 185, 11, .06);
+  animation: bkIn .6s cubic-bezier(.22, .9, .3, 1) both; }
+@keyframes bkIn { from { opacity: 0; transform: translateY(16px) scale(.98); } to { opacity: 1; transform: none; } }
+.bk-sym { display: flex; align-items: center; gap: 12px; }
+.bk-sym b { display: block; font-size: 16px; letter-spacing: .3px; }
+.bk-sym small { color: var(--bk-muted); font-size: 12px; }
+.bk-flag { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 14px; color: #3a2a05;
+  background: radial-gradient(circle at 35% 30%, #fff1b8, #f0b90b 55%, #a8720a); box-shadow: 0 0 18px rgba(240, 185, 11, .45); }
+.bk-tag { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--bk-muted); border: 1px solid var(--bk-line); border-radius: 4px; padding: 2px 6px; }
+.bk-px { margin-top: 16px; font-size: 44px; font-weight: 700; letter-spacing: -.5px; line-height: 1.1; color: var(--bk-text); font-variant-numeric: tabular-nums; transition: color .4s; }
+.bk-px.rolling { color: #5e6673; filter: blur(6px); } /* rolling digits are not a price — blurred so nobody reads one */
+.bk-px.up { color: var(--bk-up); } .bk-px.down { color: var(--bk-down); }
+.bk-px.land { animation: bkLand .5s ease-out; }
+@keyframes bkLand { 0% { transform: translateY(-6px); text-shadow: 0 0 22px rgba(240, 185, 11, .7); } 100% { transform: none; text-shadow: none; } }
+.bk-chg { margin-top: 4px; font-size: 14px; color: var(--bk-muted); min-height: 1.4em; }
+.bk-chg.up { color: var(--bk-up); } .bk-chg.down { color: var(--bk-down); }
+
+/* connection steps */
+.bk-steps { margin-top: 18px; border-top: 1px solid var(--bk-line); padding-top: 10px; display: grid; gap: 2px; }
+.bk-steps div { display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: 10px; padding: 7px 0; font-size: 14px; color: var(--bk-muted); transition: color .3s; }
+.bk-steps i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--bk-line); box-sizing: border-box; position: relative; }
+.bk-steps em { font-style: normal; font-size: 12px; color: #5e6673; }
+.bk-steps .on { color: var(--bk-text); }
+.bk-steps .on i { border-color: var(--bk-gold); border-top-color: transparent; animation: spin .7s linear infinite; }
+.bk-steps .done { color: var(--bk-text); }
+.bk-steps .done i { border: 0; background: var(--bk-up); }
+.bk-steps .done i::after { content: ""; position: absolute; left: 4.5px; top: 2px; width: 3px; height: 7px; border: solid #0b0e11; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.bk-steps .done em { color: var(--bk-up); }
+
+/* progress */
+.bk-foot { padding: 0 20px 18px; }
+.bk-bar { height: 3px; border-radius: 3px; background: var(--bk-line); overflow: hidden; }
+.bk-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #c99400, var(--bk-gold), #fcd535); box-shadow: 0 0 10px rgba(240, 185, 11, .8); transition: width .15s linear; }
+.bk-foot-row { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--bk-muted); }
+.bk-foot-row .mono { color: var(--bk-gold); font-weight: 700; }
+
+/* finish: the card lifts away */
+.splash.bk.done .bk-card { animation: bkOut .7s ease-in forwards; }
+@keyframes bkOut { to { opacity: 0; transform: translateY(-12px) scale(1.02); } }
+
+@media (max-width: 520px) {
+  .bk-top { padding: 12px 14px; } .bk-foot { padding: 0 14px 14px; }
+  .bk-card { padding: 18px 16px 14px; } .bk-px { font-size: 36px; }
+}
+@media (prefers-reduced-motion: reduce) { .bk-chart { display: none; } }

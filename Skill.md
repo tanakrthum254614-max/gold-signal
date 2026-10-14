@@ -365,6 +365,13 @@ gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=fal
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 🚀 หน้าโหลดแบบแอปโบรกเกอร์ (14 ต.ค. 2569 · เวอร์ชัน 202610150100)
+- ผู้ใช้: "เปลี่ยนหน้าแรกให้สมจริงและออกแบบใหม่ มันดูธรรมดาไป" → ถาม: หน้าไหน = **หน้าโหลดตอนเปิดเว็บ** ("หน้าตอนโหลด"), สมจริงแบบ = **เหมือนแอปโบรกเกอร์จริง**
+- index.html `#splash.splash.bk` ใหม่ทั้งหมด (ลบโลโก้ฟ้าผ่า/วงแหวน/ประกาย): `.bk-top` โลโก้ + `#bkPill` (กำลังเชื่อมต่อ → `.live` "LIVE · เชื่อมต่อแล้ว") · `.bk-card` XAU/USD + `#bkPx` + `#bkChg` + `#splashChips` 3 ขั้น (data-at 60/80/100: วงหมุน → ติ๊กเขียว) · `.bk-foot` `#splashBar` + `#splashPct` · `canvas#bkChart`
+- `splash.css` (โหลดหลัง terminal.css, สีของตัวเองเหมือนกันทั้ง 2 ธีม) · CSS หน้าโหลดเก่าใน live.css/theme.css (.sp-*) ไม่ได้ใช้แล้ว (ยังไม่ลบ)
+- auth.js SPLASH (API เดิม step/show/hide): ตัวเลขหมุนสุ่มทุก 70ms **สีเทา + blur 6px (ไม่ให้ใครอ่านเป็นราคา)** จนกว่า `#lvPrice` ที่ main.js เขียนจะมีตัวเลข → แสดงราคาจริง + สี/ข้อความจาก `#lvChg` · กราฟพื้นหลัง = random walk ประกอบ (ไม่ใช่ข้อมูลตลาด) หยุดเมื่อ .gone · reduced-motion ไม่วาดกราฟ · MIN_MS 1200
+- ทดสอบ `gold-signal-tools/boot.cjs` (หน่วง investing 2 วิ): 45% ยังหมุน/กำลังเชื่อมต่อ → ได้ราคา 4,125.45 + LIVE → ปิด · 1440/390 ไม่ล้น ไม่มี error · ภาพ compare/boot-new-*.png
+
 ## 📱 มือถือสัดส่วนเล็กลง (14 ต.ค. 2569 · เวอร์ชัน 202610150000)
 - ผู้ใช้: "ได้แล้ว ขอให้ทำสัดส่วนให้เหมาะการเปิดในโทรศัพท์ด้วย เปิดในโทรศัพท์ดูใหญ่ไป" → วัด `gold-signal-tools/mob.cjs`: body 16px เท่าคอม, การ์ด padding 14/16, ตัวเลข 28–40px
 - ท้าย terminal.css `@media (max-width: 600px)` ใช้ `:is(html, html.dark)` (specificity เท่า html.dark + มาทีหลัง = ชนะ ทั้ง 2 ธีม): body 14px · การ์ด 12px radius 10 · h3/.sec-title 14 · ปุ่ม 13 · lv-price 30 · price 26 · action 28 · sm-score 32 · sig-side 26 · intra/s15-call 19 · dn-center 24 · lt-pnl 26 · st-title/kpi 18 (big 24) · ns-count 24 · jr-kpis 18 · tabbar 11px/ไอคอน 19 · **input/select/textarea คง 16px (กัน iPhone ซูม)** · ห้ามใช้ CSS zoom (พิกัดกราฟเพี้ยน)
