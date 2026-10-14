@@ -67,3 +67,53 @@ html.dark .sp-title { background-size: 220% 100%; animation: spShine 3.2s linear
 html.dark .sp-title span { background-size: inherit; }
 @keyframes spShine { to { background-position: -220% 0; } }
 @media (prefers-reduced-motion: reduce) { .sp-panel::after, html.dark .sp-title { animation: none; } }
+
+/* ===== Round 2 (14 Oct, user: "ไม่ต่างจากเดิมเลย แค่มีกรอบ … มีอนิเมชั่นมากขึ้น … เกี่ยวกับกราฟแท่งเทียน") ===== */
+/* live candlestick chart streaming behind everything (splashfx.js) replaces the static .sp-market candles */
+.sp-market { display: none !important; }
+.sp-candles { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: .9;
+  -webkit-mask-image: linear-gradient(to top, #000 0%, #000 35%, transparent 75%); mask-image: linear-gradient(to top, #000 0%, #000 35%, transparent 75%); }
+
+/* panel: unfolds from a line of gold light, then a light runs around its border */
+@property --spa { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.sp-panel { height: 575px !important; animation: spUnfold 1.1s cubic-bezier(.7, 0, .2, 1) both !important; border: 1.5px solid transparent !important; }
+html.dark .sp-panel { background:
+    linear-gradient(160deg, rgba(20, 22, 27, .82), rgba(12, 14, 18, .78) 50%, rgba(28, 22, 8, .8)) padding-box,
+    conic-gradient(from var(--spa), rgba(240, 185, 11, .08) 0deg, rgba(240, 185, 11, .08) 250deg, #f0b90b 300deg, #fff3c4 320deg, #f0b90b 340deg, rgba(240, 185, 11, .08) 360deg) border-box !important;
+  animation: spUnfold 1.1s cubic-bezier(.7, 0, .2, 1) both, spBorder 3.6s linear 1.1s infinite !important; }
+@keyframes spBorder { to { --spa: 360deg; } }
+@keyframes spUnfold {
+  0% { clip-path: inset(50% 50% 50% 50% round 28px); opacity: 0; }
+  35% { clip-path: inset(calc(50% - 1px) 0 calc(50% - 1px) 0 round 28px); opacity: 1; }
+  100% { clip-path: inset(0 0 0 0 round 28px); opacity: 1; } }
+@media (max-width: 520px) { .sp-panel { height: 520px !important; } }
+
+/* progress = candles forming one by one under the % */
+.sp-cbar { position: relative; z-index: 1; display: flex; align-items: stretch; width: 312px; height: 72px; margin: 14px auto 0; animation: fadeUp .6s 1.4s both; }
+.sp-cbar i { position: relative; flex: 1; margin: 0 2px; }
+.sp-cbar i::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 2px; border-radius: 2px; background: rgba(255, 255, 255, .07); } /* empty slot */
+.sp-cbar b, .sp-cbar s { position: absolute; transform: scaleY(0); transform-origin: 50% 100%; }
+.sp-cbar b { left: calc(50% - .75px); width: 1.5px; top: var(--wt); height: var(--wh); transition: transform .25s ease-out; }
+.sp-cbar s { left: 12%; right: 12%; top: var(--bt); height: var(--bh); border-radius: 1.5px; transition: transform .4s cubic-bezier(.2, 1.4, .4, 1) .12s; }
+.sp-cbar .cu b, .sp-cbar .cu s { background: #0ecb81; box-shadow: 0 0 8px rgba(14, 203, 129, .55); }
+.sp-cbar .cd b, .sp-cbar .cd s { background: #f6465d; box-shadow: 0 0 8px rgba(246, 70, 93, .55); }
+.sp-cbar .on b, .sp-cbar .on s { transform: scaleY(1); }
+.sp-cbar .live b { transform: scaleY(.6); animation: spLive .45s ease-in-out infinite alternate; background: #f0b90b; box-shadow: 0 0 10px rgba(240, 185, 11, .9); }
+.sp-cbar .live s { transform: scaleY(.3); animation: spLive .45s ease-in-out infinite alternate-reverse; background: #f0b90b; box-shadow: 0 0 12px rgba(240, 185, 11, .9); }
+@keyframes spLive { from { transform: scaleY(.25); } to { transform: scaleY(.85); } }
+.splash.done .sp-cbar { transition: opacity .6s ease, transform .6s ease; opacity: 0; transform: translateY(-8px); }
+@media (max-width: 520px) { .sp-cbar { width: 264px; height: 62px; } }
+
+/* tagline types itself, with a caret */
+.splash .sp-sub { position: relative; display: inline-block; align-self: center; white-space: nowrap; animation: spType 1.4s steps(24, end) 1.2s both !important; }
+.splash .sp-sub::after { content: ""; position: absolute; right: -6px; top: 15%; bottom: 15%; width: 2px; background: #f0b90b; animation: spCaret .8s step-end infinite; }
+@keyframes spType { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes spCaret { 50% { opacity: 0; } }
+
+/* chips pop up one after another */
+.sp-chips { animation: none !important; }
+.sp-chips li { animation: spChip .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+.sp-chips li:nth-child(1) { animation-delay: 1.9s; } .sp-chips li:nth-child(2) { animation-delay: 2.05s; } .sp-chips li:nth-child(3) { animation-delay: 2.2s; }
+@keyframes spChip { from { opacity: 0; transform: translateY(12px) scale(.9); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) { .sp-panel, .sp-cbar, .splash .sp-sub, .sp-chips li { animation: none !important; } .sp-cbar b, .sp-cbar s { transition: none; } }
