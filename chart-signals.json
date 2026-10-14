@@ -867,7 +867,7 @@
    "id": "5m-1791969300000",
    "createdAt": 1791969300000,
    "expiresAt": 1792007100000,
-   "status": "active",
+   "status": "loss",
    "entryAt": 1791969300000,
    "side": "SELL",
    "entry": 4142.16,
@@ -883,8 +883,11 @@
    "hitAt": [],
    "stop": 4152.16,
    "realized": 0,
-   "pnl": -8.45,
-   "last": 4150.610000000001
+   "pnl": -10,
+   "last": 4150.610000000001,
+   "closedBy": "sl",
+   "exitPrice": 4152.16,
+   "exitAt": 1791980100000
   }
  ],
  "brakes": {
@@ -893,5 +896,5 @@
    "until": 1792368000000
   }
  },
- "updatedAt": 1791980121273
+ "updatedAt": 1791980421969
 }
