@@ -303,7 +303,9 @@
    ],
    "source": "investing.com",
    "alerts": {
-    "entry": 1791938361984
+    "entry": 1791938361984,
+    "tp1": 1791944421215,
+    "exit": 1791944421215
    },
    "market": true,
    "side": "SELL",
@@ -316,22 +318,31 @@
    ],
    "tp": 4146.72,
    "stars": 4,
-   "status": "active",
-   "entryAt": 1791938361984
+   "status": "win",
+   "entryAt": 1791938361984,
+   "closedBy": "be",
+   "exitPrice": 4161.72,
+   "exitAt": 1791943200000,
+   "hit": 1,
+   "hitAt": [
+    1791941400000
+   ],
+   "stop": 4161.72,
+   "pnl": 5
   }
  ],
- "updatedAt": 1791938361984,
+ "updatedAt": 1791944421215,
  "summary": {
-  "total": 7,
-  "traded": 7,
-  "wins": 4,
+  "total": 8,
+  "traded": 8,
+  "wins": 5,
   "losses": 3,
   "expired": 0,
-  "winRate": 57,
-  "pnl": 34.85,
-  "gross": 37.65,
+  "winRate": 63,
+  "pnl": 39.45,
+  "gross": 42.65,
   "spread": 0.4,
-  "avg": 4.98,
+  "avg": 4.93,
   "bestWin": 21.67,
   "worstLoss": -15,
   "last": [
@@ -622,9 +633,51 @@
     "hitAt": [],
     "stop": 4179.96,
     "pnl": -15
+   },
+   {
+    "id": "2026-10-14",
+    "createdAt": 1791938361984,
+    "expiresAt": 1792007100000,
+    "rule": "market-trend",
+    "trendScore": -4,
+    "priceAtSignal": 4161.72,
+    "advisory": true,
+    "why": [
+     "investing.com วิเคราะห์ 8 ช่วงเวลา: บอก “ลง” 6 · “ขึ้น” 1",
+     "แนวโน้ม ระยะสั้น ไซด์เวย์ · ระยะกลาง ขาลงแรง · ระยะยาว ขาลงแรง",
+     "ทองแกว่งเฉลี่ยวันละ ~$77.07"
+    ],
+    "source": "investing.com",
+    "alerts": {
+     "entry": 1791938361984,
+     "tp1": 1791944421215,
+     "exit": 1791944421215
+    },
+    "market": true,
+    "side": "SELL",
+    "entry": 4161.72,
+    "sl": 4176.72,
+    "tps": [
+     4146.72,
+     4141.72,
+     4131.72
+    ],
+    "tp": 4146.72,
+    "stars": 4,
+    "status": "win",
+    "entryAt": 1791938361984,
+    "closedBy": "be",
+    "exitPrice": 4161.72,
+    "exitAt": 1791943200000,
+    "hit": 1,
+    "hitAt": [
+     1791941400000
+    ],
+    "stop": 4161.72,
+    "pnl": 5
    }
   ],
-  "tp1": 3,
+  "tp1": 4,
   "tp2": 3,
   "tp3": 3
  }
