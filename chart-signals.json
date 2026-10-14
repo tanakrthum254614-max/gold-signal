@@ -839,7 +839,6 @@
    "id": "5m-1791967800000",
    "createdAt": 1791967800000,
    "expiresAt": 1792007100000,
-   "status": "win",
    "entryAt": 1791967800000,
    "side": "SELL",
    "entry": 4150.17,
@@ -851,17 +850,21 @@
    "score": -6,
    "tf": "5m",
    "paused": true,
-   "hit": 1,
-   "hitAt": [
-    1791968100000
-   ],
-   "stop": 4150.17,
+   "status": "loss",
+   "hit": 0,
+   "hitAt": [],
+   "stop": 4160.17,
    "realized": 0,
-   "pnl": 10,
-   "last": 4144.58,
-   "closedBy": "tp",
-   "exitPrice": 4140.17,
-   "exitAt": 1791968100000
+   "closedBy": "sl",
+   "exitPrice": 4160.17,
+   "exitAt": 1791980700000,
+   "pnl": -10,
+   "was": {
+    "status": "win",
+    "pnl": 10,
+    "closedBy": "tp",
+    "fix": "offset 14 Oct 2026"
+   }
   },
   {
    "id": "5m-1791969300000",
@@ -896,5 +899,5 @@
    "until": 1792368000000
   }
  },
- "updatedAt": 1791980421969
+ "updatedAt": 1791981097710
 }
