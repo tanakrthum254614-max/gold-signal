@@ -11,10 +11,10 @@
 
   // Progress ring (r = 72) + a counting percentage — no step texts (user, 12 Oct: too many words on the loading screen)
   const RING = 2 * Math.PI * 72;
-  // Shown for at least MIN_MS so the logo animation plays once (14 Oct: 1200 → 2800 → 4000 → 6000 → 8000 ms — the user
-  // asked for slower four times: "ช้านิดนึง", "ช้ากว่านี้อีกนิด", "ช้ากว่านี้อีก", "ให้หน่วงกว่านี้"). The ring (and the
-  // loading candles, splashfx.js) can't run ahead of the clock, so they fill evenly over the whole MIN_MS.
-  const MIN_MS = 8000;
+  // Shown for at least MIN_MS so the logo animation plays once (14 Oct: 1200 → 2800 → 4000 → 6000 → 8000 ms after four
+  // "slower" requests, then 6500 ms: "ขอเร็วนิดนึง อีกนิดกำลังดีแล้ว"). The ring (and the loading candles, splashfx.js)
+  // can't run ahead of the clock, so they fill evenly over the whole MIN_MS.
+  const MIN_MS = 6500;
   let shown = 0, target = 0, raf = 0, startAt = Date.now();
   function count() {
     const goal = Math.min(target, ((Date.now() - startAt) / MIN_MS) * 100); // paced by the clock
