@@ -1,0 +1,71 @@
+/* Pro trading terminal look (14 Oct 2026, user picked "จอเทรดมืออาชีพ" — TradingView / Binance style after two light
+   rounds looked "ยังไม่ค่อยสวย"). Dark theme only (html.dark, set by the head script and ui.js applyTheme) and now
+   the default. Same layout as before: flat dark panels, thin borders, small radius, dense spacing, mono numbers,
+   green / red ticks. Light theme keeps theme.css. */
+html.dark {
+  --bg: #0b0e11; --panel: #161a1e; --panel-2: #1e2329; --line: #2b3139; --line-2: #3a414b;
+  --text: #eaecef; --muted: #848e9c; --gold: #f0b90b; --gold-bright: #f0b90b; --gold-soft: rgba(240, 185, 11, .12);
+  --up: #0ecb81; --up-soft: rgba(14, 203, 129, .12); --down: #f6465d; --down-soft: rgba(246, 70, 93, .12); --wait: #f0b90b;
+  --radius: 8px; --sp: 10px;
+}
+html.dark body { background: var(--bg); }
+html.dark body::before, html.dark body::after, html.dark #dsDust { display: none; }
+
+/* panels */
+html.dark .card, html.dark .quote { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: none; }
+html.dark .card { padding: 14px 16px; }
+html.dark .tab > .card:hover, html.dark .tab > section.card:hover { border-color: var(--line-2); box-shadow: none; transform: none; }
+html.dark .tab:not([hidden]) > * { animation: dsFade .25s ease-out backwards; }
+html.dark .card h3 { font-size: 15px; font-weight: 600; }
+html.dark .sec-title { font-size: 15px; font-weight: 600; color: var(--text); margin: 18px 2px 8px; padding-left: 10px; border-left: 3px solid var(--gold); }
+
+/* top bar + side menu */
+html.dark .appbar { background: var(--panel); border-bottom: 1px solid var(--line); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+html.dark .tabbar { background: var(--panel); border-color: var(--line); box-shadow: none; }
+html.dark .tabbar a { color: var(--muted); }
+html.dark .tabbar a.on { color: var(--text); }
+@media (min-width: 900px) {
+  html.dark #tabbar.tabbar { background: var(--panel); border-right: 1px solid var(--line); padding: 12px 10px; gap: 2px; }
+  html.dark #tabbar.tabbar a { border-radius: 6px; padding: 10px 14px; font-size: 15px; }
+  html.dark #tabbar.tabbar a span { font-size: 18px; }
+  html.dark #tabbar.tabbar a.on { background: var(--panel-2); box-shadow: none; color: var(--text); }
+  html.dark #tabbar.tabbar a::before { background: var(--gold); }
+  html.dark #tabbar.tabbar a:not(.on):hover { background: rgba(255, 255, 255, .04); transform: none; color: var(--text); }
+}
+@media (max-width: 899px) { html.dark .tabbar a.on { color: var(--gold); } }
+
+/* live price = ticker header */
+html.dark #liveHero.lv { background: var(--panel); border: 1px solid var(--line); box-shadow: none; transform: none !important; }
+html.dark #liveHero::before, html.dark #liveHero::after, html.dark .lv::before { display: none; }
+html.dark .lv-price { font-size: 44px; font-weight: 700; color: var(--text); letter-spacing: -.5px; text-shadow: none; -webkit-text-fill-color: currentColor; background: none; }
+html.dark .lv-price.flash-up { color: var(--up); } html.dark .lv-price.flash-down { color: var(--down); }
+html.dark .lv-price.ds-bump { animation: none; }
+html.dark .lv-line { stroke: var(--gold); stroke-width: 1.6; filter: none; }
+html.dark .lv-dot { fill: var(--gold); filter: drop-shadow(0 0 4px rgba(240, 185, 11, .8)); }
+html.dark .lv-pill { border-radius: 4px; background: var(--panel-2); }
+html.dark .lv-pill.open { background: var(--up-soft); color: var(--up); }
+html.dark .lv-stats { gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+html.dark .lv-stats div { background: var(--panel-2); border: 0; border-radius: 0; padding: 8px 12px; -webkit-backdrop-filter: none; backdrop-filter: none; }
+html.dark .lv-stats label { font-size: 11px; color: var(--muted); letter-spacing: .2px; }
+html.dark .lv-stats b { font-size: 15px; font-family: "JetBrains Mono", ui-monospace, monospace; }
+html.dark .lv-foot { font-size: 12px; }
+@media (max-width: 520px) { html.dark .lv-price { font-size: 36px; } }
+
+/* controls: flat, small radius, active = yellow text on raised grey (exchange style) */
+html.dark .btn { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; box-shadow: none; }
+html.dark .btn:hover { border-color: var(--line-2); }
+html.dark .seg, html.dark .tfs { border-radius: 6px; }
+html.dark .seg button, html.dark .tfs button, html.dark .cc-tfs button, html.dark .cc-quick button { border-radius: 6px; }
+html.dark .seg button.on, html.dark .tfs button.on, html.dark .cc-tfs button.on, html.dark .cc-mode button.on {
+  background: var(--line) !important; color: var(--gold) !important; border-color: var(--line-2) !important; box-shadow: inset 0 -2px 0 var(--gold) !important; }
+html.dark .ds-ripple { background: radial-gradient(circle, rgba(255, 255, 255, .25), transparent 70%); }
+
+/* numbers */
+html.dark .mono, html.dark .lv-stats b { font-variant-numeric: tabular-nums; }
+html.dark .ds-tick { animation: tmTick .7s ease-out; }
+@keyframes tmTick { 0% { background-color: rgba(240, 185, 11, .22); } 100% { background-color: transparent; } }
+
+/* chat + inner boxes */
+html.dark .cc-panel { border-radius: 8px; background: var(--panel-2); }
+html.dark .cc-msg { border-radius: 6px; }
+html.dark .cc-form input { border-radius: 6px; background: var(--bg); }

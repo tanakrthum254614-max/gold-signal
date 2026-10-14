@@ -105,12 +105,13 @@
     emit('settings');
   });
 
-  // ---------- Light / dark theme (light = theme.css on; dark = the original look) ----------
-  const theme = () => (store.get('gs-theme') === 'dark' ? 'dark' : 'light');
+  // ---------- Light / dark theme (light = theme.css on; dark = trading terminal, terminal.css — default since 14 Oct 2026) ----------
+  const theme = () => (store.get('gs-theme') === 'light' ? 'light' : 'dark');
   function applyTheme(t, save) {
     if (save) store.set('gs-theme', t);
     $('themeLight').disabled = t === 'dark';
-    document.querySelector('meta[name=theme-color]').content = t === 'dark' ? '#0d1016' : '#f3f5f9';
+    document.documentElement.classList.toggle('dark', t === 'dark');
+    document.querySelector('meta[name=theme-color]').content = t === 'dark' ? '#0b0e11' : '#faf8f3';
     $('themeBtn').textContent = t === 'dark' ? '☀️' : '🌙';
     document.querySelectorAll('#themeSeg button').forEach((b) => b.classList.toggle('on', b.dataset.theme === t));
     emit('theme');

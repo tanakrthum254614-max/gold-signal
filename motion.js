@@ -29,8 +29,10 @@
       t: Math.random() * Math.PI * 2, tw: 0.6 + Math.random() * 1.6,
     };
   }
+  const dark = () => document.documentElement.classList.contains('dark'); // terminal look: no dust, no tilt
   function frame(now) {
     raf = requestAnimationFrame(frame);
+    if (dark()) return;
     const dt = Math.min(0.05, (now - last) / 1000 || 0);
     if (now - last < 33) return; // ~30 fps is plenty for slow dust
     last = now;
@@ -88,7 +90,7 @@
     const hero = () => document.getElementById('liveHero');
     document.addEventListener('pointermove', (e) => {
       const h = hero();
-      if (!h || !h.offsetParent) return;
+      if (!h || !h.offsetParent || dark()) return;
       const r = h.getBoundingClientRect();
       const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
       if (!inside) { if (h.style.transform) h.style.transform = ''; return; }

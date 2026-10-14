@@ -1678,7 +1678,7 @@ fitWhenSized($('mainChart'), () => {
 function applyChartTheme() {
   const dark = UI.theme() === 'dark';
   const c = dark
-    ? { text: '#8a93a3', grid: '#1b212c', border: '#262e3b', cross: '#6b7686', label: '#2a3140' }
+    ? { text: '#848e9c', grid: '#1e2329', border: '#2b3139', cross: '#5e6673', label: '#2b3139' }
     : { text: '#5b6475', grid: '#eceff4', border: '#e2e7ef', cross: '#9aa4b5', label: '#1c2433' };
   const opts = {
     layout: { textColor: c.text },
