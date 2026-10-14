@@ -687,6 +687,23 @@
    "closedBy": "sl",
    "exitPrice": 4163.71,
    "exitAt": 1791943800000
+  },
+  {
+   "id": "5m-1791958200000",
+   "createdAt": 1791958200000,
+   "expiresAt": 1792007100000,
+   "status": "active",
+   "entryAt": 1791958200000,
+   "side": "SELL",
+   "entry": 4146,
+   "sl": 4156,
+   "tps": [
+    4136
+   ],
+   "tp": 4136,
+   "score": -6,
+   "tf": "5m",
+   "paused": true
   }
  ],
  "brakes": {
@@ -695,5 +712,5 @@
    "until": 1792368000000
   }
  },
- "updatedAt": 1791945230322
+ "updatedAt": 1791958221414
 }
