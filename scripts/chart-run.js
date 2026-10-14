@@ -43,8 +43,14 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
   const data = JSON.parse(fs.readFileSync(path.resolve(process.argv[2] || 'data.json'), 'utf8'));
   const [m5, m15b, h1b, h4, d1, w1] = await Promise.all([klines('5m', 1000), klines('15m', 200), klines('1h', 1000), klines('4h', 200), klines('1d', 200), klines('1w', 200)]);
   // PAXG trades a few dollars off spot gold: line Binance up with the investing.com price the site shows
+  // Measured on candles with the same time (median of the last 12 closed ones). Before 14 Oct 2026 it compared the
+  // two latest candles, which aren't the same candle (investing.com's newest is 1–2 candles behind Binance's), so the
+  // offset jumped ±$5–14 between runs and open trades hit SL / TP that real gold never reached.
   const inv = bars(data.m15);
-  const off = inv.length ? inv[inv.length - 1].close - m15b[m15b.length - 1].close : 0;
+  const bn = new Map(m15b.map((b) => [b.time, b.close]));
+  const diffs = inv.slice(0, -1).filter((b) => bn.has(b.time)).slice(-12).map((b) => b.close - bn.get(b.time)).sort((a, b) => a - b);
+  const off = diffs.length ? diffs[diffs.length >> 1] : inv.length ? inv[inv.length - 1].close - m15b[m15b.length - 1].close : 0;
+  console.log(`PAXG → spot offset ${off.toFixed(2)} (${diffs.length} matched candles)`);
   const h5b = [];
   h1b.forEach((b) => { const t = Math.floor(b.time / (5 * H)) * 5 * H, l = h5b[h5b.length - 1];
     if (l && l.time === t) { l.high = Math.max(l.high, b.high); l.low = Math.min(l.low, b.low); l.close = b.close; } else h5b.push({ ...b, time: t }); });
