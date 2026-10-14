@@ -174,7 +174,7 @@
       <ul class="pro-feats">${feats.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
       ${canBuy ? `<div class="pro-plans">${['month', 'year'].filter((k) => p[k]).map((k) => `<div class="pro-plan"><b>${k === 'month' ? 'รายเดือน' : 'รายปี'}</b><span class="mono">${baht(p[k])}</span>
         <button class="btn gold" type="button" data-plan="${k}" data-method="card">💳 บัตร (ต่ออายุอัตโนมัติ)</button>
-        ${p[k].currency === 'thb' ? `<button class="btn" type="button" data-plan="${k}" data-method="promptpay">📱 PromptPay (${k === 'month' ? '30' : '365'} วัน)</button>` : ''}</div>`).join('')}</div>
+        <button class="btn" type="button" data-plan="${k}" data-method="promptpay">📱 จ่ายครั้งเดียว ${k === 'month' ? '30' : '365'} วัน${p[k].currency === 'thb' ? ' (PromptPay / บัตร)' : ''}</button></div>`).join('')}</div>
         <p class="muted small">ชำระผ่าน Stripe — เว็บนี้ไม่เห็นและไม่เก็บเลขบัตร · สิทธิ์ PRO เปิดทันทีที่ชำระสำเร็จ · ไม่ใช่คำแนะนำการลงทุน</p>` : ''}
       ${s.sub ? '<button class="btn" type="button" id="proPortal">จัดการ / ยกเลิกการต่ออายุ</button>' : ''}`;
   }
