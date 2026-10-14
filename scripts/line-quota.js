@@ -24,8 +24,13 @@ async function get(url) {
   const month = new Date(now + 7 * 3600e3).toISOString().slice(0, 7);
   const limit = quota.type === 'limited' ? quota.value : null; // null = no monthly limit (paid plan)
   const old = fs.existsSync(FILE) ? JSON.parse(fs.readFileSync(FILE, 'utf8')) : {};
-  const out = { used: used.totalUsage, limit, month, at: now, warned: old.month === month ? old.warned || null : null };
-  console.log(`LINE quota ${month}: ${out.used} / ${limit == null ? 'unlimited' : limit}`);
+  // end-of-month forecast at this month's pace (Thai time; from day 3 so one busy morning doesn't skew it)
+  const th = new Date(now + 7 * 3600e3);
+  const days = new Date(Date.UTC(th.getUTCFullYear(), th.getUTCMonth() + 1, 0)).getUTCDate();
+  const elapsed = th.getUTCDate() - 1 + (th.getUTCHours() * 60 + th.getUTCMinutes()) / 1440;
+  const projected = elapsed >= 2 ? Math.round((used.totalUsage / elapsed) * days) : null;
+  const out = { used: used.totalUsage, limit, projected, month, at: now, warned: old.month === month ? old.warned || null : null };
+  console.log(`LINE quota ${month}: ${out.used} / ${limit == null ? 'unlimited' : limit} · forecast ${projected ?? '-'}`);
 
   if (limit && out.used >= limit * WARN_AT && !out.warned) {
     const left = Math.max(0, limit - out.used);

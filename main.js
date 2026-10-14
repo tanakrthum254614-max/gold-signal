@@ -453,9 +453,9 @@ function renderQuota(q) {
   if (!q || q.used == null) return;
   const pct = q.limit ? Math.round((q.used / q.limit) * 100) : null;
   $('lineQuota').textContent = q.limit
-    ? `📊 โควตา LINE เดือนนี้ใช้ไป ${q.used} / ${q.limit} ข้อความ (${pct}%)${pct >= 80 ? ' — ใกล้หมด' : ''} · เช็กล่าสุด ${thaiTime(q.at)}`
+    ? `📊 โควตา LINE เดือนนี้ใช้ไป ${q.used} / ${q.limit} ข้อความ (${pct}%)${pct >= 80 ? ' — ใกล้หมด' : ''}${q.projected != null ? ` · คาดสิ้นเดือน ~${q.projected}${q.projected > q.limit ? ' ⚠️ เกินโควตา' : ''}` : ''} · เช็กล่าสุด ${thaiTime(q.at)}`
     : `📊 LINE เดือนนี้ส่งไป ${q.used} ข้อความ (แพ็กเกจไม่จำกัด)`;
-  $('lineQuota').style.color = pct >= 80 ? 'var(--down)' : '';
+  $('lineQuota').style.color = pct >= 80 || q.projected > q.limit ? 'var(--down)' : '';
 }
 
 // 15-minute candles to follow today's signal live
