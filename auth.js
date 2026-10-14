@@ -11,11 +11,11 @@
 
   // Progress ring (r = 72) + a counting percentage — no step texts (user, 12 Oct: too many words on the loading screen)
   const RING = 2 * Math.PI * 72;
-  // Shown for at least MIN_MS so the logo animation plays once (14 Oct: 1200 → 2800 ms, user wanted it "ช้านิดนึง")
-  const MIN_MS = 2800;
+  // Shown for at least MIN_MS so the logo animation plays once (14 Oct: 1200 → 2800 → 4000 ms, user: "ช้านิดนึง", "ช้ากว่านี้อีกนิด")
+  const MIN_MS = 4000;
   let shown = 0, target = 0, raf = 0, startAt = Date.now();
   function count() {
-    shown += Math.max(0.35, (target - shown) * 0.035); // eased a little slower (14 Oct)
+    shown += Math.max(0.25, (target - shown) * 0.025); // eased slower (14 Oct, twice)
     if (shown >= target) shown = target;
     const pct = Math.round(shown), el = $('splashPct');
     // Bump the number every 25%
