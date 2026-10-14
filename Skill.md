@@ -365,6 +365,12 @@ gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=fal
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 🧱 หน้าบัญชีไม่มีช่องว่าง (14 ต.ค. 2569 · เวอร์ชัน 202610142100)
+- ผู้ใช้ (รูปหน้าบัญชี 1920px): "ทำไมแบบนี้" → grid 2 คอลัมน์ทำให้แถวสูงเท่าการ์ดที่สูงกว่า → ช่องว่างใต้การ์ด "หน้าจอ" + max-width 1180 ขอบว่างเยอะ
+- terminal.css: `#tab-account` max-width 1440 · ≥1100px `column-count: 2` + `break-inside: avoid` (การ์ดต่อกันลงไป) · โปรไฟล์/ปุ่ม wide/เวอร์ชัน `column-span: all` · `.wide:not([hidden])` display block (ปุ่มเป็น inline-block ใช้ column-span ไม่ได้)
+- **กับดัก: ใส่ `display` ให้องค์ประกอบที่มี `hidden` จะทำให้มันโผล่ — ปุ่มหลังบ้าน (#adminLink hidden) เกือบโผล่ให้ทุกคนเห็น ต้องใช้ `:not([hidden])`** (เจอในเครื่อง ไม่ได้ขึ้นเว็บ) · `section.card` (display block) ต้องยกเว้น `.profile` (flex)
+- ทดสอบ acc.cjs 1440/1920/2560/390: ไม่ล้น, adminLink display none, signOut เต็มแถว, ไม่มี error · ภาพ compare/acc2-*.png
+
 ## 🎨 หน้าบัญชีมีสีสัน + ปุ่มสีกลับมาทั้งเว็บ (14 ต.ค. 2569 · เวอร์ชัน 202610142000)
 - ผู้ใช้ (รูปหน้าบัญชีจอกว้างมาก): "ดูธรรมดาไม่มีสีสันเลย" → สาเหตุเดียวกับกรอบสถานะ: `html.dark .btn` ใน terminal.css ทับ `.btn.gold/.line/.danger` → ปุ่มเทาหมด + ฟอร์มยืดเต็มจอที่ ≥1700px (`.content` max-width none)
 - terminal.css ท้ายไฟล์: `.btn.gold` เหลือง #f0b90b ตัวดำ (hover #fcd535) · `.btn.line` #06c755 · `.btn.danger` พื้นแดงจาง ตัวแดง · #setSave/#pwaPush/#shareCopy เป็นปุ่มทอง · `.seg button.on` พื้นทอง

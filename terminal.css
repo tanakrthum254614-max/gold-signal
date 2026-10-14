@@ -87,11 +87,14 @@ html.dark #setSave, html.dark #pwaPush, html.dark #shareCopy { background: var(-
 html.dark .seg button.on { background: var(--gold) !important; color: #0b0e11 !important; box-shadow: none !important; }
 
 /* account: sections with a coloured top edge + tinted heading chip; readable width on very wide screens */
-html.dark #tab-account { --acc: var(--gold); max-width: 1180px; margin-inline: auto; }
+html.dark #tab-account { --acc: var(--gold); max-width: 1440px; margin-inline: auto; }
+/* two columns that stack cards without gaps (user 14 Oct: "ทำไมแบบนี้" — a grid row left a hole under the short card) */
 @media (min-width: 1100px) {
-  html.dark #tab-account { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
-  html.dark #tab-account > * { margin-top: 0 !important; }
-  html.dark #tab-account > .profile, html.dark #tab-account > .wide, html.dark #tab-account > p, html.dark #tab-account > .admin-link { grid-column: 1 / -1; }
+  html.dark #tab-account { column-count: 2; column-gap: 12px; }
+  html.dark #tab-account > * { break-inside: avoid; margin: 0 0 12px !important; }
+  html.dark #tab-account > section.card:not(.profile) { display: block; width: 100%; }
+  html.dark #tab-account > .profile, html.dark #tab-account > .wide, html.dark #tab-account > p, html.dark #tab-account > .admin-link { column-span: all; }
+  html.dark #tab-account > .wide:not([hidden]) { display: block; width: 100%; }
 }
 html.dark #tab-account > section.card { border-top: 3px solid var(--acc); }
 html.dark #tab-account > section.card:nth-of-type(2) { --acc: #a78bfa; }
