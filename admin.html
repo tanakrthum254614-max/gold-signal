@@ -294,7 +294,7 @@
     let pro = { users: {}, history: [] };
     const SRC = { card: '💳 บัตร', promptpay: '📱 PromptPay', admin: '🛠️ แอดมิน' };
     const nameOf = (id) => { const m = members.find((x) => x.id === id); return m ? `${m.name || ''} ${m.email}`.trim() : id; };
-    const HT = { promptpay: '📱 จ่าย PromptPay', subscribe: '💳 สมัครแบบบัตร', renew: '💳 ต่ออายุ', cancel: '✕ ยกเลิก', update: 'อัปเดต', grant: '⭐ แอดมินให้สิทธิ์', revoke: '✕ แอดมินยกเลิก' };
+    const HT = { launch: '🎁 ของขวัญเปิดตัว', promptpay: '📱 จ่ายครั้งเดียว', subscribe: '💳 สมัครแบบบัตร', renew: '💳 ต่ออายุ', cancel: '✕ ยกเลิก', update: 'อัปเดต', grant: '⭐ แอดมินให้สิทธิ์', revoke: '✕ แอดมินยกเลิก' };
     async function loadPro() {
       try {
         const [st, list] = await Promise.all([api('/api/pro'), api('/api/pro?list=1')]);
