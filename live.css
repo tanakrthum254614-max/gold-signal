@@ -630,7 +630,7 @@ body.cz-clean .charts > .legend { display: none; }
 .admin-link { text-decoration: none; margin-bottom: 10px; }
 
 /* ---------- 📓 Journal · 📝 Articles · ⭐ PRO · 🤖 coach mode (14 Oct 2026, journal.js / chartchat.js) ---------- */
-#tab-journal .up, .pro-card .up { color: var(--up); } #tab-journal .down { color: var(--down); }
+#tab-journal .up { color: var(--up); } #tab-journal .down { color: var(--down); }
 #tab-journal > .card + .card { margin-top: 14px; }
 .jr-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
 .jr-title h3 { margin: 0; }
@@ -671,12 +671,6 @@ body.cz-clean .charts > .legend { display: none; }
 .art-body { padding: 6px 2px 4px; font-size: 15px; overflow-wrap: anywhere; }
 .art-body h4 { margin: 12px 0 4px; } .art-body p { margin: 6px 0; } .art-body ul { margin: 6px 0; padding-left: 20px; }
 
-.pro-card { border-color: var(--gold); }
-.pro-status { font-weight: 700; color: var(--gold); margin: 0 0 6px; }
-.pro-feats { margin: 0 0 12px; padding-left: 20px; }
-.pro-plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 8px; }
-.pro-plan { background: var(--panel-2); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-.pro-plan .mono { font-size: 22px; font-weight: 700; }
 
 .cc-mode { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: var(--panel-2); border: 1px solid var(--line); }
 .cc-mode button { border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 12.5px; padding: 3px 9px; border-radius: 7px; cursor: pointer; white-space: nowrap; }

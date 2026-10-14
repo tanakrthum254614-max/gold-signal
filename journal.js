@@ -1,6 +1,5 @@
 // 📓 Journal tab — the member's private trade journal (api/journal.mjs; one file per member, only they can read it).
-// Plus: back-office articles on the news tab (api/articles.mjs) and the PRO card on the account tab (api/pro.mjs,
-// api/pay/*). All text from the server is escaped before it goes on the page.
+// Plus: back-office articles on the news tab (api/articles.mjs). All text from the server is escaped before it goes on the page.
 (function () {
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -154,46 +153,6 @@
   }
   if (window.UI) UI.on('tab:stats', loadArticles);
 
-  // ================= ⭐ PRO (account tab) =================
-  const baht = (p) => (p ? `${(p.amount / 100).toLocaleString('th-TH')} ${p.currency === 'thb' ? 'บาท' : p.currency.toUpperCase()}` : '');
-  async function loadPro() {
-    const card = $('proCard');
-    if (!card) return;
-    let s;
-    try { s = await api('/api/pro'); } catch (e) { card.hidden = true; return; }
-    window.GS_PRO = s;
-    const feats = s.features.map((f) => ({ ai: '🤖 โค้ช AI ส่วนตัว (อ่านสมุดเทรดของคุณ)', dashboard: '📊 แดชบอร์ดทองคำ + หุ้น อัปเดตทุกเช้า', signals: '🎯 สัญญาณทุกกรอบเวลา', line: '📩 สัญญาณทาง LINE' }[f] || f));
-    const p = s.prices || {};
-    const status = s.admin ? '⭐ แอดมิน — ใช้ได้ทุกอย่าง'
-      : s.pro ? `⭐ สมาชิก PRO ถึง ${new Date(s.until).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}${s.sub ? ' · ต่ออายุอัตโนมัติ' : ''}`
-        : s.enabled ? 'สมาชิกฟรี' : '🎁 ช่วงทดลอง: ตอนนี้ทุกคนใช้ฟีเจอร์ PRO ได้ฟรี';
-    const canBuy = s.enabled && !s.admin && (p.month || p.year); // no selling while everyone has PRO free
-    card.hidden = false;
-    card.innerHTML = `<h3>สมาชิก PRO ⭐</h3>
-      <p class="pro-status">${esc(status)}</p>
-      <ul class="pro-feats">${feats.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
-      ${canBuy ? `<div class="pro-plans">${['month', 'year'].filter((k) => p[k]).map((k) => `<div class="pro-plan"><b>${k === 'month' ? 'รายเดือน' : 'รายปี'}</b><span class="mono">${baht(p[k])}</span>
-        <button class="btn gold" type="button" data-plan="${k}" data-method="card">💳 บัตร (ต่ออายุอัตโนมัติ)</button>
-        <button class="btn" type="button" data-plan="${k}" data-method="promptpay">📱 จ่ายครั้งเดียว ${k === 'month' ? '30' : '365'} วัน${p[k].currency === 'thb' ? ' (PromptPay / บัตร)' : ''}</button></div>`).join('')}</div>
-        <p class="muted small">ชำระผ่าน Stripe — เว็บนี้ไม่เห็นและไม่เก็บเลขบัตร · สิทธิ์ PRO เปิดทันทีที่ชำระสำเร็จ · ไม่ใช่คำแนะนำการลงทุน</p>` : ''}
-      ${s.sub ? '<button class="btn" type="button" id="proPortal">จัดการ / ยกเลิกการต่ออายุ</button>' : ''}`;
-  }
-  document.addEventListener('click', async (ev) => {
-    const b = ev.target.closest('#proCard button[data-plan], #proPortal');
-    if (!b) return;
-    b.disabled = true;
-    try {
-      const j = b.id === 'proPortal' ? await api('/api/pay/portal', { method: 'POST' }) : await api('/api/pay/checkout', { method: 'POST', body: JSON.stringify({ plan: b.dataset.plan, method: b.dataset.method }) });
-      location.href = j.url;
-    } catch (e) { toast(e.message); b.disabled = false; }
-  });
-  if (window.UI) UI.on('tab:account', loadPro);
   // If the app already opened on one of these tabs before this file loaded
-  setTimeout(() => { const t = location.hash.slice(1); if (t === 'journal' && !loaded && tab) load(); if (t === 'stats') loadArticles(); if (t === 'account') loadPro(); }, 0);
-  const pay = new URLSearchParams(location.search).get('pay');
-  if (pay) {
-    setTimeout(() => toast(pay === 'ok' ? '✅ ชำระเงินสำเร็จ — เปิดสิทธิ์ PRO ภายในไม่กี่วินาที' : 'ยกเลิกการชำระเงินแล้ว'), 1500);
-    if (pay === 'ok') setTimeout(loadPro, 5000);
-    history.replaceState(null, '', location.pathname + location.hash);
-  }
+  setTimeout(() => { const t = location.hash.slice(1); if (t === 'journal' && !loaded && tab) load(); if (t === 'stats') loadArticles(); }, 0);
 })();

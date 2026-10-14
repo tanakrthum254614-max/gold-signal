@@ -89,7 +89,7 @@
         body: JSON.stringify({ message: text, history: history.slice(-8), context: { price: nowPrice(), signals, news, settings: st } }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok || !j.ok) {
-        wait.innerHTML = r.status === 402 ? `⭐ ${esc(j.error || 'สำหรับสมาชิก PRO')} — <a href="#account">ดูแพ็กเกจ</a>` : `ขอโทษครับ ${esc(j.error || 'โค้ชไม่ว่างชั่วคราว')}`;
+        wait.innerHTML = `ขอโทษครับ ${esc(j.error || 'โค้ชไม่ว่างชั่วคราว')}`;
       } else {
         history.push({ role: 'user', content: text }, { role: 'assistant', content: j.reply });
         wait.innerHTML = `${plain(j.reply)}<span class="cc-at">${hhmm(Date.now())} น. · 🤖 โค้ช AI${j.left != null ? ` · เหลือ ${j.left} คำถามวันนี้` : ''}</span>`;
