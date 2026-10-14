@@ -14,7 +14,7 @@ export async function GET(request) {
   }
   let p = {};
   try { p = await prices(); } catch (e) { /* Stripe not set up yet */ }
-  return json({ ok: true, enabled: proEnabled(), features: proFeatures(), ...(await proOf(m)), prices: p });
+  return json({ ok: true, enabled: await proEnabled(), features: proFeatures(), ...(await proOf(m)), prices: p });
 }
 
 export async function POST(request) {

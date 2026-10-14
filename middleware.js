@@ -355,12 +355,16 @@ async function adminMembers() {
 }
 
 // ---------- PRO (access/pro.json, written by api/pay/webhook.mjs and api/pro.mjs — same rules as lib/gs.mjs proOf) ----------
-let proCache = { at: 0, users: {} };
+// Paywall on = env PRO_ENABLED=1 or access/pro-config.json { enabled } (the back office's go-live button)
+let proCache = { at: 0, users: {}, enabled: false };
 async function proOk(m, feature) {
-  if (process.env.PRO_ENABLED !== '1') return true;
+  if (Date.now() - proCache.at > 30e3) {
+    const [cfg, all] = await Promise.all([readJson('access/pro-config.json', {}), readJson('access/pro.json', { users: {} })]);
+    proCache = { at: Date.now(), users: all.users || {}, enabled: !!cfg.enabled };
+  }
+  if (process.env.PRO_ENABLED !== '1' && !proCache.enabled) return true;
   if (!(process.env.PRO_FEATURES || 'ai,dashboard').split(',').map((s) => s.trim()).includes(feature)) return true;
   if (isAdmin(m)) return true;
-  if (Date.now() - proCache.at > 30e3) proCache = { at: Date.now(), users: (await readJson('access/pro.json', { users: {} })).users || {} };
   const u = proCache.users[m.id];
   return !!(u && u.until > Date.now());
 }
