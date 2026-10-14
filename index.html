@@ -22,35 +22,65 @@
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
   <link rel="stylesheet" href="terminal.css?v=202610150000">
-  <link rel="stylesheet" href="splash.css?v=202610150100">
+  <link rel="stylesheet" href="splash.css?v=202610150300">
   <script>/* apply the saved theme before the first paint */ var gsT = "dark"; try { gsT = localStorage.getItem("gs-theme") === "light" ? "light" : "dark"; } catch (e) {} /* dark trading terminal = default since 14 Oct 2026 */ if (gsT === "dark") { document.getElementById("themeLight").disabled = true; document.documentElement.classList.add("dark"); document.querySelector("meta[name=theme-color]").content = "#0b0e11"; }</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
   <!-- Loading screen -->
-  <!-- Loading screen = a broker app booting (user 14 Oct: "หน้าตอนโหลด … เหมือนแอปโบรกเกอร์จริง"): connection pill, the
-       XAU/USD ticker whose digits roll until the real price arrives, a streaming candlestick chart behind it (decorative),
-       a thin progress bar and three connection steps. splash.css + auth.js SPLASH -->
-  <div id="splash" class="splash bk">
-    <canvas class="bk-chart" id="bkChart" aria-hidden="true"></canvas>
-    <header class="bk-top">
-      <span class="bk-brand"><img src="logo.svg" alt="" width="26" height="26"><b>Gold Signal</b></span>
-      <span class="bk-pill" id="bkPill"><i></i><span id="bkPillText">กำลังเชื่อมต่อ</span></span>
-    </header>
-    <div class="bk-card">
-      <div class="bk-sym"><span class="bk-flag" aria-hidden="true">Au</span><div><b>XAU/USD</b><small>ทองคำ · ดอลลาร์/ออนซ์</small></div><span class="bk-tag">SPOT</span></div>
-      <div class="bk-px mono rolling" id="bkPx" aria-hidden="true">–,–––.––</div>
-      <div class="bk-chg mono" id="bkChg">กำลังรับราคาสด…</div>
-      <div class="bk-steps" id="splashChips" aria-hidden="true">
-        <div data-at="60"><i></i><span>ราคาสด</span><em>investing.com</em></div>
-        <div data-at="80"><i></i><span>ข้อมูลกราฟ</span><em>8 กรอบเวลา</em></div>
-        <div data-at="100"><i></i><span>สัญญาณ</span><em>ระบบ 30 นาที</em></div>
-      </div>
+  <div id="splash" class="splash">
+    <div class="sp-glow"></div>
+    <!-- background lightning that strikes together with the logo's bolt -->
+    <svg class="sp-sky" viewBox="0 0 400 300" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+      <path d="M352 -5 L336 38 L350 42 L326 88 L341 92 L318 140 M336 38 L312 56 M326 88 L352 108"/>
+      <path class="b2" d="M44 -5 L56 34 L42 39 L62 80 L50 85 L70 122 M56 34 L82 50"/>
+    </svg>
+    <!-- gold market chart rising in the background: candles pop up one by one, the price line draws across -->
+    <svg class="sp-market" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true">
+      <g class="mk-c up" style="--i:0"><line x1="12" x2="12" y1="81.3" y2="96.1"/><rect x="6" y="89.1" width="12" height="5.4" rx="1.5"/></g><g class="mk-c dn" style="--i:1"><line x1="34" x2="34" y1="83.0" y2="98.6"/><rect x="28" y="89.1" width="12" height="2.4" rx="1.5"/></g><g class="mk-c dn" style="--i:2"><line x1="56" x2="56" y1="79.3" y2="107.3"/><rect x="50" y="91.5" width="12" height="7.6" rx="1.5"/></g><g class="mk-c up" style="--i:3"><line x1="78" x2="78" y1="92.3" y2="110.0"/><rect x="72" y="96.3" width="12" height="2.8" rx="1.5"/></g><g class="mk-c up" style="--i:4"><line x1="100" x2="100" y1="84.6" y2="103.2"/><rect x="94" y="85.7" width="12" height="10.6" rx="1.5"/></g><g class="mk-c dn" style="--i:5"><line x1="122" x2="122" y1="76.3" y2="90.5"/><rect x="116" y="85.7" width="12" height="2.6" rx="1.5"/></g><g class="mk-c up" style="--i:6"><line x1="144" x2="144" y1="74.0" y2="90.8"/><rect x="138" y="80.8" width="12" height="7.5" rx="1.5"/></g><g class="mk-c dn" style="--i:7"><line x1="166" x2="166" y1="67.7" y2="102.8"/><rect x="160" y="80.8" width="12" height="8.5" rx="1.5"/></g><g class="mk-c dn" style="--i:8"><line x1="188" x2="188" y1="83.1" y2="108.8"/><rect x="182" y="89.3" width="12" height="6.2" rx="1.5"/></g><g class="mk-c dn" style="--i:9"><line x1="210" x2="210" y1="89.7" y2="107.3"/><rect x="204" y="95.5" width="12" height="4.1" rx="1.5"/></g><g class="mk-c up" style="--i:10"><line x1="232" x2="232" y1="84.7" y2="102.0"/><rect x="226" y="88.6" width="12" height="11.0" rx="1.5"/></g><g class="mk-c up" style="--i:11"><line x1="254" x2="254" y1="61.5" y2="91.8"/><rect x="248" y="67.7" width="12" height="20.9" rx="1.5"/></g><g class="mk-c up" style="--i:12"><line x1="276" x2="276" y1="56.0" y2="69.8"/><rect x="270" y="60.6" width="12" height="7.1" rx="1.5"/></g><g class="mk-c up" style="--i:13"><line x1="298" x2="298" y1="41.5" y2="65.5"/><rect x="292" y="46.4" width="12" height="14.2" rx="1.5"/></g><g class="mk-c dn" style="--i:14"><line x1="320" x2="320" y1="33.5" y2="57.2"/><rect x="314" y="46.4" width="12" height="7.5" rx="1.5"/></g><g class="mk-c up" style="--i:15"><line x1="342" x2="342" y1="29.7" y2="57.2"/><rect x="336" y="36.2" width="12" height="17.7" rx="1.5"/></g><g class="mk-c up" style="--i:16"><line x1="364" x2="364" y1="21.7" y2="46.8"/><rect x="358" y="27.3" width="12" height="8.9" rx="1.5"/></g><g class="mk-c up" style="--i:17"><line x1="386" x2="386" y1="15.0" y2="30.5"/><rect x="380" y="16.9" width="12" height="10.4" rx="1.5"/></g>
+      <path class="mk-line" pathLength="1" d="M12,89.1 L34,91.5 L56,99.1 L78,96.3 L100,85.7 L122,88.3 L144,80.8 L166,89.3 L188,95.5 L210,99.6 L232,88.6 L254,67.7 L276,60.6 L298,46.4 L320,53.9 L342,36.2 L364,27.3 L386,16.9"/>
+    </svg>
+    <div class="sp-flash" aria-hidden="true"></div>
+    <div class="sp-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="sp-panel" aria-hidden="true"></div><!-- glass panel behind the logo + text (splash.css) -->
+    <div class="sp-ring">
+      <div class="sp-beams" aria-hidden="true"></div>
+      <i class="sp-wave" aria-hidden="true"></i><i class="sp-wave w2" aria-hidden="true"></i>
+      <svg viewBox="0 0 160 160" aria-hidden="true">
+        <defs><linearGradient id="spGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#d99a10"/></linearGradient></defs>
+        <circle class="sp-track" cx="80" cy="80" r="72"/>
+        <circle class="sp-orbit" cx="80" cy="80" r="62"/>
+        <circle class="sp-prog" id="splashFill" cx="80" cy="80" r="72"/>
+        <circle class="sp-head" id="splashHead" cx="152" cy="80" r="4.5"/>
+      </svg>
+      <!-- Logo (same drawing as logo.svg), animated: rim draws in, gold bars rise, lightning strikes -->
+      <svg class="sp-logo" viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+          <linearGradient id="lgRim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1c2"/><stop offset=".35" stop-color="#f0b429"/><stop offset=".7" stop-color="#b9800c"/><stop offset="1" stop-color="#f6d47a"/></linearGradient>
+          <radialGradient id="lgCore" cx=".5" cy=".38" r=".7"><stop offset="0" stop-color="#2a2414"/><stop offset=".6" stop-color="#151a23"/><stop offset="1" stop-color="#0d1016"/></radialGradient>
+          <linearGradient id="lgBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#b9800c"/></linearGradient>
+          <linearGradient id="lgBolt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#ffe9a8"/><stop offset="1" stop-color="#f0b429"/></linearGradient>
+        </defs>
+        <g class="lg-rays" stroke="#ffe9a8" stroke-width="2.5" stroke-linecap="round">
+          <path d="M50 -2 V-12"/><path d="M95 24 L104 19"/><path d="M95 76 L104 81"/><path d="M50 102 V112"/><path d="M5 76 L-4 81"/><path d="M5 24 L-4 19"/>
+        </g>
+        <path class="lg-rim" pathLength="1" d="M50 3 L91 26.5 V73.5 L50 97 L9 73.5 V26.5 Z" fill="url(#lgRim)" stroke="url(#lgRim)" stroke-width="2" stroke-linejoin="round"/>
+        <path class="lg-core" d="M50 11 L84 30.5 V69.5 L50 89 L16 69.5 V30.5 Z" fill="url(#lgCore)"/>
+        <g fill="url(#lgBar)">
+          <rect class="lg-bar" x="22" y="58" width="9" height="14" rx="1.5"/>
+          <rect class="lg-bar" x="34" y="49" width="9" height="23" rx="1.5"/>
+          <rect class="lg-bar" x="67" y="40" width="9" height="32" rx="1.5"/>
+        </g>
+        <path class="lg-bolt" d="M60 16 L33 53 H48 L41 84 L70 45 H55 L63 16 Z" fill="url(#lgBolt)" stroke="#151a23" stroke-width="3" stroke-linejoin="round" paint-order="stroke"/>
+      </svg>
+      <div class="sp-sparks" aria-hidden="true"><i style="--a:0deg;--d:84px"></i><i style="--a:50deg;--d:62px"></i><i style="--a:72deg;--d:84px"></i><i style="--a:122deg;--d:62px"></i><i style="--a:144deg;--d:84px"></i><i style="--a:194deg;--d:62px"></i><i style="--a:216deg;--d:84px"></i><i style="--a:266deg;--d:62px"></i><i style="--a:288deg;--d:84px"></i><i style="--a:338deg;--d:62px"></i></div>
     </div>
-    <footer class="bk-foot">
-      <div class="bk-bar"><i id="splashBar"></i></div>
-      <div class="bk-foot-row"><span>สัญญาณเทรดทองคำ · เรียลไทม์</span><span class="mono" id="splashPct" role="status" aria-label="กำลังโหลด">0%</span></div>
-    </footer>
+    <h1 class="sp-title" aria-label="Gold Signal"><span style="--i:0">G</span><span style="--i:1">o</span><span style="--i:2">l</span><span style="--i:3">d</span><span class="sp" style="--i:4"> </span><span style="--i:5">S</span><span style="--i:6">i</span><span style="--i:7">g</span><span style="--i:8">n</span><span style="--i:9">a</span><span style="--i:10">l</span></h1>
+    <!-- Short and balanced (user, 12 Oct: long step sentences were "เยอะเกินไป", logo + % alone "น้อยไป"): a short tagline,
+         the %, and three chips that tick off as the price, the chart data and the signals arrive -->
+    <p class="sp-sub">สัญญาณเทรดทองคำ · เรียลไทม์</p>
+    <div class="sp-pct mono" id="splashPct" role="status" aria-label="กำลังโหลด">0%</div>
+    <ul class="sp-chips" id="splashChips" aria-hidden="true"><li data-at="60">ราคาสด</li><li data-at="80">ข้อมูลกราฟ</li><li data-at="100">สัญญาณ</li></ul>
   </div>
 
   <!-- Sign-in page -->
@@ -512,7 +542,7 @@
 
         <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610150100 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610150300 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
@@ -520,7 +550,7 @@
   <div class="toast" id="toast" hidden></div>
 
   <script src="config.js?v=202610121500"></script>
-  <script src="auth.js?v=202610150100"></script>
+  <script src="auth.js?v=202610150200"></script>
   <script src="indicators.js?v=202610121500"></script>
   <script src="investing.js?v=202610121500"></script>
   <script src="explain.js?v=202610121500"></script>
