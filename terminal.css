@@ -111,3 +111,40 @@ html.dark #tab-account > section.card > h3::before { content: ""; width: 8px; he
 html.dark #tab-account > .profile { border-top: 0; background: linear-gradient(110deg, rgba(240, 185, 11, .22), rgba(240, 185, 11, .04) 45%, var(--panel) 75%); border-color: rgba(240, 185, 11, .35); }
 html.dark #tab-account .avatar.big { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--gold); }
 html.dark #tab-account .settings input:focus, html.dark #tab-account .settings select:focus { outline: 2px solid var(--gold); }
+
+/* ---------- Phones (14 Oct, user: "เปิดในโทรศัพท์ดูใหญ่ไป") — both themes. Text ~12% smaller, tighter cards, big
+   numbers scaled down. Inputs stay 16px so iPhone doesn't zoom in when typing. ---------- */
+@media (max-width: 600px) {
+  :is(html, html.dark) body { font-size: 14px; }
+  :is(html, html.dark) { --sp: 10px; }
+  :is(html, html.dark) .card { padding: 12px; border-radius: 10px; }
+  :is(html, html.dark) .tab > .card + .card, :is(html, html.dark) .tab > section + section, :is(html, html.dark) .tab > * + .card { margin-top: 10px; }
+  :is(html, html.dark) .card h3, :is(html, html.dark) .sec-title { font-size: 14px; }
+  :is(html, html.dark) .sec-title { margin: 14px 2px 8px; }
+  :is(html, html.dark) .btn, :is(html, html.dark) .seg button, :is(html, html.dark) .tfs button { font-size: 13px; }
+  :is(html, html.dark) .settings input, :is(html, html.dark) .settings select, :is(html, html.dark) .cc-form input, :is(html, html.dark) input, :is(html, html.dark) select, :is(html, html.dark) textarea { font-size: 16px; }
+  /* live price card */
+  :is(html, html.dark) .lv-price { font-size: 30px; }
+  :is(html, html.dark) .lv-chg { font-size: 13px; }
+  :is(html, html.dark) .lv-stats b { font-size: 13px; }
+  :is(html, html.dark) .lv-stats label { font-size: 11px; }
+  :is(html, html.dark) .lv-spark { height: 44px; }
+  /* big numbers and verdicts */
+  :is(html, html.dark) .price { font-size: 26px; }
+  :is(html, html.dark) .action { font-size: 28px; }
+  :is(html, html.dark) .sm-score b { font-size: 32px; } :is(html, html.dark) .sm-mood b { font-size: 16px; }
+  :is(html, html.dark) .sig-side, :is(html, html.dark) .sig.advisory .sig-side, :is(html, html.dark) .sig.skip .sig-side { font-size: 26px; }
+  :is(html, html.dark) .sig-nums b, :is(html, html.dark) .sig-tps b { font-size: 16px; }
+  :is(html, html.dark) .intra-call, :is(html, html.dark) .s15-call { font-size: 19px; }
+  :is(html, html.dark) .dn-center b { font-size: 24px; }
+  :is(html, html.dark) .lt-pnl { font-size: 26px; }
+  :is(html, html.dark) .mk-price span { font-size: 22px; }
+  :is(html, html.dark) .st-title { font-size: 18px; } :is(html, html.dark) .st-kpi b { font-size: 18px; } :is(html, html.dark) .st-kpi.big b { font-size: 24px; }
+  :is(html, html.dark) .ns-count b { font-size: 24px; }
+  :is(html, html.dark) .jr-kpis b { font-size: 18px; }
+  :is(html, html.dark) .tile b, :is(html, html.dark) .watch-item b { font-size: 18px; }
+  /* chrome: slimmer top bar and bottom menu */
+  :is(html, html.dark) .brand h1 { font-size: 17px; }
+  :is(html, html.dark) .tabbar a { font-size: 11px; padding: 7px 0 8px; }
+  :is(html, html.dark) .tabbar a span { font-size: 19px; }
+}

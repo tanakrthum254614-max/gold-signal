@@ -365,6 +365,11 @@ gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=fal
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 📱 มือถือสัดส่วนเล็กลง (14 ต.ค. 2569 · เวอร์ชัน 202610150000)
+- ผู้ใช้: "ได้แล้ว ขอให้ทำสัดส่วนให้เหมาะการเปิดในโทรศัพท์ด้วย เปิดในโทรศัพท์ดูใหญ่ไป" → วัด `gold-signal-tools/mob.cjs`: body 16px เท่าคอม, การ์ด padding 14/16, ตัวเลข 28–40px
+- ท้าย terminal.css `@media (max-width: 600px)` ใช้ `:is(html, html.dark)` (specificity เท่า html.dark + มาทีหลัง = ชนะ ทั้ง 2 ธีม): body 14px · การ์ด 12px radius 10 · h3/.sec-title 14 · ปุ่ม 13 · lv-price 30 · price 26 · action 28 · sm-score 32 · sig-side 26 · intra/s15-call 19 · dn-center 24 · lt-pnl 26 · st-title/kpi 18 (big 24) · ns-count 24 · jr-kpis 18 · tabbar 11px/ไอคอน 19 · **input/select/textarea คง 16px (กัน iPhone ซูม)** · ห้ามใช้ CSS zoom (พิกัดกราฟเพี้ยน)
+- ผล: หน้าสัญญาณ 3,435 → 3,240px · บัญชี 2,022 → 1,886px · 390/360px ไม่ล้น ไม่มี error · ภาพ compare/mob-*.png
+
 ## ↔️ หน้าบัญชีเต็มความกว้างจอ (14 ต.ค. 2569 · เวอร์ชัน 202610142300)
 - ผู้ใช้ (รูป ~1900px): "ทำไมไม่ชิดขอบ ช่องเว้นเยอะมาก" → เอา `max-width: 1600px; margin-inline: auto` ของ `#tab-account` ออก (ผู้ใช้ชอบเต็มจอเหมือนหน้าอื่น — **อย่าจำกัดความกว้างหน้าใดหน้าหนึ่งเอง**)
 - วัด acc.cjs: จอ 2560 การ์ดเริ่มที่ 288px (เดิม 610) · 2 คอลัมน์ยังจบระดับเดียวกัน · ไม่ล้น ไม่มี error
