@@ -613,7 +613,7 @@
    "id": "5m-1791936000000",
    "createdAt": 1791936000000,
    "expiresAt": 1792007100000,
-   "status": "active",
+   "status": "loss",
    "entryAt": 1791936000000,
    "side": "SELL",
    "entry": 4155.46,
@@ -628,10 +628,18 @@
    "hitAt": [],
    "stop": 4165.46,
    "realized": 0,
-   "pnl": -5.17,
-   "last": 4160.63
+   "pnl": -10,
+   "last": 4160.63,
+   "closedBy": "sl",
+   "exitPrice": 4165.46,
+   "exitAt": 1791936300000
   }
  ],
- "brakes": {},
- "updatedAt": 1791938368958
+ "brakes": {
+  "5m": {
+   "why": "แพ้ติดกัน 5 ไม้",
+   "until": 1792368000000
+  }
+ },
+ "updatedAt": 1791938721679
 }
