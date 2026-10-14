@@ -727,7 +727,13 @@
    "tp": 4145.07,
    "score": -6,
    "tf": "5m",
-   "paused": true
+   "paused": true,
+   "hit": 0,
+   "hitAt": [],
+   "stop": 4165.07,
+   "realized": 0,
+   "pnl": 2.93,
+   "last": 4152.14
   }
  ],
  "brakes": {
@@ -736,5 +742,5 @@
    "until": 1792368000000
   }
  },
- "updatedAt": 1791960021415
+ "updatedAt": 1791960321873
 }
