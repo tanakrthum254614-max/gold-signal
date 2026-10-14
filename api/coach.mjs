@@ -118,7 +118,8 @@ ${articles.map((a) => `### ${a.title}\n${clip(a.body, 1200)}`).join('\n') || '�
   } catch (e) { return fail('โค้ชตอบช้าเกินไป ลองใหม่อีกครั้ง', 504); }
   if (!r.ok) {
     console.error('coach gateway', r.status, (await r.text().catch(() => '')).slice(0, 300));
-    return fail(r.status === 402 ? 'เครดิต AI หมด แจ้งแอดมิน' : 'โค้ชไม่ว่างชั่วคราว ลองใหม่อีกครั้ง', 502);
+    // 402 = credits used up · 403 customer_verification_required = no card on the Vercel team yet (free credits locked)
+    return fail(r.status === 402 || r.status === 403 ? 'โค้ช AI ยังไม่พร้อมใช้งาน (รอแอดมินเปิดเครดิต AI) ลองใช้โหมด "ระบบ" ไปก่อน' : 'โค้ชไม่ว่างชั่วคราว ลองใหม่อีกครั้ง', 502);
   }
   const out = await r.json();
   const reply = clip(out.choices && out.choices[0] && out.choices[0].message && out.choices[0].message.content, 6000).trim();
