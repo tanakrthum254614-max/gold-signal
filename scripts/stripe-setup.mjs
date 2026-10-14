@@ -13,8 +13,9 @@ import { stripe } from '../lib/stripe.mjs';
 const arg = (k, d) => { const i = process.argv.indexOf(`--${k}`); return i > 0 ? process.argv[i + 1] : d; };
 const month = +arg('month'), year = +arg('year'), url = arg('url', 'https://gold-signal-ten.vercel.app'), tag = arg('label', '');
 if (!(month > 0 && year > 0)) { console.error('usage: --month <baht> --year <baht> [--url <site>]'); process.exit(1); }
-if (!process.env.STRIPE_SECRET_KEY) { console.error('set STRIPE_SECRET_KEY'); process.exit(1); }
-console.log(process.env.STRIPE_SECRET_KEY.startsWith('sk_live') ? '⚠️ LIVE mode' : 'test mode');
+const k = process.env.STRIPE_LIVE_SECRET_KEY || process.env.STRIPE_SECRET_KEY || '';
+if (!k) { console.error('set STRIPE_LIVE_SECRET_KEY or STRIPE_SECRET_KEY'); process.exit(1); }
+console.log(/_live_/.test(k) ? '⚠️ LIVE mode' : 'test mode');
 
 const product = await stripe('products', { name: `Gold Signal PRO${tag ? ` (${tag})` : ''}`, description: 'โค้ช AI ส่วนตัว + แดชบอร์ดทองคำและหุ้น' });
 const price = (amount, interval) => stripe('prices', { product: product.id, currency: 'thb', unit_amount: Math.round(amount * 100), recurring: { interval }, nickname: interval === 'month' ? 'รายเดือน' : 'รายปี' });
