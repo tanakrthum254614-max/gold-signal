@@ -8,7 +8,7 @@
 // https://ai-gateway.vercel.sh/v1/models). Each member gets AI_DAILY_LIMIT questions a day (default 30, Thai date).
 import { member, isAdmin, allowed, readJson, writeJson, json, fail, body, clip } from '../lib/gs.mjs';
 
-const MODEL = () => process.env.AI_COACH_MODEL || 'anthropic/claude-haiku-5.5';
+const MODEL = () => process.env.AI_COACH_MODEL || 'google/gemini-2.5-flash'; // in the team's free AI credit (Claude / DeepSeek need paid credit);
 const LIMIT = () => Math.max(1, +process.env.AI_DAILY_LIMIT || 30);
 const MOOD = { calm: 'สงบ', fear: 'กลัว', greed: 'โลภ', revenge: 'อยากเอาคืน', tired: 'เหนื่อย', fomo: 'กลัวตกรถ' };
 
