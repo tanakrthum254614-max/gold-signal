@@ -141,6 +141,22 @@ async function session(request) {
 }
 
 // Web-push devices of the signed-in member: GET → their devices, POST {endpoint, keys, device} → add, DELETE {endpoint}
+// ⭐ The gurus a member follows (US stocks → พอร์ตกูรู, 16 Oct 2026). Private Blob access/guru-follows.json { follows: { who: [cik…] } },
+// read by scripts/gurus-notify.js: a member following anyone gets guru alerts only for them. GET → { ciks }, POST (header
+// x-follow: base64 JSON { ciks }) → saved. At most 40 numbers.
+const FOLLOWS = 'access/guru-follows.json';
+async function guruFollowApi(request, m) {
+  const all = await readJson(FOLLOWS, { follows: {} });
+  if (request.method === 'GET') return json({ ciks: all.follows[m.id] || [] });
+  if (request.method !== 'POST') return json({ ok: false }, 405);
+  let body = {};
+  try { const h = request.headers.get('x-follow'); body = h ? JSON.parse(atob(h)) : await request.json(); } catch (e) { return json({ ok: false }, 400); }
+  const ciks = [...new Set((Array.isArray(body.ciks) ? body.ciks : []).map(Number).filter((n) => Number.isInteger(n) && n > 0 && n < 1e10))].slice(0, 40);
+  if (ciks.length) all.follows[m.id] = ciks; else delete all.follows[m.id];
+  await writeJson(FOLLOWS, all);
+  return json({ ok: true, ciks });
+}
+
 async function pushApi(request, m) {
   const who = m.id;
   const all = await readJson(SUBS, { subs: [] });
@@ -208,6 +224,7 @@ export default async function middleware(request) {
     return json({ name: who.name, email: who.email, admin: isAdmin(who) });
   }
   if (path === '/api/push') return pushApi(request, who);
+  if (path === '/api/gurus/follow') return guruFollowApi(request, who);
   if (path === '/api/visit' && request.method === 'POST') { await logEvent(request, who, 'visit').catch(() => {}); return json({ ok: true }); }
   if (path === '/api/zframes/quotes' && request.method === 'GET') return zframesQuotes(request);
   // Back office: members and the access log — admins only (ADMIN_EMAILS)

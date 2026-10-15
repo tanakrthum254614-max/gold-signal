@@ -46,6 +46,54 @@ function sched13(xml) {
   return { issuer: unent(tag(flat, 'issuerName')), cusip: tag(flat, 'issuerCusipNumber').toUpperCase(), pct: pct ? +pct[1] : null, shares: amt ? +amt[1] : null };
 }
 
+// ---- ARK daily holdings → trades. Snapshot per fund in gurus-ark.json { ARKK: { date, h: { TSLA: [shares, price] } } } ----
+const ARK_CIK = 1697748;
+const ARK = { ARKK: 'ARK_INNOVATION_ETF_ARKK_HOLDINGS', ARKW: 'ARK_NEXT_GENERATION_INTERNET_ETF_ARKW_HOLDINGS', ARKQ: 'ARK_AUTONOMOUS_TECH._%26_ROBOTICS_ETF_ARKQ_HOLDINGS',
+  ARKG: 'ARK_GENOMIC_REVOLUTION_ETF_ARKG_HOLDINGS', ARKF: 'ARK_FINTECH_INNOVATION_ETF_ARKF_HOLDINGS', ARKX: 'ARK_SPACE_%26_DEFENSE_INNOVATION_ETF_ARKX_HOLDINGS' };
+function csvRows(text) {
+  const rows = [];
+  for (const line of text.split(/\r?\n/).slice(1)) {
+    const cells = [...line.matchAll(/("([^"]*)"|[^,]*)(,|$)/g)].map((m) => (m[2] ?? m[1]).trim()).slice(0, 8);
+    if (cells.length < 7 || !cells[0] || !/\d/.test(cells[0])) continue;
+    const [date, fund, company, ticker, cusip, shares, value] = cells;
+    const sh = +shares.replace(/[,$]/g, ''), v = +value.replace(/[,$]/g, '');
+    if (sh > 0) rows.push({ date, fund, company, ticker: (ticker || '').replace(/\s.*/, '').toUpperCase(), cusip, sh, px: v / sh });
+  }
+  return rows;
+}
+async function arkTrades(file, prevItems) {
+  const snap = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {};
+  const items = [...prevItems].filter((x) => Date.now() - Date.parse(x.at) < DAYS * 864e5);
+  for (const [fund, name] of Object.entries(ARK)) {
+    let text = null;
+    try {
+      const r = await fetch(`https://assets.ark-funds.com/fund-documents/funds-etf-csv/${name}.csv`, { headers: { 'User-Agent': 'Mozilla/5.0 (GoldSignal)' }, signal: AbortSignal.timeout(15000) });
+      if (r.ok) text = await r.text();
+    } catch (e) { /* skipped this run */ }
+    const rows = text ? csvRows(text) : [];
+    if (!rows.length) { console.log(`ARK ${fund}: no file`); continue; }
+    const [m, d, y] = rows[0].date.split('/'), date = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    const now = Object.fromEntries(rows.filter((r) => r.ticker).map((r) => [r.ticker, [r.sh, +r.px.toFixed(4), r.company]]));
+    const old = snap[fund];
+    if (old && old.date < date) {
+      const moves = [];
+      for (const [t, [sh, px, co]] of Object.entries(now)) {
+        const was = old.h[t]?.[0] || 0;
+        if (Math.abs(sh - was) >= Math.max(1, was * 0.005)) moves.push({ s: t, co, d: sh - was, usd: Math.abs(sh - was) * px, px, new: !was });
+      }
+      for (const [t, [was, px, co]] of Object.entries(old.h)) if (!now[t]) moves.push({ s: t, co, d: -was, usd: was * px, px, exit: true });
+      moves.sort((a, b) => b.usd - a.usd);
+      if (moves.length) items.push({ acc: `ark-${fund}-${date}`, cik: ARK_CIK, th: 'แคธี่ วูด', en: 'Cathie Wood', form: `ARK ${fund}`, kind: 'ark', fund,
+        filed: date, at: `${date}T22:00:00.000Z`, url: `https://www.ark-funds.com/funds/${fund.toLowerCase()}`,
+        buys: moves.filter((x) => x.d > 0).slice(0, 6), sells: moves.filter((x) => x.d < 0).slice(0, 6) });
+      console.log(`ARK ${fund} ${old.date} → ${date}: ${moves.length} changes`);
+    }
+    if (!old || old.date < date) snap[fund] = { date, h: now };
+  }
+  fs.writeFileSync(file, JSON.stringify(snap));
+  return items.filter((x, i, a) => a.findIndex((y) => y.acc === x.acc) === i);
+}
+
 (async () => {
   const [out, gurusFile] = process.argv.slice(2);
   const have = fs.existsSync(gurusFile) ? JSON.parse(fs.readFileSync(gurusFile, 'utf8')) : { gurus: [] };
@@ -80,10 +128,18 @@ function sched13(xml) {
       items.push({ ...base, ...(extra || {}) });
     }
   }
+  // ARK (Cathie Wood) publishes every fund's holdings each day: the day-to-day change = her trades (kept with the filings)
+  const arkFile = require('path').join(require('path').dirname(out), 'gurus-ark.json');
+  const ark = await arkTrades(arkFile, prev.items.filter((x) => x.kind === 'ark'));
+  items.push(...ark);
   items.sort((a, b) => b.at.localeCompare(a.at));
   const body = { asOf: new Date().toISOString(), days: DAYS, items: items.slice(0, 200) };
   const changed = JSON.stringify(body.items) !== JSON.stringify(prev.items);
   if (changed) fs.writeFileSync(out, JSON.stringify(body));
-  console.log(`gurus-live: ${items.length} filings in ${DAYS} days · ${changed ? 'changed' : 'no change'}${new13F.length ? ` · NEW 13F: ${new13F.join(',')}` : ''}`);
+  // new buys / sells since the last run → scripts/gurus-notify.js (web push)
+  const seen = new Set(prev.items.map((x) => x.acc));
+  const fresh = body.items.filter((x) => (x.kind === 'f4' || x.kind === 'ark') && !seen.has(x.acc));
+  if (process.env.GURUS_NEW) fs.writeFileSync(process.env.GURUS_NEW, JSON.stringify(prev.items.length ? fresh : [])); // first run: nothing is "new"
+  console.log(`gurus-live: ${items.length} filings in ${DAYS} days (ARK ${ark.length}) · ${changed ? 'changed' : 'no change'} · new trades ${fresh.length}${new13F.length ? ` · NEW 13F: ${new13F.join(',')}` : ''}`);
   if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `new13f=${new13F.join(',')}\nchanged=${changed}\n`);
 })().catch((e) => { console.error(e); process.exit(1); });

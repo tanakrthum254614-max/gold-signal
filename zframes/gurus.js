@@ -36,13 +36,28 @@
     return { value: v + rest, ch: base ? (v - base) / g.total : null, live, n: g.top.length };
   }
 
+  // ⭐ followed gurus (user, 16 Oct 2026): saved on the server per member (/api/gurus/follow — guru alerts go only to
+  // them), with this browser's copy as a fallback. Followed ones come first.
+  let FOL = new Set();
+  try { FOL = new Set(JSON.parse(localStorage.getItem('gs-guru-follow') || '[]')); } catch (err) { /* storage blocked */ }
+  const saveFollows = () => {
+    const ciks = [...FOL];
+    try { localStorage.setItem('gs-guru-follow', JSON.stringify(ciks)); } catch (err) { /* ok */ }
+    fetch('/api/gurus/follow', { method: 'POST', headers: { 'x-follow': btoa(JSON.stringify({ ciks })) } }).catch(() => {});
+  };
+  fetch('/api/gurus/follow', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((j) => {
+    if (j && Array.isArray(j.ciks) && (j.ciks.length || !FOL.size)) { FOL = new Set(j.ciks.map(Number)); paint(); paintLive(); }
+    else if (j && FOL.size) saveFollows(); // a follow list saved only in this browser → the server
+  }).catch(() => {});
+  const star = (g) => `<span class="gu-star${FOL.has(g.cik) ? ' on' : ''}" data-follow="${g.cik}" role="button" aria-label="${FOL.has(g.cik) ? 'เลิกติดตาม' : 'ติดตาม'} ${e(g.th)}" title="${FOL.has(g.cik) ? 'เลิกติดตาม' : 'ติดตาม — แจ้งเตือนเมื่อคนนี้ซื้อขาย'}">${FOL.has(g.cik) ? '★' : '☆'}</span>`;
+
   function guruCards() {
     const sort = document.querySelector('[data-gsort].on')?.dataset.gsort || 'value';
     const list = G.gurus.map((g) => ({ g, L: liveGuru(g) }));
-    list.sort((a, b) => (sort === 'filed' ? b.g.filed.localeCompare(a.g.filed) : sort === 'ch' ? (b.L.ch ?? -9) - (a.L.ch ?? -9) : b.L.value - a.L.value));
-    return list.map(({ g, L }) => `<button type="button" class="gu" data-guru="${g.cik}">
+    list.sort((a, b) => (FOL.has(b.g.cik) - FOL.has(a.g.cik)) || (sort === 'filed' ? b.g.filed.localeCompare(a.g.filed) : sort === 'ch' ? (b.L.ch ?? -9) - (a.L.ch ?? -9) : b.L.value - a.L.value));
+    return list.map(({ g, L }) => `<button type="button" class="gu${FOL.has(g.cik) ? ' fol' : ''}" data-guru="${g.cik}">
       ${avatar(g)}
-      <span class="gu-n"><b>${e(g.th)}</b><small>${e(g.fund)} · ${e(g.style)}</small>
+      <span class="gu-n"><b>${star(g)} ${e(g.th)}</b><small>${e(g.fund)} · ${e(g.style)}</small>
         <small>อันดับ 1: <b>${e(g.top[0]?.s || g.top[0]?.name || '—')}</b> ${g.top[0] ? `${g.top[0].w}%` : ''} · ${g.count} ตัว${stale(g) ? ' · <i class="gu-old">หยุดยื่นรายงาน</i>' : ''}</small></span>
       <span class="gu-v"><b class="mono" data-gv="${g.cik}">${money(L.value)}</b><small class="mono ${cls(L.ch)}" data-gc="${g.cik}">${pct(L.ch, 2)}</small><small>${qLabel(g.period)}</small></span>
     </button>`).join('');
@@ -94,7 +109,7 @@
     const g = G.gurus.find((x) => String(x.cik) === String(cik)); if (!g) return;
     const m = document.createElement('div'); m.className = 'modal';
     m.innerHTML = `<div class="mbox mfull" data-gpanel="${g.cik}"><button class="mx" type="button" aria-label="ปิด">✕</button>
-      <div class="gu-hd">${avatar(g, true)}<div><h2>${e(g.th)} <small>${e(g.en)}</small></h2>
+      <div class="gu-hd">${avatar(g, true)}<div><h2>${star(g)} ${e(g.th)} <small>${e(g.en)}</small></h2>
         <p class="muted">${e(g.fund)} (${e(g.filer)}) · ${e(g.style)} · ${qLabel(g.period)} · ยื่น ${thDate(g.filed)}${stale(g) ? ' · <b class="down">หยุดยื่นรายงานแล้ว — ข้อมูลล่าสุดที่มี</b>' : ''}</p></div>
         <div class="gu-v"><b class="mono" data-gtot>—</b><small class="mono" data-gtc>—</small><small>${g.count} ตัว · ตั้งแต่สิ้นไตรมาส</small></div></div>
       <section class="card"><h3><span>หุ้นในพอร์ต (${Math.min(g.top.length, g.count)} อันดับแรก)</span><small>ราคาสด × จำนวนหุ้นที่รายงาน</small></h3>
@@ -111,8 +126,10 @@
   }
 
   document.addEventListener('click', (ev) => {
-    const s = ev.target.closest('[data-gsort], [data-gact]');
-    if (s) { s.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === s)); paint(); return; }
+    const fo = ev.target.closest('[data-follow]'); // ⭐ inside a guru card: follow / unfollow, don't open the card
+    if (fo) { ev.preventDefault(); ev.stopPropagation(); const c = +fo.dataset.follow; if (FOL.has(c)) FOL.delete(c); else FOL.add(c); saveFollows(); paint(); paintLive(); return; }
+    const s = ev.target.closest('[data-gsort], [data-gact], [data-glive]');
+    if (s) { s.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === s)); paint(); paintLive(); return; }
     if (ev.target.closest('a')) return; // SEC links open in a new tab, not the guru page
     const g = ev.target.closest('#gurus [data-guru]'); if (g) return openGuru(g.dataset.guru);
     const st = ev.target.closest('#gurus tr[data-stock]'); if (st && window.dash?.stockMap?.[st.dataset.stock] && typeof openStock === 'function') openStock(st.dataset.stock);
@@ -125,10 +142,14 @@
   // ⚡ live SEC filings (scripts/gurus-live.js every 10 min → dashboards/gurus-live.json): Form 4 buys / sells,
   // 13D / 13G stakes, new 13F — user, 16 Oct 2026: "ขอทุกอย่างแบบเรียลไทม์". Re-read every 2 minutes.
   let LV = null;
-  const KIND = { f4: 'ฟอร์ม 4 · ซื้อขายจริง', '13d': '13D · ถือเกิน 5% (เชิงรุก)', '13g': '13G · ถือเกิน 5%', '13f': '13F · พอร์ตไตรมาสใหม่' };
+  const KIND = { f4: 'ฟอร์ม 4 · ซื้อขายจริง', '13d': '13D · ถือเกิน 5% (เชิงรุก)', '13g': '13G · ถือเกิน 5%', '13f': '13F · พอร์ตไตรมาสใหม่', ark: 'ARK · ซื้อขายรายวัน' };
   const ago = (iso) => { const m = Math.round((Date.now() - Date.parse(iso)) / 60e3); return m < 60 ? `${m} นาทีที่แล้ว` : m < 1440 ? `${Math.round(m / 60)} ชม.ที่แล้ว` : `${Math.round(m / 1440)} วันที่แล้ว`; };
   const num = (v) => (v >= 1e6 ? `${(v / 1e6).toFixed(2)} ล้าน` : Math.round(v).toLocaleString('en-US'));
   function liveText(x) {
+    if (x.kind === 'ark') { // ARK's own daily holdings, day over day (scripts/gurus-live.js arkTrades)
+      const one = (m) => `<b>${e(m.s)}</b> ${m.d > 0 ? '+' : '−'}${num(Math.abs(m.d))} หุ้น${m.new ? ' (ใหม่)' : m.exit ? ' (ขายหมด)' : ''} <small>≈ ${money(m.usd)}</small>`;
+      return `กองทุน <b>${e(x.fund)}</b> · ${thDate(x.filed)}${x.buys?.length ? `<br><span class="gact up">ซื้อ</span> ${x.buys.map(one).join(' · ')}` : ''}${x.sells?.length ? `<br><span class="gact down">ขาย</span> ${x.sells.map(one).join(' · ')}` : ''}`;
+    }
     const s = x.symbol ? `<b>${e(x.symbol)}</b>` : `<b>${e(x.issuer || '—')}</b>`;
     if (x.kind === 'f4') {
       const parts = [];
@@ -144,11 +165,14 @@
   }
   const liveRows = (list) => list.map((x) => { const g = G?.gurus.find((y) => y.cik === x.cik);
     return `<li data-guru="${x.cik}">${g ? avatar(g) : ''}<div><div class="lv-h"><b>${e(x.th)}</b><span class="lv-k ${x.kind}">${KIND[x.kind] || e(x.form)}</span><small>${ago(x.at)}</small></div>
-      <div class="lv-t">${liveText(x)}</div><a class="lv-a" href="${e(x.url)}" target="_blank" rel="noopener">เอกสาร SEC ↗</a></div></li>`; }).join('');
+      <div class="lv-t">${liveText(x)}</div><a class="lv-a" href="${e(x.url)}" target="_blank" rel="noopener">${x.kind === 'ark' ? 'หน้ากองทุน ARK ↗' : 'เอกสาร SEC ↗'}</a></div></li>`; }).join('');
   function paintLive() {
     const el = document.getElementById('guLive'); if (!el) return;
     if (!LV) { el.innerHTML = '<p class="muted">กำลังโหลด…</p>'; return; }
-    el.innerHTML = LV.items.length ? `<ul class="gu-live">${liveRows(LV.items.slice(0, 20))}</ul>` : `<p class="muted">ยังไม่มีรายงานใหม่ใน ${LV.days} วัน</p>`;
+    const only = document.querySelector('[data-glive].on')?.dataset.glive === 'fol';
+    const list = LV.items.filter((x) => !only || FOL.has(x.cik));
+    el.innerHTML = list.length ? `<ul class="gu-live">${liveRows(list.slice(0, 20))}</ul>`
+      : `<p class="muted">${only ? (FOL.size ? 'คนที่ติดตามยังไม่มีรายงานใหม่' : 'ยังไม่ได้ติดตามใคร — กด ☆ ที่การ์ดกูรูด้านล่าง') : `ยังไม่มีรายงานใหม่ใน ${LV.days} วัน`}</p>`;
     const st = document.getElementById('guLiveAt'); if (st) st.textContent = `ข้อมูล SEC ถึง ${new Date(LV.asOf).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })} · เช็กทุก 10 นาที`;
   }
   async function loadLive() {
@@ -156,7 +180,9 @@
   }
   setInterval(() => { if (!document.hidden) loadLive(); }, 120e3);
   setInterval(() => { if (!document.hidden && document.getElementById('gurus')?.hidden === false) paintLive(); }, 30e3); // "x นาทีที่แล้ว" + live price
-  FRAMES.guruLive = () => '<div id="guLive"><p class="muted">กำลังโหลด…</p></div><p class="gu-credit" id="guLiveAt"></p>';
+  FRAMES.guruLive = () => `<div class="chips"><button type="button" data-glive="all" class="on">ทั้งหมด</button><button type="button" data-glive="fol">⭐ เฉพาะที่ติดตาม</button></div>
+    <div id="guLive"><p class="muted">กำลังโหลด…</p></div><p class="gu-credit" id="guLiveAt"></p>
+    <p class="gu-credit">🔔 แจ้งเตือนบนเครื่องเมื่อกูรูซื้อขาย (ฟอร์ม 4 · ARK รายวัน): เปิด "แจ้งเตือน" ที่แท็บบัญชี · ถ้ากด ☆ ติดตามไว้ จะแจ้งเฉพาะคนที่ติดตาม</p>`;
 
   // app.js calls this after loading a dashboard: adds the tab and the gurus' tickers to the live price feed
   window.GURUS = {

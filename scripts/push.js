@@ -22,7 +22,7 @@ function toNote(text, i) {
   const lines = String(text).trim().split('\n').map((l) => l.trim()).filter(Boolean);
   const title = (lines.shift() || 'Gold Signal').slice(0, 80);
   const body = lines.join('\n').slice(0, 300);
-  return { title, body, tag: `gs-${Date.now()}-${i}`, url: '/' };
+  return { title, body, tag: `gs-${Date.now()}-${i}`, url: /^🔔/.test(title) ? '/#zframes' : '/' }; // guru alerts open หุ้นสหรัฐ
 }
 
 // opts.adminsOnly: only the devices marked admin: true by middleware.js (e.g. "new member" messages)
@@ -39,8 +39,10 @@ async function push(texts, opts = {}) {
     let sent = 0, failed = 0;
     const dead = new Set();
     const targets = opts.adminsOnly ? data.subs.filter((s) => s.admin) : data.subs;
+    // opts.pick(sub, i): send note i to this device? (guru alerts go only to members following that guru — gurus-notify.js)
     for (const sub of targets) {
-      for (const n of notes) {
+      for (const [i, n] of notes.entries()) {
+        if (opts.pick && !opts.pick(sub, i)) continue;
         try {
           await webpush.sendNotification({ endpoint: sub.endpoint, keys: sub.keys }, JSON.stringify(n), { TTL: 3600, urgency: 'high' });
           sent++;

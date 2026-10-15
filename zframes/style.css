@@ -477,3 +477,9 @@ html.light .gu-av.mark { background: radial-gradient(circle at 30% 25%, #fff8e1,
 .lv-a { font-size: 11px; color: var(--muted); }
 html.light .gu-live li { background: #fff; border-color: #ece6d8; }
 @media (max-width: 700px) { .gu-live { grid-template-columns: 1fr; } }
+/* ⭐ follow + ARK daily rows */
+.gu-star { cursor: pointer; color: var(--muted); font-size: 15px; line-height: 1; padding: 2px; border-radius: 4px; }
+.gu-star:hover { color: #f0b90b; } .gu-star.on { color: #f0b90b; }
+.gu.fol { border-color: rgba(240, 185, 11, .55); }
+.gu-hd h2 .gu-star { font-size: 20px; }
+.lv-k.ark { color: #a78bfa; background: rgba(167, 139, 250, .14); }
