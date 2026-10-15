@@ -186,7 +186,7 @@ const CALC = {
   'idx.rsi': f => { const I = liveIndex(); return { ...f, headline: I.rsi.toFixed(0), sub: (I.rsi >= 70 ? 'ซื้อมากเกิน (Overbought)' : I.rsi <= 30 ? 'ขายมากเกิน (Oversold)' : 'กลาง ๆ') + ' · สด', lines: withLast(f.lines, I.rsi) }; },
   'idx.breadth': f => { const B = breadthLive(); return { ...f, headline: `${B.e50?.toFixed(0)}%`, sub: `เหนือ EMA200 ${B.e200?.toFixed(0)}% · ใกล้จุดสูงสุด ${B.near} ตัว · RSI≥70 ${B.ob} · ≤30 ${B.os}`, lines: withLast(f.lines, B.e50) }; },
   'idx.sectors': f => ({ ...f, rows: sectorsLive(f.metric).map(g => ({ label: `${g.sector} (${g.n})`, value: g.v, display: pct2(g.v) })) }),
-  'idx.signals': f => ({ ...f, rows: Object.entries(breadthLive().sig).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ label: k, value: v, display: String(v), color: '#c4b5fd' })) }),
+  'idx.signals': f => ({ ...f, rows: Object.entries(breadthLive().sig).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ label: k, value: v, display: String(v), color: '#f0b90b' })) }),
   // ---------- มหภาค ----------
   'macro.board': f => {
     const M = window.dash.macroLive || {}, y10 = QS['^TNX'];

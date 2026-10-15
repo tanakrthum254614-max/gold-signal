@@ -137,7 +137,7 @@ function stockCandleCard(s) {
     <div class="sh"><div><div class="big" data-sc-px>—</div><div class="muted sc-read" data-sc-read>กำลังโหลด…</div></div>
     <div class="rngs">${Object.entries(SC_IV).map(([k, [l]]) => `<button class="rng sciv ${k === '1d' ? 'on' : ''}" data-iv="${k}">${l}</button>`).join('')}</div></div>
     <div class="scbox"><div class="empty">กำลังโหลดแท่งเทียน…</div></div>
-    <div class="legend sc-leg"><span><i style="background:#34d399"></i>EMA20</span><span><i style="background:#fbbf24"></i>EMA50</span><span class="sc-e200"><i style="background:#f472b6"></i>EMA200</span><span><i style="background:rgba(196,181,253,.5)"></i>Volume</span></div></div></section>`;
+    <div class="legend sc-leg"><span><i style="background:#34d399"></i>EMA20</span><span><i style="background:#fbbf24"></i>EMA50</span><span class="sc-e200"><i style="background:#f472b6"></i>EMA200</span><span><i style="background:rgba(240,185,11,.45)"></i>Volume</span></div></div></section>`;
 }
 async function loadStockCandles(el) {
   const s = el.dataset.scs, iv = el.querySelector('.sciv.on')?.dataset.iv || '1d', seq = el._seq = (el._seq || 0) + 1;
@@ -243,7 +243,7 @@ function openStock(s) {
   const common = pts.filter(p => idxBy.has(day(p.t)));
   const rel = common.length > 20 ? [
     { name: s, color: '#60a5fa', points: common.map(p => ({ t: p.t, v: +(p.v / common[0].v * 100).toFixed(2) })) },
-    { name: idxName, color: '#a78bfa', points: common.map(p => ({ t: p.t, v: +(idxBy.get(day(p.t)) / idxBy.get(day(common[0].t)) * 100).toFixed(2) })) }] : null;
+    { name: idxName, color: '#848e9c', points: common.map(p => ({ t: p.t, v: +(idxBy.get(day(p.t)) / idxBy.get(day(common[0].t)) * 100).toFixed(2) })) }] : null;
   // risk: daily returns, beta / correlation vs the index, best / worst day, up days, max drawdown
   const ret = S.C.slice(1).map((v, i) => v / S.C[i] - 1);
   const sd = a => { const m = a.reduce((x, y) => x + y, 0) / a.length; return Math.sqrt(a.reduce((x, y) => x + (y - m) ** 2, 0) / a.length); };
@@ -284,7 +284,7 @@ function openStock(s) {
   const cur = v => (v == null ? '—' : `<span class="${chCls(v)}">${pct2(v)}</span>`);
 
   const rsiF = renderFrame({ type: 'series', title: 'RSI 14', source: 'คำนวณจากราคาปิด', headline: rsiNow?.toFixed(0), sub: rsiNow >= 70 ? 'ซื้อมากเกิน' : rsiNow <= 30 ? 'ขายมากเกิน' : 'ปกติ', fmt: 'num', decimals: 0,
-    lines: [{ name: 'RSI', color: '#c4b5fd', points: S.line(S.rsi, 14) }], refs: [{ v: 70, label: '70' }, { v: 30, label: '30' }],
+    lines: [{ name: 'RSI', color: '#f0b90b', points: S.line(S.rsi, 14) }], refs: [{ v: 70, label: '70' }, { v: 30, label: '30' }],
     ranges: [{ label: '3M', days: 92 }, { label: '6M', days: 183 }, { label: '1Y', days: 366 }], defaultRange: '6M', area: false, height: 140 });
   const macdF = renderFrame({ type: 'series', title: 'MACD 12/26/9', source: 'คำนวณจากราคาปิด', headline: macdNow?.toFixed(2), sub: macdNow > sigNow ? 'เหนือเส้นสัญญาณ (โมเมนตัมขึ้น)' : 'ใต้เส้นสัญญาณ (โมเมนตัมลง)', fmt: 'num', decimals: 2,
     lines: [{ name: 'MACD', color: '#60a5fa', points: S.line(S.macd, 26) }, { name: 'Signal', color: '#fbbf24', points: S.line(S.sig, 34), width: 1.1 }], refs: [{ v: 0, label: '0' }],

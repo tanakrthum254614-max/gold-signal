@@ -1276,6 +1276,7 @@ function renderIntra() {
     : '';
 
   $('inNews').innerHTML = newsTimelineHtml(now);
+  renderInFlags(now, trades);
 
   // Today's trades
   const todayId = SIG.thaiDate(now);
@@ -1589,6 +1590,31 @@ async function refreshNews() {
 }
 
 // Today's high-impact news as a timeline (passed / happening now / coming)
+// One line of flags on the main card (16 Oct 2026 — the news / today's trades card was removed from the home tab):
+// ⏸ news pause only while a high-impact US release is within ±newsMin minutes (and the main timeframe skips news),
+// today's trades only when there are any. Nothing to say → the line is hidden.
+function renderInFlags(now, trades) {
+  const el = $('inFlags'), out = [];
+  const w = INTRA.RULE.newsMin * 60e3;
+  if (mainSys().news) {
+    const hot = (state.news || []).filter((n) => Math.abs(n.time - now) <= w).sort((a, b) => a.time - b.time);
+    if (hot.length) {
+      const until = hot[hot.length - 1].time + w;
+      const names = hot.map((n) => n.title).join(' · ');
+      out.push(`<span class="in-flag news">⏸ งดเข้า — ข่าว ${names} ${hhmm(hot[0].time)} น. · ถึง ${hhmm(until)} น.</span>`);
+    }
+  }
+  const todayId = SIG.thaiDate(now);
+  const today = trades.filter((t) => t.id.startsWith(todayId));
+  if (today.length) {
+    const done = today.filter((t) => t.status === 'win' || t.status === 'loss');
+    const sum = SIG.round(done.reduce((a, t) => a + (t.pnl || 0), 0));
+    out.push(`<span class="in-flag today">⏱️ ไม้วันนี้ ${today.length} ไม้ · ปิดแล้ว ${done.length}${done.length ? ` · <b class="mono ${sum >= 0 ? 'up' : 'down'}">${money(sum)}</b>/ออนซ์` : ''}</span>`);
+  }
+  el.innerHTML = out.join('');
+  el.hidden = !out.length;
+}
+
 function newsTimelineHtml(now) {
   const w = INTRA.RULE.newsMin * 60e3;
   const close = INTRA.nextClose(now);

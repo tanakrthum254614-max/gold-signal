@@ -352,3 +352,10 @@ html.vp-scaled .nf-title, html.vp-scaled .st-title { font-size: 18px; }
 
 /* home tab: daily overview block removed from view (16 Oct, "เอาอันนี้ออก") */
 .home-off { display: none !important; }
+
+/* main card flags (16 Oct): news pause / today's trades — one small line under the verdict */
+.in-flags { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 6px 0 10px; }
+.in-flags[hidden] { display: none; }
+.in-flag { font-size: 12.5px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line); background: rgba(255,255,255,.03); color: var(--muted); }
+.in-flag.news { color: #f0b90b; border-color: rgba(240,185,11,.45); background: rgba(240,185,11,.08); }
+.in-flag b.up { color: #0ecb81; } .in-flag b.down { color: #f6465d; }

@@ -32,7 +32,8 @@ function thDash(d) {
   });
 }
 
-async function j(url) { const r = await fetch(url); if (!r.ok) throw new Error(r.status); return r.json(); }
+// dashboards JSON (zframes-refresh) still names the old purple accent for some series → the site's gold (16 Oct 2026)
+async function j(url) { const r = await fetch(url); if (!r.ok) throw new Error(r.status); return JSON.parse((await r.text()).replace(/#c4b5fd/gi, '#f0b90b')); }
 
 async function loadList() {
   const list = [
