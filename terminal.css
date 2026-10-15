@@ -374,3 +374,9 @@ html.vp-scaled #tab-account p.muted a { display: inline-block; padding: 11px 0; 
    tapping a field doesn't zoom the page in (and leave it zoomed) */
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 html.vp-scaled input, html.vp-scaled select, html.vp-scaled textarea { font-size: 16px; }
+
+/* Scaled phones with viewport-fit=cover (16 Oct 2026): keep the menu and the page clear of the notch / rounded corners in
+   landscape. env() is 0 everywhere else (desktop, Android without a cutout). */
+html.vp-scaled body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+html.vp-scaled #tabbar.tabbar { left: env(safe-area-inset-left); }
+html.vp-scaled #app > .appbar { padding-right: calc(16px + env(safe-area-inset-right)); }

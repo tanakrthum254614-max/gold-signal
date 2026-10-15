@@ -13,7 +13,9 @@
       document.documentElement.classList.add('vp-scaled');
       // iPhone (user's phone: iPhone 13, 16 Oct): Safari keeps screen.width/height in portrait values and its innerWidth is the
       // layout width we set, so the orientation comes from screen.orientation / window.orientation, not innerWidth.
-      // No viewport-fit=cover on scaled phones: Safari then keeps the page clear of the notch in landscape.
+      // viewport-fit=cover (16 Oct, user's iPhone 13 photo): without it Safari pads the notch side in landscape but still sizes
+      // fixed layers to the whole screen, so the splash sat ~110 px to the right and ran off the edge. With cover the page is the
+      // whole screen and terminal.css keeps the menu and content clear of the notch (env(safe-area-inset-*)).
       // minimum-scale = initial-scale so iOS re-applies the scale after a rotation and can't stay zoomed out.
       function land() {
         if (screen.orientation && screen.orientation.type) return /landscape/.test(screen.orientation.type);
@@ -22,7 +24,7 @@
       }
       function fit() {
         var w = Math.round((land() ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)) * S), k = (1 / S).toFixed(4);
-        document.getElementById('vp').setAttribute('content', 'width=' + w + ', initial-scale=' + k + ', minimum-scale=' + k);
+        document.getElementById('vp').setAttribute('content', 'width=' + w + ', initial-scale=' + k + ', minimum-scale=' + k + ', viewport-fit=cover');
       }
       fit();
       addEventListener('orientationchange', function () { setTimeout(fit, 150); setTimeout(fit, 600); });
@@ -47,7 +49,7 @@
   <link rel="stylesheet" href="live.css?v=202610141600">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
-  <link rel="stylesheet" href="terminal.css?v=202610161100">
+  <link rel="stylesheet" href="terminal.css?v=202610162300">
   <link rel="stylesheet" href="splash.css?v=202610162200">
   <script>/* apply the saved theme before the first paint */ var gsT = "dark"; try { gsT = localStorage.getItem("gs-theme") === "light" ? "light" : "dark"; } catch (e) {} /* dark trading terminal = default since 14 Oct 2026 */ if (gsT === "dark") { document.getElementById("themeLight").disabled = true; document.documentElement.classList.add("dark"); document.querySelector("meta[name=theme-color]").content = "#0b0e11"; }</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -580,7 +582,7 @@
 
         <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610162200 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610162300 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
