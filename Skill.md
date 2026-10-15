@@ -299,6 +299,9 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 📮 LINE: ข้อความตอบอัตโนมัติ + รูปชวนเพิ่มเพื่อน QR (16 ต.ค. 2569 · ไม่ได้แก้เว็บ)
+- ผู้ใช้: "ทำต่อ้ลย" → `gold-signal-tools/lineqr.cjs <outDir> <previewDir>` (npm qrcode, ECC H + โลโก้กลาง) → Downloads gold-signal-line-addfriend-poster.png (1080×1350) / -square.png (1080×1080) · QR = https://line.me/R/ti/p/@279arudw — ถอดด้วย jsQR แล้วอ่านได้ทั้งสองไฟล์ · gold-signal-line-ตั้งค่า.txt เพิ่มข้อ 5 ข้อความ Auto-response (ตอบทุกข้อความ: ตอบแชทไม่ได้ → ปุ่มเมนู/เว็บ) และข้อ 6 รูป QR · ข้อความตอบกลับ (reply) ไม่กินโควตา
+
 ## 📨 กันโควตา LINE (16 ต.ค. 2569 · เวอร์ชัน 202610161400)
 - ผู้ใช้: "ต้องเพิ่มอะไรไหมที่สำคัญ" → ชี้ว่า LINE ฟรี 300/เดือนนับต่อคน (51/เดือน × 6 เพื่อน ≈ เกิน → หยุดส่งรวมสัญญาณ) → "ทำมา" · notify.js kinds signal/extra/admin + lineRoom (สำรองสัญญาณ 15 รอบ) · morning-plan/intraday-run/weekly = extra · notify-failure/line-quota = admin (เดิม broadcast ถึงทุกคน) · หน้าบัญชีบอกให้เปิดแจ้งเตือนบนเครื่อง · test-notify-kinds.js ผ่าน 8 กรณี · ตอนนี้เพื่อน 1 คน = ส่ง LINE ครบเหมือนเดิม · ผลจริง 8 วันแรก (chart-signals.json): 1h BUY 2 ไม้ (1/1, −23.5) · 5m BUY 11 (6/5, +5.1) · 5m SELL 14 (4/10, −51.2) · 30m BUY 6 (2/4) — น้อยเกินสรุป · commit 9b6b2fc
 
