@@ -63,6 +63,7 @@ async function load() {
   }
   thDash(dash); // Thai labels
   window.SITE_CARDS?.inject(dash); // inside the Gold Signal site: signals / news / live record cards (site-cards.js)
+  await window.GURUS?.inject(dash); // พอร์ตกูรู tab (gurus.js, 16 Oct 2026) — before connectLive so its tickers get live prices
   window.dash = dash;
   dash.stockMap = Object.fromEntries((dash.stocks || []).map(x => [x.s, x]));
   FRAME_DATA.length = 0;

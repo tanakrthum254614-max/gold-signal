@@ -31,4 +31,13 @@ build ndx models/stocks_model.py ndx
 build spx models/stocks_model.py spx
 build div models/div_model.py
 [ -n "$done_list" ] || { echo "no dashboard refreshed"; exit 1; }
+# พอร์ตกูรู (16 Oct 2026): SEC 13F holdings of 28 gurus + quarter-on-quarter moves. Kept only if it still has ≥ 20 gurus
+# (SEC / OpenFIGI down → yesterday's file). The CUSIP → ticker cache lives next to it on the data branch.
+echo "── gurus ──"
+if timeout 1200 node scripts/gurus-13f.js /tmp/gurus.json zframes/dashboards/gurus-cusip.json \
+   && node -e 'process.exit(JSON.parse(require("fs").readFileSync("/tmp/gurus.json")).gurus.length >= 20 ? 0 : 1)'; then
+  cp /tmp/gurus.json zframes/dashboards/gurus.json && done_list="$done_list gurus"
+else
+  echo "⚠️ gurus failed — keeping the previous file"
+fi
 data_save "Dashboards refresh $(TZ=Asia/Bangkok date '+%F %H:%M'):$done_list"

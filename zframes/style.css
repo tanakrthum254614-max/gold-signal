@@ -410,3 +410,35 @@ html.site-scaled .rng { min-width: 48px; }
 /* iPhone: no automatic text enlarging in landscape; 16px fields so tapping the search box doesn't zoom */
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 html.site-scaled input, html.site-scaled select { font-size: 16px; }
+
+/* ---------- พอร์ตกูรู (gurus.js, 16 Oct 2026) — dark + gold, light mode below ---------- */
+#gurus .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+#gurus .chips button { font: inherit; font-size: 12.5px; cursor: pointer; color: var(--dim); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; background: #1e2329; }
+#gurus .chips button.on { color: #0b0e11; background: #f0b90b; border-color: #f0b90b; }
+.gu-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 8px; }
+.gu { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; text-align: left; font: inherit; color: var(--ink); cursor: pointer;
+  background: #1e2329; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.gu:hover { border-color: #f0b90b; }
+.gu-av { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 15px; color: #0b0e11;
+  background: linear-gradient(135deg, #fff1b8, #f0b90b 55%, #b8860b); flex: none; }
+.gu-av.big { width: 64px; height: 64px; font-size: 22px; }
+.gu-n { display: grid; gap: 1px; min-width: 0; } .gu-n b { font-size: 14px; } .gu-n small { color: var(--muted); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gu-n small b { font-size: 11.5px; color: var(--dim); }
+.gu-old { color: var(--down); font-style: normal; }
+.gu-v { display: grid; justify-items: end; gap: 1px; } .gu-v b { font-size: 15px; } .gu-v small { font-size: 11.5px; color: var(--muted); }
+.gu-v small.up { color: var(--up); } .gu-v small.down { color: var(--down); }
+.gu-hd { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding-right: 40px; }
+.gu-hd h2 { margin: 0; font-size: 20px; } .gu-hd h2 small { color: var(--muted); font-size: 13px; font-weight: 500; } .gu-hd p { margin: 2px 0 0; font-size: 12.5px; }
+.gu-hd .gu-v b { font-size: 22px; }
+table.gt td small { display: block; color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+table.gt td.r, table.gt th.r { text-align: right; }
+table.gt tr[data-guru], table.gt tr[data-stock], table.gt tr.click { cursor: pointer; }
+.gact { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.gact.up { color: var(--up); background: rgba(14, 203, 129, .12); } .gact.down { color: var(--down); background: rgba(246, 70, 93, .12); }
+.gmv { display: flex; flex-wrap: wrap; gap: 6px; }
+.gw { display: inline-block; vertical-align: middle; width: 46px; height: 6px; margin-right: 6px; border-radius: 3px; background: linear-gradient(90deg, #f0b90b var(--w), rgba(255, 255, 255, .08) var(--w)); }
+html.light #gurus .chips button { background: #fff; border-color: #ece6d8; color: #4a4f5c; }
+html.light #gurus .chips button.on { background: #f0b429; border-color: #f0b429; color: #1f2430; }
+html.light .gu { background: #fff; border-color: #ece6d8; } html.light .gu:hover { border-color: #b9800c; }
+html.light .gw { background: linear-gradient(90deg, #d9a21b var(--w), rgba(0, 0, 0, .07) var(--w)); }
+@media (max-width: 700px) { .gu-list { grid-template-columns: 1fr; } .gu-hd { grid-template-columns: auto 1fr; } .gu-hd .gu-v { grid-column: 1 / -1; justify-items: start; } }
