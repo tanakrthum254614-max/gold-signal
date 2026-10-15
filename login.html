@@ -91,7 +91,10 @@
       try {
         const token = await window.Clerk.session.getToken();
         const r = await fetch('/api/session', { method: 'POST', headers: { authorization: `Bearer ${token}` } });
-        if (r.ok) { location.replace('/'); return; }
+        // back to the tab the link asked for (LINE rich menu, 16 Oct 2026: /#chart → login → /#chart), also after Google sign-in
+        let back = '';
+        try { back = sessionStorage.getItem('gs-back') || ''; sessionStorage.removeItem('gs-back'); } catch (e) { /* storage blocked */ }
+        if (r.ok) { location.replace('/' + back); return; }
         if (r.status === 403) { await window.Clerk.signOut().catch(() => {}); status('⛔ บัญชีนี้ถูกระงับการใช้งาน — ติดต่อผู้ดูแลที่ tanakrthum254614@gmail.com', true); return; }
         status('ยืนยันบัญชีไม่สำเร็จ ลองรีเฟรชหน้าอีกครั้ง', true);
       } catch (e) { status('เชื่อมต่อไม่ได้ ลองรีเฟรชหน้าอีกครั้ง', true); }
@@ -133,6 +136,7 @@
       $('tabs').hidden = false;
       $('tabs').addEventListener('click', (e) => e.target.dataset.mode && show(e.target.dataset.mode));
       show(location.hash === '#signup' ? 'up' : 'in');
+      if (/^#(home|stats|chart|zframes|journal|account)$/.test(location.hash)) { try { sessionStorage.setItem('gs-back', location.hash); } catch (e) { /* ok */ } }
       Clerk.addListener(({ user }) => { if (user) enter(); });
     })().catch((e) => { console.error(e); status(e.message || 'ระบบเข้าสู่ระบบมีปัญหา ลองรีเฟรชหน้าอีกครั้ง', true); });
   </script>
