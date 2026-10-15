@@ -78,6 +78,12 @@ async function commonsSearch(name, H) {
   return null;
 }
 async function logo(domain) {
+  // checked-by-eye copies live in zframes/gurus-logos/ (the icon services answer GitHub's servers only some of the time)
+  const dir = require('path').join(__dirname, '..', 'zframes', 'gurus-logos');
+  for (const ext of ['png', 'ico']) {
+    const f = require('path').join(dir, `${domain}.${ext}`);
+    if (fs.existsSync(f)) return { url: `./gurus-logos/${domain}.${ext}`, logo: true, by: domain, lic: 'โลโก้ของกองทุน', page: `https://${domain}` };
+  }
   for (const url of [`https://www.google.com/s2/favicons?domain=${domain}&sz=128`, `https://icons.duckduckgo.com/ip3/${domain}.ico`]) {
     try {
       const r = await fetch(url, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(10000) });
