@@ -136,3 +136,9 @@ html.dark .sp-panel { background:
 .sp-cbar i::before { content: ""; position: absolute; left: 22%; right: 22%; top: 38%; bottom: 30%; border-radius: 1.5px; background: rgba(255, 255, 255, .06); }
 .sp-cbar i::after { background: rgba(255, 255, 255, .16); }
 html:not(.dark) .sp-cbar i::before { background: rgba(0, 0, 0, .06); } html:not(.dark) .sp-cbar i::after { background: rgba(0, 0, 0, .14); }
+
+/* iPhone (16 Oct 2026, user: "เปิดในโทรศัพท์ยังไม่ตรงกลางเลย"): Safari's toolbars cover part of a fixed, full-screen layer, so a
+   block centred in it sat off the middle of what is actually visible. The splash now takes the visible height (svh = with the
+   toolbars showing; dvh follows them) and is centred in that; the sides use the visual viewport width. */
+.splash { top: 0; bottom: auto; height: 100vh; height: 100svh; height: 100dvh; width: 100%; left: 0; right: 0; }
+@supports (height: 100dvh) { .splash { min-height: 0; } }
