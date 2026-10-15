@@ -306,6 +306,9 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 📱 iPhone แนวนอน: viewport-fit=cover กลับมา (16 ต.ค. 2569 · เวอร์ชัน 202610162300)
+- รูปจาก iPhone 13 ผู้ใช้: หน้าโหลดเลื่อนขวา ~110 px ตกขอบขวา → สาเหตุ: ไม่มี viewport-fit=cover แล้ว Safari เว้นฝั่งรอยบากแต่ชั้น fixed ยังกว้างเท่าจอ · แก้: head script ใส่ viewport-fit=cover กลับ + terminal.css html.vp-scaled body padding env(safe-area-inset-left/right), #tabbar left env(left), appbar padding-right · จำลองรอยบาก 82px ใน Chrome: หน้าโหลดกลางจอ, เมนูหลบ, ไม่ล้น · **อย่าเอา viewport-fit=cover ออกอีก** · รอผู้ใช้ยืนยันบน iPhone
+
 ## 📱 หน้าโหลดบน iPhone (16 ต.ค. 2569 · เวอร์ชัน 202610162200)
 - ผู้ใช้: "เปิดในโทรศัพท์ยังไม่ตรงกลางเลย" (Chrome จำลองตรงกลางแล้ว) → สันนิษฐาน: แถบเครื่องมือ Safari บังส่วนล่างของ layer fixed inset:0 → ท้าย splash.css .splash height 100svh/100dvh, top 0, bottom auto · ยังรอรูปจาก iPhone ยืนยัน
 
