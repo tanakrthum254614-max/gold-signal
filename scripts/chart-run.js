@@ -2,7 +2,7 @@
 // so the website can compare live results with the backtest. Runs in every 5-minute check (check-loop.sh).
 // Candles: investing.com 15m/30m/1h/5h from data.json where present; 5m, 4h, 1d, 1w (and anything missing)
 // from Binance PAXG shifted onto the investing.com price — the same mix the chart tab uses.
-// LINE: new entries and exits for the timeframes in CHART_NOTIFY (default 30m,1h,5h,1d,1w). 30m = the site's main
+// LINE: new entries and exits for the timeframes in CHART_NOTIFY (default 1h,5h,1d — 16 Oct 2026). 1h = the site's main
 // system since 9 Oct 2026 — the old 30-minute system (intraday-run.js) was merged into it, so LINE, the signals tab and
 // the stats show one record.
 // Usage: node scripts/chart-run.js data.json      Env: RECORD, SEND / OUTBOX (notify.js), CHART_NOTIFY, SITE_URL

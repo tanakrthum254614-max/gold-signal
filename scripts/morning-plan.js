@@ -104,7 +104,7 @@ function flexMessage(a, sig, prev, sum, bt, news, intra, now) {
   const signalRows = advisory ? [
     txt(`🧭 แนวโน้มวันนี้: เอียง${buy ? 'ขึ้น' : 'ลง'}`, { size: 'xxl', weight: 'bold', color, margin: 'lg' }),
     txt(`ความชัดของแนวโน้ม ${'★'.repeat(sig.stars)}${'☆'.repeat(5 - sig.stars)}`, { size: 'xs', color: C.muted }),
-    txt('⚠️ ข้อมูลประกอบ ไม่ใช่สัญญาณให้เข้าไม้ — สูตรรายวันทดสอบย้อนหลังแล้วขาดทุน จึงใช้สัญญาณ 30 นาทีเป็นหลัก', { size: 'xs', color: C.wait, margin: 'md' }),
+    txt('⚠️ ข้อมูลประกอบ ไม่ใช่สัญญาณให้เข้าไม้ — สูตรรายวันทดสอบย้อนหลังแล้วขาดทุน จึงใช้ระบบหลัก 1 ชม. เป็นหลัก (ส่งแยกเมื่อถึงจุดเข้า)', { size: 'xs', color: C.wait, margin: 'md' }),
     txt(`ระบบบันทึกผลสมมติไว้ติดตาม: ${buy ? 'ซื้อ' : 'ขาย'} ${money(sig.entry)} · SL ${money(sig.sl)} · TP ${sig.tps.map(money).join(' / ')}`, { size: 'xxs', color: C.muted }),
   ] : sig.status === 'skip' ? [
     txt('⏸ วันนี้ไม่มีสัญญาณ', { size: 'xl', weight: 'bold', color: C.wait, margin: 'lg' }),
