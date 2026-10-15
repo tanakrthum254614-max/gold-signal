@@ -145,37 +145,13 @@
   }
   function countdown() { const el = $('nsLeft'); if (el) el.textContent = leftText(+el.dataset.t); }
 
-  function render() {
-    if (!$('nsNext')) return;
-    const now = Date.now();
-    // 1) next release + countdown
-    const n = ns.next[0];
-    if (n) {
-      $('nsNext').innerHTML = `<div class="ns-count"><span>ข่าวแรงถัดไป</span><b class="mono" id="nsLeft" data-t="${n.t}">${leftText(n.t)}</b><small>${dayTime(n.t)} น.</small></div>
-        <div class="ns-next-items">${n.items.map((o) => itemLine(o, false)).join('')}</div>
-        <p class="ns-warn">⚠️ ราคาทองอาจวิ่งแรงในไม่กี่นาที · สัญญาณกรอบ ${window.CHARTSYS ? Object.entries(CHARTSYS.SYS).filter(([, s]) => s.news).map(([k]) => TF_LABEL[k]).join(' และ ') : '5 นาที และ 1 ชม.'} งดเปิดไม้ใหม่ ±30 นาทีรอบข่าวนี้ (กรอบอื่นทดสอบแล้วไม่ต้องหลบ)</p>`;
-    } else $('nsNext').innerHTML = ns.at ? '<p class="muted">ไม่มีข่าวแรงของสหรัฐใน 8 วันข้างหน้า</p>' : '<p class="muted">กำลังโหลดปฏิทินข่าว…</p>';
-    // 2) the coming week
-    $('nsWeek').innerHTML = ns.next.length ? ns.next.map((g) => `<div class="ns-row">
-        <div class="ns-when"><b>${new Date(g.t).toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' })}</b><span class="mono">${hhmm(g.t)} น.</span></div>
-        <div class="ns-what">${g.items.map((o) => itemLine(o, false)).join('')}</div></div>`).join('') : '<p class="muted">—</p>';
-    // 3) released: result vs forecast, and gold afterwards
-    $('nsPast').innerHTML = ns.past.length ? ns.past.slice(0, ns.showPast).map((g) => {
-      const m = g.move, a = usd((g.items.find((o) => o.actual_to_forecast !== 'neutral') || g.items[0]).actual_to_forecast);
-      const cls = (v) => (v == null ? '' : v >= 0 ? 'up' : 'down');
-      return `<div class="ns-row past">
-        <div class="ns-when"><b>${new Date(g.t).toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' })}</b><span class="mono">${hhmm(g.t)} น.</span></div>
-        <div class="ns-what">${g.items.map((o) => itemLine(o, true)).join('')}</div>
-        <div class="ns-gold"><span class="ns-gl">ทองหลังข่าว</span>
-          ${m ? `<span>15 นาที <b class="mono ${cls(m.m15)}">${signed(m.m15)}</b></span><span>1 ชม. <b class="mono ${cls(m.m60)}">${signed(m.m60)}</b></span><small>แกว่ง ${m.range != null ? `$${f2(m.range)}` : '—'} ใน 1 ชม.</small>`
-            : now - g.t < 60 * 60e3 ? '<small>รอครบ 1 ชม.</small>' : '<small class="muted">กำลังโหลด…</small>'}
-          ${a.gold ? `<small class="ns-hint ${a.cls}">${a.gold}</small>` : ''}</div></div>`;
-    }).join('') + (ns.past.length > ns.showPast ? `<button type="button" class="btn ns-more" data-more="past">แสดงเพิ่ม (${ns.past.length - ns.showPast} ครั้ง)</button>` : '') : `<p class="muted">${ns.at ? 'ไม่มีข่าวแรงใน 60 วันที่ผ่านมา' : 'กำลังโหลด…'}</p>`;
-    // 4) per release type: how big gold's move usually is, and whether it followed the textbook direction
+  // Per release type from the 60 days released: how far gold usually moves in the hour after, and whether it followed
+  // the textbook direction. Key = the Thai name (CPI MoM + YoY are one), each release time counted once.
+  const keyOf = (o) => thName(o.ev.short_name || '') || o.ev.event_translated || o.ev.short_name;
+  function statsByName() {
     const by = new Map();
     ns.past.filter((g) => g.move && g.move.m60 != null).forEach((g) => g.items.forEach((o) => {
-      // one row per release name (CPI MoM + YoY are one), each release time counted once
-      const e = o.ev, key = thName(e.short_name || '') || e.event_translated || e.short_name, s = by.get(key) || { name: key, n: 0, sum: 0, max: 0, follow: 0, judged: 0, times: new Set() };
+      const key = keyOf(o), s = by.get(key) || { name: key, n: 0, sum: 0, max: 0, follow: 0, judged: 0, times: new Set() };
       if (s.times.has(g.t)) return;
       s.times.add(g.t); s.n++; s.sum += Math.abs(g.move.m60); s.max = Math.max(s.max, g.move.range || Math.abs(g.move.m60));
       if (o.actual_to_forecast === 'positive' || o.actual_to_forecast === 'negative') {
@@ -184,6 +160,64 @@
       }
       by.set(key, s);
     }));
+    return by;
+  }
+  // Impact badge for a group of releases at one time: the biggest usual 1-hour move among them
+  // (🔥 ≥ $15 · ⚡ ≥ $8 · otherwise light; no history yet = no badge)
+  function impactOf(g, by) {
+    const avgs = g.items.map((o) => by.get(keyOf(o))).filter((s) => s && s.n).map((s) => s.sum / s.n);
+    if (!avgs.length) return null;
+    const v = Math.max(...avgs);
+    return v >= 15 ? { cls: 'hi', th: '🔥 แรง', v } : v >= 8 ? { cls: 'mid', th: '⚡ ปานกลาง', v } : { cls: 'lo', th: 'เบา', v };
+  }
+  const impHtml = (im) => (im ? `<span class="nc-imp ${im.cls}">${im.th} · ทองมักขยับ ~$${Math.round(im.v)}</span>` : '<span class="nc-imp none">ยังไม่มีสถิติ</span>');
+  const dayLabel = (t, now) => {
+    const d = SIG.thaiDate(t);
+    if (d === SIG.thaiDate(now)) return 'วันนี้';
+    if (d === SIG.thaiDate(now + 864e5)) return 'พรุ่งนี้';
+    return new Date(t).toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' });
+  };
+  // the first plain sentence of "how gold reacts" (ABOUT table) for the big card
+  const goldRule = (g) => { for (const o of g.items) { const ab = about(o.ev.short_name || o.ev.long_name || o.ev.event_translated); if (ab) return ab.gold.split(' · ').slice(0, 2).join(' · '); } return ''; };
+
+  function render() {
+    if (!$('nsNext')) return;
+    const now = Date.now(), by = statsByName();
+    // 1) the next release, in plain words
+    const n = ns.next[0];
+    if (n) {
+      const im = impactOf(n, by), rule = goldRule(n);
+      const names = n.items.map((o) => thName(o.ev.short_name || o.ev.long_name || '') || o.ev.event_translated || o.ev.short_name);
+      $('nsNext').innerHTML = `<div class="nc-hero-top"><span class="nc-eyebrow">⏰ ข่าวแรงถัดไป</span>${impHtml(im)}</div>
+        <div class="nc-hero-main"><b class="nc-hero-name">${[...new Set(names)].slice(0, 2).join(' + ')}${names.length > 2 ? ` และอีก ${names.length - 2} ข่าว` : ''}</b>
+          <div class="ns-count"><b class="mono" id="nsLeft" data-t="${n.t}">${leftText(n.t)}</b><small>${dayTime(n.t)} น.</small></div></div>
+        ${rule ? `<p class="nc-rule">🪙 ${rule}</p>` : ''}
+        <div class="ns-next-items">${n.items.map((o) => itemLine(o, false)).join('')}</div>
+        <p class="ns-warn">⚠️ ราคาทองอาจวิ่งแรงในไม่กี่นาที · สัญญาณกรอบ ${window.CHARTSYS ? Object.entries(CHARTSYS.SYS).filter(([, s]) => s.news).map(([k]) => TF_LABEL[k]).join(' และ ') : '5 นาที และ 1 ชม.'} งดเปิดไม้ใหม่ ±30 นาทีรอบข่าวนี้</p>`;
+    } else $('nsNext').innerHTML = ns.at ? '<p class="muted">ไม่มีข่าวแรงของสหรัฐใน 8 วันข้างหน้า</p>' : '<p class="muted">กำลังโหลดปฏิทินข่าว…</p>';
+    // 2) the coming days: one card per release time, grouped by day
+    const days = new Map();
+    ns.next.forEach((g) => { const k = dayLabel(g.t, now); days.set(k, [...(days.get(k) || []), g]); });
+    $('nsWeek').innerHTML = ns.next.length ? [...days.entries()].map(([label, list]) => `<div class="nc-day"><h4 class="nc-dayh">${label}<small>${list.length} ช่วงเวลา</small></h4>
+      ${list.map((g) => { const im = impactOf(g, by); return `<div class="nc ${im ? im.cls : ''}">
+        <div class="nc-time mono">${hhmm(g.t)}</div>
+        <div class="nc-body">${g.items.map((o) => itemLine(o, false)).join('')}</div>
+        <div class="nc-side">${impHtml(im)}</div></div>`; }).join('')}</div>`).join('') : '<p class="muted">—</p>';
+    // 3) released: one card each — result vs forecast, and where gold went
+    $('nsPast').innerHTML = ns.past.length ? ns.past.slice(0, ns.showPast).map((g) => {
+      const m = g.move, judged = g.items.find((o) => o.actual_to_forecast !== 'neutral') || g.items[0], a = usd(judged.actual_to_forecast);
+      const dir = m && m.m60 != null ? (m.m60 >= 0 ? 'up' : 'down') : '';
+      const follow = m && m.m60 != null && a.cls !== 'neu' ? ((a.cls === 'pos') === (m.m60 < 0)) : null;
+      const cls = (v) => (v == null ? '' : v >= 0 ? 'up' : 'down');
+      return `<div class="nc past ${dir}">
+        <div class="nc-time"><b>${new Date(g.t).toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' })}</b><span class="mono">${hhmm(g.t)} น.</span></div>
+        <div class="nc-body">${g.items.map((o) => itemLine(o, true)).join('')}</div>
+        <div class="nc-gold ${dir}"><span class="nc-gl">ทอง 1 ชม. หลังข่าว</span>
+          ${m && m.m60 != null ? `<b class="mono">${signed(m.m60)}</b><small>15 นาที <b class="mono ${cls(m.m15)}">${signed(m.m15)}</b> · แกว่ง ${m.range != null ? `$${f2(m.range)}` : '—'}</small>`
+            : now - g.t < 60 * 60e3 ? '<small>รอครบ 1 ชม.</small>' : '<small class="muted">กำลังโหลด…</small>'}
+          ${follow == null ? (a.gold ? `<small class="ns-hint ${a.cls}">${a.gold}</small>` : '') : `<small class="nc-follow ${follow ? 'yes' : 'no'}">${follow ? '✓ ไปตามตำรา' : '✗ สวนตำรา'} (${a.th})</small>`}</div></div>`;
+    }).join('') + (ns.past.length > ns.showPast ? `<button type="button" class="btn ns-more" data-more="past">แสดงเพิ่ม (${ns.past.length - ns.showPast} ครั้ง)</button>` : '') : `<p class="muted">${ns.at ? 'ไม่มีข่าวแรงใน 60 วันที่ผ่านมา' : 'กำลังโหลด…'}</p>`;
+    // 4) per release type (folded): how big gold's move usually is, and whether it followed the textbook direction
     const rows = [...by.values()].sort((a, b) => b.sum / b.n - a.sum / a.n);
     $('nsTable').innerHTML = rows.length ? `<div class="ns-trow head"><span>ข่าว</span><span>ครั้ง</span><span>ทองขยับเฉลี่ย 1 ชม.</span><span>แกว่งสูงสุด</span><span>ไปตามตำรา*</span></div>`
       + rows.slice(0, ns.showTable).map((s) => `<div class="ns-trow"><span>${s.name}</span><span class="mono">${s.n}</span>
@@ -202,6 +236,62 @@
     ].map(([l, b, s]) => `<div class="st-kpi"><span class="st-kpi-l">${l}</span><b class="mono">${b}</b><small>${s}</small></div>`).join('');
   }
 
+  // ---------- Real news with pictures (api/news.mjs ← investing.com Thai RSS), shown like a news site ----------
+  // user, 15 Oct 2026: "อยากให้หน้าข่าวเป็นแบบนี้ ให้รูปและข้อความ … น่าดูและน่าเชื่อถือ" (sent news-site screenshots).
+  // A lead story with a big picture + 2 beside it, then a 3-column grid; each links to the full article at the source.
+  const nf = { items: null, at: 0, err: '', cat: 'all', show: 9, loading: false };
+  const NF_CATS = [['all', 'ทั้งหมด'], ['gold', 'ทองคำ'], ['econ', 'เศรษฐกิจ'], ['data', 'ตัวเลขเศรษฐกิจ']];
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  function ago(t) {
+    if (!t) return '';
+    const m = Math.max(0, Math.round((Date.now() - t) / 60e3));
+    if (m < 1) return 'เมื่อสักครู่';
+    if (m < 60) return `${m} นาทีที่ผ่านมา`;
+    if (m < 24 * 60) return `${Math.floor(m / 60)} ชั่วโมงที่ผ่านมา`;
+    return new Date(t).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' });
+  }
+  // bigger picture for the lead story (_L), falling back to the feed's own (_M) if it doesn't exist
+  const pic = (x, big) => (x.img ? `<img loading="lazy" alt="" src="${esc(big ? x.img.replace(/_M\.jpg$/, '_L.jpg') : x.img)}" data-fb="${esc(x.img)}" onerror="if(this.dataset.fb&&this.src!==this.dataset.fb){this.src=this.dataset.fb}else{this.remove()}">` : '');
+  const src = (x) => `<span class="nf-src"><i class="nf-logo">I</i>Investing.com · ${esc(x.label)}</span>`;
+  const story = (x, kind) => `<a class="nf-${kind}" href="${esc(x.link)}" target="_blank" rel="noopener">
+      <div class="nf-img">${pic(x, kind === 'lead')}<span class="nf-cat ${x.cat}">${esc(x.label)}</span></div>
+      <div class="nf-txt">${src(x)}<h3>${esc(x.title)}</h3><small class="nf-ago" data-t="${x.t || ''}">${ago(x.t)}</small></div></a>`;
+  function renderFeed() {
+    const box = $('nfBody'); if (!box) return;
+    $('nfChips').innerHTML = NF_CATS.map(([k, l]) => `<button type="button" data-nf="${k}" class="${nf.cat === k ? 'on' : ''}">${l}</button>`).join('');
+    if (!nf.items) { nf.html = ''; box.innerHTML = `<p class="muted">${nf.err ? `โหลดข่าวไม่ได้ (${esc(nf.err)}) — ลองใหม่อีกครั้งภายหลัง` : 'กำลังโหลดข่าว…'}</p>`; return; }
+    const list = nf.items.filter((x) => nf.cat === 'all' || x.cat === nf.cat);
+    if (!list.length) { nf.html = ''; box.innerHTML = '<p class="muted">ยังไม่มีข่าวในหมวดนี้</p>'; return; }
+    const [lead, ...rest] = list, side = rest.slice(0, 2), grid = rest.slice(2, 2 + nf.show);
+    const html = `<div class="nf-top">${story(lead, 'lead')}<div class="nf-side">${side.map((x) => story(x, 'sub')).join('')}</div></div>
+      ${grid.length ? `<div class="nf-grid">${grid.map((x) => story(x, 'card')).join('')}</div>` : ''}
+      ${rest.length > 2 + nf.show ? `<button type="button" class="btn nf-more" data-nfmore="1">ดูข่าวเพิ่ม (${rest.length - 2 - nf.show})</button>` : ''}
+      <p class="nf-note">ข่าวจาก Investing.com ภาษาไทย · กดที่ข่าวเพื่ออ่านฉบับเต็มที่เว็บต้นทาง · ข่าวไม่ใช่คำแนะนำการลงทุน</p>`;
+    if (nf.html !== html) { nf.html = html; box.innerHTML = html; } // only when something changed: no picture flicker
+  }
+  async function loadFeed(force) {
+    if (nf.loading || (!force && Date.now() - nf.at < 5 * 60e3)) return;
+    nf.loading = true;
+    try {
+      const r = await fetch('/api/news', { cache: 'no-store' });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.ok) throw new Error(j.error || `HTTP ${r.status}`);
+      nf.items = j.items; nf.err = ''; nf.at = Date.now();
+    } catch (e) { nf.err = e.message; }
+    nf.loading = false;
+    renderFeed();
+  }
+  document.addEventListener('click', (e) => {
+    const c = e.target.closest('[data-nf]');
+    if (c) { nf.cat = c.dataset.nf; nf.show = 9; renderFeed(); return; }
+    if (e.target.closest('[data-nfmore]')) { nf.show += 9; renderFeed(); }
+  });
+  // "x นาทีที่ผ่านมา" stays true while the tab is open; new stories every 5 minutes
+  setInterval(() => {
+    document.querySelectorAll('.nf-ago[data-t]').forEach((el) => { if (+el.dataset.t) el.textContent = ago(+el.dataset.t); });
+    if ($('tab-stats') && !$('tab-stats').hidden && !document.hidden) loadFeed();
+  }, 60e3);
+
   // keep opened news items open when the lists re-render (every 15 s around a release)
   document.addEventListener('toggle', (e) => {
     const d = e.target;
@@ -214,7 +304,7 @@
     if (b.dataset.more === 'past') ns.showPast += 20; else ns.showTable = 999;
     render();
   });
-  window.renderNewsStats = function () { render(); load(); };
+  window.renderNewsStats = function () { render(); load(); renderFeed(); loadFeed(); };
 
   // ---------- Live (user, 9 Oct: "อยากให้เรียลไทม์ทุกอย่าง เช่นข่าวของสหรัฐเรียลไทม์") ----------
   // • every second: the countdowns (news tab + the strip on every tab)

@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="live.css?v=202610141600">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
-  <link rel="stylesheet" href="terminal.css?v=202610150900">
+  <link rel="stylesheet" href="terminal.css?v=202610151400">
   <link rel="stylesheet" href="splash.css?v=202610150500">
   <script>/* apply the saved theme before the first paint */ var gsT = "dark"; try { gsT = localStorage.getItem("gs-theme") === "light" ? "light" : "dark"; } catch (e) {} /* dark trading terminal = default since 14 Oct 2026 */ if (gsT === "dark") { document.getElementById("themeLight").disabled = true; document.documentElement.classList.add("dark"); document.querySelector("meta[name=theme-color]").content = "#0b0e11"; }</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -257,14 +257,22 @@
       <!-- 📊 Stats -->
       <!-- 📰 US news stats (newsstats.js) — the site is for signals and US news (user, 9 Oct); no live-trade record here -->
       <section id="tab-stats" class="tab st-dash" hidden>
+        <!-- Real news with pictures, like a news site (user, 15 Oct 2026, sent IUX24 / news-site examples: "ให้รูปและข้อความ
+             … น่าดูและน่าเชื่อถือ" → "ดึงข่าวจริงจากสำนักข่าว"): investing.com Thai RSS through api/news.mjs, links to the source -->
+        <section class="nf" id="nfCard">
+          <div class="nf-head"><div><span class="st-eyebrow nf-eyebrow">📰 ข่าวทองคำและเศรษฐกิจ · อัปเดตทุก 5 นาที</span><h2 class="nf-title">ข่าวล่าสุด</h2></div>
+            <nav class="nf-chips" id="nfChips"></nav></div>
+          <div id="nfBody"><p class="muted">กำลังโหลดข่าว…</p></div>
+        </section>
+
         <section class="st-hero ns-hero">
           <div class="st-hero-top">
-            <div><span class="st-eyebrow">📰 สถิติข่าวเศรษฐกิจสหรัฐ · ข่าวที่มีผลกับราคาทอง</span><h2 class="st-title">ข่าวแรงสหรัฐ <span class="st-live"><i></i>อัปเดตสด</span></h2></div>
+            <div><span class="st-eyebrow">📅 ปฏิทินข่าวเศรษฐกิจสหรัฐ · ข่าวที่มีผลกับราคาทอง</span><h2 class="st-title">ข่าวแรงสหรัฐ <span class="st-live"><i></i>อัปเดตสด</span></h2></div>
           </div>
-          <div class="ns-hero-grid">
-            <div class="ns-next" id="nsNext"><p class="muted">กำลังโหลดปฏิทินข่าว…</p></div>
-            <div class="st-kpis ns-kpis" id="nsKpis"></div>
-          </div>
+          <!-- Card layout (user, 15 Oct: "หน้าข่าวยังดูยาก ไม่น่าสนใจ" → chose "การ์ดข่าวทีละเรื่อง"): one big card for the
+               next release in plain words, upcoming news by day with impact badges, released news as cards, stats folded -->
+          <div class="ns-next nc-hero" id="nsNext"><p class="muted">กำลังโหลดปฏิทินข่าว…</p></div>
+          <div class="st-kpis ns-kpis nc-kpis" id="nsKpis"></div>
         </section>
 
         <!-- 📝 Articles written in the back office (journal.js ← api/articles.mjs) — live without a deploy -->
@@ -274,22 +282,22 @@
         </section>
 
         <section class="card">
-          <h3>📅 ข่าวที่จะออก 8 วันข้างหน้า</h3>
-          <p class="hint">เวลาไทย · เฉพาะข่าวความสำคัญสูงของสหรัฐจาก investing.com · “คาด” = ตัวเลขที่นักวิเคราะห์คาดไว้</p>
-          <div class="ns-list" id="nsWeek"></div>
+          <h3>📅 ข่าวที่จะออก</h3>
+          <p class="hint">เวลาไทย · ข่าวสำคัญของสหรัฐ 8 วันข้างหน้า · <span class="nc-imp hi">🔥 แรง</span> <span class="nc-imp mid">⚡ ปานกลาง</span> <span class="nc-imp lo">เบา</span> = ทองมักขยับเท่าไรใน 1 ชม. หลังข่าวนี้ (เฉลี่ย 60 วัน) · กด “อ่าน” ดูว่าข่าวนี้คืออะไร</p>
+          <div class="nc-days" id="nsWeek"></div>
         </section>
 
         <section class="card">
-          <h3>🧮 ข่าวไหนทำให้ทองวิ่งแรงที่สุด</h3>
+          <h3>📊 ข่าวที่ออกแล้ว — ทองขยับเท่าไร</h3>
+          <p class="hint"><span class="ns-chip pos">ดีกว่าคาด</span> ดีต่อดอลลาร์ ทองมักลง · <span class="ns-chip neg">แย่กว่าคาด</span> ดอลลาร์อ่อน ทองมักขึ้น · ทองวัดจากราคาตอนข่าวออก (PAXG แท่ง 5 นาที)</p>
+          <div class="nc-list" id="nsPast"></div>
+        </section>
+
+        <details class="card nc-stats">
+          <summary><h3>🧮 สถิติ: ข่าวไหนทำให้ทองวิ่งแรงที่สุด <span class="nc-fold">กดดู</span></h3></summary>
           <p class="hint">จากข่าวที่ออกแล้ว 60 วัน · *ไปตามตำรา = ข่าวดีกว่าคาดแล้วทองลง หรือแย่กว่าคาดแล้วทองขึ้น ใน 1 ชม. (ไม่นับข่าวที่ออกตามคาด)</p>
           <div class="ns-table" id="nsTable"></div>
-        </section>
-
-        <section class="card">
-          <h3>📊 ข่าวที่ออกแล้ว — ผลจริงเทียบคาด และทองขยับเท่าไร</h3>
-          <p class="hint">60 วันล่าสุด · <span class="ns-chip pos">ดีกว่าคาด</span> = ดีต่อดอลลาร์ ทองมักลง · <span class="ns-chip neg">แย่กว่าคาด</span> = ดอลลาร์อ่อน ทองมักขึ้น · ราคาทองหลังข่าววัดจากราคาตอนข่าวออก (PAXG แท่ง 5 นาที)</p>
-          <div class="ns-list" id="nsPast"></div>
-        </section>
+        </details>
       </section>
 
       <!-- 📈 Chart -->
@@ -543,7 +551,7 @@
 
         <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610151300 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610151400 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
@@ -565,7 +573,7 @@
   <script src="main.js?v=202610151300"></script>
   <script src="tradeplan.js?v=202610121500"></script>
   <script src="chartzones.js?v=202610151300"></script>
-  <script src="newsstats.js?v=202610121500"></script>
+  <script src="newsstats.js?v=202610151400"></script>
   <script src="chartchat.js?v=202610151300"></script>
   <script src="journal.js?v=202610140200"></script>
   <script src="motion.js?v=202610141800"></script>
