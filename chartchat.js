@@ -54,6 +54,8 @@
   }
   [$('chartPro'), $('chartSimple')].filter(Boolean).forEach((el) => new MutationObserver(place).observe(el, { attributes: true, attributeFilter: ['hidden'] }));
   place();
+  // "ตามกราฟ (x)" follows the chart's timeframe (it showed 1 ชม. on a 5-minute chart until a question was asked)
+  setInterval(() => { const el = $('ccScreen'); if (el && el.textContent !== `(${nameOf(state.tf)})`) paintTfs(); }, 1000);
   paintTfs(); // no greeting message (user, 12 Oct: "เอาอันนี้ออก ให้กล่องถามตอบกระชับขึ้น") — an empty log shows one short hint (CSS)
   $('ccTfs').addEventListener('click', (e) => { const b = e.target.closest('button[data-tf]'); if (!b) return; target = b.dataset.tf; paintTfs(); });
   $('ccQuick').addEventListener('click', (e) => { const b = e.target.closest('button[data-q]'); if (b) ask(b.textContent, b.dataset.q); });

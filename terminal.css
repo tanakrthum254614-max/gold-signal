@@ -287,3 +287,6 @@ html.dark #tab-account .settings input:focus, html.dark #tab-account .settings s
 :is(html, html.dark) .nf-img[data-cat="econ"]::before { content: '🏛️'; } :is(html, html.dark) .nf-img[data-cat="data"]::before { content: '📊'; }
 :is(html, html.dark) .nf-img img { position: relative; z-index: 1; }
 :is(html, html.dark) .nf-img .nf-cat { z-index: 2; }
+/* Buy / Sell % while a trade is held (15 Oct: "พวกเปอร์เซ็นต์หายไปไหน") */
+:is(html, html.dark) .cz-holdpct { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+:is(html, html.dark) .cz-holdpct > small { color: var(--muted); font-size: 12px; }

@@ -349,7 +349,7 @@ function renderSignalHead(plan = state.lastPlan) {
   const g = window.CZ_GO, S = window.CZ_SIDES, inv = ACTION_TH[plan.action];
   $('signalCard').className = `card signal ${g ? (g.side > 0 ? 'BUY' : 'SELL') : 'WAIT'}`;
   $('action').textContent = g ? `${g.open ? 'ถือ ' : ''}${g.side > 0 ? 'Buy' : 'Sell'}` : 'รอก่อน';
-  const main = g ? (g.open ? 'ระบบถือไม้อยู่ — ไม่ต้องเปิดไม้ใหม่' : 'ระบบถึงจุดเข้า 100%')
+  const main = g ? (g.open ? `ระบบถือไม้อยู่ — ไม่ต้องเปิดไม้ใหม่${S ? ` · ตอนนี้ Buy ${S[0].pct}% · Sell ${S[1].pct}%` : ''}` : 'ระบบถึงจุดเข้า 100%')
     : S ? `ยังไม่ถึงจุดเข้า · Buy ${S[0].pct}% · Sell ${S[1].pct}%` : 'กำลังคำนวณ…';
   $('actionSub').textContent = `${main} · ความเห็นภายนอก (investing.com): ${inv[0]}`;
 }

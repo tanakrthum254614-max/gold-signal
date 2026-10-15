@@ -240,13 +240,16 @@ function ago(ms) {
       <div class="cz-prog"><span>ความพร้อมเข้า <b>${x.pct}%</b></span><i><em style="width:${x.pct}%"></em></i></div>
       <div class="cz-col-px">เข้า ~<b>${f2(price)}</b> · SL <b>${f2(x.L.sl)}</b><br>${x.L.tps.map((v, k) => `TP${k + 1} <b>${f2(v)}</b>`).join(' · ')}</div>
       <small>${x.tested ? `ทดสอบชนะ ${x.c.win}% · ต้องได้คะแนน ${x.side > 0 ? '+' : '−'}${x.c.th}` : 'ฝั่งนี้ทดสอบขาดทุนในกรอบนี้ — เสี่ยง'}${x.risky ? `<br><b class="cz-risk">${CHARTSYS.riskText(x.c)}</b>` : ''}</small></div>`;
-    const showPlans = !open && (sys.long || !(d && d.stale));
-    const plan = showPlans ? `<div class="cz-two">${sides.map(col).join('')}</div>` : '';
+    const fresh = !!d && (sys.long || !d.stale), showPlans = !open && fresh;
     const mini = (x) => `<div class="cz-prog ${x.side > 0 ? 'buy' : 'sell'}${x.go ? ' live' : ''}${x.tested ? '' : ' untested'}"><span>${x.side > 0 ? 'Buy' : 'Sell'} <b>${x.pct}%</b> · ${x.verdict}</span><i><em style="width:${x.pct}%"></em></i></div>`;
-    if (note && !open) note.innerHTML = showPlans ? `${sides.map(mini).join('')}<small>ตัวเลขเดียวกับช่อง Buy | Sell ทางซ้าย${tf === CHARTSYS.MAIN_TF ? ' และหน้าสัญญาณ (ระบบหลัก)' : ''}</small>` : note.innerHTML;
+    // While a trade is held the Buy / Sell % stay visible too (user, 15 Oct: "พวกเปอร์เซ็นต์หายไปไหน") — for reference only
+    const holdPct = open && fresh ? `<div class="cz-holdpct"><small>ความพร้อมเข้าตอนนี้ (ดูประกอบ — ถือไม้อยู่ ไม่ต้องเปิดไม้ใหม่)</small>${sides.map(mini).join('')}</div>` : '';
+    const plan = showPlans ? `<div class="cz-two">${sides.map(col).join('')}</div>` : holdPct;
+    if (note) note.innerHTML = showPlans ? `${sides.map(mini).join('')}<small>ตัวเลขเดียวกับช่อง Buy | Sell ทางซ้าย${tf === CHARTSYS.MAIN_TF ? ' และหน้าสัญญาณ (ระบบหลัก)' : ''}</small>`
+      : open ? `${note.innerHTML.split('<div class="cz-holdpct">')[0]}${holdPct}` : note.innerHTML;
     const goSide = sides.find((x) => x.go);
     window.CZ_GO = open ? { side: open.side === 'SELL' ? -1 : 1, open: true } : goSide ? { side: goSide.side } : null;
-    window.CZ_SIDES = showPlans ? sides.map(({ side, pct, verdict, go, tested, risky }) => ({ side, pct, verdict, go, tested, risky })) : null; // side card (main.js)
+    window.CZ_SIDES = fresh ? sides.map(({ side, pct, verdict, go, tested, risky }) => ({ side, pct, verdict, go, tested, risky })) : null; // side card (main.js)
     if (window.renderSignalHead) renderSignalHead();
     // Snapshot for the chart Q&A chat (chartchat.js): it answers only from what this card shows
     window.CZ_NOW = { tf, price, d, sides, open: open || null, br, sellNo, stretched: !!(d && stretched(sys, d)), unconf: !!(d && CHARTSYS.unconfirmed(sys, d)), at: Date.now() };
