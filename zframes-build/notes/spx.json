@@ -52,6 +52,6 @@
   "sources": [
     { "name": "ปฏิทิน investing.com", "what": "CPI สหรัฐ 14 ต.ค.: จริง vs คาด · PPI / ยอดค้าปลีก 15 ต.ค.", "at": "15/10" },
     { "name": "Investing.com ภาษาไทย", "what": "ข่าว: การเดิมพันขึ้นดอกเบี้ยเฟดพุ่งหลังข้อมูลเงินเฟ้อ · น้ำมันลดลงหลัง CPI สหรัฐร้อนแรง", "at": "15/10" },
-    { "name": "ตัวเลขในแดชบอร์ด", "what": "Yahoo (ราคา / yield) · FRED (Fed funds, spread — ค้างที่ 12 ต.ค. จนกว่าจะมี API key)", "at": "15/10 06:30" }
+    { "name": "ตัวเลขในแดชบอร์ด", "what": "Yahoo (ราคา / yield) · FRED (Fed funds, SOFR, spread, CPI — API key อัปเดตทุกวัน)", "at": "15/10 06:30" }
   ]
 }
