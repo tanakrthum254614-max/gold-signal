@@ -449,3 +449,19 @@ html.light .gw { background: linear-gradient(90deg, #d9a21b var(--w), rgba(0, 0,
 .gu-av:has(img) { box-shadow: 0 0 0 2px #f0b90b; }
 .gu-credit { margin: 8px 0 0; font-size: 11px; color: var(--muted); }
 .modal .foot a { color: inherit; }
+/* fund logo (white disc, whole logo visible) and fund-name wordmark (gold disc) */
+.gu-av.logo { background: #fff; box-shadow: 0 0 0 2px #f0b90b; }
+.gu-av.logo img { inset: 7px; width: calc(100% - 14px); height: calc(100% - 14px); object-fit: contain; border-radius: 0; box-shadow: none; }
+.gu-av.big.logo img { inset: 10px; width: calc(100% - 20px); height: calc(100% - 20px); }
+.gu-av.mark { background: radial-gradient(circle at 30% 25%, #2a2110, #0b0e11 70%); box-shadow: 0 0 0 2px #f0b90b; }
+.gu-av.mark i { font-weight: 800; font-size: 9.5px; letter-spacing: .3px; color: #f0b90b; text-align: center; line-height: 1.05; padding: 0 3px; }
+.gu-av.mark.long i { font-size: 8px; }
+.gu-av.big.mark i { font-size: 13px; } .gu-av.big.mark.long i { font-size: 11px; }
+html.light .gu-av.mark { background: radial-gradient(circle at 30% 25%, #fff8e1, #f3e3b0); } html.light .gu-av.mark i { color: #8a5d00; }
+/* wordmark sizes by length (SCION / GOTHAM · DUQUESNE / HIMALAYA · GREENLIGHT / THIRD POINT) */
+.gu-av.mark.long i { font-size: 7.6px; } .gu-av.mark.xl i { font-size: 6.6px; }
+.gu-av.big.mark.long i { font-size: 11px; } .gu-av.big.mark.xl i { font-size: 9.5px; }
+/* small card: 44 px disc — keep the whole fund name inside */
+.gu-av.mark i { font-size: 8px; letter-spacing: 0; }
+.gu-av.mark.long i { font-size: 6.8px; } .gu-av.mark.xl i { font-size: 6px; }
+.gu-av.big.mark i { font-size: 12px; } .gu-av.big.mark.long i { font-size: 10px; } .gu-av.big.mark.xl i { font-size: 9px; }

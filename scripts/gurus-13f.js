@@ -51,6 +51,44 @@ const WIKI = {
   1135730: 'Philippe_Laffont', 1697748: 'Cathie_Wood', 949509: 'Howard_Marks_(investor)', 1029160: 'George_Soros',
   1510387: 'Joel_Greenblatt', 1096343: 'Thomas_Gayner', 783412: 'Charlie_Munger', 1418814: 'Jeffrey_Ubben', 1103804: 'Andreas_Halvorsen',
 };
+// Everyone gets a picture (user, 16 Oct 2026: "เอาให้มีทุกคน … เว้นว่างไว้มันดูไม่น่าเชื่อถือ"): no free photo of the person →
+// a Commons file search on the full name (free licence, both names in the file title) → else the fund's own logo
+// (its website icon, embedded as a data URI) to show which fund it is — never a copyrighted photo of the person.
+const SITE = {
+  // checked by eye 16 Oct 2026 — left out: himcap.com (a Webflow icon), thirdpoint.com (a placeholder), scionasset.com and
+  // duquesne.com (not sure the domain is the fund's) → those get the wordmark below
+  1088875: 'bailliegifford.com', 1569205: 'fundsmith.co.uk', 1549575: 'pabraifunds.com', 1112520: 'akre.com', 1167483: 'tigerglobal.com',
+  1061165: 'lonepinecapital.com', 1135730: 'coatue.com', 1096343: 'markel.com', 1418814: 'valueact.com',
+  1103804: 'vikingglobal.com', 1034524: 'polencapital.com', 1350694: 'bridgewater.com', 1061768: 'baupost.com', 1656456: 'appaloosalp.com',
+};
+const MARK = { 1649339: 'SCION', 1536411: 'DUQUESNE', 1709323: 'HIMALAYA', 1040273: 'THIRD POINT', 1489933: 'GREENLIGHT', 1510387: 'GOTHAM' };
+async function commonsSearch(name, H) {
+  const words = name.toLowerCase().replace(/\(.*\)/, '').split(/\s+/).filter(Boolean);
+  if (words.length < 2) return null;
+  const full = new RegExp(`(^|[^a-z])${words.join('[ _-]+')}([^a-z]|$)`); // the whole name, in order, in the file title
+  const j = await fetch(`https://commons.wikimedia.org/w/api.php?action=query&format=json&list=search&srnamespace=6&srlimit=20&srsearch=${encodeURIComponent(`"${name}"`)}`, { headers: H }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  for (const hit of j?.query?.search || []) {
+    const t = hit.title.replace(/^File:/, ''), low = t.toLowerCase();
+    if (!/\.(jpe?g|png|webp)$/i.test(t) || !full.test(low)) continue;
+    if (/logo|signature|book|cover|house|building|chart/i.test(t)) continue;
+    const p = await commons(t, H);
+    // a namesake (a basketball player, a musician…) is not our investor: the description / categories must say so
+    if (p && /invest|fund|hedge|capital|financ|billionaire|asset management|money manager|economist/i.test(p.about || '')) return p;
+  }
+  return null;
+}
+async function logo(domain) {
+  for (const url of [`https://www.google.com/s2/favicons?domain=${domain}&sz=128`, `https://icons.duckduckgo.com/ip3/${domain}.ico`]) {
+    try {
+      const r = await fetch(url, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(10000) });
+      if (!r.ok) continue;
+      const buf = Buffer.from(await r.arrayBuffer());
+      if (buf.length < 600) continue; // the services' blank / default globe icon is tiny
+      return { url: `data:${r.headers.get('content-type') || 'image/png'};base64,${buf.toString('base64')}`, logo: true, by: domain, lic: 'โลโก้ของกองทุน', page: `https://${domain}` };
+    } catch (e) { /* next service */ }
+  }
+  return null;
+}
 const FREE = /^(cc[ -]?by|cc[ -]?zero|cc0|public domain|pd)/i;
 const strip = (h) => String(h || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 async function photo(title) {
@@ -73,7 +111,8 @@ async function commons(file, H) {
   const lic = strip(md.LicenseShortName?.value);
   if (!ii || page.missing !== undefined || !FREE.test(lic)) return null; // not on Commons (non-free / fair use) or not a free licence
   if (!ii.thumburl) return null;
-  return { url: ii.thumburl, by: strip(md.Artist?.value).slice(0, 80) || 'Wikimedia Commons', lic, page: ii.descriptionurl };
+  return { url: ii.thumburl, by: strip(md.Artist?.value).slice(0, 80) || 'Wikimedia Commons', lic, page: ii.descriptionurl,
+    about: `${strip(md.ImageDescription?.value)} ${strip(md.Categories?.value)}`.slice(0, 600) };
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -120,9 +159,13 @@ async function holdings(cik, acc) {
 }
 // sum by CUSIP (a manager reports one row per sub-account); options (put/call) kept apart
 function byCusip(rows) {
-  // value is in dollars since 2023, but some filers still report thousands: a median price per share under $3 means thousands
-  const px = rows.filter((r) => r.shares > 0 && r.value > 0 && !r.put).map((r) => r.value / r.shares).sort((a, b) => a - b);
-  const k = px.length && px[Math.floor(px.length / 2)] < 3 ? 1000 : 1;
+  // value is in dollars since 2023, but some filers still report thousands (Duquesne, Baupost): a median price per share
+  // under $3 AND a whole portfolio under $50M as written means thousands. The size test matters: Oaktree holds many cheap
+  // shares (median < $3) but reports dollars — scaling it showed $3.78 trillion (16 Oct 2026).
+  const longs = rows.filter((r) => r.shares > 0 && r.value > 0 && !r.put);
+  const px = longs.map((r) => r.value / r.shares).sort((a, b) => a - b);
+  const raw = longs.reduce((a, r) => a + r.value, 0);
+  const k = px.length && px[Math.floor(px.length / 2)] < 3 && raw < 5e7 ? 1000 : 1;
   const m = new Map();
   for (const r of rows) {
     if (r.type && r.type !== 'SH') continue; // bonds (PRN) left out
@@ -197,7 +240,13 @@ async function mapCusips(cusips, cache) {
   await mapCusips(gurus.flatMap((g) => [...g.top, ...g.moves].map((x) => x.cusip)), cache);
   for (const g of gurus) for (const x of [...g.top, ...g.moves]) x.s = cache[x.cusip] || null;
   fs.writeFileSync(cacheFile, JSON.stringify(cache));
-  for (const g of gurus) if (WIKI[g.cik]) { g.photo = await photo(WIKI[g.cik]); console.log(`photo ${g.en}: ${g.photo ? g.photo.lic : 'none (initials)'}`); }
+  for (const g of gurus) {
+    g.photo = (WIKI[g.cik] && await photo(WIKI[g.cik])) || (WIKI[g.cik] && await commonsSearch(g.en, { 'User-Agent': UA })) || (SITE[g.cik] && await logo(SITE[g.cik]))
+      // last resort: the fund's name as a wordmark badge (drawn by the site, no image)
+      || { mark: MARK[g.cik] || g.fund.replace(/\(.*\)/, '').split(/\s+/)[0].toUpperCase() };
+    if (g.photo.about) delete g.photo.about;
+    console.log(`photo ${g.en}: ${g.photo.mark ? `wordmark ${g.photo.mark}` : g.photo.logo ? `logo ${g.photo.by}` : g.photo.lic}`);
+  }
   const body = { asOf: new Date().toISOString(), source: 'SEC EDGAR 13F-HR · OpenFIGI', gurus };
   fs.writeFileSync(out, JSON.stringify(body));
   console.log(`wrote ${out}: ${gurus.length} gurus · mapped ${Object.values(cache).filter(Boolean).length}/${Object.keys(cache).length} CUSIPs`);

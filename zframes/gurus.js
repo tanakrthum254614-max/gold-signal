@@ -16,9 +16,16 @@
   const ACT = { new: ['ซื้อใหม่', 'up'], add: ['ซื้อเพิ่ม', 'up'], cut: ['ขายบางส่วน', 'down'], exit: ['ขายหมด', 'down'] };
   const initials = (g) => g.en.replace(/\(.*\)/, '').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
   const stale = (g) => Date.now() - Date.parse(g.period) > 200 * 864e5; // a manager that stopped filing
-  // photo (freely licensed, Wikimedia Commons — scripts/gurus-13f.js) or the gold initials; a broken image falls back too
-  const avatar = (g, big) => `<span class="gu-av${big ? ' big' : ''}">${g.photo ? `<img src="${e(g.photo.url)}" alt="${e(g.th)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<i>${e(initials(g))}</i></span>`;
-  const credit = (g) => (g.photo ? `รูป: <a href="${e(g.photo.page)}" target="_blank" rel="noopener">${e(g.photo.by)}</a> · ${e(g.photo.lic)} · Wikimedia Commons` : '');
+  // every guru has a picture (user, 16 Oct 2026: "เอาให้มีทุกคน"): a freely licensed photo (Wikimedia Commons), else the
+  // fund's logo (its site icon), else the fund's name as a gold wordmark — scripts/gurus-13f.js. A broken image → initials.
+  const avatar = (g, big) => {
+    const p = g.photo || {};
+    if (p.mark) return `<span class="gu-av mark${big ? ' big' : ''}${p.mark.length > 8 ? ' xl' : p.mark.length > 6 ? ' long' : ''}"><i>${e(p.mark)}</i></span>`;
+    return `<span class="gu-av${p.logo ? ' logo' : ''}${big ? ' big' : ''}">${p.url ? `<img src="${e(p.url)}" alt="${e(p.logo ? g.fund : g.th)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<i>${e(initials(g))}</i></span>`;
+  };
+  const credit = (g) => { const p = g.photo || {};
+    if (p.logo) return `โลโก้: ${e(g.fund)} (<a href="${e(p.page)}" target="_blank" rel="noopener">${e(p.by)}</a>)`;
+    return p.url ? `รูป: <a href="${e(p.page)}" target="_blank" rel="noopener">${e(p.by)}</a> · ${e(p.lic)} · Wikimedia Commons` : ''; };
 
   // live value of one holding: shares × live price (falls back to the filing's own value)
   const liveOf = (h) => { const px = h.s && q(h.s); return px ? { v: px * h.shares, px, ch: px / (h.value / h.shares) - 1 } : { v: h.value, px: null, ch: null }; };
@@ -93,7 +100,7 @@
       <section class="card"><h3><span>หุ้นในพอร์ต (${Math.min(g.top.length, g.count)} อันดับแรก)</span><small>ราคาสด × จำนวนหุ้นที่รายงาน</small></h3>
         <div class="tbl"><table class="st gt"><thead><tr><th>#</th><th>หุ้น</th><th class="r">% พอร์ต</th><th class="r">จำนวนหุ้น</th><th class="r">ราคาสด</th><th class="r">มูลค่าสด</th><th class="r">ตั้งแต่สิ้นไตรมาส</th><th class="r">เทียบไตรมาสก่อน</th></tr></thead><tbody></tbody></table></div></section>
       ${g.moves.length ? `<section class="card"><h3><span>เคลื่อนไหวไตรมาสนี้</span><small>เทียบ ${g.prevPeriod ? qLabel(g.prevPeriod) : 'ไตรมาสก่อน'}</small></h3><div class="gmv">${g.moves.slice(0, 20).map((x) => `<span class="gact ${ACT[x.act][1]}">${ACT[x.act][0]} <b>${e(x.s || x.name)}</b>${x.pct != null && x.act !== 'exit' ? ` ${x.pct > 0 ? '+' : ''}${x.pct}%` : ''}</span>`).join('')}</div></section>` : ''}
-      <p class="foot">${g.photo ? `${credit(g)}<br>` : ""}ที่มา: รายงาน 13F ต่อ SEC — ยื่นไตรมาสละครั้ง ช้าสุด 45 วันหลังจบไตรมาส จึงไม่ใช่พอร์ตปัจจุบันจริง · รวมเฉพาะหุ้น/ETF ที่จดทะเบียนในสหรัฐ ไม่รวมออปชัน · ไม่ใช่คำแนะนำการลงทุน</p></div>`;
+      <p class="foot">${credit(g) ? `${credit(g)}<br>` : ""}ที่มา: รายงาน 13F ต่อ SEC — ยื่นไตรมาสละครั้ง ช้าสุด 45 วันหลังจบไตรมาส จึงไม่ใช่พอร์ตปัจจุบันจริง · รวมเฉพาะหุ้น/ETF ที่จดทะเบียนในสหรัฐ ไม่รวมออปชัน · ไม่ใช่คำแนะนำการลงทุน</p></div>`;
     document.body.appendChild(m);
     fillHoldings(m.querySelector('[data-gpanel]'), g);
     m.addEventListener('click', (ev) => {
@@ -109,7 +116,7 @@
     const st = ev.target.closest('#gurus tr[data-stock]'); if (st && window.dash?.stockMap?.[st.dataset.stock] && typeof openStock === 'function') openStock(st.dataset.stock);
   });
 
-  FRAMES.gurus = () => `<div class="chips"><button type="button" data-gsort="value" class="on">มูลค่าพอร์ตสูงสุด</button><button type="button" data-gsort="filed">อัปเดตล่าสุด</button><button type="button" data-gsort="ch">กำไรตั้งแต่สิ้นไตรมาส</button></div><div class="gu-list" id="guList"><p class="muted">กำลังโหลด…</p></div><p class="gu-credit">รูปกูรู: Wikimedia Commons (สัญญาอนุญาตเสรี — ชื่อผู้ถ่ายและสัญญาอนุญาตอยู่ในหน้าของแต่ละคน) · คนที่ไม่มีรูปเสรีใช้ตัวอักษรย่อ</p>`;
+  FRAMES.gurus = () => `<div class="chips"><button type="button" data-gsort="value" class="on">มูลค่าพอร์ตสูงสุด</button><button type="button" data-gsort="filed">อัปเดตล่าสุด</button><button type="button" data-gsort="ch">กำไรตั้งแต่สิ้นไตรมาส</button></div><div class="gu-list" id="guList"><p class="muted">กำลังโหลด…</p></div><p class="gu-credit">รูปบุคคล: Wikimedia Commons (สัญญาอนุญาตเสรี — ชื่อผู้ถ่ายอยู่ในหน้าของแต่ละคน) · คนที่ไม่มีรูปเสรีใช้โลโก้หรือชื่อของกองทุน</p>`;
   FRAMES.guruFocus = () => `<div class="chips"><button type="button" data-gact="all" class="on">ทั้งหมด</button><button type="button" data-gact="buy">ซื้อ</button><button type="button" data-gact="sell">ขาย</button></div><div class="tbl"><table class="st gt"><thead><tr><th>กูรู</th><th>ทำอะไร</th><th>หุ้น</th><th class="r">มูลค่า</th></tr></thead><tbody id="guFocus"></tbody></table></div>`;
   FRAMES.guruCrowd = () => `<div class="tbl"><table class="st gt"><thead><tr><th>หุ้น</th><th class="r">กูรูที่ถือ</th><th class="r">ราคาสด</th><th class="r">วันนี้</th><th>ใครถือ</th></tr></thead><tbody id="guCrowd"></tbody></table></div>`;
 
