@@ -298,6 +298,9 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 🖼️ รูปโปรไฟล์ LINE (16 ต.ค. 2569 · ไม่ได้แก้เว็บ)
+- ผู้ใช้: "ใน line อยากเปลี่ยนรูปโปรไฟล์ ขอลิ้ง" → บัญชี @279arudw เปลี่ยนที่ https://manager.line.biz (ตั้งค่า → ตั้งค่าบัญชี → รูปโปรไฟล์) หรือแอป LINE Official Account · "ขอรูป … เกี่ยวกับทองคำ" → `gold-signal-tools/lineprof.cjs <outDir>` ทำ PNG 1024×1024 3 แบบใน Downloads: gold-signal-line-A-logo (โลโก้สายฟ้าใหญ่) · B-bars (ทองแท่ง + โลโก้) · C-coin (เหรียญ XAU + แท่งเทียน) — ทุกอย่างอยู่ในวงกลมกลางภาพ (LINE ตัดเป็นวงกลม)
+
 ## 📱 แก้เรื่องเฉพาะ iPhone (16 ต.ค. 2569 · เวอร์ชัน 202610161100)
 - ผู้ใช้: "ไอโฟน 13 ที่ใช้อยุ่" → text-size-adjust 100% · ไม่ใช้ viewport-fit=cover บนมือถือ + status bar black · ทิศจอแบบ iPhone · minimum-scale · ช่องพิมพ์ 16px · ปุ่มเต็มจอซ่อนบน iPhone + คำแนะนำปิดล็อกหมุนจอ · terminal.css/iframe v=202610161100 · ui.js v=202610161100 · zframes style v=2026101607 · iphone13.cjs: 683 → 1477 → 683 กว้างถูกทุกครั้ง scale 0.571 ทุกแท็บไม่ล้น ไม่มี error · commit 54c703c
 
