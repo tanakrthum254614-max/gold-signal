@@ -40,7 +40,8 @@ const DAYS = 14;
 const FAPI = 'delicate-tapir-2101.clerk.accounts.dev';
 const SUBS = 'access/push-subs.json';
 // Served to everyone: the login page and what it shows / the browser asks for on its own
-const PUBLIC = /^\/(login\.html|privacy\.html|logo\.svg|favicon\.ico|manifest\.webmanifest|robots\.txt|icons\/.*)$/;
+// demo.html (16 Oct 2026): plain candles for visitors — loads none of the members-only scripts
+const PUBLIC = /^\/(login\.html|demo\.html|privacy\.html|logo\.svg|favicon\.ico|manifest\.webmanifest|robots\.txt|icons\/.*)$/;
 
 const enc = new TextEncoder();
 const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');

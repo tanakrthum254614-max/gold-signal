@@ -29,6 +29,8 @@
     .tabs button { font: inherit; font-weight: 700; font-size: 15px; padding: 10px; border: 0; border-radius: 10px; cursor: pointer; background: transparent; color: var(--muted); }
     .tabs button.on { background: #fff; color: #1c2433; box-shadow: 0 2px 8px rgba(20,30,50,.12); }
     .tabs[hidden] { display: none; }
+    .demo { display: block; width: 100%; max-width: 400px; text-align: center; padding: 12px 14px; border-radius: 12px; text-decoration: none; font-size: 14.5px; color: inherit; border: 1px dashed rgba(240, 185, 11, .7); background: rgba(240, 185, 11, .08); }
+    .demo b { color: #b9800c; }
   </style>
 </head>
 <body>
@@ -37,6 +39,8 @@
     <p class="lead">🔒 สำหรับสมาชิกเท่านั้น — ยังไม่มีบัญชี กดแท็บ <b>“สมัครสมาชิก”</b> (ฟรี ใช้อีเมลหรือ Google)</p>
     <div class="tabs" id="tabs" hidden><button type="button" class="on" data-mode="in">เข้าสู่ระบบ</button><button type="button" data-mode="up">สมัครสมาชิก</button></div>
     <p id="status">กำลังโหลด…</p>
+    <!-- Demo (16 Oct 2026): visitors from the LINE QR can look first — plain candles only, signals stay members-only -->
+    <a class="demo" href="/demo.html">👀 ยังไม่สมัคร? <b>ทดลองดูก่อน (Demo)</b> — กราฟทองแบบไม่มีสัญญาณ</a>
     <div id="signIn"></div>
     <p class="privacy">การสมัครและเข้าใช้งาน ถือว่ายอมรับการเก็บอีเมล บันทึกการเข้าใช้ (เวลา อุปกรณ์ เมืองโดยประมาณ) เพื่อดูแลระบบ · <a href="/privacy.html">นโยบายความเป็นส่วนตัว</a></p>
   </main>
