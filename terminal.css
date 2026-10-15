@@ -349,3 +349,6 @@ html.vp-scaled .nf-title, html.vp-scaled .st-title { font-size: 18px; }
 /* the two verdict lines on the home tab (1h system + daily overview) at one size */
 :is(html, html.dark) #sigCard .sig-side { font-size: 28px; }
 :is(html, html.dark) #sigCard .sig-side small { font-size: 14px; }
+
+/* home tab: daily overview block removed from view (16 Oct, "เอาอันนี้ออก") */
+.home-off { display: none !important; }
