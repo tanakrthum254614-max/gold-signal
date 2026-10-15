@@ -442,3 +442,10 @@ html.light #gurus .chips button.on { background: #f0b429; border-color: #f0b429;
 html.light .gu { background: #fff; border-color: #ece6d8; } html.light .gu:hover { border-color: #b9800c; }
 html.light .gw { background: linear-gradient(90deg, #d9a21b var(--w), rgba(0, 0, 0, .07) var(--w)); }
 @media (max-width: 700px) { .gu-list { grid-template-columns: 1fr; } .gu-hd { grid-template-columns: auto 1fr; } .gu-hd .gu-v { grid-column: 1 / -1; justify-items: start; } }
+/* guru photos (Wikimedia Commons) — the initials sit underneath and show when there is no photo / it fails to load */
+.gu-av { position: relative; overflow: hidden; }
+.gu-av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; border-radius: 50%; box-shadow: inset 0 0 0 2px #f0b90b; }
+.gu-av i { font-style: normal; }
+.gu-av:has(img) { box-shadow: 0 0 0 2px #f0b90b; }
+.gu-credit { margin: 8px 0 0; font-size: 11px; color: var(--muted); }
+.modal .foot a { color: inherit; }

@@ -16,6 +16,9 @@
   const ACT = { new: ['ซื้อใหม่', 'up'], add: ['ซื้อเพิ่ม', 'up'], cut: ['ขายบางส่วน', 'down'], exit: ['ขายหมด', 'down'] };
   const initials = (g) => g.en.replace(/\(.*\)/, '').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
   const stale = (g) => Date.now() - Date.parse(g.period) > 200 * 864e5; // a manager that stopped filing
+  // photo (freely licensed, Wikimedia Commons — scripts/gurus-13f.js) or the gold initials; a broken image falls back too
+  const avatar = (g, big) => `<span class="gu-av${big ? ' big' : ''}">${g.photo ? `<img src="${e(g.photo.url)}" alt="${e(g.th)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<i>${e(initials(g))}</i></span>`;
+  const credit = (g) => (g.photo ? `รูป: <a href="${e(g.photo.page)}" target="_blank" rel="noopener">${e(g.photo.by)}</a> · ${e(g.photo.lic)} · Wikimedia Commons` : '');
 
   // live value of one holding: shares × live price (falls back to the filing's own value)
   const liveOf = (h) => { const px = h.s && q(h.s); return px ? { v: px * h.shares, px, ch: px / (h.value / h.shares) - 1 } : { v: h.value, px: null, ch: null }; };
@@ -31,7 +34,7 @@
     const list = G.gurus.map((g) => ({ g, L: liveGuru(g) }));
     list.sort((a, b) => (sort === 'filed' ? b.g.filed.localeCompare(a.g.filed) : sort === 'ch' ? (b.L.ch ?? -9) - (a.L.ch ?? -9) : b.L.value - a.L.value));
     return list.map(({ g, L }) => `<button type="button" class="gu" data-guru="${g.cik}">
-      <span class="gu-av">${e(initials(g))}</span>
+      ${avatar(g)}
       <span class="gu-n"><b>${e(g.th)}</b><small>${e(g.fund)} · ${e(g.style)}</small>
         <small>อันดับ 1: <b>${e(g.top[0]?.s || g.top[0]?.name || '—')}</b> ${g.top[0] ? `${g.top[0].w}%` : ''} · ${g.count} ตัว${stale(g) ? ' · <i class="gu-old">หยุดยื่นรายงาน</i>' : ''}</small></span>
       <span class="gu-v"><b class="mono" data-gv="${g.cik}">${money(L.value)}</b><small class="mono ${cls(L.ch)}" data-gc="${g.cik}">${pct(L.ch, 2)}</small><small>${qLabel(g.period)}</small></span>
@@ -84,13 +87,13 @@
     const g = G.gurus.find((x) => String(x.cik) === String(cik)); if (!g) return;
     const m = document.createElement('div'); m.className = 'modal';
     m.innerHTML = `<div class="mbox mfull" data-gpanel="${g.cik}"><button class="mx" type="button" aria-label="ปิด">✕</button>
-      <div class="gu-hd"><span class="gu-av big">${e(initials(g))}</span><div><h2>${e(g.th)} <small>${e(g.en)}</small></h2>
+      <div class="gu-hd">${avatar(g, true)}<div><h2>${e(g.th)} <small>${e(g.en)}</small></h2>
         <p class="muted">${e(g.fund)} (${e(g.filer)}) · ${e(g.style)} · ${qLabel(g.period)} · ยื่น ${thDate(g.filed)}${stale(g) ? ' · <b class="down">หยุดยื่นรายงานแล้ว — ข้อมูลล่าสุดที่มี</b>' : ''}</p></div>
         <div class="gu-v"><b class="mono" data-gtot>—</b><small class="mono" data-gtc>—</small><small>${g.count} ตัว · ตั้งแต่สิ้นไตรมาส</small></div></div>
       <section class="card"><h3><span>หุ้นในพอร์ต (${Math.min(g.top.length, g.count)} อันดับแรก)</span><small>ราคาสด × จำนวนหุ้นที่รายงาน</small></h3>
         <div class="tbl"><table class="st gt"><thead><tr><th>#</th><th>หุ้น</th><th class="r">% พอร์ต</th><th class="r">จำนวนหุ้น</th><th class="r">ราคาสด</th><th class="r">มูลค่าสด</th><th class="r">ตั้งแต่สิ้นไตรมาส</th><th class="r">เทียบไตรมาสก่อน</th></tr></thead><tbody></tbody></table></div></section>
       ${g.moves.length ? `<section class="card"><h3><span>เคลื่อนไหวไตรมาสนี้</span><small>เทียบ ${g.prevPeriod ? qLabel(g.prevPeriod) : 'ไตรมาสก่อน'}</small></h3><div class="gmv">${g.moves.slice(0, 20).map((x) => `<span class="gact ${ACT[x.act][1]}">${ACT[x.act][0]} <b>${e(x.s || x.name)}</b>${x.pct != null && x.act !== 'exit' ? ` ${x.pct > 0 ? '+' : ''}${x.pct}%` : ''}</span>`).join('')}</div></section>` : ''}
-      <p class="foot">ที่มา: รายงาน 13F ต่อ SEC — ยื่นไตรมาสละครั้ง ช้าสุด 45 วันหลังจบไตรมาส จึงไม่ใช่พอร์ตปัจจุบันจริง · รวมเฉพาะหุ้น/ETF ที่จดทะเบียนในสหรัฐ ไม่รวมออปชัน · ไม่ใช่คำแนะนำการลงทุน</p></div>`;
+      <p class="foot">${g.photo ? `${credit(g)}<br>` : ""}ที่มา: รายงาน 13F ต่อ SEC — ยื่นไตรมาสละครั้ง ช้าสุด 45 วันหลังจบไตรมาส จึงไม่ใช่พอร์ตปัจจุบันจริง · รวมเฉพาะหุ้น/ETF ที่จดทะเบียนในสหรัฐ ไม่รวมออปชัน · ไม่ใช่คำแนะนำการลงทุน</p></div>`;
     document.body.appendChild(m);
     fillHoldings(m.querySelector('[data-gpanel]'), g);
     m.addEventListener('click', (ev) => {
@@ -106,7 +109,7 @@
     const st = ev.target.closest('#gurus tr[data-stock]'); if (st && window.dash?.stockMap?.[st.dataset.stock] && typeof openStock === 'function') openStock(st.dataset.stock);
   });
 
-  FRAMES.gurus = () => `<div class="chips"><button type="button" data-gsort="value" class="on">มูลค่าพอร์ตสูงสุด</button><button type="button" data-gsort="filed">อัปเดตล่าสุด</button><button type="button" data-gsort="ch">กำไรตั้งแต่สิ้นไตรมาส</button></div><div class="gu-list" id="guList"><p class="muted">กำลังโหลด…</p></div>`;
+  FRAMES.gurus = () => `<div class="chips"><button type="button" data-gsort="value" class="on">มูลค่าพอร์ตสูงสุด</button><button type="button" data-gsort="filed">อัปเดตล่าสุด</button><button type="button" data-gsort="ch">กำไรตั้งแต่สิ้นไตรมาส</button></div><div class="gu-list" id="guList"><p class="muted">กำลังโหลด…</p></div><p class="gu-credit">รูปกูรู: Wikimedia Commons (สัญญาอนุญาตเสรี — ชื่อผู้ถ่ายและสัญญาอนุญาตอยู่ในหน้าของแต่ละคน) · คนที่ไม่มีรูปเสรีใช้ตัวอักษรย่อ</p>`;
   FRAMES.guruFocus = () => `<div class="chips"><button type="button" data-gact="all" class="on">ทั้งหมด</button><button type="button" data-gact="buy">ซื้อ</button><button type="button" data-gact="sell">ขาย</button></div><div class="tbl"><table class="st gt"><thead><tr><th>กูรู</th><th>ทำอะไร</th><th>หุ้น</th><th class="r">มูลค่า</th></tr></thead><tbody id="guFocus"></tbody></table></div>`;
   FRAMES.guruCrowd = () => `<div class="tbl"><table class="st gt"><thead><tr><th>หุ้น</th><th class="r">กูรูที่ถือ</th><th class="r">ราคาสด</th><th class="r">วันนี้</th><th>ใครถือ</th></tr></thead><tbody id="guCrowd"></tbody></table></div>`;
 

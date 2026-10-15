@@ -40,6 +40,42 @@ const GURUS = [
 ];
 const TOP = 40; // holdings kept per guru (by value)
 
+// Photos (user, 16 Oct 2026: "อยากให้แสดงรูปของแต่ละคนด้วย"): the lead image of the person's English Wikipedia page, used
+// only when Wikimedia Commons says it is freely licensed (CC / public domain) — the author and licence are shown on the page
+// as the licence requires. No page / no free photo → the site keeps the gold initials. Funds without one person: none.
+const WIKI = {
+  1067983: 'Warren_Buffett', 1166559: 'Bill_Gates', 1649339: 'Michael_Burry', 1336528: 'Bill_Ackman', 1350694: 'Ray_Dalio',
+  1536411: 'Stanley_Druckenmiller', 1061768: 'Seth_Klarman', 1709323: 'Li_Lu', 1569205: 'Terry_Smith_(fund_manager)',
+  1656456: 'David_Tepper', 1040273: 'Daniel_S._Loeb', 1489933: 'David_Einhorn_(hedge_fund_manager)', 921669: 'Carl_Icahn',
+  1549575: 'Mohnish_Pabrai', 1112520: 'Chuck_Akre', 1167483: 'Chase_Coleman_III', 1061165: 'Stephen_Mandel',
+  1135730: 'Philippe_Laffont', 1697748: 'Cathie_Wood', 949509: 'Howard_Marks_(investor)', 1029160: 'George_Soros',
+  1510387: 'Joel_Greenblatt', 1096343: 'Thomas_Gayner', 783412: 'Charlie_Munger', 1418814: 'Jeffrey_Ubben', 1103804: 'Andreas_Halvorsen',
+};
+const FREE = /^(cc[ -]?by|cc[ -]?zero|cc0|public domain|pd)/i;
+const strip = (h) => String(h || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+async function photo(title) {
+  const H = { 'User-Agent': UA };
+  const s = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`, { headers: H }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const orig = s?.originalimage?.source;
+  let file = orig ? decodeURIComponent(orig.split('?')[0].split('/').pop()) : null; // the API adds ?utm_… to image links
+  const lic0 = file && await commons(file, H);
+  if (lic0) return lic0;
+  // the page's own picture is non-free (fair use) or missing → the person's Wikidata image (P18), which is always on Commons
+  if (!s?.wikibase_item) return null;
+  const w = await fetch(`https://www.wikidata.org/w/api.php?action=wbgetclaims&format=json&property=P18&entity=${s.wikibase_item}`, { headers: H }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  file = w?.claims?.P18?.[0]?.mainsnak?.datavalue?.value;
+  return file ? commons(file, H) : null;
+}
+async function commons(file, H) {
+  const q = `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&iiprop=extmetadata|url&iiurlwidth=160&titles=${encodeURIComponent(`File:${file}`)}`;
+  const j = await fetch(q, { headers: H }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const page = j && Object.values(j.query?.pages || {})[0], ii = page?.imageinfo?.[0], md = ii?.extmetadata || {};
+  const lic = strip(md.LicenseShortName?.value);
+  if (!ii || page.missing !== undefined || !FREE.test(lic)) return null; // not on Commons (non-free / fair use) or not a free licence
+  if (!ii.thumburl) return null;
+  return { url: ii.thumburl, by: strip(md.Artist?.value).slice(0, 80) || 'Wikimedia Commons', lic, page: ii.descriptionurl };
+}
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let lastSec = 0;
 async function sec(url, as = 'json') { // ≤ 8 requests a second (SEC allows 10)
@@ -161,6 +197,7 @@ async function mapCusips(cusips, cache) {
   await mapCusips(gurus.flatMap((g) => [...g.top, ...g.moves].map((x) => x.cusip)), cache);
   for (const g of gurus) for (const x of [...g.top, ...g.moves]) x.s = cache[x.cusip] || null;
   fs.writeFileSync(cacheFile, JSON.stringify(cache));
+  for (const g of gurus) if (WIKI[g.cik]) { g.photo = await photo(WIKI[g.cik]); console.log(`photo ${g.en}: ${g.photo ? g.photo.lic : 'none (initials)'}`); }
   const body = { asOf: new Date().toISOString(), source: 'SEC EDGAR 13F-HR · OpenFIGI', gurus };
   fs.writeFileSync(out, JSON.stringify(body));
   console.log(`wrote ${out}: ${gurus.length} gurus · mapped ${Object.values(cache).filter(Boolean).length}/${Object.keys(cache).length} CUSIPs`);
