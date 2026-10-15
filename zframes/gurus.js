@@ -21,7 +21,7 @@
   const avatar = (g, big) => {
     const p = g.photo || {};
     if (p.mark) return `<span class="gu-av mark${big ? ' big' : ''}${p.mark.length > 8 ? ' xl' : p.mark.length > 6 ? ' long' : ''}"><i>${e(p.mark)}</i></span>`;
-    return `<span class="gu-av${p.logo ? ' logo' : ''}${big ? ' big' : ''}">${p.url ? `<img src="${e(p.url)}" alt="${e(p.logo ? g.fund : g.th)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<i>${e(initials(g))}</i></span>`;
+    return `<span class="gu-av${p.logo ? ' logo' : ''}${big ? ' big' : ''}">${p.url ? `<img src="${e(p.url)}"${p.pos ? ` style="object-position:${e(p.pos)};transform:scale(2);transform-origin:${e(p.pos)}"` : ""} alt="${e(p.logo ? g.fund : g.th)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<i>${e(initials(g))}</i></span>`;
   };
   const credit = (g) => { const p = g.photo || {};
     if (p.logo) return `โลโก้: ${e(g.fund)} (<a href="${e(p.page)}" target="_blank" rel="noopener">${e(p.by)}</a>)`;

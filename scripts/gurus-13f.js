@@ -61,8 +61,13 @@ const SITE = {
   1061165: 'lonepinecapital.com', 1135730: 'coatue.com', 1096343: 'markel.com', 1418814: 'valueact.com',
   1103804: 'vikingglobal.com', 1034524: 'polencapital.com', 1350694: 'bridgewater.com', 1061768: 'baupost.com', 1656456: 'appaloosalp.com',
 };
+// Commons files checked by hand (still licence-checked each run): Terry Smith of Fundsmith funded the Sir Keith Park memorial
+// in London — the MNZM photo's own description says so
+const FILE = { 1569205: 'Terry_Smith_MNZM_investiture.jpg' };
+const POS = { 1569205: '27% 22%' }; // where the person is in a group photo (CSS object-position) — Smith stands on the left
 const MARK = { 1649339: 'SCION', 1536411: 'DUQUESNE', 1709323: 'HIMALAYA', 1040273: 'THIRD POINT', 1489933: 'GREENLIGHT', 1510387: 'GOTHAM' };
-async function commonsSearch(name, H) {
+async function commonsSearch(name, H, fund = '') {
+  const fundWord = fund.replace(/\(.*\)/, '').split(/\s+/)[0] || '';
   const words = name.toLowerCase().replace(/\(.*\)/, '').split(/\s+/).filter(Boolean);
   if (words.length < 2) return null;
   const full = new RegExp(`(^|[^a-z])${words.join('[ _-]+')}([^a-z]|$)`); // the whole name, in order, in the file title
@@ -72,8 +77,10 @@ async function commonsSearch(name, H) {
     if (!/\.(jpe?g|png|webp)$/i.test(t) || !full.test(low)) continue;
     if (/logo|signature|book|cover|house|building|chart/i.test(t)) continue;
     const p = await commons(t, H);
-    // a namesake (a basketball player, a musician…) is not our investor: the description / categories must say so
-    if (p && /invest|fund|hedge|capital|financ|billionaire|asset management|money manager|economist/i.test(p.about || '')) return p;
+    // a namesake (a basketball player, a musician, a New Zealand "Terry Smith MNZM"…) is not our investor: the description /
+    // categories must name the fund or call the person an investor / fund manager ("financial", "capital" alone are too loose)
+    const why = new RegExp(`investor|hedge fund|fund manager|asset manag|money manager|billionaire${fundWord.length > 3 ? `|${fundWord}` : ''}`, 'i');
+    if (p && why.test(p.about || '')) return p;
   }
   return null;
 }
@@ -247,10 +254,11 @@ async function mapCusips(cusips, cache) {
   for (const g of gurus) for (const x of [...g.top, ...g.moves]) x.s = cache[x.cusip] || null;
   fs.writeFileSync(cacheFile, JSON.stringify(cache));
   for (const g of gurus) {
-    g.photo = (WIKI[g.cik] && await photo(WIKI[g.cik])) || (WIKI[g.cik] && await commonsSearch(g.en, { 'User-Agent': UA })) || (SITE[g.cik] && await logo(SITE[g.cik]))
+    g.photo = (FILE[g.cik] && await commons(FILE[g.cik], { 'User-Agent': UA })) || (WIKI[g.cik] && await photo(WIKI[g.cik])) || (WIKI[g.cik] && await commonsSearch(g.en, { 'User-Agent': UA }, g.fund)) || (SITE[g.cik] && await logo(SITE[g.cik]))
       // last resort: the fund's name as a wordmark badge (drawn by the site, no image)
       || { mark: MARK[g.cik] || g.fund.replace(/\(.*\)/, '').split(/\s+/)[0].toUpperCase() };
     if (g.photo.about) delete g.photo.about;
+    if (POS[g.cik] && g.photo.url && !g.photo.logo) g.photo.pos = POS[g.cik];
     console.log(`photo ${g.en}: ${g.photo.mark ? `wordmark ${g.photo.mark}` : g.photo.logo ? `logo ${g.photo.by}` : g.photo.lic}`);
   }
   const body = { asOf: new Date().toISOString(), source: 'SEC EDGAR 13F-HR · OpenFIGI', gurus };
