@@ -359,3 +359,13 @@ html.vp-scaled .nf-title, html.vp-scaled .st-title { font-size: 18px; }
 .in-flag { font-size: 12.5px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line); background: rgba(255,255,255,.03); color: var(--muted); }
 .in-flag.news { color: #f0b90b; border-color: rgba(240,185,11,.45); background: rgba(240,185,11,.08); }
 .in-flag b.up { color: #0ecb81; } .in-flag b.down { color: #f6465d; }
+
+/* Scaled phones (vp-scaled, page drawn at ~57%): taller tap areas for small button rows so a finger hits them
+   (16 Oct, phone sweep: chart chat modes / timeframes / quick questions, news chips, journal tools were 26–34 CSS px
+   = 15–19 px on the phone). Text size unchanged — only the hit area grows. */
+html.vp-scaled .cc-mode button, html.vp-scaled .cc-tfs button, html.vp-scaled .cc-quick button,
+html.vp-scaled .nf-chips button, html.vp-scaled .jr-tools .btn, html.vp-scaled .tfs button, html.vp-scaled .tfs a {
+  min-height: 44px; display: inline-flex; align-items: center; justify-content: center;
+}
+html.vp-scaled .cc-quick { gap: 8px; }
+html.vp-scaled #tab-account p.muted a { display: inline-block; padding: 11px 0; }

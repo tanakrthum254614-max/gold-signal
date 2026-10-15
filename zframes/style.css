@@ -403,3 +403,6 @@ html.light .scard .sc-read b { color: #1f2430; }
 html.light .ticker { background: rgba(255, 255, 255, .97); border-top-color: #ece6d8; }
 html.light .livebadge { background: #fff; border-color: #ece6d8; color: #4a4f5c; }
 html.light .livebadge.on { color: #0f9f6e; border-color: rgba(15, 159, 110, .4); }
+/* inside the site on a scaled phone (~57%): taller tap areas, same text size (16 Oct, phone sweep) */
+html.site-scaled .zn button, html.site-scaled .rng, html.site-scaled .top select { min-height: 44px; }
+html.site-scaled .rng { min-width: 48px; }

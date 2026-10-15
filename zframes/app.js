@@ -4,6 +4,7 @@ const params = new URLSearchParams(location.search);
 // (not when embedded in the site on a phone: the site already scales the whole page down — index.html vp-scaled)
 const siteScaled = (() => { try { return parent !== window && parent.document.documentElement.classList.contains('vp-scaled'); } catch (e) { return false; } })();
 if (!siteScaled && Math.min(screen.width, screen.height) <= 600 && matchMedia('(pointer: coarse)').matches) document.documentElement.classList.add('phone');
+if (siteScaled) document.documentElement.classList.add('site-scaled'); // taller tap areas (style.css html.site-scaled)
 // site light mode (user, 16 Oct 2026: "ทำมาหมด" — the US stocks tab stayed dark when the site was switched to light):
 // html.light follows the parent's html.dark, also when it is switched later from the account tab
 (() => { try {
