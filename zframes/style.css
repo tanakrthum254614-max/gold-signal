@@ -288,3 +288,13 @@ ul.gs-news li.live { background: rgba(251,191,36,.14); } ul.gs-news li.live .c {
 ul.gs-news.wide { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
 .notes-age.old { color: var(--warn); font-weight: 700; }
 @media (max-width: 560px) { table.gs-sig td, table.gs-sig th { padding: 5px 3px; } .gs-bar { width: 34px; } }
+
+/* stock page = a full dashboard for that stock (15 Oct 2026, user: "อยากให้แต่ละหุ้นทำแดชบอร์ดขึ้นมา มันดูน้อยไป") */
+.mbox.mfull { width: min(1500px, 100%); }
+.mbox.mfull > .grid { margin-top: 14px; }
+.mbox.mfull > .card { margin-top: 14px; }
+.row.chk { display: flex; gap: 8px; align-items: baseline; }
+.row.chk > b { flex: 0 0 16px; text-align: center; }
+table.peers tbody tr { cursor: pointer; }
+table.peers tbody tr.me td { background: rgba(167, 139, 250, .14); }
+table.peers tbody tr:hover td { background: rgba(255, 255, 255, .05); }

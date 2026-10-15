@@ -126,36 +126,133 @@ Object.assign(FRAMES, {
   movers: f => `<div class="mv"><div><div class="muted">ขึ้นแรงสุด</div><div class="mvl up-l"></div></div><div><div class="muted">ลงแรงสุด</div><div class="mvl dn-l"></div></div></div>`,
 });
 
-// ---------- หน้ารายละเอียดหุ้น ----------
+// ---------- หน้ารายละเอียดหุ้น = แดชบอร์ดเต็มของหุ้นตัวนั้น ----------
+// (ผู้ใช้ 15 ต.ค. 2026: "อยากให้แต่ละหุ้นทำแดชบอร์ดขึ้นมา มันดูน้อยไป") — ทุกอย่างคำนวณในหน้าจากราคาปิดรายวัน 1 ปี
+// (D.closes) + ราคาสด: ราคา + EMA20/50/200 · RSI · MACD · เทียบดัชนี · ผลตอบแทนช่วง/รายเดือน · drawdown ·
+// ความเสี่ยง (beta, ผันผวน, วันดี/แย่สุด) · เช็กลิสต์เทคนิค · หุ้นกลุ่มเดียวกัน
+function stockSeries(pts) {
+  const C = pts.map(p => p.v);
+  const ema = (vals, p) => { const k = 2 / (p + 1); let e; return vals.map((v, i) => (e = i ? v * k + e * (1 - k) : v)); };
+  const line = (vals, from = 0) => pts.map((p, i) => ({ t: p.t, v: vals[i] })).slice(from).filter(p => p.v != null && isFinite(p.v)).map(p => ({ t: p.t, v: +p.v.toFixed(2) }));
+  const e20 = ema(C, 20), e50 = ema(C, 50), e200 = ema(C, 200);
+  // RSI 14 (Wilder)
+  const rsi = []; let ag = 0, al = 0;
+  C.forEach((v, i) => { if (!i) { rsi.push(null); return; } const ch = v - C[i - 1], up = Math.max(ch, 0), dn = Math.max(-ch, 0);
+    if (i <= 14) { ag += up / 14; al += dn / 14; rsi.push(i < 14 ? null : al ? 100 - 100 / (1 + ag / al) : 100); }
+    else { ag = (ag * 13 + up) / 14; al = (al * 13 + dn) / 14; rsi.push(al ? 100 - 100 / (1 + ag / al) : 100); } });
+  const m12 = ema(C, 12), m26 = ema(C, 26), macd = C.map((_, i) => m12[i] - m26[i]), sig = ema(macd, 9);
+  let peak = -Infinity; const dd = C.map(v => { peak = Math.max(peak, v); return (v / peak - 1) * 100; });
+  return { C, e20, e50, e200, rsi, macd, sig, dd, line };
+}
 function openStock(s) {
   const x = stockOf(s); if (!x) return;
   if (window.dash.kind === 'div') return openDiv(x);
   const D = window.dash, closes = D.closes[s] || [];
   const pts = D.dates.map((t, i) => ({ t, v: closes[i] })).filter(p => p.v != null);
-  const e50 = []; let e; const k = 2 / 51;
-  pts.forEach((p, i) => { e = i ? p.v * k + e * (1 - k) : p.v; if (i >= 49) e50.push({ t: p.t, v: +e.toFixed(2) }); });
-  const q = SQ[s], note = D.stockNotes?.[s];
-  const chart = renderFrame({ type: 'series', title: `${s} · ราคา 1 ปี`, source: 'Yahoo Finance', fmt: 'usd', headline: usd(q?.px ?? x.px),
-    change: { text: `วันนี้ ${pct2(q ? q.ch * 100 : x.ch1d)}`, tone: (q ? q.ch : x.ch1d) >= 0 ? 'up' : 'down' },
-    lines: [{ name: s, color: '#60a5fa', points: pts }, { name: 'EMA50', color: '#fbbf24', points: e50, width: 1.2 }],
+  const q = SQ[s], note = D.stockNotes?.[s], L = LS(s) || x;
+  const S = stockSeries(pts), last = S.C.at(-1), n = S.C.length;
+  const day = t => new Date(t).toISOString().slice(0, 10);
+  // the index: the dashboard's own index chart (calc idx.price)
+  const idxF = D.zones.flatMap(z => z.frames).find(f => f.calc === 'idx.price');
+  const idxName = idxF ? idxF.title.replace(/\s*\(.*\)$/, '') : 'ดัชนี', idxPts = idxF?.lines?.[0]?.points || [];
+  const idxBy = new Map(idxPts.map(p => [day(p.t), p.v]));
+  const common = pts.filter(p => idxBy.has(day(p.t)));
+  const rel = common.length > 20 ? [
+    { name: s, color: '#60a5fa', points: common.map(p => ({ t: p.t, v: +(p.v / common[0].v * 100).toFixed(2) })) },
+    { name: idxName, color: '#a78bfa', points: common.map(p => ({ t: p.t, v: +(idxBy.get(day(p.t)) / idxBy.get(day(common[0].t)) * 100).toFixed(2) })) }] : null;
+  // risk: daily returns, beta / correlation vs the index, best / worst day, up days, max drawdown
+  const ret = S.C.slice(1).map((v, i) => v / S.C[i] - 1);
+  const sd = a => { const m = a.reduce((x, y) => x + y, 0) / a.length; return Math.sqrt(a.reduce((x, y) => x + (y - m) ** 2, 0) / a.length); };
+  let beta = null, corr = null;
+  if (common.length > 40) {
+    const a = [], b = [];
+    for (let i = 1; i < common.length; i++) { a.push(common[i].v / common[i - 1].v - 1); b.push(idxBy.get(day(common[i].t)) / idxBy.get(day(common[i - 1].t)) - 1); }
+    const ma = a.reduce((p, c) => p + c, 0) / a.length, mb = b.reduce((p, c) => p + c, 0) / b.length;
+    const cov = a.reduce((p, c, i) => p + (c - ma) * (b[i] - mb), 0) / a.length, vb = sd(b) ** 2;
+    beta = vb ? cov / vb : null; corr = sd(a) && sd(b) ? cov / (sd(a) * sd(b)) : null;
+  }
+  const bestI = ret.indexOf(Math.max(...ret)), worstI = ret.indexOf(Math.min(...ret));
+  const maxDD = Math.min(...S.dd), up = ret.filter(r => r > 0).length;
+  const thDay = i => new Date(pts[i + 1].t).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+  // monthly returns (last 12 calendar months, month-end closes)
+  const mEnd = new Map(); pts.forEach(p => mEnd.set(new Date(p.t).toISOString().slice(0, 7), p.v));
+  const months = [...mEnd.entries()], mrows = months.slice(1).map(([k, v], i) => ({ k, r: (v / months[i][1] - 1) * 100 })).slice(-12);
+  const TH_M = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+  // returns vs the index over the same windows
+  const idxRet = (days) => { if (idxPts.length < 2) return null; const t1 = idxPts.at(-1).t, p0 = idxPts.filter(p => p.t <= t1 - days * DAY).at(-1); return p0 ? (idxPts.at(-1).v / p0.v - 1) * 100 : null; };
+  const idxYtd = (() => { if (idxPts.length < 2) return null; const y = new Date(idxPts.at(-1).t).getUTCFullYear(), p0 = idxPts.filter(p => new Date(p.t).getUTCFullYear() < y).at(-1); return p0 ? (idxPts.at(-1).v / p0.v - 1) * 100 : null; })();
+  const winRows = [['1 สัปดาห์', x.ch1w, idxRet(7)], ['1 เดือน', x.ch1m, idxRet(30)], ['3 เดือน', x.ch3m, idxRet(91)], ['ตั้งแต่ต้นปี', x.ytd, idxYtd], ['1 ปี', x.ch1y, idxRet(365)]];
+  // technical checklist, plain Thai
+  const rsiNow = S.rsi.at(-1), macdNow = S.macd.at(-1), sigNow = S.sig.at(-1);
+  const chk = [
+    [last > S.e20.at(-1), `ราคาปิด${last > S.e20.at(-1) ? 'อยู่เหนือ' : 'ต่ำกว่า'} EMA20 (${usd(S.e20.at(-1))}) — ${last > S.e20.at(-1) ? 'ระยะสั้นยังแข็ง' : 'ระยะสั้นอ่อนแรง'}`],
+    [last > S.e50.at(-1), `ราคาปิด${last > S.e50.at(-1) ? 'อยู่เหนือ' : 'ต่ำกว่า'} EMA50 (${usd(S.e50.at(-1))}) — แนวโน้มระยะกลาง${last > S.e50.at(-1) ? 'ขึ้น' : 'ลง'}`],
+    [n >= 200 ? last > S.e200.at(-1) : null, n >= 200 ? `ราคาปิด${last > S.e200.at(-1) ? 'อยู่เหนือ' : 'ต่ำกว่า'} EMA200 (${usd(S.e200.at(-1))}) — แนวโน้มใหญ่${last > S.e200.at(-1) ? 'ขาขึ้น' : 'ขาลง'}` : 'ข้อมูลยังไม่ถึง 200 วัน'],
+    [S.e50.at(-1) > S.e200.at(-1), `EMA50 ${S.e50.at(-1) > S.e200.at(-1) ? 'อยู่เหนือ' : 'อยู่ใต้'} EMA200 (${S.e50.at(-1) > S.e200.at(-1) ? 'golden cross — โครงสร้างขาขึ้น' : 'death cross — โครงสร้างขาลง'})`],
+    [rsiNow == null ? null : rsiNow >= 70 ? false : rsiNow <= 30 ? null : rsiNow >= 50, `RSI 14 = ${rsiNow?.toFixed(0)} — ${rsiNow >= 70 ? 'ซื้อมากเกิน ระวังย่อ' : rsiNow <= 30 ? 'ขายมากเกิน รอสัญญาณกลับตัว' : rsiNow >= 50 ? 'แรงซื้อนำ' : 'แรงขายนำ'}`],
+    [macdNow > sigNow, `MACD ${macdNow > sigNow ? 'อยู่เหนือ' : 'อยู่ใต้'}เส้นสัญญาณ — โมเมนตัม${macdNow > sigNow ? 'ขึ้น' : 'ลง'}`],
+    [x.fromHigh > -10, `ห่างจุดสูงสุด 52 สัปดาห์ ${x.fromHigh?.toFixed(1)}% · อยู่ที่ ${Math.round(x.pos52 ?? 0)}% ของกรอบปี`],
+  ];
+  const passed = chk.filter(c => c[0] === true).length, counted = chk.filter(c => c[0] != null).length;
+  // peers: the same sector in this dashboard
+  const peers = D.stocks.filter(p => p.sector === x.sector && p.s !== s).sort((a, b) => (b.cap || 0) - (a.cap || 0)).slice(0, 10);
+  const rankBy = k => { const arr = D.stocks.filter(p => p[k] != null).sort((a, b) => b[k] - a[k]); return `${arr.findIndex(p => p.s === s) + 1}/${arr.length}`; };
+  const cur = v => (v == null ? '—' : `<span class="${chCls(v)}">${pct2(v)}</span>`);
+
+  const price = renderFrame({ type: 'series', span: 2, title: `${s} · ราคา + เส้นค่าเฉลี่ย`, source: 'Yahoo Finance · ราคาปิดรายวัน', fmt: 'usd', headline: usd(L.px ?? x.px),
+    change: { text: `วันนี้ ${pct2(L.d ?? x.ch1d)}`, tone: (L.d ?? x.ch1d) >= 0 ? 'up' : 'down' }, height: 240,
+    lines: [{ name: s, color: '#60a5fa', points: S.line(S.C) }, { name: 'EMA20', color: '#34d399', points: S.line(S.e20, 19), width: 1.1 },
+      { name: 'EMA50', color: '#fbbf24', points: S.line(S.e50, 49), width: 1.2 }, ...(n >= 200 ? [{ name: 'EMA200', color: '#f472b6', points: S.line(S.e200, 199), width: 1.2 }] : [])],
     ranges: [{ label: '1M', days: 31 }, { label: '3M', days: 92 }, { label: '6M', days: 183 }, { label: '1Y', days: 366 }], defaultRange: '6M', area: false });
+  const rsiF = renderFrame({ type: 'series', title: 'RSI 14', source: 'คำนวณจากราคาปิด', headline: rsiNow?.toFixed(0), sub: rsiNow >= 70 ? 'ซื้อมากเกิน' : rsiNow <= 30 ? 'ขายมากเกิน' : 'ปกติ', fmt: 'num', decimals: 0,
+    lines: [{ name: 'RSI', color: '#c4b5fd', points: S.line(S.rsi, 14) }], refs: [{ v: 70, label: '70' }, { v: 30, label: '30' }],
+    ranges: [{ label: '3M', days: 92 }, { label: '6M', days: 183 }, { label: '1Y', days: 366 }], defaultRange: '6M', area: false, height: 140 });
+  const macdF = renderFrame({ type: 'series', title: 'MACD 12/26/9', source: 'คำนวณจากราคาปิด', headline: macdNow?.toFixed(2), sub: macdNow > sigNow ? 'เหนือเส้นสัญญาณ (โมเมนตัมขึ้น)' : 'ใต้เส้นสัญญาณ (โมเมนตัมลง)', fmt: 'num', decimals: 2,
+    lines: [{ name: 'MACD', color: '#60a5fa', points: S.line(S.macd, 26) }, { name: 'Signal', color: '#fbbf24', points: S.line(S.sig, 34), width: 1.1 }], refs: [{ v: 0, label: '0' }],
+    ranges: [{ label: '3M', days: 92 }, { label: '6M', days: 183 }, { label: '1Y', days: 366 }], defaultRange: '6M', area: false, height: 140 });
+  const relF = rel ? renderFrame({ type: 'series', title: `เทียบกับ ${idxName}`, source: 'เริ่มที่ 100 · 1 ปี', headline: `${(rel[0].points.at(-1).v - rel[1].points.at(-1).v >= 0 ? '+' : '')}${(rel[0].points.at(-1).v - rel[1].points.at(-1).v).toFixed(1)} จุด`,
+    sub: rel[0].points.at(-1).v >= rel[1].points.at(-1).v ? `ชนะ${idxName}ใน 1 ปี` : `แพ้${idxName}ใน 1 ปี`, tone: rel[0].points.at(-1).v >= rel[1].points.at(-1).v ? 'up' : 'down', fmt: 'num', decimals: 0,
+    lines: rel, area: false, height: 140 }) : '';
+  const winF = renderFrame({ type: 'bars', title: `ผลตอบแทน ${s} (เทียบ ${idxName})`, source: 'แท่ง = หุ้น · ตัวเลขในวงเล็บ = ดัชนี',
+    rows: winRows.filter(r => r[1] != null).map(([l, v, iv]) => ({ label: l, value: v, display: `${pct2(v)}${iv != null ? ` (${pct2(iv)})` : ''}` })) });
+  const monF = renderFrame({ type: 'bars', title: 'ผลตอบแทนรายเดือน', source: '12 เดือนล่าสุด · เดือนนี้ยังไม่จบ',
+    rows: mrows.map(m => ({ label: `${TH_M[+m.k.slice(5) - 1]} ${m.k.slice(2, 4)}`, value: m.r, display: pct2(m.r) })) });
+  const ddF = renderFrame({ type: 'series', title: 'ย่อตัวจากจุดสูงสุด (drawdown)', source: '1 ปี', headline: `${S.dd.at(-1).toFixed(1)}%`, sub: `ลึกสุดในปี ${maxDD.toFixed(1)}%`, tone: 'down', fmt: 'pct', decimals: 1,
+    lines: [{ name: 'Drawdown', color: '#fb7185', points: S.line(S.dd) }], area: true, height: 140 });
+  const riskTiles = [['ผันผวน (ต่อปี)', `${(sd(ret) * Math.sqrt(252) * 100).toFixed(0)}%`], ['Beta เทียบดัชนี', beta == null ? '—' : beta.toFixed(2)], ['สหสัมพันธ์', corr == null ? '—' : corr.toFixed(2)],
+    ['วันที่ดีที่สุด', `${pct2(ret[bestI] * 100)} (${thDay(bestI)})`], ['วันที่แย่ที่สุด', `${pct2(ret[worstI] * 100)} (${thDay(worstI)})`], ['วันที่ปิดบวก', `${Math.round(up / ret.length * 100)}%`],
+    ['ย่อลึกสุดในปี', `${maxDD.toFixed(1)}%`], ['อันดับ 1 เดือน', rankBy('ch1m')], ['อันดับ YTD', rankBy('ytd')], ['น้ำหนักในดัชนี', x.w ? x.w.toFixed(2) + '%' : '—']];
   const tiles = [['1 สัปดาห์', pct2(x.ch1w)], ['1 เดือน', pct2(x.ch1m)], ['3 เดือน', pct2(x.ch3m)], ['YTD', pct2(x.ytd)], ['1 ปี', pct2(x.ch1y)],
     ['RSI 14', x.rsi?.toFixed(0)], ['เทรนด์', `${x.score > 0 ? '+' : ''}${x.score}/5`], ['ผันผวน 30 วัน', x.vol30 ? x.vol30.toFixed(0) + '%/ปี' : '—'],
     ['จากจุดสูงสุด 52W', x.fromHigh?.toFixed(1) + '%'], ['น้ำหนักโดยประมาณ', x.w?.toFixed(2) + '%']];
   const m = document.createElement('div');
   m.className = 'modal';
-  m.innerHTML = `<div class="mbox" role="dialog" aria-label="${esc(x.name)}"><button class="mx" aria-label="ปิด">✕</button>
+  m.innerHTML = `<div class="mbox mfull" role="dialog" aria-label="${esc(x.name)}"><button class="mx" aria-label="ปิด">✕</button>
     <div class="mh"><div><div class="big">${s} <span class="muted" style="font-size:14px">${esc(x.name)}</span></div>
-    <div class="muted">${esc(x.sector)} · <span class="${sigCls(x.signal)}">${esc(x.signal)}</span>${x.hl ? ' · มีราคา 24 ชม. บน Hyperliquid' : ''}</div></div>
+    <div class="muted">${esc(x.sector)} · <span class="${sigCls(x.signal)}">${esc(x.signal)}</span> · เช็กลิสต์เทคนิคผ่าน ${passed}/${counted}${x.hl ? ' · มีราคา 24 ชม. บน Hyperliquid' : ''}</div></div>
     <div class="mlive" data-s="${s}"></div></div>
-    <div class="grid g2">${chart}<section class="card"><h3><span>สรุปรายตัว</span><small>Model${note ? ' + Claude' : ''}</small></h3>
+    <div class="grid">${price}<section class="card"><h3><span>สรุปรายตัว</span><small>Model${note ? ' + Claude' : ''}</small></h3>
       <div class="rows"><div class="row">${esc(x.reading)}</div>${note ? `<div class="row"><b>Claude:</b>${esc(note)}</div>` : ''}</div>
       <div class="muted" style="margin:10px 0 4px">กรอบ 52 สัปดาห์ ${usd(x.lo52)} – ${usd(x.hi52)}</div><div class="rbar"><span style="width:${Math.max(0, Math.min(100, x.pos52 ?? 0))}%"></span></div>
       <div class="tiles t5">${tiles.map(([l, v]) => `<div class="tile"><span>${l}</span><b>${v ?? '—'}</b></div>`).join('')}</div>
-      <div class="muted" style="margin-top:10px">ระหว่างวัน (5 นาที)</div><div class="msp">${sparkSvg(q?.spark, 420, 60)}</div></section></div></div>`;
+      <div class="muted" style="margin-top:10px">ระหว่างวัน (5 นาที)</div><div class="msp">${sparkSvg(q?.spark, 420, 60)}</div></section></div>
+    <div class="grid">${rsiF}${macdF}${relF || ddF}</div>
+    <div class="grid">${winF}${monF}${relF ? ddF : ''}</div>
+    <div class="grid g2"><section class="card"><h3><span>เช็กลิสต์เทคนิค · ผ่าน ${passed}/${counted}</span><small>คำนวณจากราคาปิด</small></h3>
+      <div class="rows">${chk.map(([ok, t]) => `<div class="row chk"><b class="${ok === true ? 'up' : ok === false ? 'down' : 'muted'}">${ok === true ? '✓' : ok === false ? '✗' : '•'}</b> ${esc(t)}</div>`).join('')}</div></section>
+      <section class="card"><h3><span>ความเสี่ยงและสถิติ</span><small>1 ปี · รายวัน</small></h3>
+      <div class="tiles t5">${riskTiles.map(([l, v]) => `<div class="tile"><span>${l}</span><b>${v}</b></div>`).join('')}</div>
+      <div class="muted" style="margin-top:8px;font-size:12px">Beta 1.2 = ขยับแรงกว่าดัชนีราว 20% · สหสัมพันธ์ใกล้ 1 = ขึ้นลงตามดัชนี</div></section></div>
+    ${peers.length ? `<section class="card"><h3><span>หุ้นกลุ่มเดียวกัน · ${esc(x.sector)}</span><small>กดเพื่อเปิดดู</small></h3><div class="tscroll"><table class="st peers"><thead><tr><th>หุ้น</th><th class="r">ราคา</th><th class="r">วันนี้</th><th class="r">1 เดือน</th><th class="r">YTD</th><th class="r">RSI</th><th>สัญญาณ</th></tr></thead><tbody>
+      ${[x, ...peers].map(p => { const lp = LS(p.s) || p; return `<tr data-peer="${p.s}"${p.s === s ? ' class="me"' : ''}><td><b>${p.s}</b> <small class="muted">${esc(p.name)}</small></td><td class="r">${usd(lp.px ?? p.px)}</td><td class="r">${cur(lp.d ?? p.ch1d)}</td><td class="r">${cur(p.ch1m)}</td><td class="r">${cur(p.ytd)}</td><td class="r">${p.rsi?.toFixed(0) ?? '—'}</td><td class="${sigCls(p.signal)}">${esc(p.signal || '')}</td></tr>`; }).join('')}
+      </tbody></table></div></section>` : ''}</div>`;
   document.body.appendChild(m);
   const close = () => m.remove();
-  m.addEventListener('click', ev => { if (ev.target === m || ev.target.closest('.mx')) close(); });
+  m.addEventListener('click', ev => {
+    const pr = ev.target.closest('tr[data-peer]');
+    if (pr && pr.dataset.peer !== s) { ev.stopPropagation(); close(); openStock(pr.dataset.peer); return; }
+    if (ev.target === m || ev.target.closest('.mx')) close();
+  });
   document.addEventListener('keydown', function esc_(ev) { if (ev.key === 'Escape') { close(); document.removeEventListener('keydown', esc_); } });
   STOCKS.paintModal();
 }
@@ -224,7 +321,7 @@ document.addEventListener('click', e => {
     return;
   }
   const th = e.target.closest('table.st th');
-  if (th) {
+  if (th && th.closest('.card')?._st) {
     const card = th.closest('.card'), st = card._st;
     if (st.k === th.dataset.k) st.dir *= -1; else { st.k = th.dataset.k; st.dir = 1; }
     tableRows(FRAME_DATA[card.dataset.i], card); return;

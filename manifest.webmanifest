@@ -7,7 +7,7 @@
   "start_url": "/?source=app",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "landscape",
   "background_color": "#0d1016",
   "theme_color": "#0d1016",
   "icons": [

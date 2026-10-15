@@ -144,3 +144,40 @@
     on(name, fn) { listeners.push([name, fn]); },
   };
 })();
+
+// Phones: landscape only (user, 15 Oct 2026: "เปิดในโทรศัพท์เป็นแนวนอน ไม่เอาแนวตั้ง มันแคบไป").
+// A web page can't rotate the phone by itself: the installed app opens in landscape (manifest "orientation"), and
+// Android browsers can lock landscape in full screen (screen.orientation.lock). In portrait a cover asks to turn the
+// phone — "ดูแนวตั้งชั่วคราว" hides it for this visit (for phones with rotation lock on). iPhone: rotate by hand.
+(function () {
+  const phone = Math.min(screen.width, screen.height) <= 600 && matchMedia('(pointer: coarse)').matches;
+  if (!phone) return;
+  const html = document.documentElement;
+  let skip = false;
+  try { skip = sessionStorage.getItem('gs-portrait-ok') === '1'; } catch (e) { /* storage blocked */ }
+  if (!skip) html.classList.add('need-landscape');
+  const canLock = !!(screen.orientation && screen.orientation.lock && html.requestFullscreen);
+  const el = document.createElement('div');
+  el.id = 'rotateCover';
+  el.setAttribute('role', 'dialog');
+  el.innerHTML = `<div class="rot-box"><div class="rot-phone" aria-hidden="true"><i></i></div>
+    <b>หมุนโทรศัพท์เป็นแนวนอน</b><p>Gold Signal ออกแบบให้ดูแนวนอนบนมือถือ กราฟ ตาราง และแดชบอร์ดจะกว้างขึ้น</p>
+    ${canLock ? '<button type="button" class="btn gold" id="rotGo">เปิดแนวนอนเต็มจอ</button>' : ''}
+    <button type="button" class="rot-skip" id="rotSkip">ดูแนวตั้งชั่วคราว</button>
+    <small>ถ้าหมุนแล้วจอไม่หมุน ให้ปิด “ล็อกการหมุนจอ” ของโทรศัพท์ก่อน</small></div>`;
+  document.body.appendChild(el);
+  const lock = async () => {
+    try {
+      if (!document.fullscreenElement) await html.requestFullscreen({ navigationUI: 'hide' });
+      await screen.orientation.lock('landscape');
+    } catch (e) { /* not allowed here — the cover still asks to rotate */ }
+  };
+  const go = document.getElementById('rotGo');
+  if (go) go.addEventListener('click', lock);
+  document.getElementById('rotSkip').addEventListener('click', () => {
+    html.classList.remove('need-landscape');
+    try { sessionStorage.setItem('gs-portrait-ok', '1'); } catch (e) { /* ok */ }
+  });
+  // installed app (standalone): ask for landscape right away
+  if (matchMedia('(display-mode: standalone)').matches && screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
+})();
