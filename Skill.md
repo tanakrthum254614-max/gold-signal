@@ -34,220 +34,138 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 
 ---
 
-## 1. ระบบสัญญาณ 2 ระบบ (แยกสถิติกัน)
+## 1. ระบบสัญญาณตอนนี้ (ตรวจกับโค้ด 15 ต.ค. 2569)
 
-### โครงสร้างเรียบง่ายทุกหน้า (6 ต.ค. 2569 · ผู้ใช้ส่งภาพขอเอาการ์ดสถานะออก)
-- **ลบ `#nowCard` และ CSS/renderer ของการ์ดแล้ว ห้ามเพิ่มกลับเอง** ผู้ใช้เห็นว่าข้อมูลเยอะเกินไป ต้องการสิ่งสำคัญในการเทรดและอ่านง่ายทุกหน้า
-- หน้า **เทรด**: ราคาทอง + สัญญาณหลัก 30 นาที (รายละเอียดคะแนนใน `#inDetail`) + ไม้เปิดจริงพร้อมช่อง entry/SL/TP1–3 + ข่าวถัดไป (ปฏิทินเต็มยุบไว้)
-- หน้า **กราฟ**: เริ่มที่แท่งเทียนถ้ายังไม่เคยเลือกโหมด (`gs-chart`) · คงเส้นจุดเข้า/SL/TP และกล่อง position ตามคำขอเดิม · RSI/MACD, ตารางตัวชี้วัด, รายละเอียด backtest กดเปิดได้ · เครื่องคำนวณ lot อยู่ใต้กราฟ `#positionTools` · แผนแนวรับ–ต้าน/เรดาร์/สัญญาณ 15 นาทีเป็นหัวข้อเสริม
-- หน้า **ผลเทรด**: กำไรสุทธิ/อัตราชนะ/จำนวนปิดแล้ว 3 ช่อง + จำนวนชนะ/แพ้และประวัติ · ยอดวันนี้/ประวัติ 30 นาทีหัก userSpread เหมือนยอดรวม · ผลทดสอบ/กราฟเทียบ/โดนัท/สูตรรายวันเก็บในรายละเอียด ไม่ลบข้อมูลสถิติ
-- หน้า **วิธีใช้**: 3 ขั้น + คำศัพท์ · กติกาเต็มกดอ่านได้ · หน้า **ตั้งค่า**: ทุน/ความเสี่ยง/สเปรดก่อน แล้วการแจ้งเตือน/ติดตั้งแอป และหน้าจอ/บัญชี
-- `simple.css` โหลดหลัง theme.css ใช้ตัวแปรสีเดิมทั้งมืด/สว่าง · `renderTradeSummary()` แสดงเหตุผลสั้นจาก `HOME_STATUS.model` · `renderCalculator()` แยกจาก `renderPlan()` เพื่อให้เครื่องคำนวณทำงานแม้แผนเทรดยุบอยู่ · toggle details เรียก render กราฟ/สถิติเมื่อเปิด · `onScreen` ข้ามรายละเอียดที่ปิด
-- `chartzones.js` กดดูผลทดสอบใน `.cz-detail` (จำสถานะเปิดขณะราคาอัปเดต) และระบุจุดจาก replay ว่า “แบบจำลองบนกราฟ” · กติกาสัญญาณ/ประวัติจริง/workflow ไม่เปลี่ยน
-- ภาพเปรียบเทียบทุกหน้า `compare/simple-*.png` ใช้ข้อมูลทดสอบชุดเดียวกันทั้งก่อน/หลัง ไม่ใช่ผลเทรดจริง · ทดสอบมือถือ 390/320 และคอม 1440, ทั้งมืด/สว่าง, เปิดรายละเอียดกราฟ, ตั้งค่าและคำนวณ lot, ทั้งมีไม้/ไม่มีไม้
+> ข้อ 1–7 = สภาพปัจจุบันของโค้ด · ที่มาของแต่ละเรื่องอยู่ใน "บันทึกการเปลี่ยนแปลง" · รายละเอียดเดิมของข้อ 1 (5–8 ต.ค.) ย้ายไปไว้ท้ายไฟล์ "🗄️ ข้อ 1 เดิม" — หลายส่วนในนั้นยกเลิกแล้ว อย่าใช้เป็นข้อมูลปัจจุบัน
 
-### การแยกบันทึกระบบกับคะแนนเว็บ (6 ต.ค. 2569 · ใช้ภายในสัญญาณหลัก)
-- `status.js` (`HOME_STATUS.model`) แยกคะแนนแท่งปิด/คะแนนสด/ไม้ในบันทึกระบบ 30 นาที และเหตุผลที่รอ (พักระบบ, cooldown, ข่าว, ไม่ไล่ราคา, ข้อมูลไม่พร้อม) · การ์ดข้อมูลเชิงเทคนิคแบบเดิมถูกลบตามคำขอผู้ใช้แล้ว
-- คะแนนเว็บผ่าน = “รอระบบยืนยัน” เท่านั้น ห้ามอ้างว่ากำลังส่ง LINE โดยไม่มีหลักฐาน · อ่านไม้จาก `state.intra.trades` ดิบ ไม่ใช้ผลประเมินจำลองบนเว็บเป็นการยืนยันจากเซิร์ฟเวอร์
-- เก็บ `intraMeta` (source/at/times ของกราฟที่ดาวน์โหลดก่อน patch stream), `priceBarAt`, `signalsAt`, `newsAt` และสถานะ fetch ล้มเหลว · เวลาโหลดสำเร็จแยกจากอายุข้อมูล · กราฟ 30m/1h/5h แสดงเวลาปิดแท่งล่าสุดของแต่ละกรอบ
-- `intraday.json.updatedAt` คือเวลา **บันทึกเปลี่ยน** ไม่ใช่ heartbeat หรือเวลาตรวจล่าสุดทุกครั้ง; ข้อมูลปัจจุบันยังไม่มี heartbeat สาธารณะ → แสดงข้อจำกัดนี้ตรง ๆ · ปฏิทินข่าวโหลดล้มเหลวไม่แปลว่าไม่มีข่าว
-- เงื่อนไขความสดเป็นการแสดงผลเท่านั้น ไม่เปลี่ยนกติกาซื้อ/ขายหรือ workflows · `node --test scripts/test-status.js` ตรวจสถานะและข้อมูลค้าง · ภาพประวัติการ์ดที่ยกเลิกแล้วอยู่ใน `compare/status-*.png`
-- แก้คำอธิบายหน้าแรก/ล็อกอิน/วิธีใช้/สถิติให้ตรงกับซื้ออย่างเดียวคะแนนแท่งปิด +5 และปิดไม้ 02:45 (03:45 หน้าหนาว) · เมื่อกลับเข้าแท็บโหลดบันทึกสัญญาณและข่าวใหม่ด้วย
+### ⭐ ระบบหลัก = CHARTSYS (สัญญาณบนกราฟรายกรอบ) — ตั้งแต่ 9 ต.ค. 2569
+- **กติกาอยู่ที่ `chartsys.js` ที่เดียว** (UMD) ใช้ร่วมกันระหว่างเว็บ (`chartzones.js`, `main.js`, `chartchat.js`) และ `scripts/chart-run.js` · `SYS[tf]` มี `buy`/`sell` แยก `{ th, tp1, mult, confirm?, since?, win, q }` · ฝั่งที่ทดสอบไม่ผ่านไม่มี key (มีแค่ `sellQ` ไว้แสดง) = ไม่ให้สัญญาณ
+- คะแนน = โหวตตัวชี้วัด (`indicators.js`) ของหลายกรอบรวมกัน ผ่าน `INTRA.decideWith` · `CHARTSYS.dirOf` ตัดสินจุดเข้า (เกณฑ์ + ตัวยืนยัน + noChase + ข่าวเฉพาะกรอบที่ `news: true`) · `sideInfo` = % ความพร้อมเข้า + คำตัดสิน (✅ / ⏸ / ⚠️ / ⛔) ใช้ทุกหน้า · `levelsFor` = SL/TP (SL $15 × `mult`, `tp1: true` = TP1 อย่างเดียว ไม่งั้น TP1/2/3)
 
-### 📅 สัญญาณรายวัน (07:00 จันทร์–ศุกร์) — `signals.js` · บันทึกใน `signals.json`
-- ทิศทาง = แนวโน้ม **สั้น + กลาง + ยาว** จาก investing.com (`explain.js` horizons) รวมกัน (เสมอ → ใช้ระยะกลาง)
-- **เข้าทันที (Market)** ที่ราคาตอน 07:00 · มีสัญญาณทุกวันทำการ (`RULE.minTrend: 0`)
-- **SL $15 · TP1 $15 · TP2 $20 · TP3 $30** · ดาว ★ = แนวโน้ม 3 ช่วงสอดคล้องกันแค่ไหน (|คะแนน| 0–6)
-- ออกสัญญาณ **07:05** (หลังตลาดเปิด) · อายุถึง **02:45 คืนถัดไป** (ก่อนตลาดปิด 03:00) แล้วปิดที่ราคาตอนนั้น
+| กรอบ | กรอบที่ใช้คิด | BUY | SELL | หลบข่าว ±30 นาที |
+|---|---|---|---|---|
+| 5m | 5m · 30m · 1h | +5 · TP1 · SL $15 | −6 + SMA20<50 · SL $10 · TP1/2/3 | ✅ |
+| 15m | FRAMES15 (15m · 1h · 5h) | +6 + EMA9>21 · TP1 · SL $22.5 | ไม่ผ่าน | — |
+| 30m (หลัก, หน้าแรก) | FRAMES (30m · 1h · 5h) | +5 · TP1 · SL $15 | ไม่ผ่าน | — |
+| 1h | 1h · 4h · 5h | +5 · SL $30 · TP 30/40/60 | ไม่ผ่าน | ✅ |
+| 5h (long, ถือ ≤ 5 วัน) | 5h · 1d | +3 + ROC12 · SL $60 · TP1/2/3 | ไม่ผ่าน | — |
+| 1d (long, ≤ 20 วัน) | 1d · 1w | +3 · TP1 · SL $120 | ไม่ผ่าน | — |
+| 1w (long, ≤ 84 วัน) | 1w | +1 · TP1 · SL $300 | — | — |
 
-### ⏱️ สัญญาณ 30 นาที — `intraday.js` · บันทึกใน `intraday.json`
-- ทุกครึ่งชั่วโมง วิเคราะห์แท่งที่ **ปิดแล้ว** ของ investing.com `PT30M / PT1H / PT5H` ด้วยตัวชี้วัดของเราเอง (`indicators.js`)
-- คะแนน = ผลรวม 3 ช่วง (−6…+6) → **เข้าเมื่อ |คะแนน| ≥ 5** · ครั้งละ 1 ไม้ · ไม้ใหม่ได้ในครึ่งชั่วโมงที่เริ่ม ≥15 นาทีหลังไม้ก่อนปิด
-- **เวลาตลาด (ไทย): 07:00–03:00** (หน้าหนาวสหรัฐ 08:00–04:00 — ดูหัวข้อเวลาตลาด) จันทร์ถึงเช้าเสาร์ (`INTRA.marketOpen`) · ไม่เปิดไม้ใหม่ 02:00–03:00 · ทุกไม้ปิดภายใน **02:45** (`nextClose`) · ไม่ส่งอัปเดตตอนตลาดปิด
-- SL/TP เหมือนรายวัน
-- **ข้อความอัปเดต 30 นาที** (`UPDATE_EVERY`, `updateText` ใน `scripts/intraday-run.js`) — เช็กทุกครึ่งชั่วโมง แต่**ส่ง LINE เฉพาะตอน ✅ เปลี่ยน** (ดู "ประหยัดโควตา LINE" ด้านล่าง): **ทั้งฝั่งซื้อและฝั่งขาย** แต่ละฝั่งมีคำตัดสิน (`INTRA.verdict`: ≥57% ✅ ควรเข้า · 53–56% 🟡 ลดขนาดไม้ · <53% ❌ ไม่ควรเข้า) + % + จุดเข้า/SL/TP + บรรทัดสรุปฝั่งที่ได้เปรียบ · ตาราง `calibration` แยก `{buy, sell}` ต่อคะแนน (ทุกครึ่งชั่วโมงจำลองทั้งซื้อและขาย) · ฝั่งขายไม่เคยเกิน ~53% ที่คะแนนใด → ไม้ที่นับสถิติยังเปิดเฉพาะฝั่งซื้อ (`RULE.sides`)
-  + **% จบกำไร** (winRate = ไม้ที่ปิดได้กำไร: ถึง TP1 หรือปิดตอนหมดเวลาแล้วมีกำไร — ไม่ใช่ "ถึง TP1 ก่อน SL") และ **% ถึง TP1** (= 100 − split[0]) จากตาราง `calibration` ใน `backtest-30m.json` (สถิติ 2 ปี แยกตามคะแนน −6…+6, `INTRA.odds`)
-  ระดับ: ≥57% ✅ น่าเข้า · 53–56% 🟡 พอเข้าได้ · ≤52% ⚠️ ใกล้ 50/50 — ไม้ที่ "นับสถิติ" ยังเปิดเฉพาะเมื่อ |คะแนน| ≥ 5
-- ชั่วโมงที่ประกาศไปแล้วเก็บใน `state/notify.json` ผ่าน **Actions cache** (ไม่ commit ทุกชั่วโมง → Vercel ไม่ deploy ถี่)
-- ข้อสังเกตจากตาราง (2 ปี): ฝั่ง **ซื้อ** คะแนน +4…+6 ชนะ 57–59% · ฝั่ง **ขาย** −4…−6 แค่ ~49–50% (ทองเป็นขาขึ้นเกือบทั้งช่วง)
+- ตัวเลข win/q ใน SYS ถูกเขียนทับด้วย `test-stats.json` (`CHARTSYS.applyStats`, งาน monthly-research) — ตารางผลอยู่ข้อ 8 · กรอบ long ไม่สนตลาดปิด/ข่าว
+- **เบรก** `CHARTSYS.brake` (คำนวณจาก chart-signals.json ไม่มี state): แพ้ติด 5 ไม้ → พักถึงเปิดตลาดจันทร์หน้า (long พัก 30 วัน) · 20 ไม้ล่าสุดชนะต่ำกว่าทดสอบเกิน 12 จุด → พักจนกว่าจะดีขึ้น · ระหว่างพักยังบันทึกไม้ (`paused: true`) แต่ไม่ส่ง LINE
+- **ตัวบันทึก** `scripts/chart-run.js` (ทุกเช็ก 5 นาทีใน check-loop.sh): ตามไม้เปิดบนแท่ง 5m (กรอบสั้น) / 1h (5h, 1d) / 1d (1w) แล้วเปิดไม้ใหม่ครั้งละ 1 ไม้ต่อกรอบที่เปิดแท่งถัดไป · แท่ง investing.com m15/m30/h1/h5 จาก data.json + Binance PAXG m5/h4/d1/w1 เลื่อนด้วย **ค่ากลางส่วนต่าง 12 แท่ง m15 ที่เวลาตรงกัน** (log `PAXG → spot offset`) · เขียน `chart-signals.json` บน branch data
+- **LINE** ส่งเฉพาะ "เข้าไม้" ของกรอบใน `CHART_NOTIFY` (ค่าเริ่ม **30m,1h,5h,1d,1w**) · ไม่ส่งผลปิดไม้/พัก-กลับมา (log อย่างเดียว) · web push ส่งข้อความเดียวกันอัตโนมัติ
 
-### ⚡ ราคาสดจากสตรีมของ investing.com (5 ต.ค. 2569)
-- ราคาหน้าเว็บมาจาก **SockJS stream ที่ investing.com ใช้เอง**: `wss://streaming.forexpros.com/echo/<n>/<id>/websocket` → ได้ `o` แล้วส่ง `[JSON.stringify({_event:"bulk-subscribe",tzID:8,message:"pid-68:"})]` → เฟรม `a[...]` = `{message:"pid-68::{last_numeric, bid, ask, high, low, last_close, pc, pcp, timestamp}"}` ~1 tick/วินาที · heartbeat `{_event:"heartbeat",data:"h"}` ทุก 25 วิ · ต่อใหม่แบบ backoff (main.js `startStream` / `onStreamTick`)
-- **ไม่ผ่าน Cloudflare** ของ REST API — ใช้ได้แม้ REST โดนบล็อก · ทดสอบ: หน้าเว็บเปลี่ยนราคา 17 ครั้ง/20 วินาที (เดิมแทบไม่ขยับเพราะตกไปแหล่งสำรอง)
-- **ราคาเดียวทั้งเว็บ**: ทุก tick → `patchChartBars` (แท่งล่าสุดของกราฟ, ขึ้นแท่งใหม่เมื่อครบช่วง) + `chartTick` (อัปเดตแท่ง/ราคาหน้ากราฟทันที) · ส่วนหนัก (`render`, เกจ, โดนัท) ≤1 ครั้ง/วินาที · แท่งสำรอง Binance ปรับ offset ด้วยราคาสตรีม (ไม่ใช้ gold-api ที่ช้า) · ราคาปิดอ้างอิงทุกจุด = `prevClose()` (last_close จากสตรีม = ตัวเลขเดียวกับ investing.com) · ทดสอบ 30 ตัวอย่าง: หัวเว็บ = หน้าแรก = หน้ากราฟ = แท่งล่าสุด ตรงกัน 30/30
-- REST (PT1M) เหลือทุก ~21 วิ (ทุก 3 วิเฉพาะตอนสตรีมหลุด) · ตัวชี้วัด 60 วิ · แท่ง 15m/30m/1h/5h 60 วิ — เดิมยิง ~1 ครั้ง/วินาที/แท็บ จน investing.com บล็อก IP (`Failed to fetch`)
-- แหล่งอื่นที่ลองแล้ว: gold-api.com อัปเดต ~1.5 นาที · Binance PAXG trade ~30/นาที, bookTicker mid เปลี่ยน ~ทุก 3 วิ · Swissquote โดน CORS · Binance Futures XAUUSDT ws ไม่มีข้อความ
-- ทดสอบแบบเวลาจริงต้องใช้ puppeteer-core (Chrome `--virtual-time-budget` เร่งเวลา ทำให้วัดความถี่ผิด)
+### บนหน้าเว็บ
+- **กราฟ** (`chartzones.js`): ป้าย Buy/Sell ที่แท่งตัดสินใจ, เส้นไม้ที่ปิดแล้ว (เข้า/TP ✓/SL ✗), กล่อง position ของไม้ที่ถืออยู่ หรือแผนฝั่งเดียว (`CZ_PLANS`) ทางขวาแท่งล่าสุด, ลูกศรเปลี่ยนทิศ (`fdir`), โซน swing + เส้นโค้ง NWE (ภาพประกอบเท่านั้น — ทดสอบแล้วขาดทุน), ช่อง Buy | Sell พร้อม % · ปุ่ม "มุมมองสะอาด" (`gs-clean`) · เลื่อนย้อนดูวันก่อนได้ (`loadOlder`, Binance) · ไม้ที่บันทึกจริงมาก่อนผล replay → ถือไม้ตรงกันทุกหน้า
+- **แชทถามจุดเข้า** (`chartchat.js`) ในการ์ดสัญญาณหน้ากราฟ (`#ccSlot`): ตอบจากระบบ (ไม่ใช้ AI) กรอบ 5m/15m/30m/1h + โหมด 🤖 โค้ช AI (`api/coach.mjs`) · `window.GS_SIGNALS / GS_NEWS / GS_RECORD / GS_LIVE` ให้แดชบอร์ด zframes อ่าน
+- **การ์ดขวาหน้ากราฟ** `#signalCard`: หัวตามระบบของกรอบนั้น (Buy / Sell / ถือ / รอก่อน) · investing.com = "ความเห็นภายนอก" · เครื่องคำนวณ lot `#calcCard` (`tradeplan.js`) ใต้กราฟ เติมด้วยปุ่ม 🧮
+- **หน้าสัญญาณ** (`#tab-home`): ราคาสด `#liveHero` · การ์ดระบบหลัก 30m `#intraCard` (แถบคะแนน −6…+6 `#sm`, นับถอยหลังแท่ง, `#inDetail` เหตุผลรายตัวชี้วัด, ไม้ที่ถือ, `#inBeat` สถานะตัวบันทึกจาก GitHub API) · "ถ้าเข้าตอนนี้" โดนัท `#dnBuy/#dnSell` · ข่าวถัดไป `#inNews` · ภาพรวมรายวัน `#sigCard` (`#sgMain` เทียบกับระบบหลัก)
+- **ข่าวสหรัฐ** (`#tab-stats`, `newsstats.js`): ปฏิทินข่าวแรง (`importance=high` — **ไม่ใช่ `importances`**) 60 วันย้อนหลัง + 8 วันหน้า, ทองหลังข่าว, ข่าวไหนทำให้ทองวิ่งแรง, กดอ่านคำอธิบายไทย, แถบ `#newsLive` นับถอยหลังทุกแท็บ · การ์ดบทความ `#artCard` · **ไม่มีหน้าสถิติไม้จริงแล้ว** (ลบ 9 ต.ค. — ระบบหลังบ้านยังบันทึกครบ)
+- **แดชบอร์ด** (`#tab-zframes`): iframe `/zframes/index.html?embed=1` (ทอง / Nasdaq 100 / S&P 500 / ปันผล) ข้อมูลจาก branch data อัปเดต 06:00 ทุกวัน · **สมุดเทรด** (`#tab-journal`, `journal.js` → `api/journal.mjs`) · **บัญชี** (`#tab-account`): ตั้งค่าทุน/ความเสี่ยง/สเปรด (Clerk `unsafeMetadata.goldSettings` + localStorage), แจ้งเตือน/ติดตั้งแอป `#pwaCard`, โควตา LINE, ลิงก์หลังบ้าน (แอดมิน)
+- เมนู 6 แท็บ: สัญญาณ · ข่าวสหรัฐ · กราฟ · แดชบอร์ด · สมุดเทรด · บัญชี — ไอคอนเส้น SVG (**ห้ามกลับไปใช้อีโมจิ**) · ≥900px เป็นเมนูซ้าย, มือถือเป็นแถบล่าง
 
-### 📲 แอป (PWA) + แจ้งเตือนบนเครื่อง (6 ต.ค. 2569)
-- `manifest.webmanifest` + `icons/` (192/512/maskable/apple-touch 180/badge-96 สร้างจาก logo.svg ด้วย puppeteer) + `sw.js` (ไม่แคชข้อมูล มีหน้า offline · รับ push → showNotification · แตะ → โฟกัสแอป) · vercel.json: sw.js no-cache
-- `pwa.js`: ปุ่มติดตั้ง (`beforeinstallprompt`; iPhone = วิธีทำผ่าน Safari) ในการ์ด `#pwaCard` แท็บบัญชี + แถบ `#installBar` บนมือถือ (ปิดได้ จำใน localStorage) · เปิดแจ้งเตือน: ต้องล็อกอิน (โหมด demo ไม่ได้) → `pushManager.subscribe` (timeout 20 วิ) → เก็บใน Clerk `unsafeMetadata.push` (ไม่เกิน 5 เครื่อง, เก็บ goldSettings ไว้ด้วย)
-- เซิร์ฟเวอร์: `scripts/push.js` — `notify.send()`/`sendFlex()` ส่ง LINE แล้ว push ข้อความเดียวกัน (บรรทัดแรก = หัวเรื่อง) ไปทุกเครื่องจาก Clerk Backend API (`GET /users`) · 404/410 → ลบเครื่องออก (PATCH metadata) · ไม่มีคีย์ → ข้าม (log)
-- คีย์: secret `VAPID_PRIVATE_KEY`, `CLERK_SECRET_KEY` + variable `VAPID_PUBLIC_KEY` + `config.js vapidPublicKey` (ว่าง = การ์ดขึ้น "กำลังเตรียม") — ตั้งด้วย `node scripts/setup-push.js` (**ผู้ใช้ต้องรันเอง** — Claude ไม่มีสิทธิ์เขียน secret) แล้ว commit config.js · workflow ทั้ง 3 ติดตั้ง `web-push` (package.json dependencies; Vercel ไม่ install เพราะ installCommand ว่าง)
-- ทดสอบ: puppeteer + `ServiceWorker.deliverPushMessage` / คลิกปุ่มด้วย JS (แถบแท็บล่างบังปุ่ม) / subscribe ผ่าน FCM จริงใน headless ได้ + push.js กับ Clerk ปลอม → แจ้งเตือนขึ้นจริง
-- กับดัก: `.btn { display: inline-flex }` ทับ attribute `hidden` → เพิ่ม `.btn[hidden] { display: none }` · dev-server เสิร์ฟโฟลเดอร์ย่อยได้แล้ว (icons/, compare/)
+### ระบบเก่าที่ยังรันอยู่
+- **ภาพรวมรายวัน 07:05** (`signals.js`, `signals.json`): ทิศจากแนวโน้มสั้น+กลาง+ยาวของ investing.com (`explain.js`) · `RULE = { minTrend: 0, slUsd: 15, tpUsd: [15, 20, 30], advisory: true }` → เป็น "ข้อมูลประกอบ" ไม่บอกให้เข้า · อายุถึง 02:45 (หน้าหนาว 03:45) · `alerts.js` ตามผลแล้วบันทึกอย่างเดียว (advisory = ไม่ส่ง LINE; ข้อความเช้าส่งโดย morning-plan.js) · ทดสอบ 1 ปีหลังสเปรด −$217
+- **ระบบ 30 นาทีแบบเก่า** (`intraday.js`, `intraday.json`): **ไม่เปิดไม้ใหม่แล้ว** — `intraday-run.js` เหลือตามไม้เก่าจนปิด + เตือนข่าวแรง ~30 นาทีล่วงหน้า (LINE) · `INTRA` ยังเป็นแกนของ CHARTSYS: `RULE = { threshold: 5, slUsd: 15, tpUsd: [15], maxHoldMs: 24 ชม., sides: 'buy', newsMin: 30, noChase: true, pause }`, `decideWith`, `FRAMES/FRAMES15`, `marketOpen/nextClose/nextWeek`, `newsNear`
+- **สรุปรายสัปดาห์** `weekly.js` (เสาร์ 07:30 ไทย): คำนวณ/บันทึกทุกสัปดาห์ แต่**ส่ง LINE เฉพาะตอนกดรันเองพร้อม send=true**
 
-### 🕐 เวลาตลาดตามเวลานิวยอร์ก (6 ต.ค. 2569)
-- ตลาดทองเดินตามเวลานิวยอร์ก → เวลาไทย **กลาง มี.ค.–ต้น พ.ย. 07:00–03:00 · ต้น พ.ย.–กลาง มี.ค. 08:00–04:00** · โค้ดเขียนเวลาแบบ "หน้าร้อน" แล้วเลื่อนด้วย `SIG.marketShift(ms)` (0 หรือ 1 ชม., `SIG.usDst` = อาทิตย์ที่ 2 มี.ค. 07:00 UTC → อาทิตย์แรก พ.ย. 06:00 UTC) · ข้อความ: `SIG.mt(ms, "07:00")` → "08:00" หน้าหนาว
-- ที่ใช้: `INTRA.marketOpen/nextClose/lastHour/weekStart/nextWeek` (นาฬิกา `mkt()`), `SIG.expiry` (02:45→03:45), weekly.js, backtest.js (เข้าตอนเปิด), check-loop.sh (ช่วง 30 นาทีแรกหลังเปิดเป็นของงานเช้า), main.js ข้อความ, index.html วิธีใช้
-- **งานเช้า**: cron 2 รอบ `5 0` และ `5 1` (UTC) + `scripts/market-gate.js` → `GO=true` เฉพาะเมื่อตลาดเปิดแล้ว + วันนั้นยังไม่มีสัญญาณ (รันมือ = ผ่านเสมอ) · ทุกขั้นใน morning-plan.yml มี `if: env.GO == 'true'`
-- backtest 1 ปีข้อมูลชุดเดียวกัน ก่อน→หลัง: 30 นาที +$313.72→+$293.48 · 15 นาที +$243.19→+$332.52 · รายวัน +$72.11→−$19.23 (advisory อยู่แล้ว)
-- ถ้าโบรกเกอร์ของผู้ใช้ไม่เลื่อนเวลา → ให้ `marketShift` คืน 0 ตลอด (จุดเดียว)
+### กติกาที่ใช้ทุกระบบ
+- **เวลาตลาด (ไทย)**: หน้าร้อนสหรัฐ 07:00–03:00 · หน้าหนาว (อาทิตย์แรก พ.ย. – อาทิตย์ที่ 2 มี.ค.) 08:00–04:00 · โค้ดเขียนเวลาหน้าร้อนแล้วเลื่อนด้วย `SIG.marketShift(ms)` (จุดเดียว) · ข้อความ `SIG.mt(ms, "07:00")`
+- **การนับผล** (`signals.js` → `evaluateTargets`): ปิด ⅓ ที่แต่ละ TP · ถึง TP1 แล้วเลื่อน SL ไปทุน · ชนะ = ถึง TP1 ก่อน SL · แท่งเดียวโดนทั้งคู่ = นับ SL ก่อน · ไม้เก่าที่มี `tp` เดียวใช้ `evaluate` แบบเดิม — อย่าลบ
+- **สเปรด**: เซิร์ฟเวอร์ `vars.SPREAD_USD` (0.4) · เว็บใช้ค่าที่ผู้ใช้ตั้ง · **ขนาดไม้** 0.01 lot = 1 ออนซ์ → lot = ทุน × %เสี่ยง ÷ (SL × 100) ปัดลง
+- **ข่าวแรงสหรัฐ**: `endpoints.investing.com/pd-instruments/v1/calendars/economic/events/occurrences?domain_id=1&country_ids=5&importance=high` (CORS เปิด) — งดเข้า ±30 นาทีเฉพาะกรอบ 5m / 1h
+- **LINE ทั้งระบบ = สัญญาณเข้า + เตือนข่าว + ภาพรวมเช้า** · รวมเป็นคำขอเดียวต่อรอบ (`OUTBOX` → `flush.js`) · โควตาฟรี 300/เดือน (ดูข้อ 7) · ส่งพลาด = log ไม่ล้ม
 
-### ⚡ โลโก้ + หน้าโหลด (6 ต.ค. 2569)
-- `logo.svg` = ตราหกเหลี่ยมทอง + แท่งทอง 3 แท่งไล่ขึ้น + สายฟ้า (ผู้ใช้ขอ "ตลาดทองคำ + สายฟ้า") · ใช้เป็น `<img class="logo">` ที่แถบบน/หน้าล็อกอิน + favicon · แก้รูปทรงต้องแก้ 2 ที่: logo.svg และ SVG `.sp-logo` ใน index.html (ภาพเดียวกัน แต่ id gradient `lg*`)
-- หน้าโหลด (live.css "Logo"): ขอบวาด (`lg-rim` pathLength=1) → แกนกลาง → แท่งทองเด้งขึ้น (`lg-bar`) → สายฟ้าฟาด 1.1 วิ (`lgStrike`) แล้ววนทุก 3.2 วิ พร้อม `lgZap` / ประกาย `lg-rays` / แสงวาบ `.sp-flash` / ฟ้าผ่าบนท้องฟ้า `.sp-sky` (มุมซ้าย-ขวาบน ไม่ทับชื่อ) · โหลดเสร็จ `lgDone`
-- กับดัก: `.sp-ring svg` เดิมหมุน −90° (สำหรับวงแหวน %) → ตอนนี้ใช้ `.sp-ring > svg:not(.sp-logo)`
-- **อนิเมชั่นเพิ่ม (6 ต.ค. 2569)** live.css "More motion" + theme.css (สีโหมดสว่าง): `.sp-market` กราฟแท่งเทียนขาขึ้น 18 แท่ง (`.mk-c` เด้งทีละแท่ง `--i`×0.11 วิ) + `.mk-line` วาดเส้นราคา (pathLength=1 — **ห้ามใส่ vector-effect: non-scaling-stroke กับเส้นที่ใช้ pathLength** dash จะเพี้ยน) · `.sp-beams` ลำแสง conic หมุน · `.sp-wave` ×2 คลื่นกระแทก + `.sp-sparks` 10 จุด (`--a` มุม, `--d` ระยะ) ตามรอบฟ้าผ่า 3.2 วิ · `#splashHead` หัวดาวหางที่ปลายวงแหวน (auth.js `count()` คำนวณ cx/cy) · `.sp-pct.bump` ทุก 25% · ชื่อแยกเป็น `<span style="--i">` ตกลงทีละตัว (แต่ละตัวมี shine เอง) · `.splash.done` = `lgBoom` คลื่นใหญ่ + `lgFlashEnd` + `beamFlare`
-- ❌ **ลองแบบจัดเต็มแล้วผู้ใช้ไม่เอา (6 ต.ค. 2569)**: ฝนเหรียญ 3 มิติ, พื้นตาราง, แถบตัววิ่ง, ตัวอักษรวนรอบโลโก้, จอสั่น, วาร์ป (commit e8d67dd) → revert กลับเป็นชุดก่อนหน้า — อย่าเพิ่มกลับเอง
-- ทดสอบ: บล็อก request ภายนอกด้วย puppeteer ให้หน้าโหลดค้าง แล้วหยุดภาพ · **อย่าเรียก `a.play()` กับอนิเมชั่นที่จบแล้ว** (มันจะเริ่มใหม่จาก 0 ภาพเพี้ยน) — ใส่คลาส done แล้วหยุดเฉพาะอนิเมชั่นใหม่
-- ทดสอบอนิเมชั่น: หยุดภาพที่เวลาที่ต้องการด้วย `document.getAnimations().forEach(a => { a.pause(); a.currentTime = t; })` (บล็อก request ข้อมูลเพื่อให้หน้าโหลดค้าง) · dev-server เสิร์ฟ .svg/.png แล้ว
-
-### 🧭 การ์ดแนวโน้มสด (แทนเกจเข็ม, 5 ต.ค. 2569)
-- index.html `#sm`: แถบ 13 ช่อง −6…+6 (`#smSegs`, ช่องที่ติด = `on b|s` + `peak`, `--k` = ความแรง) + เส้นประ "จุดเข้าซื้อ" ที่ +5 + เคอร์เซอร์ (`smCursor`, ตำแหน่ง calc ตาม gap 4px / 3px บนมือถือ) · คะแนนนับขึ้น/ลง (`smCount`) · ข้อความ `smMood` · 3 การ์ด `#smf-m30|h1|h5` (**แท่งเทียน** `.smf-candles` 30 แท่ง/มือถือ 14 จาก `state.intraCandles` — สร้าง `<g><line/><rect/></g>` ใหม่เฉพาะตอนขึ้นแท่งใหม่ (เด้งขึ้นทีละแท่ง) ระหว่างนั้นแค่ขยับ attribute · แท่งสุดท้าย `.live` กะพริบ · เส้นประ `.lp` = ราคาตอนนี้ · `.smf-chg` = ราคาแท่งนี้ − ราคาเปิดแท่ง · โหวต ▲▲ +2) · แถบนับถอยหลังถึงแท่ง 30 นาทีปิด (`renderCycle` ทุก 1 วิ) · โค้ด: main.js `buildMeter` / `renderMeter(dec, off)` · CSS: live.css "Trend strength meter" + theme.css
-- **ตลาดปิด vs ข้อมูลช้า**: `off = !dec.open ? "closed" : dec.stale ? "late" : ""` — "🌙 ตลาดปิด" ดูจากเวลาเท่านั้น (บอกวันด้วย `INTRA.nextOpen`) · ข้อมูลช้า → "⏳ กำลังดึงข้อมูลกราฟล่าสุด…" + ดึงใหม่ (ทุก ≥20 วิ) · `INTRA.reasons` แยกข้อความเหมือนกัน
-- **ต้นเหตุเดิม** (ผู้ใช้เห็น "ตลาดปิด" จันทร์ 23:38): `stale` = แท่ง 30m ล่าสุดเก่ากว่า 2 ชม. — แท่งไม่อัปเดตเมื่อ fetch ล้ม/แท็บหลับ (`every()` ข้ามตอนแท็บซ่อน และตอนกลับมาไม่ได้ดึงแท่ง) · แก้: `patchIntraCandles` ขึ้นแท่งใหม่จากราคาสตรีมเมื่อครบช่วง (เฉพาะสตรีมสด + ตลาดเปิด + ช่วงถัดไปช่วงเดียว) · visibilitychange เรียก `refreshIntraCandles`
-
-### ⏱️ สัญญาณ 15 นาที — เว็บเท่านั้น (5 ต.ค. 2569)
-- `INTRA.decide15` = `decideWith(FRAMES15, RULE15, …)`: แนวโน้ม 15m/1h/5h · **ซื้ออย่างเดียวที่ +5** · SL/TP เหมือนระบบ 30 นาที · ไม่ส่ง LINE ไม่บันทึกไฟล์
-- เว็บ (main.js `run15`): จำลองย้อนหลังบนแท่ง 15m ที่อยู่บนจอ (investing 160 แท่ง ≈ 40 ชม.) ด้วยกติกาเดียวกับ backtest (ไม้เดียว, รอ 15 นาทีหลังปิด) → การ์ดหน้าแรก (กราฟแท่ง 15m + ▲ ซื้อ / ● TP / ● SL + พื้นหลังเขียว=เข้าได้ เหลือง=ข่าว) และ markers ในหน้ากราฟเมื่อเลือก 15m (ช่วง 2 วัน)
-- ทดสอบ 1 ปี (`SYSTEM=15 node scripts/backtest-30m.js 365` → backtest-15m.json, ตามไม้บนแท่ง 5m): ซื้อ+ขาย ±5 −$131 · ซื้อ +3 −$460 · +4 −$198 · **+5 +$97** (1.4/วัน, 52%) · +6 +$37 (หลังสเปรด) · ทดลองค่าอื่น: `TH=4 SIDES=buy OUT=tmp.json`
-- `decide` (30 นาที) ถูกปรับเป็น `decideWith(FRAMES, RULE, …)` — ผล backtest เหมือนเดิมทุกตัว (375 ไม้, +$313.72 ก่อนสเปรด)
-- **กราฟในการ์ดเดินตามราคาสด (6 ต.ค. 2569)**: เดิม `drawS15Chart` วาดเฉพาะตอน `s.at` เปลี่ยน (แท่ง 15m ปิด) → ราคาบนกราฟค้างไม่ตรงหัวเว็บ (ผู้ใช้แจ้ง) · ตอนนี้ `s15Tick()` ใน onStreamTick อัปเดตแท่งล่าสุดทุก tick, `patchIntraCandles` ขึ้นแท่ง 15m ใหม่จากสตรีม, `refreshM15` ตั้ง `renderS15.drawn = null` ให้วาดใหม่ทุกนาที · ทดสอบ: แท่งล่าสุด == state.livePrice 30/30 (เดิม 0/30)
-- แหล่งสำรอง: ถ้า investing.com ล่ม แท่ง 15m/30m/1h ใช้ Binance PAXG และสร้างแท่ง 5 ชม. จาก 1 ชม. (`group5h`)
-
-### สัญญาณรายวัน = ข้อมูลประกอบ (5 ต.ค. 2569)
-- `SIG.RULE.advisory = true` → สัญญาณใหม่มี `advisory: true`: ข้อความเช้าเป็น "🧭 ภาพรวมทองคำวันนี้" (เอียงขึ้น/ลง + ข่าว + สถานะระบบ 30 นาที) **ไม่บอกให้เข้าไม้** · alerts.js บันทึกผลแต่**ไม่ส่ง LINE** · weekly.js ไม่นับรวมในยอดรวม · เว็บแสดงกล่องเตือน ซ่อนวิธีเข้า/lot · กล่องสถิติหน้าแรกเปลี่ยนเป็นของระบบ 30 นาที
-- เหตุผล: backtest รายวัน 1 ปีหลังหักสเปรด −$31.89/ออนซ์ (ชนะ 49%) · สัญญาณเก่าก่อน 6 ต.ค. ไม่มี flag จึงยังแจ้งเตือนจนจบตามเดิม
-- **โควตา LINE**: `scripts/line-quota.js` ในงานเช้า (GET /v2/bot/message/quota + /quota/consumption) → `quota.json` (commit, no-cache ใน vercel.json, แสดงที่แท็บบัญชี) · ใช้ ≥80% ส่งเตือนเดือนละครั้ง · error ไม่ทำให้งานเช้าล้ม
-
-### ประหยัดโควตา LINE + เบรกฉุกเฉิน (5 ต.ค. 2569)
-- **อัปเดต 30 นาทีส่งเฉพาะตอนเปลี่ยน**: เช็กทุกครึ่งชั่วโมง แต่ส่งเมื่อฝั่งใดฝั่งหนึ่ง **กลายเป็น ✅** หรือ **หมด ✅** (state.goodKey/goodDay ใน state/notify.json, วันเริ่ม 07:00 = วันตาม UTC) — จำลอง 30 วัน ≈ 2 ข้อความ/วัน (เดิม ~40) · ส่งทุก 30 นาทีกินโควตา ~900/เดือน
-- **รวมข้อความต่อรอบ**: workflow ตั้ง `OUTBOX=outbox.json` → `send()` เก็บคิว → `scripts/flush.js` ส่ง LINE ครั้งเดียว (≤5 บอลลูน, `pack()`) — LINE นับต่อครั้งที่ส่ง ไม่ใช่ต่อบอลลูน
-- **เบรกฉุกเฉิน** `INTRA.RULE.pause {streak:5, weekLoss:60}` + `INTRA.pauseCheck`: แพ้ติด 5 ไม้ หรือสัปดาห์นี้ขาดทุนสุทธิ ≤ −$60/ออนซ์ → `intraday.json.pause {from, until: จันทร์หน้า 07:00, reason}` ไม่เปิดไม้/ไม่ส่ง ✅ · หลังพักนับใหม่ตั้งแต่ `pause.until` · เว็บแสดง "🛑 ระบบพัก"
-  ผลจำลอง 1 ปี: พัก 5 ครั้ง ข้าม 45 ไม้ กำไร +$151 vs +$164 ถ้าไม่มีเบรก — **เบรกไม่ได้เพิ่มกำไรในอดีต** มีไว้กันกรณีระบบพังจริง
-
-### ระบบเสริม (เพิ่ม 5 ต.ค. 2569)
-- **30 นาทีเข้าเฉพาะฝั่งซื้อ** (`INTRA.RULE.sides = 'buy'`) — backtest 2 ปี: ซื้ออย่างเดียว 630 ไม้ +$893 หลังสเปรด vs สองฝั่ง 1,267 ไม้ +$791 · 1 ปีล่าสุด +$164 vs +$239 (ต่อไม้ดีกว่าเกือบเท่าตัว)
-- **หลบข่าวแรง**: ปฏิทิน investing.com `endpoints.investing.com/pd-instruments/v1/calendars/economic/events/occurrences?domain_id=1&country_ids=5&importances=high` (CORS เปิด, ดึงได้ทั้งเว็บและ Actions) → ไม่เปิดไม้ ±30 นาที (`RULE.newsMin`) · เตือนล่วงหน้า ~30 นาที · รายการข่าวในข้อความเช้า · backtest **ไม่มี**ตัวกรองข่าว (ไม่มีปฏิทินย้อนหลัง)
-- **ขนาดไม้**: 0.01 lot = 1 ออนซ์ → lot = ทุน×%เสี่ยง ÷ (SL×100) ปัดลง 0.01 · ตั้งค่า (ทุน USD/THB, %เสี่ยง, สเปรด) ในแท็บบัญชี เก็บใน Clerk `unsafeMetadata.goldSettings` + localStorage
-- **สเปรด**: `SIG.summary(list, spread)` หักต่อไม้ · ฝั่งเซิร์ฟเวอร์ใช้ `SPREAD_USD` จาก repo variable `vars.SPREAD_USD` (ค่าเริ่ม 0.4) · เว็บใช้ค่าที่ผู้ใช้ตั้ง
-- **ช่องทางส่ง**: LINE อย่างเดียว (`scripts/notify.js` → `line.js`) · ส่งพลาด (เช่นโควตาหมด) แค่ log ไม่ล้ม · ผู้ใช้ไม่เอา Telegram (ลบโค้ดออกแล้ว)
-- **สรุปรายสัปดาห์**: `weekly-summary.yml` เสาร์ 00:30 UTC (07:30 ไทย) → `scripts/weekly.js` (ปิดสัญญาณรายวันวันศุกร์ที่หมดอายุด้วย)
-- **แจ้งเมื่อระบบพัง**: ทุก workflow มีขั้น `if: failure()` → `scripts/notify-failure.js` (ไม่เกิน 1 ครั้ง/3 ชม./งาน ผ่าน state cache) · ใช้ข้อมูลสำรอง Binance > 30 นาที → แจ้ง 1 ครั้ง/6 ชม.
-
-### 📈 สัญญาณบนกราฟทุกกรอบเวลา (chartzones.js, 6 ต.ค. 2569 · ผู้ใช้ขอ "สัญญาณตรงกราฟว่าควรเข้าโซนไหน ทุกทามเฟรม")
-- ระบบเดียวกัน (3 กรอบชี้ขึ้น ซื้อที่ +5, noChase) ใช้กรอบกราฟเป็นกรอบเร็ว · `SYS` ใน chartzones.js: 5m [5m,30m,1h] · 15m FRAMES15 · 30m FRAMES · **1h [1h,4h,5h] SL×2 ($30, TP 30/40/60)** · 5h/1d/1w ไม่มีจุดเข้า (ทิศทางอย่างเดียว)
-- ผลทดสอบ 2 ปี (4 ครึ่งปี หลังสเปรด): 1h +166/+145/+383/+57 (**กำไรทุกช่วง**, ×1.5 ก็ +194/+220/+101/+58; ×1 −194 ครึ่งปีล่าสุด) · 5m +90/+342/+352/−417 · 15m +61/+480/+305/−53 · 30m +135/+429/+218/−31 · ลอง 1h ด้วย [1h,5h,1d] แล้วครึ่งปีล่าสุดขาดทุน จึงใช้ 4h
-- แท่ง 4h ไม่มีใน investing → `state.h4` จาก backupBars('4h', 200) (Binance PAXG เลื่อนเป็นราคา spot เหมือน backtest) ทุก 10 นาที
-- วาดบนทั้ง 2 มุมมอง (mainChart/candles + simpleChart/areaS): histogram `priceScaleId: 'cz'` เป็นพื้นหลัง, markers, price lines, กล่อง `#czBox` / `#czBoxS` · main.js markChart15 → renderChartZones · drawPlanLines (เส้นจุดเข้า/ตัดขาดทุน/เป้า จาก investing.com) **ผู้ใช้ขอให้คงไว้บนกราฟ** — ลองเอาออกแล้วผู้ใช้สั่งเอากลับ (6 ต.ค. 2569)
-- **กล่องสถานะไม้** (chartzones.js ส่วนท้าย `drawPositionBoxes`, ผู้ใช้: "จุดเข้าให้ชัดกว่านี้"): HTML overlay `.pbox-layer` ใน #mainChart / #simpleChart · แดง entry→SL, เขียว entry→TP สุดท้าย, `.pentry` เส้นทอง, ป้าย `.ptag` ชิดขวาแกนราคา ดันไม่ให้ทับกัน · ไม้ระบบ (`window.CZ_OPEN`) ก่อน แล้วค่อยแผน investing (`state.locked`) · rightOffset 16 ตอนมีไม้ · กล่องกว้าง ≥170px
-- **กับดัก**: mainChart ซ่อนแกนเวลา → `timeScale().width()` = 0 ต้องใช้ `el.clientWidth − priceScale('right').width()` · innerHTML ใหม่ทุก tick ทำให้อนิเมชั่นเริ่มใหม่ตลอด (กะพริบ) → เขียนเฉพาะตอนเปลี่ยน ไม่มีอนิเมชั่นเข้า
-- **กับดัก**: replay cache ห้ามเก็บผลที่เป็น null (ข้อมูลยังโหลดไม่ครบ) — เคยทำให้กรอบ 1h คำนวณไม่ได้ 99/100 จุดถาวร
-- ทดสอบภาพตอนไม่มีสัญญาณจริง: override INTRA.decideWith ในหน้า (กลับเครื่องหมายคะแนน) เฉพาะใน puppeteer
-
-### 🧪 ทดสอบแผนเทรด + ผลจริง vs ทดสอบ (6 ต.ค. 2569)
-- **จุดเข้าตามแนวรับ–ต้านขาดทุน** (2 ปี ทุกชั่วโมง คำสั่งรอ 60 นาที ตามบนแท่ง 5m หลังสเปรด, 4 ครึ่งปี): ซื้อแนวรับ +147/+71/−441/−587 · เฉพาะเทรนด์ขึ้น +176/+94/−126/−179 · ขายแนวต้าน −422/−623/−705/−25 · เบรก −1213/−94/−359/−864 → tradeplan.js `LEVEL_BT` แสดงตารางนี้แทนจุดเข้า · ส่วนที่เหลือ: เช็กว่า TP1/SL ของระบบมีแนวขวางไหม + ปุ่ม `#tpUseSys`
-- **เรดาร์ 1 นาทีขาดทุน**: limit ที่ EMA9, SL max($4, 2×ATR1m), TP 1.5×SL → ~10,000 ไม้ 40–43% −$1,811 หลังสเปรด (+$2,311 ก่อนสเปรด) → เหลือแค่ข้อมูลโมเมนตัม
-- `renderLiveCheck()` (main.js, เรียกจาก renderStats): ผลจริง intraday.json เทียบ backtest-30m.json — คาด n×avg ± 2σ√n, ต้อง ≥20 ไม้ถึงสรุป · การ์ด `#lvCard` แท็บสถิติ + `#lvStrip` หน้าแรก · บอกผลทดสอบ 30/90 วันล่าสุด
-- `onScreen(id)`: การ์ด 15m / แผนเทรด render เฉพาะตอนอยู่บนจอ (±200px)
-- ตาราง % โอกาส (calibration) ไม่ต้องแก้ตาม noChase: เป็นการจำลอง "ถ้าเข้าตอนนี้ที่คะแนนนี้" ทุกจังหวะ ไม่ขึ้นกับตัวกรอง
-- สคริปต์วิจัยอยู่ใน scratchpad (ไม่ได้ commit): ข้อมูล Binance PAXG 1m/5m/15m/30m/1h 2 ปี
-
-### 🧭 แผนเทรดวันนี้ (tradeplan.js, 6 ต.ค. 2569 · ผู้ใช้ขอ "ครบทุกอย่างสำหรับนักเทรดทอง")
-- การ์ด `#tpCard` หน้าแรกใต้การ์ด 15 นาที · `window.renderPlan()` เรียกจาก onStreamTick ส่วน heavy (≤1 ครั้ง/วิ) · ใช้ global ของ main.js (state, f2, nowPrice, thaiTime, signedScore, lotFor) จึงต้องโหลด **หลัง** main.js
-- ช่วงตลาด (`SESS`, เวลาหน้าร้อน + SIG.marketShift) · บันได: PLAN.levelsFromDaily + สูง/ต่ำวันนี้ (m15 ตั้งแต่เปิดตลาด) + TA.swings(m15) รวมระดับที่ห่าง < $1.5 · จุดเข้า: แนวที่ใกล้สุด (ห่าง ≥ ¼ ATR15) · SL = เลยแนวไป max($5, 0.8×ATR15) · TP1 = แนวแรกที่ห่าง ≥ 1R, TP2 = แนวถัดไป ≥ ½R ต่อ (ไม่มีก็ 1.5R / +1R) · ป้าย "เข้ากับเทรนด์" จากคะแนนสด 30 นาที (≥+3 ซื้อ, ≤−3 ขาย, อื่น ๆ เล่นกรอบ)
-- เรดาร์ 1 นาที (state.tick): EMA9/21 + ROC 5 นาที, RSI14, ATR14 · SL สั้น = max($4, 2×ATR1m), TP = 1.5×SL · ข่าวแรงใกล้ → งด
-- เครื่องคิด: `calc.fill(side, entry, sl, tp)` · ค่าเริ่ม = ราคาสด ±$15 จนกว่าผู้ใช้จะแก้
-- **จุดเข้าส่วนนี้ยังไม่ backtest** (การ์ดบอกไว้) — Pivot+limit เคยทดสอบแล้วขาดทุน (ประวัติข้อ 1) ถ้าจะทำเป็นสัญญาณจริงต้องทดสอบก่อน
-
-### 🔍 ไม่ไล่ราคา + เหตุผลละเอียด + กราฟ 15 นาทีแบบโต้ตอบ (6 ต.ค. 2569 · ผู้ใช้ขอ "ละเอียดและแม่นยำขึ้น")
-- **`RULE.noChase`** (ใช้ทั้ง RULE และ RULE15): ไม่เข้าถ้ากรอบเร็ว (30m/15m) ปิดนอกขอบ Bollinger ด้านที่จะเข้า (`dec.bbPos` ≥ 1 ฝั่งซื้อ) → `dec.stretched`, reasons() มีข้อความ · ต้องเช็ก `sideOk` ด้วย (ไม่งั้นคะแนน −5 ขึ้นข้อความ "ยืดเกินขอบบน" ผิด)
-- ผล (ข้อมูลชุดเดียวกัน หลังสเปรด): 30m 1y +$122→+$166 (375→349 ไม้), 2y +$726→+$751 · 15m 1y +$169→+$230 · แบ่ง 4 ครึ่งปี: ดีขึ้นในครึ่งปีล่าสุดที่ขาดทุน (15m −$175→−$53, 30m −$159→−$31) แย่ลงเล็กน้อยช่วงกลาง
-- **สิ่งที่ลองแล้วไม่ใช้**: SL/TP = k×ATR 1 ชม. (k 1.0–2.0) — ไม่ดีขึ้นสม่ำเสมอ ทุกแบบยังขาดทุนครึ่งปีล่าสุด · ADX, RSI, ระยะห่าง EMA, ชั่วโมงเทรด, คะแนนละเอียด — ดีปีหนึ่งแย่อีกปี · ข้อสังเกต: ATR 1 ชม. เพิ่มจาก ~$9 เป็น ~$16 (SL $15 โดนบ่อยขึ้น 43%→57%) · สคริปต์วิจัย: ดึง Binance 2 ปีเก็บ features ของทุกจังหวะ score≥3 แล้วจำลองไม้เดียวต่อครั้งตามตัวกรอง (แบ่ง Y1/Y2 และ 4 ครึ่งปี)
-- `decideWith` เก็บ `frames[].avg` + `frames[].votes` (ตัวชี้วัดทีละตัว) → main.js `whyDetail`/`renderWhy(prefix)` ใน `<details id="s15Detail">` และ `#inDetail` (อัปเดต DOM เฉพาะเมื่อข้อความเปลี่ยน เพื่อให้กล่องเปิดค้างได้)
-- กราฟการ์ด 15m: ลากเลื่อน/ซูมที่แกน/pinch (ไม่ใช้ล้อเมาส์) · `s15View` แสดง 96 แท่งล่าสุดจนกว่าผู้ใช้จะแตะกราฟ (`s15Chart.user`, ปุ่ม `#s15Reset`) · `s15Ohlc` แถบ OHLC + คะแนนตอนแท่งปิด (`decAt.get(b.time + M15)`) จาก subscribeCrosshairMove
-- ทดสอบ puppeteer: ต้อง scrollIntoView ก่อนใช้ mouse กับกราฟ (นอกจอ = hover ไม่ทำงาน)
-
-### กติกาการนับผล (ใช้ร่วมกันใน `signals.js` → `evaluateTargets`)
-- ปิด **⅓ ที่แต่ละ TP** · ถึง TP1 แล้ว **เลื่อน SL ไปที่ทุน**
-- **ชนะ** = ถึง TP1 ก่อน SL · **แพ้** = โดน SL ก่อน TP1 · แท่ง 15 นาทีเดียวโดนทั้ง SL และ TP → นับว่าโดน SL ก่อน (อนุรักษ์นิยม)
-- ครบ 3 เป้า = **+$21.67/ออนซ์** · TP1 แล้วกลับทุน = **+$5** · โดน SL = **−$15**
-- ไม้เก่าที่มี `tp` เดียว (ไม่มี `tps`) ใช้ `evaluate` แบบเดิม — อย่าลบโค้ดส่วนนี้
+### แจ้งเตือนบนเครื่อง (PWA) + สมาชิก + หลังบ้าน
+- PWA: `manifest.webmanifest`, `icons/`, `sw.js` (ไม่แคชข้อมูล, รับ push) · `pwa.js` ปุ่มติดตั้ง + เปิดแจ้งเตือน → เก็บใน Clerk `unsafeMetadata.push` (≤5 เครื่อง) · `scripts/push.js` ส่ง web push ทุกครั้งที่ส่ง LINE · VAPID ตั้งแล้ว (8 ต.ค., config.js มี vapidPublicKey)
+- **สมาชิกเท่านั้น**: `login.html` (Clerk อีเมล/Google) → `POST /api/session` → คุกกี้ `gs_auth` 14 วัน · `middleware.js` ตรวจทุก request (ห้าม import แพ็กเกจ, ไม่รับ body) · ไม่ล็อกอิน: หน้า → 302 /login.html, ไฟล์อื่น 401 · ระงับสมาชิกได้ (`access/banned.json`) · `?demo=1` เลิกใช้แล้ว
+- **หลังบ้าน** `/admin.html` (อีเมลใน env `ADMIN_EMAILS`): สมาชิก, บันทึกการเข้าใช้ (`access/log.json`), ระงับ/คืนสิทธิ์, เขียนบทความ · `new-members.yml` ทุก 15 นาที: `new-members.js` (แจ้งสมาชิกใหม่) + `watchdog.js` (ตัวบันทึกหยุด/ค้าง/ล้ม) → web push เฉพาะเครื่องแอดมิน (+ LINE push เจ้าของถ้ามี `LINE_OWNER_ID`) — **ห้าม broadcast**
+- **Vercel Functions** `api/*.mjs` (journal, articles, coach) + `lib/gs.mjs` (ก๊อปจาก middleware — **แก้ต้องแก้ทั้งสองที่**) · ข้อมูลใน Vercel Blob · ระบบชำระเงินเก็บไว้ที่ branch `payments-shelved` (ทุกอย่างฟรีตอนนี้)
 
 ---
 
 ## 2. โครงสร้างไฟล์
 
 ```
-index.html      หน้าเว็บ (แท็บ: สัญญาณ / สถิติ / กราฟ / วิธีใช้ / บัญชี) — asset ทุกตัวมี ?v=<เวอร์ชัน>
-style.css       โครง CSS เดิม (เดิมเป็นธีมมืด)
-theme.css       ธีมสว่าง (ค่าเริ่มต้น · <link id=themeLight> โหลดเป็นไฟล์สุดท้าย ทับสีของ style.css/live.css) · โหมดมืด = ปิดไฟล์นี้ (ปุ่ม 🌙 บนแถบบน / แท็บบัญชี, localStorage gs-theme, ui.js applyTheme → main.js applyChartTheme) — การ์ดขาว เงานุ่ม แถบสีด้านบนบอกสถานะ · สีกราฟอยู่ใน main.js (chartBase / series)
-live.css        หน้าโหลดแบบอนิเมชั่น (วงแหวน % + ดาวหาง + อนุภาค + กราฟแท่งเทียน + ลำแสง/คลื่น/ประกายไฟ + รายการขั้น), ราคาสด, การ์ดแนวโน้มสด (แถบ −6…+6), โดนัท, การเคลื่อนไหวของแท็บ
-config.js       Clerk publishable key + ลิงก์เพิ่มเพื่อน LINE (ของสาธารณะ ไม่มีความลับ)
-logo.svg        โลโก้ (ตราหกเหลี่ยมทอง + แท่งทอง + สายฟ้า) — แถบบน, หน้าล็อกอิน, favicon
-auth.js         หน้าโหลด (SPLASH.step(text, pct) ขยับวงแหวน + นับ % + เก็บขั้นที่ผ่านแล้ว) + ล็อกอิน Google ผ่าน Clerk (clerk-js@6 + @clerk/ui@1 + ภาษาไทย thTH)
-tradeplan.js    แผนเทรดวันนี้บนหน้าแรก (โหลดหลัง main.js)
-chartzones.js   โซนเข้า/จุดเข้า/SL-TP บนกราฟทุกกรอบเวลา (โหลดหลัง main.js)
-pwa.js          ติดตั้งเป็นแอป + เปิด/ปิดแจ้งเตือน (sw.js, manifest.webmanifest, icons/)
-ui.js           แท็บ (hash routing), หน้าบัญชี, แชร์ LINE
-main.js         ดึงข้อมูล investing.com จากเบราว์เซอร์, กราฟ, การ์ดสัญญาณ, หน้าสถิติ
-                หน้าแรกเรียลไทม์: ราคาจากสตรีม (startStream/onStreamTick ~1 วิ) + refreshTick (PT1M ทุก ~21 วิ, ทุก 3 วิเฉพาะตอนสตรีมหลุด) → renderLive (ราคา/กราฟเส้น/สถานะตลาด) + patchIntraCandles
-                (ขยับแท่ง 30m/1h/5h ที่ยังไม่ปิดตามราคาสด) → renderIntra: renderMeter คะแนนสด INTRA.decide(...,live=true) เทียบคะแนนแท่งปิด,
-                โดนัทฝั่งซื้อ/ขายจาก calibration.split [ไม่ถึง TP1, TP1, TP2, TP3] ตรงกลาง = จบกำไร, ไม้ที่เปิดอยู่ (แถบ SL→TP3), ไทม์ไลน์ข่าว
-                LINE ใช้แท่งปิดเท่านั้น (ส่งเฉพาะตอน ✅ เปลี่ยน) · เว็บสด
-indicators.js   ตัวชี้วัด (EMA/RSI/MACD/BB/ATR/Stoch/ADX) + เครื่องโหวต — ใช้ทั้งเว็บและ Node
-investing.js    แปลผลวิเคราะห์ investing.com เป็นภาษาไทย (โหมดนักเทรด)
-explain.js      horizons(): แนวโน้มระยะสั้น/กลาง/ยาว จากสรุป investing.com
-dailyplan.js    Pivot Points (ใช้ในกราฟโหมดนักเทรด) + money()
-signals.js      สร้าง/ให้คะแนนสัญญาณ, summary(), RULE ของสัญญาณรายวัน
-intraday.js     decide()/makeTrade() ของสัญญาณ 30 นาที
-signals.json    บันทึกสัญญาณรายวัน (เขียนโดย GitHub Actions เท่านั้น)
-intraday.json   บันทึกไม้ 30 นาที (เขียนโดย GitHub Actions เท่านั้น)
-backtest.json / backtest-30m.json   ผลทดสอบย้อนหลัง 1 ปี (สร้างใหม่ทุกวันจันทร์)
+หน้าเว็บ
+index.html      แอปหลัก (6 แท็บ) — asset ทุกตัวมี ?v=<เวอร์ชันของไฟล์นั้น> · "เวอร์ชัน N" ในหน้าบัญชี
+login.html      เข้าสู่ระบบ / สมัคร (Clerk clerk-js@6 + @clerk/ui@1) · privacy.html (สาธารณะ) · admin.html (หลังบ้าน)
+CSS (ลำดับโหลด)  style.css (โครงเดิม) → live.css (ราคาสด, แถบคะแนน, กล่อง position, จอกว้าง/เมนูซ้าย) → theme.css (#themeLight ธีมสว่าง)
+                → design.css (ระยะ/อนิเมชั่น ทั้ง 2 ธีม) → terminal.css (ธีมมืดแบบจอเทรด — ทุกกฎขึ้นต้น html.dark) → splash.css (หน้าโหลด)
+                ค่าเริ่มต้น = **โหมดมืด** (head script ใน index.html + ui.js theme(); สว่างเมื่อ localStorage gs-theme = 'light')
+config.js       Clerk publishable key + vapidPublicKey + ลิงก์ LINE (สาธารณะ) — ตั้ง clerkPublishableKey '' = รันในเครื่องโดยไม่ล็อกอิน
+auth.js         หน้าโหลด SPLASH (MIN_MS 6500 — ค่าที่ผู้ใช้เลือก) + ใครล็อกอินอยู่ (/api/me) + visit log · splashfx.js แท่งเทียนบนหน้าโหลด
+ui.js           แท็บ (hash routing), ธีม, หน้าบัญชี, แชร์
+main.js         ดึงข้อมูล investing.com จากเบราว์เซอร์, สตรีมราคา, กราฟ, หน้าสัญญาณ, โหลด JSON ที่บันทึก (getJson → middleware → branch data)
+chartsys.js     กติกาสัญญาณบนกราฟ (ใช้ทั้งเว็บและ Node) — โหลดก่อน chartzones.js
+chartzones.js   วาดสัญญาณ/โซน/กล่อง position บนกราฟ · chartchat.js แชทถามจุดเข้า + โค้ช AI · tradeplan.js เครื่องคำนวณ lot
+newsstats.js    แท็บข่าวสหรัฐ + แถบข่าวสด · journal.js สมุดเทรด · motion.js อนิเมชั่น (reduced-motion = ไม่ทำเลย · ธีมมืดไม่มีประกาย/การ์ดเอียง)
+indicators.js   ตัวชี้วัด + เครื่องโหวต · intraday.js INTRA (decideWith, เวลาตลาด, ระบบ 30 นาทีเก่า) · signals.js SIG (ภาพรวมรายวัน, evaluateTargets, summary, marketShift)
+investing.js / explain.js / dailyplan.js   แปลผล investing.com · แนวโน้ม 3 ช่วง · Pivot (PLAN.levelsFromDaily)
+pwa.js · sw.js · manifest.webmanifest · icons/ · logo.svg
+middleware.js   ตรวจสมาชิก, /api/session|me|logout|push|visit|admin/*, เสิร์ฟ JSON + แดชบอร์ดจาก branch data (raw.githubusercontent.com)
+api/            journal.mjs · articles.mjs · coach.mjs (Vercel Functions) · lib/gs.mjs (cookie/Blob ร่วม)
+zframes/        หน้าแดชบอร์ด (สำเนาเว็บของ /zframes) · zframes-build/ ตัวสร้างแดชบอร์ดที่ GitHub ใช้
+research/indicators/  งานวิจัย + monthly-research (indlab.js, monthly.js, verify.js, fetch_news.py)
+compare.html + compare/   ภาพเทียบแบบเก่า/ใหม่ทุกงาน
+
+ข้อมูล (อยู่บน branch data — สำเนาบน main หยุดอัปเดตตั้งแต่ 12 ต.ค. ใช้เป็น fallback เท่านั้น)
+chart-signals.json   ไม้ของระบบหลัก (chart-run.js) · signals.json ภาพรวมรายวัน · intraday.json ระบบ 30 นาทีเก่า
+quota.json           โควตา LINE · backtest.json / backtest-30m.json / backtest-15m.json (สร้างใหม่ทุกจันทร์)
+zframes/dashboards/*.json   แดชบอร์ด (06:00 ทุกวัน)
+test-stats.json      (อยู่บน main) ผลทดสอบของกติกาปัจจุบัน — monthly-research เขียนเดือนละครั้ง
+
 scripts/
-  fetch_data.py      ดึงข้อมูล (curl_cffi ปลอมเป็น Chrome) · --m15-only = แท่ง 15m/30m/1h/5h
-  morning-plan.js    งาน 07:00: ให้คะแนนสัญญาณเก่า + ออกสัญญาณรายวัน + ส่ง LINE
-  check-loop.sh      วนเช็กทุก 5 นาที (~28 นาที/รอบ) เรียก alerts.js + intraday-run.js
-  alerts.js          ทุก 5 นาที (ผ่าน check-loop): ติดตามสัญญาณรายวัน บันทึก TP/SL
-  intraday-run.js    ทุก 5 นาที (ผ่าน check-loop): ติดตาม/เปิดไม้ 30 นาที แจ้ง LINE
-  trade-events.js    ข้อความ LINE ของเหตุการณ์ TP/SL (ใช้ร่วมกัน)
-  line.js            broadcast ไป LINE Messaging API
-  backtest.js / backtest-30m.js   ทดสอบย้อนหลัง (Binance PAXG ผ่าน data-api.binance.vision)
+  fetch_data.py      ดึง investing.com ด้วย curl_cffi (ปลอม Chrome) · --m15-only = แท่ง 15m/30m/1h/5h
+  check-loop.sh      วนทุก 5 นาที ~28 นาที/รอบ: fetch → alerts.js → intraday-run.js → chart-run.js → flush.js
+  chart-run.js       ⭐ บันทึก/ตามไม้ระบบหลักทุกกรอบ + LINE เข้าไม้ (CHART_NOTIFY)
+  alerts.js          ตามภาพรวมรายวัน · intraday-run.js ตามไม้ 30 นาทีเก่า + เตือนข่าว
+  morning-plan.js    ข้อความเช้า (ภาพรวมวันนี้ + ข่าววันนี้) · market-gate.js ปล่อยรอบที่ตลาดเปิด · line-quota.js
+  weekly.js          สรุปเสาร์ · notify.js / line.js / push.js / flush.js / trade-events.js ส่งข้อความ
+  data-branch.sh     data_load / data_save (worktree → rebase → push HEAD:data, retry 3)
+  new-members.js · watchdog.js · admin-notify.js · notify-failure.js · setup-push.js
+  backtest.js / backtest-30m.js   ทดสอบย้อนหลัง (Binance PAXG ผ่าน data-api.binance.vision) · zframes-refresh.sh
 .github/workflows/
-  morning-plan.yml   cron 00:05 + 01:05 UTC จ.–ศ. → market-gate.js ปล่อยรอบที่ตลาดเปิดแล้ว (07:05 / 08:05 หน้าหนาว)
-  price-alerts.yml   cron */15 จ.–ศ. (UTC) แต่ละรอบรัน check-loop.sh เช็กทุก 5 นาที · แจ้ง TP/SL · อัปเดตทุก 30 นาที · เปิดไม้ 30 นาที
-dev-server.js   เซิร์ฟเวอร์ทดสอบในเครื่อง (npm start → http://localhost:3000)
-vercel.json     framework: null (static) + no-cache สำหรับหน้าเว็บและไฟล์ .json
+  price-alerts.yml   cron */15 จ.–ศ. (UTC) → check-loop.sh
+  morning-plan.yml   cron 00:05 + 01:05 UTC จ.–ศ. → market-gate.js (07:05 / 08:05 หน้าหนาว) · จันทร์สร้าง backtest ใหม่
+  weekly-summary.yml เสาร์ 00:30 UTC · new-members.yml ทุก 15 นาที (สมาชิกใหม่ + watchdog)
+  monthly-research.yml วันที่ 2 ตี 3 ไทย · zframes-refresh.yml 23:00 UTC ทุกวัน
+dev-server.js   เซิร์ฟเวอร์ทดสอบในเครื่อง (npm start → http://localhost:3000, PORT ได้) — ไม่รัน middleware/api
+vercel.json     static (framework null, build/install ว่าง) + no-cache หน้าเว็บ/JSON/sw.js · git.deploymentEnabled.data = false
 ```
+
+- สคริปต์ทดสอบหน้าเว็บ (puppeteer) อยู่นอก repo ที่ `C:\Users\HP\gold-signal-tools\*.cjs` (เช่น shots.cjs, nav.cjs, splash3.cjs, apitest.mjs)
 
 ---
 
 ## 3. แหล่งข้อมูล (สำคัญ)
 
 - **investing.com API**: `https://api.investing.com/api/financialdata` คู่ XAU/USD = **pair 68**
-  - กราฟ: `/68/historical/chart/?interval=PT15M|PT30M|PT1H|PT5H|P1D&pointscount=160` (สูงสุด **160** แท่ง)
+  - กราฟ: `/68/historical/chart/?interval=PT1M|PT15M|PT30M|PT1H|PT5H|P1D&pointscount=160` (สูงสุด **160** แท่ง — ย้อนหลังกว่านั้นใช้ Binance)
   - วิเคราะห์: `/technical/analysis/68/{5m,15m,30m,1h,5h,1d,1w,1mo}`
   - ต้องส่ง header **`domain-id: th`** — API ตอบ CORS ให้ทุก origin → **เบราว์เซอร์ดึงได้โดยตรง**
-  - **จากเซิร์ฟเวอร์ (Node fetch / Vercel) โดน Cloudflare บล็อก 403** เพราะ TLS fingerprint → ห้ามทำ proxy
-  - บน GitHub Actions ใช้ Python **curl_cffi `impersonate="chrome"`** ผ่าน
-- สำรอง: Binance PAXG/USDT (`data-api.binance.vision` ไม่ติด geo-block) + เลื่อนราคาด้วย spot จาก gold-api.com
-- Pivot รายวันของ investing.com เช้าวันจันทร์คำนวณจากแท่งสั้นของคืนวันอาทิตย์ → **อย่าใช้** (ใช้ `PLAN.levelsFromDaily` ที่ข้ามวันเสาร์–อาทิตย์)
+  - **จากเซิร์ฟเวอร์ (Node fetch / Vercel) โดน Cloudflare บล็อก 403** เพราะ TLS fingerprint → ห้ามทำ proxy · บน GitHub Actions ใช้ Python **curl_cffi `impersonate="chrome"`**
+- **ราคาสด**: SockJS stream ของ investing.com `wss://streaming.forexpros.com/echo/<n>/<id>/websocket` → `bulk-subscribe` `pid-68:` (~1 tick/วิ, main.js `startStream`/`onStreamTick`) ไม่ผ่าน Cloudflare · REST PT1M เหลือทุก ~21 วิ (ทุก 3 วิตอนสตรีมหลุด) — ยิงถี่เกินเคยโดนบล็อก IP
+- **Binance PAXG/USDT** (`data-api.binance.vision`; `api.binance.com` ตอบ 451 กับเครื่อง GitHub): แท่ง 5m/4h/1d/1w ของระบบหลัก, ย้อนกราฟ, ทองหลังข่าว, backtest · ราคา PAXG ต่างจาก spot ~$3–5 → **ต้องเลื่อนด้วยส่วนต่างจากแท่งเวลาตรงกันเสมอ** (บั๊ก 14 ต.ค.)
+- Pivot รายวันของ investing.com เช้าวันจันทร์คำนวณจากแท่งสั้นของคืนวันอาทิตย์ → **อย่าใช้** (ใช้ `PLAN.levelsFromDaily`)
 
 ---
 
 ## 4. ทดสอบในเครื่อง
 
 ```bash
-npm start                                   # http://localhost:3000
-# ปิดหน้าล็อกอินชั่วคราว: ตั้ง clerkPublishableKey เป็น '' ใน config.js แล้ว "อย่าลืมคืนค่า" ก่อน commit
+npm start                                   # http://localhost:3000 (ไม่มี middleware → ตั้ง clerkPublishableKey '' ชั่วคราว แล้ว "อย่าลืมคืนค่า" ก่อน commit)
+git fetch origin data && git show origin/data:chart-signals.json > /tmp/cs.json   # ข้อมูลล่าสุดอยู่บน branch data ไม่ใช่ไฟล์บน main
 node scripts/morning-plan.js data.json      # dry run (ไม่ส่ง ไม่บันทึก) — ต้องมี data.json จาก fetch_data.py
-SIGNALS_FILE=/tmp/x.json RECORD=true node scripts/alerts.js data.json        # ทดสอบกับไฟล์ปลอม
+CHART_FILE=/tmp/cs.json node scripts/chart-run.js data.json                  # ระบบหลัก (ไม่ใส่ RECORD=true = ไม่บันทึก) · CHART_NOW=<ms> ย้อนเวลา
+SIGNALS_FILE=/tmp/x.json RECORD=true node scripts/alerts.js data.json
 INTRADAY_FILE=/tmp/y.json RECORD=true node scripts/intraday-run.js data.json
-node scripts/backtest.js 365 && node scripts/backtest-30m.js 365             # สร้าง backtest ใหม่
+node scripts/backtest.js 365 && node scripts/backtest-30m.js 365
 ```
 - ในเครื่องไม่มี Python → ทดสอบ fetch_data.py บน GitHub (`gh workflow run ... -f send=false`)
-- ถ่ายภาพหน้าจอ: Chrome headless `--screenshot` (ความกว้างต่ำสุดจริง ~500px)
+- ภาพหน้าจอ/วัดผล: puppeteer-core สคริปต์ใน `C:\Users\HP\gold-signal-tools` (Chrome `--virtual-time-budget` เร่งเวลา วัดความถี่ผิด) · middleware/api ทดสอบด้วย `gold-signal-tools/apitest.mjs` หรือ preview ของ thander1 (`npx vercel curl`)
 
 ---
 
@@ -256,34 +174,36 @@ node scripts/backtest.js 365 && node scripts/backtest-30m.js 365             # �
 ```bash
 gh workflow run morning-plan.yml -R tanakrthum254614-max/gold-signal -f send=false -f record=false   # ทดสอบเฉย ๆ
 gh workflow run morning-plan.yml -R tanakrthum254614-max/gold-signal -f send=true  -f record=true    # ของจริง (ส่ง LINE + บันทึก)
-gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=false
+gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=false                   # เช็กครั้งเดียว (LOOP_MINUTES=0)
+gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=true                  # สรุปเสาร์ส่ง LINE เฉพาะแบบนี้
 ```
 
 ---
 
 ## 6. Deploy
-- `git push` ไป `main` → Vercel build เองภายใน ~1 นาที
-- เปลี่ยนไฟล์เว็บเมื่อไร **อัปเดตเลข `?v=` ใน index.html** (และ "เวอร์ชัน" ในหน้าบัญชี) กัน cache เก่า:
-  `V=$(date +%Y%m%d%H%M) && sed -i -E "s/\?v=[0-9]+/?v=$V/g; s/เวอร์ชัน [0-9]+/เวอร์ชัน $V/" index.html`
-- ก่อน push ให้ `git pull --rebase` เสมอ — GitHub Actions commit `signals.json` / `intraday.json` ตลอด
+- `git push` ไป `main` → Vercel (thander1) build เองภายใน ~1 นาที · push ไป `data` ไม่ deploy
+- เปลี่ยนไฟล์เว็บไหน **เปลี่ยน `?v=` ของไฟล์นั้นใน index.html** (เลขแยกรายไฟล์ ไม่ต้องเปลี่ยนทุกตัว) และ "เวอร์ชัน N" ในหน้าบัญชี เป็นเวลาปัจจุบัน `YYYYMMDDHHMM`
+- ก่อน push `git pull --rebase` (monthly-research commit test-stats.json / รายงานขึ้น main เดือนละครั้ง) · ข้อมูลไม้ไม่ commit ขึ้น main แล้ว
+- เช็กว่าเว็บจริงได้ไฟล์ใหม่: เว็บต้องล็อกอิน → ใช้ `npx vercel curl` หรือดูเลข `?v=` ผ่านเครื่องมือของ thander1 · Hobby จำกัด 100 deploy/วัน
 
 ---
 
 ## 7. บทเรียน / กับดักที่เคยเจอ
 
-- **คลาส CSS ชนกัน**: style.css มี `.gauge`, `.top` (padding 18px — ทำให้ช่องแถบสูงผิด), `.tag.s1/.s0/.s-1` อยู่แล้ว · เพิ่มคลาสใหม่ให้ grep ก่อนเสมอ (การ์ดแนวโน้มใช้ `.sm*` / `.smf*`)
-- **headless Chrome โดน investing.com บล็อก** (ตกไปแหล่งสำรอง) → ใส่ `--user-agent="Mozilla/5.0 ... Chrome/141..."` และ `--window-size` กว้าง ≥500 (headless ใหม่บังคับขั้นต่ำ ~500px)
+- **คลาส CSS ชนกัน**: style.css มี `.gauge`, `.top`, `.tag.s1/.s0/.s-1`, `.dn` อยู่แล้ว · เพิ่มคลาสใหม่ให้ grep ก่อนเสมอ · **กฎ `html.dark …` ใน terminal.css แรงกว่าคลาสสถานะใน style.css** (เคยทำกรอบสีการ์ดสัญญาณ/สีปุ่มหาย) · ใส่ `display` ให้ของที่มี `hidden` จะทำให้โผล่ → ใช้ `:not([hidden])`
+- **headless Chrome โดน investing.com บล็อก** (ตกไปแหล่งสำรอง) → ใส่ user-agent Chrome จริง และ `--window-size` กว้าง ≥500
 - **ห้ามตั้งชื่อไฟล์ราก `app.js` / `server.js` / `index.js`** — Vercel จะคิดว่าเป็น Node server แล้วเว็บพัง (500)
 - **Vercel Hobby บล็อก deploy ถ้า commit author ไม่ใช่บัญชีที่เชื่อมไว้** → workflow commit ด้วยตัวตน `tanakrthum254614-max` (noreply email) ห้ามใช้ github-actions[bot]
-- **Vercel MCP connector ไม่มีสิทธิ์ scope thander1** → ใช้ Vercel CLI
-- **Line endings**: repo ตั้ง `core.autocrlf false` ไว้แล้ว ถ้าไฟล์กลายเป็น CRLF สคริปต์แก้ไฟล์แบบหลายบรรทัดจะหาข้อความไม่เจอ
-- **`String.replace(a, b)` ใน Node: `$$` ใน b จะกลายเป็น `$` ตัวเดียว** (และ `$&`, `$'` มีความหมายพิเศษ) — นี่คือต้นเหตุที่ `$` หายจากข้อความไทยหลายครั้ง · แทรกโค้ดด้วย `slice()` ต่อ string หรือ `replace(a, () => b)` แทน
-- **วันจันทร์ `backtest.json` มักชนกัน** (งานเช้าสร้างใหม่) → แก้ด้วยการรัน `node scripts/backtest*.js 365` ใหม่แล้ว `git add`
-- **แก้โค้ดผ่าน node/heredoc ระวัง `$` และ `\n`** ใน template string หายหรือกลายเป็นขึ้นบรรทัดจริง — ตรวจ `grep '~\${\|(+\${'` หลังแก้
-- **โควตา LINE ฟรี 300 ข้อความ/เดือน (นับต่อผู้รับ)** — ตัวเลขเดิม "≈ 900+/คน/เดือน" เป็นของตอนส่งทุก 30 นาที ซึ่งเลิกแล้ว (9 ต.ค.: LINE = สัญญาณเข้า + เตือนข่าว เท่านั้น) · **ของจริง 14 ต.ค. 2569: ใช้ 57/300** คาดสิ้นเดือน ~130 · `scripts/line-quota.js` เช็กทุกเช้า → `quota.json` (branch data) มี `projected` (คาดการณ์สิ้นเดือน) แสดงในหน้าบัญชี · ผู้รับเพิ่ม = ใช้เพิ่มตามจำนวนคน · เตือน broadcast ครั้งเดียวเมื่อเกิน 80%
-  (ถ้าส่งไม่ได้ สคริปต์จะ log `⚠️ LINE send failed` แล้วบันทึกผลต่อ ไม่ล้ม)
-- **ความซื่อตรงของสถิติ**: ห้ามลบไม้ที่มีผลแล้ว ลบได้เฉพาะไม้ที่ยังไม่เข้า/ไม่มีผล และต้องบอกผู้ใช้ · แสดงผล backtest ตามจริงเสมอ (รวมที่ขาดทุน)
-- ทุกครั้งที่เปลี่ยนกติกา **ทดสอบย้อนหลัง 2 ช่วงปีก่อน** — หลายสูตรได้กำไรปีแรกแต่ขาดทุนปีหลัง
+- **Vercel MCP connector ไม่มีสิทธิ์ scope thander1** → ใช้ Vercel CLI · Git Bash แปลง `/api/...` เป็น path Windows → `MSYS_NO_PATHCONV=1`
+- **middleware.js**: ไม่ได้รับ request body, Vercel ไม่ส่ง node_modules ไปด้วย (เคยล่ม ~8 นาที) → ห้าม import แพ็กเกจ · ทดสอบ preview thander1 ก่อน merge
+- **Line endings**: repo ตั้ง `core.autocrlf false` ไว้แล้ว ถ้าไฟล์กลายเป็น CRLF สคริปต์แก้ไฟล์หลายบรรทัดจะหาข้อความไม่เจอ
+- **`String.replace(a, b)` ใน Node: `$$` ใน b จะกลายเป็น `$` ตัวเดียว** (และ `$&`, `$'` มีความหมายพิเศษ) — ต้นเหตุที่ `$` หายจากข้อความไทยหลายครั้ง · ใช้ `slice()` ต่อ string หรือ `replace(a, () => b)` · แก้โค้ดผ่าน node/heredoc ระวัง `$` และ `\n` ใน template string
+- **วันจันทร์ backtest.json มักชนกัน** (งานเช้าสร้างใหม่) → รัน `node scripts/backtest*.js 365` ใหม่แล้ว `git add`
+- **โควตา LINE ฟรี 300 ข้อความ/เดือน (นับต่อผู้รับ)** · ของจริง 14 ต.ค. 2569: ใช้ 57/300 คาดสิ้นเดือน ~130 · `scripts/line-quota.js` เช็กทุกเช้า → `quota.json` (branch data, มี `projected`) แสดงในหน้าบัญชี · ผู้รับเพิ่ม = ใช้เพิ่มตามจำนวนคน · เตือน broadcast ครั้งเดียวเมื่อเกิน 80%
+- **ส่วนต่าง PAXG ↔ spot**: อย่าใช้แท่งล่าสุดของสองแหล่งลบกัน (investing.com ช้ากว่า 1–2 แท่ง) → ใช้แท่งที่เวลาตรงกันเท่านั้น
+- **ความซื่อตรงของสถิติ**: ห้ามลบไม้ที่มีผลแล้ว ลบได้เฉพาะไม้ที่ยังไม่เข้า/ไม่มีผล และต้องบอกผู้ใช้ · แก้ผลย้อนหลังได้เฉพาะเมื่อพิสูจน์ว่าตัวบันทึกผิด และเก็บของเดิมใน `was` · แสดงผล backtest ตามจริงเสมอ (รวมที่ขาดทุน)
+- ทุกครั้งที่เปลี่ยนกติกา **ทดสอบย้อนหลัง 2 ปี แบ่ง 4 ช่วง** (เลือกจากช่วง 1–3 แล้วดูช่วง 4) — หลายสูตรได้กำไรช่วงแรกแต่ขาดทุนช่วงหลัง
+- **งานดีไซน์**: ถามทิศทางพร้อมตัวอย่างก่อน และต้องต่างจนเห็นในภาพเทียบ · ห้ามทำหน้า "เรียบง่าย" เองโดยไม่ถาม · อย่าเปลี่ยน MIN_MS / สีแดชบอร์ด ถ้าไม่ได้ขอ
 
 ---
 
@@ -304,15 +224,16 @@ gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=fal
 
 - ⚠️ ช่วงล่าสุด 5m BUY ขาดทุน −433 และ 30m BUY −7 · กรอบใหญ่ (5h/1d/1w) ได้กำไรมาจากทองขาขึ้นยาว — ไม้น้อย ไม่ได้พิสูจน์ว่าใช้ได้ทุกสภาพตลาด
 
-**ผลจริงที่บันทึก (`chart-signals.json` branch data, เริ่ม 7 ต.ค. 2569, ถึง 14 ต.ค.)** — 28 ไม้ที่ปิดแล้ว **ขาดทุนทุกกรอบ**
+**ผลจริงที่บันทึก (`chart-signals.json` branch data, เริ่ม 7 ต.ค. 2569, ถึง 14 ต.ค.)** — 32 ไม้ที่ปิดแล้ว **ขาดทุนทุกกรอบ** (ตรวจกับไฟล์จริง 15 ต.ค.)
 
-| กรอบ | ไม้ | ชนะ | รวมหลังสเปรด |
+| กรอบ (หลังแก้ย้อนหลัง 14 ต.ค.) | ไม้ | ชนะ | รวมก่อนสเปรด |
 |---|---|---|---|
-| 5m BUY | 10 | 40% | −47 |
-| 5m SELL | 10 (3 ไม้ตอนเบรก) | 20% | −55 |
-| 30m BUY | 6 | 33% | −47 |
-| 1h BUY | 2 | 50% | −22 |
-| **รวม** | **28** | **32%** | **≈ −171** |
+| 5m (BUY+SELL) | 24 | 9 | −61 |
+| 30m BUY | 6 | 2 | −15 |
+| 1h BUY | 2 | 1 | −24 |
+| **รวม** | **32** | **12 (38%)** | **−99.8** (≈ −113 หลังสเปรด) |
+
+- ตารางเดิมก่อนแก้ (เพี้ยนเพราะบั๊ก): 5m BUY 10 ไม้ 40% −47 · 5m SELL 10 ไม้ 20% −55 · 30m BUY 6 ไม้ 33% −47 · 1h BUY 2 ไม้ 50% −22 · รวม 28 ไม้ 32% ≈ −171 หลังสเปรด
 
 - ⚠️ **ตัวเลขชุดนี้เพี้ยนเพราะบั๊กตัวบันทึก (แก้แล้ว 14 ต.ค. 2569 เย็น)**: `chart-run.js` คำนวณส่วนต่าง PAXG → ราคาทองจริงจากแท่งล่าสุดที่เวลาไม่ตรงกัน ไม้จึงชน SL/TP ปลอม · คำนวณใหม่ 31 ไม้ (ถึง 14 ต.ค. 17:25) ด้วยส่วนต่างที่ตรึงไว้ตอนเข้า: **ชนะ 13/31 (42%) · −$74 ก่อนสเปรด (≈ −$87 หลังสเปรด)** แทน 11/31 · −$150 ที่บันทึก · แยกกรอบ 5m −36 (10/23) · 30m −15 (2/6) · 1h −24 (1/2) · **แก้ย้อนหลังใน branch data แล้ว (64b7499 + 6ad8988)**: 32 ไม้ ชนะ 12 (38%) · −$99.8 ก่อนสเปรด (≈ −$113 หลังสเปรด) · 5m 9/24 −61 · 30m 2/6 −15 · 1h 1/2 −24 · ไม้ที่แก้มี `was: {status, pnl, closedBy, fix}`
 - 1 สัปดาห์ / 28 ไม้ ยังน้อยเกินจะสรุป (ทดสอบต้อง ≥ 20 ไม้ต่อกรอบ) แต่ต้องบอกผู้ใช้ตรง ๆ และติดตามต่อ — เบรก (CHARTSYS.brake) จะพักกรอบที่แพ้ติด 5 ไม้ / win% ต่ำกว่าทดสอบ −12
@@ -365,6 +286,12 @@ gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=fal
 # 📜 บันทึกการเปลี่ยนแปลง (ใหม่สุดอยู่บน)
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
+
+## 🔎 ตรวจคู่มือกับโค้ดจริง + เขียนข้อ 1–7 ใหม่ (15 ต.ค. 2569 · คู่มืออย่างเดียว ไม่แก้เว็บ)
+- ผู้ใช้: "ตรวจว่าตรงกับโค้ดจริงไหม" → "ทำมาเลย" · ตรวจด้วยสคริปต์ (ทุกชื่อไฟล์/ฟังก์ชัน/#id ในคู่มือ grep กับโค้ด) + อ่าน chartsys.js, intraday.js, signals.js, workflows, index.html, middleware.js, branch data
+- พบ: บันทึกการเปลี่ยนแปลงตรงกับโค้ด แต่ข้อ 1–7 ค้างที่ 5–8 ต.ค. — ยังเขียนว่าระบบ 30 นาทีเปิดไม้ TP 3 จุด/ส่ง ✅ ทุกครึ่งชั่วโมง, 5h/1d/1w ไม่มีจุดเข้า, แท็บ สถิติ/วิธีใช้, ธีมสว่างเป็นค่าเริ่มต้น, ข้อมูลอยู่บน main, `?v=` เลขเดียวทุกไฟล์, มี #lvCard/#tpCard/status.js/simple.css
+- แก้: ข้อ 1 เขียนใหม่เป็นสภาพปัจจุบัน (CHARTSYS ตารางทุกกรอบ, เบรก, chart-run.js, LINE `CHART_NOTIFY` = 30m,1h,5h,1d,1w, หน้าเว็บ 6 แท็บ, ระบบเก่าที่ยังรัน, สมาชิก/หลังบ้าน/api) · ข้อ 2–7 อัปเดต (ไฟล์ครบ, branch data, ลำดับ CSS, workflows 6 ตัว, คำสั่งทดสอบ chart-run, deploy เลขแยกรายไฟล์, กับดักใหม่) · ข้อ 8 ตารางผลจริงเป็นตัวเลขหลังแก้ (32 ไม้ ชนะ 12 −99.8 ตรวจกับไฟล์จริง) · ข้อ 1 เดิมย้ายไปท้ายไฟล์ "🗄️ ข้อ 1 เดิม" พร้อมป้ายว่าอะไรยกเลิกแล้ว (ไม่ลบเนื้อหา)
+- ไม่แก้หน้าเว็บ → ไม่มี compare.html / สไลด์พอร์ตโฟลิโอ
 
 ## 🧾 แก้ผลไม้เก่าใน chart-signals.json ให้ตรงราคาจริง (14 ต.ค. 2569 · เวอร์ชัน 202610151100)
 - ผู้ใช้: "แก้มาเลย" (หลังรู้ว่าผลเก่าเพี้ยนเพราะบั๊กส่วนต่าง PAXG)
@@ -901,3 +828,149 @@ gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=fal
 
 ### 👀 โหมดดูตัวอย่าง (`?demo=1`)
 - auth.js ข้าม Clerk ทั้งหมด → เปิดแอปได้เลย มีแถบ `#demoBar` + ปุ่ม `#accSignIn` ในแท็บบัญชี · การตั้งค่าเก็บใน localStorage · หน้าล็อกอินมีปุ่ม "ดูตัวอย่างก่อน" · Portfolio ลิงก์มาที่ `/?demo=1`
+
+---
+
+# 🗄️ ข้อ 1 เดิม (5–8 ต.ค. 2569) — เก็บเป็นประวัติ ไม่ใช่สภาพปัจจุบัน
+
+> ย้ายมาจากข้อ 1 เมื่อ 15 ต.ค. 2569 (ตรวจคู่มือกับโค้ด) · ยกเลิก/เปลี่ยนแล้ว: โครงสร้างเรียบง่าย + status.js + simple.css (7 ต.ค.), ระบบ 30 นาทีเปิดไม้/ส่ง ✅ ทุกครึ่งชั่วโมง (9 ต.ค. → CHARTSYS), TP 3 จุดของระบบ 30 นาที (9 ต.ค. → TP1), การ์ด 15 นาที + แผนเทรดวันนี้ #tpCard (8 ต.ค.), หน้าสถิติ/renderLiveCheck/#lvCard (9 ต.ค.), โหมด ?demo=1 (8 ต.ค.), หน้าโหลดแบบฟ้าผ่าใน live.css (14 ต.ค. → splash.css), "5h/1d/1w ไม่มีจุดเข้า" (7 ต.ค. มีแล้ว) · สภาพปัจจุบันดูข้อ 1–7
+
+
+### โครงสร้างเรียบง่ายทุกหน้า (6 ต.ค. 2569 · ผู้ใช้ส่งภาพขอเอาการ์ดสถานะออก)
+- **ลบ `#nowCard` และ CSS/renderer ของการ์ดแล้ว ห้ามเพิ่มกลับเอง** ผู้ใช้เห็นว่าข้อมูลเยอะเกินไป ต้องการสิ่งสำคัญในการเทรดและอ่านง่ายทุกหน้า
+- หน้า **เทรด**: ราคาทอง + สัญญาณหลัก 30 นาที (รายละเอียดคะแนนใน `#inDetail`) + ไม้เปิดจริงพร้อมช่อง entry/SL/TP1–3 + ข่าวถัดไป (ปฏิทินเต็มยุบไว้)
+- หน้า **กราฟ**: เริ่มที่แท่งเทียนถ้ายังไม่เคยเลือกโหมด (`gs-chart`) · คงเส้นจุดเข้า/SL/TP และกล่อง position ตามคำขอเดิม · RSI/MACD, ตารางตัวชี้วัด, รายละเอียด backtest กดเปิดได้ · เครื่องคำนวณ lot อยู่ใต้กราฟ `#positionTools` · แผนแนวรับ–ต้าน/เรดาร์/สัญญาณ 15 นาทีเป็นหัวข้อเสริม
+- หน้า **ผลเทรด**: กำไรสุทธิ/อัตราชนะ/จำนวนปิดแล้ว 3 ช่อง + จำนวนชนะ/แพ้และประวัติ · ยอดวันนี้/ประวัติ 30 นาทีหัก userSpread เหมือนยอดรวม · ผลทดสอบ/กราฟเทียบ/โดนัท/สูตรรายวันเก็บในรายละเอียด ไม่ลบข้อมูลสถิติ
+- หน้า **วิธีใช้**: 3 ขั้น + คำศัพท์ · กติกาเต็มกดอ่านได้ · หน้า **ตั้งค่า**: ทุน/ความเสี่ยง/สเปรดก่อน แล้วการแจ้งเตือน/ติดตั้งแอป และหน้าจอ/บัญชี
+- `simple.css` โหลดหลัง theme.css ใช้ตัวแปรสีเดิมทั้งมืด/สว่าง · `renderTradeSummary()` แสดงเหตุผลสั้นจาก `HOME_STATUS.model` · `renderCalculator()` แยกจาก `renderPlan()` เพื่อให้เครื่องคำนวณทำงานแม้แผนเทรดยุบอยู่ · toggle details เรียก render กราฟ/สถิติเมื่อเปิด · `onScreen` ข้ามรายละเอียดที่ปิด
+- `chartzones.js` กดดูผลทดสอบใน `.cz-detail` (จำสถานะเปิดขณะราคาอัปเดต) และระบุจุดจาก replay ว่า “แบบจำลองบนกราฟ” · กติกาสัญญาณ/ประวัติจริง/workflow ไม่เปลี่ยน
+- ภาพเปรียบเทียบทุกหน้า `compare/simple-*.png` ใช้ข้อมูลทดสอบชุดเดียวกันทั้งก่อน/หลัง ไม่ใช่ผลเทรดจริง · ทดสอบมือถือ 390/320 และคอม 1440, ทั้งมืด/สว่าง, เปิดรายละเอียดกราฟ, ตั้งค่าและคำนวณ lot, ทั้งมีไม้/ไม่มีไม้
+
+### การแยกบันทึกระบบกับคะแนนเว็บ (6 ต.ค. 2569 · ใช้ภายในสัญญาณหลัก)
+- `status.js` (`HOME_STATUS.model`) แยกคะแนนแท่งปิด/คะแนนสด/ไม้ในบันทึกระบบ 30 นาที และเหตุผลที่รอ (พักระบบ, cooldown, ข่าว, ไม่ไล่ราคา, ข้อมูลไม่พร้อม) · การ์ดข้อมูลเชิงเทคนิคแบบเดิมถูกลบตามคำขอผู้ใช้แล้ว
+- คะแนนเว็บผ่าน = “รอระบบยืนยัน” เท่านั้น ห้ามอ้างว่ากำลังส่ง LINE โดยไม่มีหลักฐาน · อ่านไม้จาก `state.intra.trades` ดิบ ไม่ใช้ผลประเมินจำลองบนเว็บเป็นการยืนยันจากเซิร์ฟเวอร์
+- เก็บ `intraMeta` (source/at/times ของกราฟที่ดาวน์โหลดก่อน patch stream), `priceBarAt`, `signalsAt`, `newsAt` และสถานะ fetch ล้มเหลว · เวลาโหลดสำเร็จแยกจากอายุข้อมูล · กราฟ 30m/1h/5h แสดงเวลาปิดแท่งล่าสุดของแต่ละกรอบ
+- `intraday.json.updatedAt` คือเวลา **บันทึกเปลี่ยน** ไม่ใช่ heartbeat หรือเวลาตรวจล่าสุดทุกครั้ง; ข้อมูลปัจจุบันยังไม่มี heartbeat สาธารณะ → แสดงข้อจำกัดนี้ตรง ๆ · ปฏิทินข่าวโหลดล้มเหลวไม่แปลว่าไม่มีข่าว
+- เงื่อนไขความสดเป็นการแสดงผลเท่านั้น ไม่เปลี่ยนกติกาซื้อ/ขายหรือ workflows · `node --test scripts/test-status.js` ตรวจสถานะและข้อมูลค้าง · ภาพประวัติการ์ดที่ยกเลิกแล้วอยู่ใน `compare/status-*.png`
+- แก้คำอธิบายหน้าแรก/ล็อกอิน/วิธีใช้/สถิติให้ตรงกับซื้ออย่างเดียวคะแนนแท่งปิด +5 และปิดไม้ 02:45 (03:45 หน้าหนาว) · เมื่อกลับเข้าแท็บโหลดบันทึกสัญญาณและข่าวใหม่ด้วย
+
+### 📅 สัญญาณรายวัน (07:00 จันทร์–ศุกร์) — `signals.js` · บันทึกใน `signals.json`
+- ทิศทาง = แนวโน้ม **สั้น + กลาง + ยาว** จาก investing.com (`explain.js` horizons) รวมกัน (เสมอ → ใช้ระยะกลาง)
+- **เข้าทันที (Market)** ที่ราคาตอน 07:00 · มีสัญญาณทุกวันทำการ (`RULE.minTrend: 0`)
+- **SL $15 · TP1 $15 · TP2 $20 · TP3 $30** · ดาว ★ = แนวโน้ม 3 ช่วงสอดคล้องกันแค่ไหน (|คะแนน| 0–6)
+- ออกสัญญาณ **07:05** (หลังตลาดเปิด) · อายุถึง **02:45 คืนถัดไป** (ก่อนตลาดปิด 03:00) แล้วปิดที่ราคาตอนนั้น
+
+### ⏱️ สัญญาณ 30 นาที — `intraday.js` · บันทึกใน `intraday.json`
+- ทุกครึ่งชั่วโมง วิเคราะห์แท่งที่ **ปิดแล้ว** ของ investing.com `PT30M / PT1H / PT5H` ด้วยตัวชี้วัดของเราเอง (`indicators.js`)
+- คะแนน = ผลรวม 3 ช่วง (−6…+6) → **เข้าเมื่อ |คะแนน| ≥ 5** · ครั้งละ 1 ไม้ · ไม้ใหม่ได้ในครึ่งชั่วโมงที่เริ่ม ≥15 นาทีหลังไม้ก่อนปิด
+- **เวลาตลาด (ไทย): 07:00–03:00** (หน้าหนาวสหรัฐ 08:00–04:00 — ดูหัวข้อเวลาตลาด) จันทร์ถึงเช้าเสาร์ (`INTRA.marketOpen`) · ไม่เปิดไม้ใหม่ 02:00–03:00 · ทุกไม้ปิดภายใน **02:45** (`nextClose`) · ไม่ส่งอัปเดตตอนตลาดปิด
+- SL/TP เหมือนรายวัน
+- **ข้อความอัปเดต 30 นาที** (`UPDATE_EVERY`, `updateText` ใน `scripts/intraday-run.js`) — เช็กทุกครึ่งชั่วโมง แต่**ส่ง LINE เฉพาะตอน ✅ เปลี่ยน** (ดู "ประหยัดโควตา LINE" ด้านล่าง): **ทั้งฝั่งซื้อและฝั่งขาย** แต่ละฝั่งมีคำตัดสิน (`INTRA.verdict`: ≥57% ✅ ควรเข้า · 53–56% 🟡 ลดขนาดไม้ · <53% ❌ ไม่ควรเข้า) + % + จุดเข้า/SL/TP + บรรทัดสรุปฝั่งที่ได้เปรียบ · ตาราง `calibration` แยก `{buy, sell}` ต่อคะแนน (ทุกครึ่งชั่วโมงจำลองทั้งซื้อและขาย) · ฝั่งขายไม่เคยเกิน ~53% ที่คะแนนใด → ไม้ที่นับสถิติยังเปิดเฉพาะฝั่งซื้อ (`RULE.sides`)
+  + **% จบกำไร** (winRate = ไม้ที่ปิดได้กำไร: ถึง TP1 หรือปิดตอนหมดเวลาแล้วมีกำไร — ไม่ใช่ "ถึง TP1 ก่อน SL") และ **% ถึง TP1** (= 100 − split[0]) จากตาราง `calibration` ใน `backtest-30m.json` (สถิติ 2 ปี แยกตามคะแนน −6…+6, `INTRA.odds`)
+  ระดับ: ≥57% ✅ น่าเข้า · 53–56% 🟡 พอเข้าได้ · ≤52% ⚠️ ใกล้ 50/50 — ไม้ที่ "นับสถิติ" ยังเปิดเฉพาะเมื่อ |คะแนน| ≥ 5
+- ชั่วโมงที่ประกาศไปแล้วเก็บใน `state/notify.json` ผ่าน **Actions cache** (ไม่ commit ทุกชั่วโมง → Vercel ไม่ deploy ถี่)
+- ข้อสังเกตจากตาราง (2 ปี): ฝั่ง **ซื้อ** คะแนน +4…+6 ชนะ 57–59% · ฝั่ง **ขาย** −4…−6 แค่ ~49–50% (ทองเป็นขาขึ้นเกือบทั้งช่วง)
+
+### ⚡ ราคาสดจากสตรีมของ investing.com (5 ต.ค. 2569)
+- ราคาหน้าเว็บมาจาก **SockJS stream ที่ investing.com ใช้เอง**: `wss://streaming.forexpros.com/echo/<n>/<id>/websocket` → ได้ `o` แล้วส่ง `[JSON.stringify({_event:"bulk-subscribe",tzID:8,message:"pid-68:"})]` → เฟรม `a[...]` = `{message:"pid-68::{last_numeric, bid, ask, high, low, last_close, pc, pcp, timestamp}"}` ~1 tick/วินาที · heartbeat `{_event:"heartbeat",data:"h"}` ทุก 25 วิ · ต่อใหม่แบบ backoff (main.js `startStream` / `onStreamTick`)
+- **ไม่ผ่าน Cloudflare** ของ REST API — ใช้ได้แม้ REST โดนบล็อก · ทดสอบ: หน้าเว็บเปลี่ยนราคา 17 ครั้ง/20 วินาที (เดิมแทบไม่ขยับเพราะตกไปแหล่งสำรอง)
+- **ราคาเดียวทั้งเว็บ**: ทุก tick → `patchChartBars` (แท่งล่าสุดของกราฟ, ขึ้นแท่งใหม่เมื่อครบช่วง) + `chartTick` (อัปเดตแท่ง/ราคาหน้ากราฟทันที) · ส่วนหนัก (`render`, เกจ, โดนัท) ≤1 ครั้ง/วินาที · แท่งสำรอง Binance ปรับ offset ด้วยราคาสตรีม (ไม่ใช้ gold-api ที่ช้า) · ราคาปิดอ้างอิงทุกจุด = `prevClose()` (last_close จากสตรีม = ตัวเลขเดียวกับ investing.com) · ทดสอบ 30 ตัวอย่าง: หัวเว็บ = หน้าแรก = หน้ากราฟ = แท่งล่าสุด ตรงกัน 30/30
+- REST (PT1M) เหลือทุก ~21 วิ (ทุก 3 วิเฉพาะตอนสตรีมหลุด) · ตัวชี้วัด 60 วิ · แท่ง 15m/30m/1h/5h 60 วิ — เดิมยิง ~1 ครั้ง/วินาที/แท็บ จน investing.com บล็อก IP (`Failed to fetch`)
+- แหล่งอื่นที่ลองแล้ว: gold-api.com อัปเดต ~1.5 นาที · Binance PAXG trade ~30/นาที, bookTicker mid เปลี่ยน ~ทุก 3 วิ · Swissquote โดน CORS · Binance Futures XAUUSDT ws ไม่มีข้อความ
+- ทดสอบแบบเวลาจริงต้องใช้ puppeteer-core (Chrome `--virtual-time-budget` เร่งเวลา ทำให้วัดความถี่ผิด)
+
+### 📲 แอป (PWA) + แจ้งเตือนบนเครื่อง (6 ต.ค. 2569)
+- `manifest.webmanifest` + `icons/` (192/512/maskable/apple-touch 180/badge-96 สร้างจาก logo.svg ด้วย puppeteer) + `sw.js` (ไม่แคชข้อมูล มีหน้า offline · รับ push → showNotification · แตะ → โฟกัสแอป) · vercel.json: sw.js no-cache
+- `pwa.js`: ปุ่มติดตั้ง (`beforeinstallprompt`; iPhone = วิธีทำผ่าน Safari) ในการ์ด `#pwaCard` แท็บบัญชี + แถบ `#installBar` บนมือถือ (ปิดได้ จำใน localStorage) · เปิดแจ้งเตือน: ต้องล็อกอิน (โหมด demo ไม่ได้) → `pushManager.subscribe` (timeout 20 วิ) → เก็บใน Clerk `unsafeMetadata.push` (ไม่เกิน 5 เครื่อง, เก็บ goldSettings ไว้ด้วย)
+- เซิร์ฟเวอร์: `scripts/push.js` — `notify.send()`/`sendFlex()` ส่ง LINE แล้ว push ข้อความเดียวกัน (บรรทัดแรก = หัวเรื่อง) ไปทุกเครื่องจาก Clerk Backend API (`GET /users`) · 404/410 → ลบเครื่องออก (PATCH metadata) · ไม่มีคีย์ → ข้าม (log)
+- คีย์: secret `VAPID_PRIVATE_KEY`, `CLERK_SECRET_KEY` + variable `VAPID_PUBLIC_KEY` + `config.js vapidPublicKey` (ว่าง = การ์ดขึ้น "กำลังเตรียม") — ตั้งด้วย `node scripts/setup-push.js` (**ผู้ใช้ต้องรันเอง** — Claude ไม่มีสิทธิ์เขียน secret) แล้ว commit config.js · workflow ทั้ง 3 ติดตั้ง `web-push` (package.json dependencies; Vercel ไม่ install เพราะ installCommand ว่าง)
+- ทดสอบ: puppeteer + `ServiceWorker.deliverPushMessage` / คลิกปุ่มด้วย JS (แถบแท็บล่างบังปุ่ม) / subscribe ผ่าน FCM จริงใน headless ได้ + push.js กับ Clerk ปลอม → แจ้งเตือนขึ้นจริง
+- กับดัก: `.btn { display: inline-flex }` ทับ attribute `hidden` → เพิ่ม `.btn[hidden] { display: none }` · dev-server เสิร์ฟโฟลเดอร์ย่อยได้แล้ว (icons/, compare/)
+
+### 🕐 เวลาตลาดตามเวลานิวยอร์ก (6 ต.ค. 2569)
+- ตลาดทองเดินตามเวลานิวยอร์ก → เวลาไทย **กลาง มี.ค.–ต้น พ.ย. 07:00–03:00 · ต้น พ.ย.–กลาง มี.ค. 08:00–04:00** · โค้ดเขียนเวลาแบบ "หน้าร้อน" แล้วเลื่อนด้วย `SIG.marketShift(ms)` (0 หรือ 1 ชม., `SIG.usDst` = อาทิตย์ที่ 2 มี.ค. 07:00 UTC → อาทิตย์แรก พ.ย. 06:00 UTC) · ข้อความ: `SIG.mt(ms, "07:00")` → "08:00" หน้าหนาว
+- ที่ใช้: `INTRA.marketOpen/nextClose/lastHour/weekStart/nextWeek` (นาฬิกา `mkt()`), `SIG.expiry` (02:45→03:45), weekly.js, backtest.js (เข้าตอนเปิด), check-loop.sh (ช่วง 30 นาทีแรกหลังเปิดเป็นของงานเช้า), main.js ข้อความ, index.html วิธีใช้
+- **งานเช้า**: cron 2 รอบ `5 0` และ `5 1` (UTC) + `scripts/market-gate.js` → `GO=true` เฉพาะเมื่อตลาดเปิดแล้ว + วันนั้นยังไม่มีสัญญาณ (รันมือ = ผ่านเสมอ) · ทุกขั้นใน morning-plan.yml มี `if: env.GO == 'true'`
+- backtest 1 ปีข้อมูลชุดเดียวกัน ก่อน→หลัง: 30 นาที +$313.72→+$293.48 · 15 นาที +$243.19→+$332.52 · รายวัน +$72.11→−$19.23 (advisory อยู่แล้ว)
+- ถ้าโบรกเกอร์ของผู้ใช้ไม่เลื่อนเวลา → ให้ `marketShift` คืน 0 ตลอด (จุดเดียว)
+
+### ⚡ โลโก้ + หน้าโหลด (6 ต.ค. 2569)
+- `logo.svg` = ตราหกเหลี่ยมทอง + แท่งทอง 3 แท่งไล่ขึ้น + สายฟ้า (ผู้ใช้ขอ "ตลาดทองคำ + สายฟ้า") · ใช้เป็น `<img class="logo">` ที่แถบบน/หน้าล็อกอิน + favicon · แก้รูปทรงต้องแก้ 2 ที่: logo.svg และ SVG `.sp-logo` ใน index.html (ภาพเดียวกัน แต่ id gradient `lg*`)
+- หน้าโหลด (live.css "Logo"): ขอบวาด (`lg-rim` pathLength=1) → แกนกลาง → แท่งทองเด้งขึ้น (`lg-bar`) → สายฟ้าฟาด 1.1 วิ (`lgStrike`) แล้ววนทุก 3.2 วิ พร้อม `lgZap` / ประกาย `lg-rays` / แสงวาบ `.sp-flash` / ฟ้าผ่าบนท้องฟ้า `.sp-sky` (มุมซ้าย-ขวาบน ไม่ทับชื่อ) · โหลดเสร็จ `lgDone`
+- กับดัก: `.sp-ring svg` เดิมหมุน −90° (สำหรับวงแหวน %) → ตอนนี้ใช้ `.sp-ring > svg:not(.sp-logo)`
+- **อนิเมชั่นเพิ่ม (6 ต.ค. 2569)** live.css "More motion" + theme.css (สีโหมดสว่าง): `.sp-market` กราฟแท่งเทียนขาขึ้น 18 แท่ง (`.mk-c` เด้งทีละแท่ง `--i`×0.11 วิ) + `.mk-line` วาดเส้นราคา (pathLength=1 — **ห้ามใส่ vector-effect: non-scaling-stroke กับเส้นที่ใช้ pathLength** dash จะเพี้ยน) · `.sp-beams` ลำแสง conic หมุน · `.sp-wave` ×2 คลื่นกระแทก + `.sp-sparks` 10 จุด (`--a` มุม, `--d` ระยะ) ตามรอบฟ้าผ่า 3.2 วิ · `#splashHead` หัวดาวหางที่ปลายวงแหวน (auth.js `count()` คำนวณ cx/cy) · `.sp-pct.bump` ทุก 25% · ชื่อแยกเป็น `<span style="--i">` ตกลงทีละตัว (แต่ละตัวมี shine เอง) · `.splash.done` = `lgBoom` คลื่นใหญ่ + `lgFlashEnd` + `beamFlare`
+- ❌ **ลองแบบจัดเต็มแล้วผู้ใช้ไม่เอา (6 ต.ค. 2569)**: ฝนเหรียญ 3 มิติ, พื้นตาราง, แถบตัววิ่ง, ตัวอักษรวนรอบโลโก้, จอสั่น, วาร์ป (commit e8d67dd) → revert กลับเป็นชุดก่อนหน้า — อย่าเพิ่มกลับเอง
+- ทดสอบ: บล็อก request ภายนอกด้วย puppeteer ให้หน้าโหลดค้าง แล้วหยุดภาพ · **อย่าเรียก `a.play()` กับอนิเมชั่นที่จบแล้ว** (มันจะเริ่มใหม่จาก 0 ภาพเพี้ยน) — ใส่คลาส done แล้วหยุดเฉพาะอนิเมชั่นใหม่
+- ทดสอบอนิเมชั่น: หยุดภาพที่เวลาที่ต้องการด้วย `document.getAnimations().forEach(a => { a.pause(); a.currentTime = t; })` (บล็อก request ข้อมูลเพื่อให้หน้าโหลดค้าง) · dev-server เสิร์ฟ .svg/.png แล้ว
+
+### 🧭 การ์ดแนวโน้มสด (แทนเกจเข็ม, 5 ต.ค. 2569)
+- index.html `#sm`: แถบ 13 ช่อง −6…+6 (`#smSegs`, ช่องที่ติด = `on b|s` + `peak`, `--k` = ความแรง) + เส้นประ "จุดเข้าซื้อ" ที่ +5 + เคอร์เซอร์ (`smCursor`, ตำแหน่ง calc ตาม gap 4px / 3px บนมือถือ) · คะแนนนับขึ้น/ลง (`smCount`) · ข้อความ `smMood` · 3 การ์ด `#smf-m30|h1|h5` (**แท่งเทียน** `.smf-candles` 30 แท่ง/มือถือ 14 จาก `state.intraCandles` — สร้าง `<g><line/><rect/></g>` ใหม่เฉพาะตอนขึ้นแท่งใหม่ (เด้งขึ้นทีละแท่ง) ระหว่างนั้นแค่ขยับ attribute · แท่งสุดท้าย `.live` กะพริบ · เส้นประ `.lp` = ราคาตอนนี้ · `.smf-chg` = ราคาแท่งนี้ − ราคาเปิดแท่ง · โหวต ▲▲ +2) · แถบนับถอยหลังถึงแท่ง 30 นาทีปิด (`renderCycle` ทุก 1 วิ) · โค้ด: main.js `buildMeter` / `renderMeter(dec, off)` · CSS: live.css "Trend strength meter" + theme.css
+- **ตลาดปิด vs ข้อมูลช้า**: `off = !dec.open ? "closed" : dec.stale ? "late" : ""` — "🌙 ตลาดปิด" ดูจากเวลาเท่านั้น (บอกวันด้วย `INTRA.nextOpen`) · ข้อมูลช้า → "⏳ กำลังดึงข้อมูลกราฟล่าสุด…" + ดึงใหม่ (ทุก ≥20 วิ) · `INTRA.reasons` แยกข้อความเหมือนกัน
+- **ต้นเหตุเดิม** (ผู้ใช้เห็น "ตลาดปิด" จันทร์ 23:38): `stale` = แท่ง 30m ล่าสุดเก่ากว่า 2 ชม. — แท่งไม่อัปเดตเมื่อ fetch ล้ม/แท็บหลับ (`every()` ข้ามตอนแท็บซ่อน และตอนกลับมาไม่ได้ดึงแท่ง) · แก้: `patchIntraCandles` ขึ้นแท่งใหม่จากราคาสตรีมเมื่อครบช่วง (เฉพาะสตรีมสด + ตลาดเปิด + ช่วงถัดไปช่วงเดียว) · visibilitychange เรียก `refreshIntraCandles`
+
+### ⏱️ สัญญาณ 15 นาที — เว็บเท่านั้น (5 ต.ค. 2569)
+- `INTRA.decide15` = `decideWith(FRAMES15, RULE15, …)`: แนวโน้ม 15m/1h/5h · **ซื้ออย่างเดียวที่ +5** · SL/TP เหมือนระบบ 30 นาที · ไม่ส่ง LINE ไม่บันทึกไฟล์
+- เว็บ (main.js `run15`): จำลองย้อนหลังบนแท่ง 15m ที่อยู่บนจอ (investing 160 แท่ง ≈ 40 ชม.) ด้วยกติกาเดียวกับ backtest (ไม้เดียว, รอ 15 นาทีหลังปิด) → การ์ดหน้าแรก (กราฟแท่ง 15m + ▲ ซื้อ / ● TP / ● SL + พื้นหลังเขียว=เข้าได้ เหลือง=ข่าว) และ markers ในหน้ากราฟเมื่อเลือก 15m (ช่วง 2 วัน)
+- ทดสอบ 1 ปี (`SYSTEM=15 node scripts/backtest-30m.js 365` → backtest-15m.json, ตามไม้บนแท่ง 5m): ซื้อ+ขาย ±5 −$131 · ซื้อ +3 −$460 · +4 −$198 · **+5 +$97** (1.4/วัน, 52%) · +6 +$37 (หลังสเปรด) · ทดลองค่าอื่น: `TH=4 SIDES=buy OUT=tmp.json`
+- `decide` (30 นาที) ถูกปรับเป็น `decideWith(FRAMES, RULE, …)` — ผล backtest เหมือนเดิมทุกตัว (375 ไม้, +$313.72 ก่อนสเปรด)
+- **กราฟในการ์ดเดินตามราคาสด (6 ต.ค. 2569)**: เดิม `drawS15Chart` วาดเฉพาะตอน `s.at` เปลี่ยน (แท่ง 15m ปิด) → ราคาบนกราฟค้างไม่ตรงหัวเว็บ (ผู้ใช้แจ้ง) · ตอนนี้ `s15Tick()` ใน onStreamTick อัปเดตแท่งล่าสุดทุก tick, `patchIntraCandles` ขึ้นแท่ง 15m ใหม่จากสตรีม, `refreshM15` ตั้ง `renderS15.drawn = null` ให้วาดใหม่ทุกนาที · ทดสอบ: แท่งล่าสุด == state.livePrice 30/30 (เดิม 0/30)
+- แหล่งสำรอง: ถ้า investing.com ล่ม แท่ง 15m/30m/1h ใช้ Binance PAXG และสร้างแท่ง 5 ชม. จาก 1 ชม. (`group5h`)
+
+### สัญญาณรายวัน = ข้อมูลประกอบ (5 ต.ค. 2569)
+- `SIG.RULE.advisory = true` → สัญญาณใหม่มี `advisory: true`: ข้อความเช้าเป็น "🧭 ภาพรวมทองคำวันนี้" (เอียงขึ้น/ลง + ข่าว + สถานะระบบ 30 นาที) **ไม่บอกให้เข้าไม้** · alerts.js บันทึกผลแต่**ไม่ส่ง LINE** · weekly.js ไม่นับรวมในยอดรวม · เว็บแสดงกล่องเตือน ซ่อนวิธีเข้า/lot · กล่องสถิติหน้าแรกเปลี่ยนเป็นของระบบ 30 นาที
+- เหตุผล: backtest รายวัน 1 ปีหลังหักสเปรด −$31.89/ออนซ์ (ชนะ 49%) · สัญญาณเก่าก่อน 6 ต.ค. ไม่มี flag จึงยังแจ้งเตือนจนจบตามเดิม
+- **โควตา LINE**: `scripts/line-quota.js` ในงานเช้า (GET /v2/bot/message/quota + /quota/consumption) → `quota.json` (commit, no-cache ใน vercel.json, แสดงที่แท็บบัญชี) · ใช้ ≥80% ส่งเตือนเดือนละครั้ง · error ไม่ทำให้งานเช้าล้ม
+
+### ประหยัดโควตา LINE + เบรกฉุกเฉิน (5 ต.ค. 2569)
+- **อัปเดต 30 นาทีส่งเฉพาะตอนเปลี่ยน**: เช็กทุกครึ่งชั่วโมง แต่ส่งเมื่อฝั่งใดฝั่งหนึ่ง **กลายเป็น ✅** หรือ **หมด ✅** (state.goodKey/goodDay ใน state/notify.json, วันเริ่ม 07:00 = วันตาม UTC) — จำลอง 30 วัน ≈ 2 ข้อความ/วัน (เดิม ~40) · ส่งทุก 30 นาทีกินโควตา ~900/เดือน
+- **รวมข้อความต่อรอบ**: workflow ตั้ง `OUTBOX=outbox.json` → `send()` เก็บคิว → `scripts/flush.js` ส่ง LINE ครั้งเดียว (≤5 บอลลูน, `pack()`) — LINE นับต่อครั้งที่ส่ง ไม่ใช่ต่อบอลลูน
+- **เบรกฉุกเฉิน** `INTRA.RULE.pause {streak:5, weekLoss:60}` + `INTRA.pauseCheck`: แพ้ติด 5 ไม้ หรือสัปดาห์นี้ขาดทุนสุทธิ ≤ −$60/ออนซ์ → `intraday.json.pause {from, until: จันทร์หน้า 07:00, reason}` ไม่เปิดไม้/ไม่ส่ง ✅ · หลังพักนับใหม่ตั้งแต่ `pause.until` · เว็บแสดง "🛑 ระบบพัก"
+  ผลจำลอง 1 ปี: พัก 5 ครั้ง ข้าม 45 ไม้ กำไร +$151 vs +$164 ถ้าไม่มีเบรก — **เบรกไม่ได้เพิ่มกำไรในอดีต** มีไว้กันกรณีระบบพังจริง
+
+### ระบบเสริม (เพิ่ม 5 ต.ค. 2569)
+- **30 นาทีเข้าเฉพาะฝั่งซื้อ** (`INTRA.RULE.sides = 'buy'`) — backtest 2 ปี: ซื้ออย่างเดียว 630 ไม้ +$893 หลังสเปรด vs สองฝั่ง 1,267 ไม้ +$791 · 1 ปีล่าสุด +$164 vs +$239 (ต่อไม้ดีกว่าเกือบเท่าตัว)
+- **หลบข่าวแรง**: ปฏิทิน investing.com `endpoints.investing.com/pd-instruments/v1/calendars/economic/events/occurrences?domain_id=1&country_ids=5&importances=high` (CORS เปิด, ดึงได้ทั้งเว็บและ Actions) → ไม่เปิดไม้ ±30 นาที (`RULE.newsMin`) · เตือนล่วงหน้า ~30 นาที · รายการข่าวในข้อความเช้า · backtest **ไม่มี**ตัวกรองข่าว (ไม่มีปฏิทินย้อนหลัง)
+- **ขนาดไม้**: 0.01 lot = 1 ออนซ์ → lot = ทุน×%เสี่ยง ÷ (SL×100) ปัดลง 0.01 · ตั้งค่า (ทุน USD/THB, %เสี่ยง, สเปรด) ในแท็บบัญชี เก็บใน Clerk `unsafeMetadata.goldSettings` + localStorage
+- **สเปรด**: `SIG.summary(list, spread)` หักต่อไม้ · ฝั่งเซิร์ฟเวอร์ใช้ `SPREAD_USD` จาก repo variable `vars.SPREAD_USD` (ค่าเริ่ม 0.4) · เว็บใช้ค่าที่ผู้ใช้ตั้ง
+- **ช่องทางส่ง**: LINE อย่างเดียว (`scripts/notify.js` → `line.js`) · ส่งพลาด (เช่นโควตาหมด) แค่ log ไม่ล้ม · ผู้ใช้ไม่เอา Telegram (ลบโค้ดออกแล้ว)
+- **สรุปรายสัปดาห์**: `weekly-summary.yml` เสาร์ 00:30 UTC (07:30 ไทย) → `scripts/weekly.js` (ปิดสัญญาณรายวันวันศุกร์ที่หมดอายุด้วย)
+- **แจ้งเมื่อระบบพัง**: ทุก workflow มีขั้น `if: failure()` → `scripts/notify-failure.js` (ไม่เกิน 1 ครั้ง/3 ชม./งาน ผ่าน state cache) · ใช้ข้อมูลสำรอง Binance > 30 นาที → แจ้ง 1 ครั้ง/6 ชม.
+
+### 📈 สัญญาณบนกราฟทุกกรอบเวลา (chartzones.js, 6 ต.ค. 2569 · ผู้ใช้ขอ "สัญญาณตรงกราฟว่าควรเข้าโซนไหน ทุกทามเฟรม")
+- ระบบเดียวกัน (3 กรอบชี้ขึ้น ซื้อที่ +5, noChase) ใช้กรอบกราฟเป็นกรอบเร็ว · `SYS` ใน chartzones.js: 5m [5m,30m,1h] · 15m FRAMES15 · 30m FRAMES · **1h [1h,4h,5h] SL×2 ($30, TP 30/40/60)** · 5h/1d/1w ไม่มีจุดเข้า (ทิศทางอย่างเดียว)
+- ผลทดสอบ 2 ปี (4 ครึ่งปี หลังสเปรด): 1h +166/+145/+383/+57 (**กำไรทุกช่วง**, ×1.5 ก็ +194/+220/+101/+58; ×1 −194 ครึ่งปีล่าสุด) · 5m +90/+342/+352/−417 · 15m +61/+480/+305/−53 · 30m +135/+429/+218/−31 · ลอง 1h ด้วย [1h,5h,1d] แล้วครึ่งปีล่าสุดขาดทุน จึงใช้ 4h
+- แท่ง 4h ไม่มีใน investing → `state.h4` จาก backupBars('4h', 200) (Binance PAXG เลื่อนเป็นราคา spot เหมือน backtest) ทุก 10 นาที
+- วาดบนทั้ง 2 มุมมอง (mainChart/candles + simpleChart/areaS): histogram `priceScaleId: 'cz'` เป็นพื้นหลัง, markers, price lines, กล่อง `#czBox` / `#czBoxS` · main.js markChart15 → renderChartZones · drawPlanLines (เส้นจุดเข้า/ตัดขาดทุน/เป้า จาก investing.com) **ผู้ใช้ขอให้คงไว้บนกราฟ** — ลองเอาออกแล้วผู้ใช้สั่งเอากลับ (6 ต.ค. 2569)
+- **กล่องสถานะไม้** (chartzones.js ส่วนท้าย `drawPositionBoxes`, ผู้ใช้: "จุดเข้าให้ชัดกว่านี้"): HTML overlay `.pbox-layer` ใน #mainChart / #simpleChart · แดง entry→SL, เขียว entry→TP สุดท้าย, `.pentry` เส้นทอง, ป้าย `.ptag` ชิดขวาแกนราคา ดันไม่ให้ทับกัน · ไม้ระบบ (`window.CZ_OPEN`) ก่อน แล้วค่อยแผน investing (`state.locked`) · rightOffset 16 ตอนมีไม้ · กล่องกว้าง ≥170px
+- **กับดัก**: mainChart ซ่อนแกนเวลา → `timeScale().width()` = 0 ต้องใช้ `el.clientWidth − priceScale('right').width()` · innerHTML ใหม่ทุก tick ทำให้อนิเมชั่นเริ่มใหม่ตลอด (กะพริบ) → เขียนเฉพาะตอนเปลี่ยน ไม่มีอนิเมชั่นเข้า
+- **กับดัก**: replay cache ห้ามเก็บผลที่เป็น null (ข้อมูลยังโหลดไม่ครบ) — เคยทำให้กรอบ 1h คำนวณไม่ได้ 99/100 จุดถาวร
+- ทดสอบภาพตอนไม่มีสัญญาณจริง: override INTRA.decideWith ในหน้า (กลับเครื่องหมายคะแนน) เฉพาะใน puppeteer
+
+### 🧪 ทดสอบแผนเทรด + ผลจริง vs ทดสอบ (6 ต.ค. 2569)
+- **จุดเข้าตามแนวรับ–ต้านขาดทุน** (2 ปี ทุกชั่วโมง คำสั่งรอ 60 นาที ตามบนแท่ง 5m หลังสเปรด, 4 ครึ่งปี): ซื้อแนวรับ +147/+71/−441/−587 · เฉพาะเทรนด์ขึ้น +176/+94/−126/−179 · ขายแนวต้าน −422/−623/−705/−25 · เบรก −1213/−94/−359/−864 → tradeplan.js `LEVEL_BT` แสดงตารางนี้แทนจุดเข้า · ส่วนที่เหลือ: เช็กว่า TP1/SL ของระบบมีแนวขวางไหม + ปุ่ม `#tpUseSys`
+- **เรดาร์ 1 นาทีขาดทุน**: limit ที่ EMA9, SL max($4, 2×ATR1m), TP 1.5×SL → ~10,000 ไม้ 40–43% −$1,811 หลังสเปรด (+$2,311 ก่อนสเปรด) → เหลือแค่ข้อมูลโมเมนตัม
+- `renderLiveCheck()` (main.js, เรียกจาก renderStats): ผลจริง intraday.json เทียบ backtest-30m.json — คาด n×avg ± 2σ√n, ต้อง ≥20 ไม้ถึงสรุป · การ์ด `#lvCard` แท็บสถิติ + `#lvStrip` หน้าแรก · บอกผลทดสอบ 30/90 วันล่าสุด
+- `onScreen(id)`: การ์ด 15m / แผนเทรด render เฉพาะตอนอยู่บนจอ (±200px)
+- ตาราง % โอกาส (calibration) ไม่ต้องแก้ตาม noChase: เป็นการจำลอง "ถ้าเข้าตอนนี้ที่คะแนนนี้" ทุกจังหวะ ไม่ขึ้นกับตัวกรอง
+- สคริปต์วิจัยอยู่ใน scratchpad (ไม่ได้ commit): ข้อมูล Binance PAXG 1m/5m/15m/30m/1h 2 ปี
+
+### 🧭 แผนเทรดวันนี้ (tradeplan.js, 6 ต.ค. 2569 · ผู้ใช้ขอ "ครบทุกอย่างสำหรับนักเทรดทอง")
+- การ์ด `#tpCard` หน้าแรกใต้การ์ด 15 นาที · `window.renderPlan()` เรียกจาก onStreamTick ส่วน heavy (≤1 ครั้ง/วิ) · ใช้ global ของ main.js (state, f2, nowPrice, thaiTime, signedScore, lotFor) จึงต้องโหลด **หลัง** main.js
+- ช่วงตลาด (`SESS`, เวลาหน้าร้อน + SIG.marketShift) · บันได: PLAN.levelsFromDaily + สูง/ต่ำวันนี้ (m15 ตั้งแต่เปิดตลาด) + TA.swings(m15) รวมระดับที่ห่าง < $1.5 · จุดเข้า: แนวที่ใกล้สุด (ห่าง ≥ ¼ ATR15) · SL = เลยแนวไป max($5, 0.8×ATR15) · TP1 = แนวแรกที่ห่าง ≥ 1R, TP2 = แนวถัดไป ≥ ½R ต่อ (ไม่มีก็ 1.5R / +1R) · ป้าย "เข้ากับเทรนด์" จากคะแนนสด 30 นาที (≥+3 ซื้อ, ≤−3 ขาย, อื่น ๆ เล่นกรอบ)
+- เรดาร์ 1 นาที (state.tick): EMA9/21 + ROC 5 นาที, RSI14, ATR14 · SL สั้น = max($4, 2×ATR1m), TP = 1.5×SL · ข่าวแรงใกล้ → งด
+- เครื่องคิด: `calc.fill(side, entry, sl, tp)` · ค่าเริ่ม = ราคาสด ±$15 จนกว่าผู้ใช้จะแก้
+- **จุดเข้าส่วนนี้ยังไม่ backtest** (การ์ดบอกไว้) — Pivot+limit เคยทดสอบแล้วขาดทุน (ประวัติข้อ 1) ถ้าจะทำเป็นสัญญาณจริงต้องทดสอบก่อน
+
+### 🔍 ไม่ไล่ราคา + เหตุผลละเอียด + กราฟ 15 นาทีแบบโต้ตอบ (6 ต.ค. 2569 · ผู้ใช้ขอ "ละเอียดและแม่นยำขึ้น")
+- **`RULE.noChase`** (ใช้ทั้ง RULE และ RULE15): ไม่เข้าถ้ากรอบเร็ว (30m/15m) ปิดนอกขอบ Bollinger ด้านที่จะเข้า (`dec.bbPos` ≥ 1 ฝั่งซื้อ) → `dec.stretched`, reasons() มีข้อความ · ต้องเช็ก `sideOk` ด้วย (ไม่งั้นคะแนน −5 ขึ้นข้อความ "ยืดเกินขอบบน" ผิด)
+- ผล (ข้อมูลชุดเดียวกัน หลังสเปรด): 30m 1y +$122→+$166 (375→349 ไม้), 2y +$726→+$751 · 15m 1y +$169→+$230 · แบ่ง 4 ครึ่งปี: ดีขึ้นในครึ่งปีล่าสุดที่ขาดทุน (15m −$175→−$53, 30m −$159→−$31) แย่ลงเล็กน้อยช่วงกลาง
+- **สิ่งที่ลองแล้วไม่ใช้**: SL/TP = k×ATR 1 ชม. (k 1.0–2.0) — ไม่ดีขึ้นสม่ำเสมอ ทุกแบบยังขาดทุนครึ่งปีล่าสุด · ADX, RSI, ระยะห่าง EMA, ชั่วโมงเทรด, คะแนนละเอียด — ดีปีหนึ่งแย่อีกปี · ข้อสังเกต: ATR 1 ชม. เพิ่มจาก ~$9 เป็น ~$16 (SL $15 โดนบ่อยขึ้น 43%→57%) · สคริปต์วิจัย: ดึง Binance 2 ปีเก็บ features ของทุกจังหวะ score≥3 แล้วจำลองไม้เดียวต่อครั้งตามตัวกรอง (แบ่ง Y1/Y2 และ 4 ครึ่งปี)
+- `decideWith` เก็บ `frames[].avg` + `frames[].votes` (ตัวชี้วัดทีละตัว) → main.js `whyDetail`/`renderWhy(prefix)` ใน `<details id="s15Detail">` และ `#inDetail` (อัปเดต DOM เฉพาะเมื่อข้อความเปลี่ยน เพื่อให้กล่องเปิดค้างได้)
+- กราฟการ์ด 15m: ลากเลื่อน/ซูมที่แกน/pinch (ไม่ใช้ล้อเมาส์) · `s15View` แสดง 96 แท่งล่าสุดจนกว่าผู้ใช้จะแตะกราฟ (`s15Chart.user`, ปุ่ม `#s15Reset`) · `s15Ohlc` แถบ OHLC + คะแนนตอนแท่งปิด (`decAt.get(b.time + M15)`) จาก subscribeCrosshairMove
+- ทดสอบ puppeteer: ต้อง scrollIntoView ก่อนใช้ mouse กับกราฟ (นอกจอ = hover ไม่ทำงาน)
+
+### กติกาการนับผล (ใช้ร่วมกันใน `signals.js` → `evaluateTargets`)
+- ปิด **⅓ ที่แต่ละ TP** · ถึง TP1 แล้ว **เลื่อน SL ไปที่ทุน**
+- **ชนะ** = ถึง TP1 ก่อน SL · **แพ้** = โดน SL ก่อน TP1 · แท่ง 15 นาทีเดียวโดนทั้ง SL และ TP → นับว่าโดน SL ก่อน (อนุรักษ์นิยม)
+- ครบ 3 เป้า = **+$21.67/ออนซ์** · TP1 แล้วกลับทุน = **+$5** · โดน SL = **−$15**
+- ไม้เก่าที่มี `tp` เดียว (ไม่มี `tps`) ใช้ `evaluate` แบบเดิม — อย่าลบโค้ดส่วนนี้
