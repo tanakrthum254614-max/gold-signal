@@ -323,3 +323,29 @@ html.dark #tab-account .settings input:focus, html.dark #tab-account .settings s
   :is(html, html.dark) #tabbar.tabbar a.on { background: var(--panel-2); color: var(--gold); }
   :is(html, html.dark) .content { padding-bottom: 24px; }
 }
+
+/* ---------- One type scale for every tab (16 Oct, user: "ปรับทุกส่วนให้สัมพันกัน") — both themes. Body text sat at
+   16px (18px from 1400px, live.css), larger than the 15px card titles and 12–13px card text, so plain paragraphs
+   (account LINE text, empty states, news notes) looked oversized. Now: text 14px (15px ≥1400, 16px ≥1700), always a
+   step below card titles. News headings and cards use the same size / corners / padding as every other card.
+   Phones scaled by index.html (vp-scaled) are drawn ~1477px wide — they keep the 14px step, not the wide-screen one. ---------- */
+:is(html, html.dark) body { font-size: 14px; }
+:is(html, html.dark) .card h3 { font-size: 15px; font-weight: 600; }
+:is(html, html.dark) .nf-title, :is(html, html.dark) .st-title { font-size: 18px; font-weight: 700; line-height: 1.3; }
+:is(html, html.dark) .nf, :is(html, html.dark) .st-hero { padding: 14px 16px; border-radius: 8px; }
+@media (min-width: 1400px) {
+  :is(html, html.dark) body { font-size: 15px; }
+  :is(html, html.dark) .card h3 { font-size: 16px; }
+  :is(html, html.dark) .nf-title, :is(html, html.dark) .st-title { font-size: 20px; }
+}
+@media (min-width: 1700px) {
+  :is(html, html.dark) body { font-size: 16px; }
+  :is(html, html.dark) .card h3 { font-size: 17px; }
+  :is(html, html.dark) .nf-title, :is(html, html.dark) .st-title { font-size: 22px; }
+}
+html.vp-scaled body { font-size: 14px; }
+html.vp-scaled .card h3 { font-size: 15px; }
+html.vp-scaled .nf-title, html.vp-scaled .st-title { font-size: 18px; }
+/* the two verdict lines on the home tab (1h system + daily overview) at one size */
+:is(html, html.dark) #sigCard .sig-side { font-size: 28px; }
+:is(html, html.dark) #sigCard .sig-side small { font-size: 14px; }
