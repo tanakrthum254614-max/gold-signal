@@ -126,6 +126,90 @@ Object.assign(FRAMES, {
   movers: f => `<div class="mv"><div><div class="muted">ขึ้นแรงสุด</div><div class="mvl up-l"></div></div><div><div class="muted">ลงแรงสุด</div><div class="mvl dn-l"></div></div></div>`,
 });
 
+// ---------- กราฟแท่งเทียนของหุ้นทุกตัว (ผู้ใช้ 15 ต.ค. 2026: "ขอทุกหุ้นให้มีกราฟแท่งเทียน") ----------
+// /api/candles (Yahoo ผ่านเซิร์ฟเวอร์ของเว็บ) · 5 นาที / 1 ชม. / 1 วัน / 1 สัปดาห์ · EMA20/50 (+EMA200 รายวัน) · volume ·
+// ชี้/แตะดูราคาแต่ละแท่ง · แท่งล่าสุดขยับตามราคาสด · โหลดใหม่ทุก 1 นาทีระหว่างเปิดหน้า
+const SC_IV = { '5m': ['5 นาที', 156, 300000], '1h': ['1 ชม.', 140, 3600000], '1d': ['1 วัน', 250, 86400000], '1wk': ['1 สัปดาห์', 156, 604800000] };
+const scFmtT = (t, iv) => new Date(t).toLocaleString('th-TH', iv === '5m' || iv === '1h' ? { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' } : { day: 'numeric', month: 'short', year: '2-digit' });
+const scVol = v => (v >= 1e9 ? (v / 1e9).toFixed(2) + 'B' : v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e3 ? (v / 1e3).toFixed(0) + 'K' : String(v || 0));
+function stockCandleCard(s) {
+  return `<section class="card span2 scard" data-scs="${esc(s)}"><h3><span>${esc(s)} · กราฟแท่งเทียน</span><small>Yahoo · อัปเดตทุก 1 นาที</small></h3><div class="cbody">
+    <div class="sh"><div><div class="big" data-sc-px>—</div><div class="muted sc-read" data-sc-read>กำลังโหลด…</div></div>
+    <div class="rngs">${Object.entries(SC_IV).map(([k, [l]]) => `<button class="rng sciv ${k === '1d' ? 'on' : ''}" data-iv="${k}">${l}</button>`).join('')}</div></div>
+    <div class="scbox"><div class="empty">กำลังโหลดแท่งเทียน…</div></div>
+    <div class="legend sc-leg"><span><i style="background:#34d399"></i>EMA20</span><span><i style="background:#fbbf24"></i>EMA50</span><span class="sc-e200"><i style="background:#f472b6"></i>EMA200</span><span><i style="background:rgba(196,181,253,.5)"></i>Volume</span></div></div></section>`;
+}
+async function loadStockCandles(el) {
+  const s = el.dataset.scs, iv = el.querySelector('.sciv.on')?.dataset.iv || '1d', seq = el._seq = (el._seq || 0) + 1;
+  try {
+    const r = await fetch(`/api/candles?s=${encodeURIComponent(s)}&iv=${iv}`, { cache: 'no-store' });
+    const j = await r.json().catch(() => ({}));
+    if (seq !== el._seq || !el.isConnected) return;
+    if (!r.ok || !j.ok || !j.rows?.length) throw new Error(j.error || `HTTP ${r.status}`);
+    el._rows = j.rows; el._iv = iv; el._hover = null;
+    drawStockCandles(el);
+  } catch (e) {
+    if (seq !== el._seq || !el.isConnected) return;
+    if (!el._rows) el.querySelector('.scbox').innerHTML = `<div class="empty">โหลดแท่งเทียนไม่ได้ (${esc(e.message)}) — กำลังลองใหม่</div>`;
+  }
+}
+function scEma(vals, p) { const k = 2 / (p + 1); let e; return vals.map((v, i) => (e = i ? v * k + e * (1 - k) : v)); }
+function drawStockCandles(el) {
+  const all = el._rows, iv = el._iv, [, N, ms] = SC_IV[iv]; if (!all?.length) return;
+  // the last candle follows the live price (same bucket only — a new bucket waits for the next load)
+  const q = SQ[el.dataset.scs], last = all.at(-1);
+  if (q && Number.isFinite(q.px) && q.t && Math.floor(q.t / ms) * ms <= last.t + ms - 1 && q.t >= last.t && iv !== '1wk') {
+    last.c = q.px; last.h = Math.max(last.h, q.px); last.l = Math.min(last.l, q.px);
+  }
+  const C = all.map(r => r.c), e20 = scEma(C, 20), e50 = scEma(C, 50), e200 = all.length >= 200 ? scEma(C, 200) : null;
+  const off = Math.max(0, all.length - N), rows = all.slice(off), n = rows.length, w = 1000 / n;
+  const hi = Math.max(...rows.map(r => r.h)), lo = Math.min(...rows.map(r => r.l)), pad = (hi - lo) * 0.06 || 1;
+  const Y = v => 2 + (1 - (v - (lo - pad)) / (hi - lo + 2 * pad)) * 74; // price: 2–76 · volume: 80–100
+  const vmax = Math.max(...rows.map(r => r.v || 0), 1);
+  let svg = '';
+  for (let k = 0; k <= 3; k++) svg += `<line x1="0" x2="1000" y1="${2 + k * 74 / 3}" y2="${2 + k * 74 / 3}" class="grid"/>`;
+  rows.forEach((r, i) => {
+    const x = i * w + w / 2, up = r.c >= r.o, col = up ? '#34d399' : '#fb7185';
+    if (r.v) svg += `<rect x="${i * w + w * .15}" width="${w * .7}" y="${100 - r.v / vmax * 20}" height="${r.v / vmax * 20}" fill="${col}" opacity=".28"/>`;
+    svg += `<line x1="${x}" x2="${x}" y1="${Y(r.h)}" y2="${Y(r.l)}" stroke="${col}" vector-effect="non-scaling-stroke"/>`;
+    svg += `<rect x="${x - w * .34}" width="${w * .68}" y="${Math.min(Y(r.o), Y(r.c))}" height="${Math.max(Math.abs(Y(r.o) - Y(r.c)), .35)}" fill="${col}"/>`;
+  });
+  const path = (arr, col, wd) => arr ? `<polyline fill="none" stroke="${col}" stroke-width="${wd}" vector-effect="non-scaling-stroke" points="${arr.slice(off).map((v, i) => `${(i * w + w / 2).toFixed(1)},${Y(v).toFixed(2)}`).join(' ')}"/>` : '';
+  svg += path(e20, '#34d399', 1.2) + path(e50, '#fbbf24', 1.3) + (iv === '1d' ? path(e200, '#f472b6', 1.3) : '');
+  const lp = rows.at(-1).c;
+  svg += `<line x1="0" x2="1000" y1="${Y(lp)}" y2="${Y(lp)}" stroke="#fff" stroke-dasharray="2 4" vector-effect="non-scaling-stroke" opacity=".5"/>`;
+  svg += `<line class="sc-cross" x1="0" x2="0" y1="0" y2="100" stroke="rgba(255,255,255,.35)" vector-effect="non-scaling-stroke" style="display:none"/>`;
+  const yl = [0, 1, 2, 3].map(k => { const v = (hi + pad) - (hi - lo + 2 * pad) * k / 3; return `<span class="yl left" style="top:${(2 + k * 74 / 3)}%">${pxFmt(v)}</span>`; }).join('');
+  const span = rows.at(-1).t - rows[0].t, xl = [0, 1 / 3, 2 / 3, 1].map(f => `<span style="left:${f * 100}%">${scFmtT(rows[0].t + span * f, iv)}</span>`).join('');
+  el.querySelector('.scbox').innerHTML = `<div class="lc candle-chart sc-chart" style="--h:300px"><div class="plot"><svg viewBox="0 0 1000 100" preserveAspectRatio="none">${svg}</svg>${yl}<span class="ref now" style="top:${Y(lp)}%">${pxFmt(lp)}</span></div><div class="xl">${xl}</div></div>`;
+  el.querySelector('.sc-e200').style.display = iv === '1d' && e200 ? '' : 'none';
+  el._view = { rows, w, e20: e20.slice(off), e50: e50.slice(off) };
+  scReadout(el, el._hover ?? n - 1);
+  const first = rows[0].c, chg = (lp / first - 1) * 100;
+  el.querySelector('[data-sc-px]').innerHTML = `${usd(lp)} <span class="chg2 ${chCls(chg)}" style="font-size:14px">${pct2(chg)} ใน ${n} แท่ง</span>`;
+}
+function scReadout(el, i) {
+  const v = el._view; if (!v) return;
+  const r = v.rows[Math.max(0, Math.min(v.rows.length - 1, i))];
+  el.querySelector('[data-sc-read]').innerHTML = `${scFmtT(r.t, el._iv)} · เปิด <b>${pxFmt(r.o)}</b> สูง <b>${pxFmt(r.h)}</b> ต่ำ <b>${pxFmt(r.l)}</b> ปิด <b class="${r.c >= r.o ? 'up' : 'down'}">${pxFmt(r.c)}</b> · Vol ${scVol(r.v)}`;
+}
+function startStockCandles(root) {
+  root.querySelectorAll('.scard').forEach(el => {
+    loadStockCandles(el);
+    const tm = setInterval(() => { if (!el.isConnected) return clearInterval(tm); loadStockCandles(el); }, 60000);
+    el.addEventListener('click', e => { const b = e.target.closest('.sciv'); if (!b) return; el.querySelectorAll('.sciv').forEach(x => x.classList.toggle('on', x === b)); el._rows = null; el.querySelector('.scbox').innerHTML = '<div class="empty">กำลังโหลด…</div>'; loadStockCandles(el); });
+    const move = e => {
+      const v = el._view, plot = el.querySelector('.sc-chart .plot'); if (!v || !plot) return;
+      const box = plot.getBoundingClientRect(), x = ((e.touches ? e.touches[0].clientX : e.clientX) - box.left) / box.width;
+      if (x < 0 || x > 1) return;
+      const i = Math.floor(x * v.rows.length); el._hover = i; scReadout(el, i);
+      const cr = plot.querySelector('.sc-cross'); if (cr) { const cx = (i + .5) * v.w; cr.setAttribute('x1', cx); cr.setAttribute('x2', cx); cr.style.display = ''; }
+    };
+    el.addEventListener('mousemove', move); el.addEventListener('touchmove', move, { passive: true });
+    el.addEventListener('mouseleave', () => { el._hover = null; scReadout(el, (el._view?.rows.length || 1) - 1); const cr = el.querySelector('.sc-cross'); if (cr) cr.style.display = 'none'; });
+  });
+}
+
 // ---------- หน้ารายละเอียดหุ้น = แดชบอร์ดเต็มของหุ้นตัวนั้น ----------
 // (ผู้ใช้ 15 ต.ค. 2026: "อยากให้แต่ละหุ้นทำแดชบอร์ดขึ้นมา มันดูน้อยไป") — ทุกอย่างคำนวณในหน้าจากราคาปิดรายวัน 1 ปี
 // (D.closes) + ราคาสด: ราคา + EMA20/50/200 · RSI · MACD · เทียบดัชนี · ผลตอบแทนช่วง/รายเดือน · drawdown ·
@@ -199,11 +283,6 @@ function openStock(s) {
   const rankBy = k => { const arr = D.stocks.filter(p => p[k] != null).sort((a, b) => b[k] - a[k]); return `${arr.findIndex(p => p.s === s) + 1}/${arr.length}`; };
   const cur = v => (v == null ? '—' : `<span class="${chCls(v)}">${pct2(v)}</span>`);
 
-  const price = renderFrame({ type: 'series', span: 2, title: `${s} · ราคา + เส้นค่าเฉลี่ย`, source: 'Yahoo Finance · ราคาปิดรายวัน', fmt: 'usd', headline: usd(L.px ?? x.px),
-    change: { text: `วันนี้ ${pct2(L.d ?? x.ch1d)}`, tone: (L.d ?? x.ch1d) >= 0 ? 'up' : 'down' }, height: 240,
-    lines: [{ name: s, color: '#60a5fa', points: S.line(S.C) }, { name: 'EMA20', color: '#34d399', points: S.line(S.e20, 19), width: 1.1 },
-      { name: 'EMA50', color: '#fbbf24', points: S.line(S.e50, 49), width: 1.2 }, ...(n >= 200 ? [{ name: 'EMA200', color: '#f472b6', points: S.line(S.e200, 199), width: 1.2 }] : [])],
-    ranges: [{ label: '1M', days: 31 }, { label: '3M', days: 92 }, { label: '6M', days: 183 }, { label: '1Y', days: 366 }], defaultRange: '6M', area: false });
   const rsiF = renderFrame({ type: 'series', title: 'RSI 14', source: 'คำนวณจากราคาปิด', headline: rsiNow?.toFixed(0), sub: rsiNow >= 70 ? 'ซื้อมากเกิน' : rsiNow <= 30 ? 'ขายมากเกิน' : 'ปกติ', fmt: 'num', decimals: 0,
     lines: [{ name: 'RSI', color: '#c4b5fd', points: S.line(S.rsi, 14) }], refs: [{ v: 70, label: '70' }, { v: 30, label: '30' }],
     ranges: [{ label: '3M', days: 92 }, { label: '6M', days: 183 }, { label: '1Y', days: 366 }], defaultRange: '6M', area: false, height: 140 });
@@ -231,7 +310,7 @@ function openStock(s) {
     <div class="mh"><div><div class="big">${s} <span class="muted" style="font-size:14px">${esc(x.name)}</span></div>
     <div class="muted">${esc(x.sector)} · <span class="${sigCls(x.signal)}">${esc(x.signal)}</span> · เช็กลิสต์เทคนิคผ่าน ${passed}/${counted}${x.hl ? ' · มีราคา 24 ชม. บน Hyperliquid' : ''}</div></div>
     <div class="mlive" data-s="${s}"></div></div>
-    <div class="grid">${price}<section class="card"><h3><span>สรุปรายตัว</span><small>Model${note ? ' + Claude' : ''}</small></h3>
+    <div class="grid">${stockCandleCard(s)}<section class="card"><h3><span>สรุปรายตัว</span><small>Model${note ? ' + Claude' : ''}</small></h3>
       <div class="rows"><div class="row">${esc(x.reading)}</div>${note ? `<div class="row"><b>Claude:</b>${esc(note)}</div>` : ''}</div>
       <div class="muted" style="margin:10px 0 4px">กรอบ 52 สัปดาห์ ${usd(x.lo52)} – ${usd(x.hi52)}</div><div class="rbar"><span style="width:${Math.max(0, Math.min(100, x.pos52 ?? 0))}%"></span></div>
       <div class="tiles t5">${tiles.map(([l, v]) => `<div class="tile"><span>${l}</span><b>${v ?? '—'}</b></div>`).join('')}</div>
@@ -247,6 +326,7 @@ function openStock(s) {
       ${[x, ...peers].map(p => { const lp = LS(p.s) || p; return `<tr data-peer="${p.s}"${p.s === s ? ' class="me"' : ''}><td><b>${p.s}</b> <small class="muted">${esc(p.name)}</small></td><td class="r">${usd(lp.px ?? p.px)}</td><td class="r">${cur(lp.d ?? p.ch1d)}</td><td class="r">${cur(p.ch1m)}</td><td class="r">${cur(p.ytd)}</td><td class="r">${p.rsi?.toFixed(0) ?? '—'}</td><td class="${sigCls(p.signal)}">${esc(p.signal || '')}</td></tr>`; }).join('')}
       </tbody></table></div></section>` : ''}</div>`;
   document.body.appendChild(m);
+  startStockCandles(m);
   const close = () => m.remove();
   m.addEventListener('click', ev => {
     const pr = ev.target.closest('tr[data-peer]');
@@ -357,12 +437,14 @@ function openDiv(x) {
   m.innerHTML = `<div class="mbox" role="dialog" aria-label="${esc(x.name)}"><button class="mx" aria-label="ปิด">✕</button>
     <div class="mh"><div><div class="big">${s} <span class="muted" style="font-size:14px">${esc(x.name)}</span></div>
     <div class="muted">${esc(x.sector)} · ${(x.idx || []).map(i => i === 'SPX' ? 'S&P 500' : 'Nasdaq-100').join(' + ')}</div></div><div class="mlive" data-s="${s}"></div></div>
+    <div class="grid">${stockCandleCard(s)}</div>
     <div class="grid g2">${chart}<section class="card"><h3><span>สรุปปันผล</span><small>Model${note ? ' + Claude' : ''}</small></h3>
       <div class="rows"><div class="row">${esc(x.reading)}</div>${note ? `<div class="row"><b>Claude:</b>${esc(note)}</div>` : ''}
       ${x.flags?.length ? `<div class="chips">${x.flags.map(f => `<span class="chip ${/เกิน|ลดลง/.test(f) ? 'down' : /Aristocrat|ต่อเนื่อง|สูงกว่า/.test(f) ? 'up' : ''}">${esc(f)}</span>`).join('')}</div>` : ''}</div>
       <div class="tiles t5">${tiles.map(([l, v]) => `<div class="tile"><span>${l}</span><b>${v ?? '—'}</b></div>`).join('')}</div></section>
       ${bars}<section class="card"><h3><span>ระหว่างวัน (5 นาที)</span><small>Yahoo · สด</small></h3><div class="msp">${sparkSvg(q?.spark, 420, 60)}</div></section></div></div>`;
   document.body.appendChild(m);
+  startStockCandles(m);
   m.addEventListener('click', ev => { if (ev.target === m || ev.target.closest('.mx')) m.remove(); });
   document.addEventListener('keydown', function k(ev) { if (ev.key === 'Escape') { m.remove(); document.removeEventListener('keydown', k); } });
   STOCKS.paintModal();

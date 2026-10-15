@@ -114,7 +114,7 @@ html.dark #tab-account .settings input:focus, html.dark #tab-account .settings s
 
 /* ---------- Phones (14 Oct, user: "เปิดในโทรศัพท์ดูใหญ่ไป") — both themes. Text ~12% smaller, tighter cards, big
    numbers scaled down. Inputs stay 16px so iPhone doesn't zoom in when typing. ---------- */
-@media (max-width: 600px) {
+@media (max-width: 600px), (orientation: landscape) and (max-height: 500px) and (max-width: 1100px) {
   :is(html, html.dark) body { font-size: 14px; }
   :is(html, html.dark) { --sp: 10px; }
   :is(html, html.dark) .card { padding: 12px; border-radius: 10px; }
@@ -211,7 +211,7 @@ html.dark #tab-account .settings input:focus, html.dark #tab-account .settings s
 :is(html, html.dark) .nc-fold::after { content: ' ▾'; } :is(html, html.dark) details.nc-stats[open] .nc-fold::after { content: ' ▴'; }
 :is(html, html.dark) details.nc-stats[open] > summary { margin-bottom: 10px; }
 @media (max-width: 900px) { :is(html, html.dark) .nc-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } :is(html, html.dark) .nc.past { grid-template-columns: 80px minmax(0, 1fr); } :is(html, html.dark) .nc.past .nc-gold { grid-column: 1 / -1; } }
-@media (max-width: 600px) {
+@media (max-width: 600px), (orientation: landscape) and (max-height: 500px) and (max-width: 1100px) {
   :is(html, html.dark) .nc-hero { padding: 14px; } :is(html, html.dark) .nc-hero-name { font-size: 19px; } :is(html, html.dark) .nc-hero .ns-count b { font-size: 26px; }
   :is(html, html.dark) .nc { grid-template-columns: 52px minmax(0, 1fr); padding: 10px 12px; gap: 8px 10px; }
   :is(html, html.dark) .nc-side { grid-column: 2; }

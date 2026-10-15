@@ -298,3 +298,28 @@ ul.gs-news.wide { display: grid; grid-template-columns: repeat(auto-fill, minmax
 table.peers tbody tr { cursor: pointer; }
 table.peers tbody tr.me td { background: rgba(167, 139, 250, .14); }
 table.peers tbody tr:hover td { background: rgba(255, 255, 255, .05); }
+/* stock candlestick card */
+.scard .sc-read { font-size: 12.5px; margin-top: 2px; } .scard .sc-read b { font-weight: 600; color: var(--ink, #f3eefe); } .scard .sc-read b.up { color: #34d399; } .scard .sc-read b.down { color: #fb7185; }
+.scard .scbox { margin-top: 8px; } .scard .sc-chart .plot { cursor: crosshair; touch-action: pan-y; }
+.scard .sc-leg { margin-top: 6px; }
+
+/* phones in landscape (15 Oct 2026, user: "เปิดในโทรศัพท์ข้อมูลดูใหญ่ไปหมด มันล้น ปรับให้เล็กลงให้พอดี") — short screens:
+   smaller text and numbers, tighter cards, 2 columns instead of 3 */
+/* (html.phone is set by app.js from the phone's real screen size: embedded in the site this page sits in an iframe as tall
+   as its content, so a height media query would never match) */
+  html.phone body { font-size: 12.5px; }
+  html.phone h1.dash { font-size: 17px; margin: 12px 0 3px; }
+  html.phone .card { padding: 10px 12px; border-radius: 10px; }
+  html.phone .card h3 { font-size: 12.5px; margin-bottom: 6px; }
+  html.phone .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  html.phone .grid.g2 { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+  html.phone .span2, html.phone .span3 { grid-column: span 2; }
+  html.phone .big { font-size: 20px; }
+  html.phone .kpi .v { font-size: 16px; } html.phone .kv.big2 span:last-child { font-size: 15px; } html.phone .case .px { font-size: 15px; }
+  html.phone .tile { padding: 6px 8px; } html.phone .tile b { font-size: 13px; } html.phone .tile span { font-size: 10.5px; }
+  html.phone .tiles.t5 { grid-template-columns: repeat(5, 1fr); }
+  html.phone .rng { padding: 3px 8px; font-size: 11px; }
+  html.phone .lc { --h: 150px; } html.phone .candle-chart.sc-chart { --h: 190px !important; }
+  html.phone .mbox { padding: 12px; border-radius: 12px; } html.phone .mh .big { font-size: 20px; }
+  html.phone .legend { font-size: 10px; }
+  html.phone table.st td, html.phone table.st th { padding: 5px 6px; font-size: 11.5px; }

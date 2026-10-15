@@ -299,7 +299,7 @@ const LIVE = {
 
 // ปุ่มช่วงเวลา (series) และ interval (candles)
 document.addEventListener('click', e => {
-  const b = e.target.closest('.rng'); if (!b || b.classList.contains('hmk')) return;   // ปุ่ม heatmap จัดการใน frames3
+  const b = e.target.closest('.rng'); if (!b || b.classList.contains('hmk') || b.classList.contains('sciv')) return;   // ปุ่ม heatmap จัดการใน frames3
   const card = b.closest('.card'), f = FRAME_DATA[card.dataset.i];
   card.querySelectorAll('.rng').forEach(x => x.classList.toggle('on', x === b));
   if (b.classList.contains('civ')) {

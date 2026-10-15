@@ -1,5 +1,7 @@
 const $ = s => document.querySelector(s);
 const params = new URLSearchParams(location.search);
+// phones (also inside the site's iframe): compact sizes — style.css html.phone (user, 15 Oct: "ข้อมูลดูใหญ่ไปหมด มันล้น")
+if (Math.min(screen.width, screen.height) <= 600 && matchMedia('(pointer: coarse)').matches) document.documentElement.classList.add('phone');
 let current = params.get('d') || 'ndx', mtime = 0, dash = null, extra = '';
 
 // ---------- ภาษาไทย (ผู้ใช้ 12 ต.ค.: "ขอภาษาไทย") ----------
