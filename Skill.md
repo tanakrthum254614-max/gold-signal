@@ -298,6 +298,10 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 🔧 ข้อความ LINE เช้า: ระบบหลัก 1 ชม. (16 ต.ค. 2569 · เวอร์ชัน 202610161300)
+- เห็นจากรูป LINE ของผู้ใช้: ภาพรวมเช้าเขียน "จึงใช้สัญญาณ 30 นาทีเป็นหลัก" (ล้าสมัย) → scripts/morning-plan.js "จึงใช้ระบบหลัก 1 ชม. เป็นหลัก (ส่งแยกเมื่อถึงจุดเข้า)" · index.html #sgAdv (ซ่อนอยู่) แก้ตาม · chart-run.js คอมเมนต์ CHART_NOTIFY = 1h,5h,1d · commit 4727c76
+- ผู้ใช้ถามบัญชีรับรอง LINE: ยื่นที่ Settings → Account settings (ฟรี) · ต้องมีข้อมูลธุรกิจ/ทะเบียน/หน้าร้าน · บริการสัญญาณลงทุนอาจไม่ผ่าน — บอกผู้ใช้ตามจริงแล้ว
+
 ## ✅ ตั้งค่า LINE @279arudw เสร็จ (16 ต.ค. 2569 · ไม่ได้แก้เว็บ)
 - ผู้ใช้ตั้งเองใน manager.line.biz: รูปโปรไฟล์ = แบบ C (เหรียญ XAU) · ริชเมนู "Gold Signal เมนูหลัก" 6 ปุ่ม (?openExternalBrowser=1#tab) **แสดงถึง 31/12/2027 — ต้องต่อวันก่อนหมด** · Menu bar label "Gold Signal" (จำกัด 14 ตัวอักษร นับสระ/วรรณยุกต์ไทย) · ข้อความต้อนรับ (จำกัด 500 ตัวอักษร — ฉบับย่อ ~400) + User's display name · รูปปก
 - **Response settings: Webhooks ปิด = ถูกต้อง** — ระบบส่งด้วย broadcast (scripts/line.js) และ push (admin-notify / new-members / watchdog) ไม่ต้องใช้ webhook · Greeting message เปิด · Chat ปิด · ไม่มีโค้ดตั้ง rich menu ผ่าน API (เมนูจาก manager จึงไม่โดนทับ)
