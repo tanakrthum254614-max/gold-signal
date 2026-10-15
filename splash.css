@@ -117,3 +117,11 @@ html.dark .sp-panel { background:
 @keyframes spChip { from { opacity: 0; transform: translateY(12px) scale(.9); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) { .sp-panel, .sp-cbar, .splash .sp-sub, .sp-chips li { animation: none !important; } .sp-cbar b, .sp-cbar s { transition: none; } }
+/* 15 Oct 2026, user: "เอากรอบออกได้ไหม" — no glass panel / running border; everything else as before */
+.splash .sp-panel { display: none !important; }
+/* the background candles fade out behind the logo / name / % so the middle stays clean */
+.splash .sp-candles { -webkit-mask-image: radial-gradient(ellipse 30% 44% at 50% 50%, transparent 0%, transparent 55%, #000 100%);
+  mask-image: radial-gradient(ellipse 30% 44% at 50% 50%, transparent 0%, transparent 55%, #000 100%); }
+/* phones: the candles sit in the bottom quarter, under the chips (splashfx.js), fully visible */
+@media (max-width: 600px) { .splash .sp-candles { -webkit-mask-image: linear-gradient(180deg, transparent 0%, transparent 66%, #000 78%);
+  mask-image: linear-gradient(180deg, transparent 0%, transparent 66%, #000 78%); } }

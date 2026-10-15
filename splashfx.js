@@ -60,7 +60,8 @@
   splash.insertBefore(cv, splash.firstChild);
   const ctx = cv.getContext('2d');
   let W = 0, H = 0, list = [], cur, last = 0, price = 100;
-  const STEP = () => (W < 600 ? 12 : 16);
+  // wide candles so the background reads as a candlestick chart (15 Oct: "ด้านหลังให้เป็นแท่งเทียน มันดูไม่ออกเป็นอะไร")
+  const STEP = () => (W < 600 ? 22 : 34);
   function size() {
     const dpr = Math.min(devicePixelRatio || 1, 2);
     W = cv.clientWidth; H = cv.clientHeight;
@@ -68,7 +69,7 @@
   }
   const fresh = () => ({ o: price, h: price, l: price, c: price, t: 0 });
   function tick() {
-    price += (Math.random() - 0.44) * 1.3; // gentle upward drift
+    price += (Math.random() - 0.45) * 2.2; // gentle upward drift, bigger swings so each candle has a clear body and wicks
     cur.c = price; cur.h = Math.max(cur.h, price); cur.l = Math.min(cur.l, price); cur.t++;
   }
   size();
@@ -86,21 +87,21 @@
     const all = list.concat([cur]);
     let a = Infinity, b = -Infinity;
     all.forEach((k) => { a = Math.min(a, k.l); b = Math.max(b, k.h); });
-    const pad = (b - a) * 0.12 + 0.5, top = H * 0.48, bot = H * 0.97, st = STEP();
+    const pad = (b - a) * 0.12 + 0.5, top = W < 600 ? H * 0.74 : H * 0.30, bot = H * 0.96, st = STEP();
     const y = (v) => bot - ((v - a + pad) / (b - a + 2 * pad)) * (bot - top);
     ctx.clearRect(0, 0, W, H);
     // closing-price line with a soft gold glow under the candles
     ctx.beginPath();
     all.forEach((k, i) => { const x = W - (all.length - i) * st + st / 2; i ? ctx.lineTo(x, y(k.c)) : ctx.moveTo(x, y(k.c)); });
-    ctx.strokeStyle = 'rgba(240, 185, 11, .35)'; ctx.lineWidth = 1.5; ctx.shadowColor = 'rgba(240, 185, 11, .6)'; ctx.shadowBlur = 8; ctx.stroke(); ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(240, 185, 11, .14)'; ctx.lineWidth = 1.5; ctx.shadowColor = 'rgba(240, 185, 11, .4)'; ctx.shadowBlur = 6; ctx.stroke(); ctx.shadowBlur = 0;
     all.forEach((k, i) => {
       const x = W - (all.length - i) * st + st / 2, up = k.c >= k.o, live = k === cur;
-      const col = up ? (live ? 'rgba(14, 203, 129, .95)' : 'rgba(14, 203, 129, .45)') : (live ? 'rgba(246, 70, 93, .95)' : 'rgba(246, 70, 93, .45)');
+      const col = up ? (live ? 'rgba(14, 203, 129, .95)' : 'rgba(14, 203, 129, .62)') : (live ? 'rgba(246, 70, 93, .95)' : 'rgba(246, 70, 93, .62)');
       ctx.strokeStyle = ctx.fillStyle = col;
       if (live) { ctx.shadowColor = col; ctx.shadowBlur = 14; }
-      ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y(k.h)); ctx.lineTo(x, y(k.l)); ctx.stroke();
-      const t = y(Math.max(k.o, k.c)), h = Math.max(1.5, Math.abs(y(k.o) - y(k.c)));
-      ctx.fillRect(x - st * 0.3, t, st * 0.6, h);
+      ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(x, y(k.h)); ctx.lineTo(x, y(k.l)); ctx.stroke();
+      const t = y(Math.max(k.o, k.c)), h = Math.max(2, Math.abs(y(k.o) - y(k.c)));
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - st * 0.32, t, st * 0.64, h, 2) : ctx.rect(x - st * 0.32, t, st * 0.64, h); ctx.fill();
       ctx.shadowBlur = 0;
     });
     // dashed last-price line + tag, like a trading app
