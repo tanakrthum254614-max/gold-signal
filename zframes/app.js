@@ -59,9 +59,10 @@ async function load() {
   FRAME_DATA.length = 0;
   document.title = `zframes · ${dash.title}`;
   if (window.SITE_CARDS) SITE_CARDS.stamp(dash); else $('#stamp').textContent = 'ข้อมูลวิเคราะห์ ณ ' + new Date(dash.generatedAt).toLocaleString('th-TH');
-  $('#app').innerHTML = `<h1 class="dash">${esc(dash.title)}</h1><div class="dsub">${esc(dash.subtitle || '')}</div><div class="data-note">ราคาที่มีฟีดจะอัปเดตอัตโนมัติ · วันที่วิเคราะห์และข้อมูลพื้นฐานเป็นภาพรวม ณ เวลาที่ระบุ · ดูสถานะราคาสดที่แถบด้านบน</div>` +
+  // header trimmed (user, 16 Oct 2026: "แถบไหนไม่สำคัญเอาออก") — name is in the top-bar picker, the tab shows the zone
+  $('#app').innerHTML =
     `<nav class="zn">${dash.zones.map(z => `<button type="button" data-zone="${esc(z.id)}">${esc(z.short || z.title)}</button>`).join('')}</nav>` +
-    dash.zones.map(z => `<div class="zone" id="${esc(z.id)}" hidden><h2>${esc(z.title)}</h2><div class="zsub">${esc(z.subtitle || '')}</div>
+    dash.zones.map(z => `<div class="zone" id="${esc(z.id)}" hidden><div class="zsub">${esc(z.subtitle || '')}</div>
       <div class="grid">${z.frames.map(renderFrame).join('')}</div></div>`).join('');
   showZone(params.get('z') || zoneMem()[current] || dash.zones[0]?.id);
   $('#ticker').innerHTML = `<div class="track"></div>`;
