@@ -298,6 +298,10 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 💬 ชุด LINE + หน้าเข้าสู่ระบบพากลับแท็บเดิม (16 ต.ค. 2569 · เวอร์ชัน 202610161200)
+- ผู้ใช้: "เพิ่มเติมอไรไหม" → เสนอรูปปก / ริชเมนู / ข้อความต้อนรับ → "ทำมา" · `gold-signal-tools/linekit.cjs <outDir> <previewDir>` → Downloads: gold-signal-line-cover.png (1080×878) · gold-signal-line-richmenu.jpg (2500×1686, 6 ปุ่ม 3×2 = home/chart/stats/zframes/journal/account, ไอคอนเส้นเดียวกับเมนูเว็บ) · gold-signal-line-ตั้งค่า.txt (ขั้นตอน manager.line.biz + ลิงก์ `https://gold-signal-ten.vercel.app/?openExternalBrowser=1#<tab>` + ข้อความต้อนรับ) · LINE เปิดลิงก์ในเบราว์เซอร์ของเครื่อง เพราะ Google ไม่ให้ล็อกอินใน in-app browser
+- login.html: เก็บ `#tab` จากลิงก์ (fragment ติดมากับ 302 จาก middleware) ลง sessionStorage `gs-back` → หลัง /api/session สำเร็จ `location.replace('/' + back)` (รองรับ Google redirect) · ทดสอบ gold-signal-tools/loginback.cjs (#chart เก็บ, #signup/#bogus ไม่เก็บ) · ตรวจเว็บจริง: login.html มีโค้ดใหม่, /?openExternalBrowser=1 → 302 login.html · commit e78b7d8
+
 ## 🖼️ รูปโปรไฟล์ LINE (16 ต.ค. 2569 · ไม่ได้แก้เว็บ)
 - ผู้ใช้: "ใน line อยากเปลี่ยนรูปโปรไฟล์ ขอลิ้ง" → บัญชี @279arudw เปลี่ยนที่ https://manager.line.biz (ตั้งค่า → ตั้งค่าบัญชี → รูปโปรไฟล์) หรือแอป LINE Official Account · "ขอรูป … เกี่ยวกับทองคำ" → `gold-signal-tools/lineprof.cjs <outDir>` ทำ PNG 1024×1024 3 แบบใน Downloads: gold-signal-line-A-logo (โลโก้สายฟ้าใหญ่) · B-bars (ทองแท่ง + โลโก้) · C-coin (เหรียญ XAU + แท่งเทียน) — ทุกอย่างอยู่ในวงกลมกลางภาพ (LINE ตัดเป็นวงกลม)
 
