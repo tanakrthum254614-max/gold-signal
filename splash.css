@@ -125,3 +125,14 @@ html.dark .sp-panel { background:
 /* phones: the candles sit in the bottom quarter, under the chips (splashfx.js), fully visible */
 @media (max-width: 600px) { .splash .sp-candles { -webkit-mask-image: linear-gradient(180deg, transparent 0%, transparent 66%, #000 78%);
   mask-image: linear-gradient(180deg, transparent 0%, transparent 66%, #000 78%); } }
+
+/* Centred while it animates (16 Oct 2026, user: "หน้าตอนโหลดยังไม่ตรงกลาง เอาให้ตรงกลาง"): the tagline used to type in from
+   its left edge and the candle bar filled left → right over near-invisible slots, so both looked pushed to the left until
+   they finished. Now the tagline opens from the middle outward (no caret) and the empty slots show as faint candles, so
+   the bar reads as one centred block from the first frame. */
+@keyframes spTypeMid { from { clip-path: inset(0 50% 0 50%); } to { clip-path: inset(0 0 0 0); } }
+.splash .sp-sub { animation: spTypeMid 1s cubic-bezier(.3, .7, .3, 1) 1.2s both !important; }
+.splash .sp-sub::after { display: none; }
+.sp-cbar i::before { content: ""; position: absolute; left: 22%; right: 22%; top: 38%; bottom: 30%; border-radius: 1.5px; background: rgba(255, 255, 255, .06); }
+.sp-cbar i::after { background: rgba(255, 255, 255, .16); }
+html:not(.dark) .sp-cbar i::before { background: rgba(0, 0, 0, .06); } html:not(.dark) .sp-cbar i::after { background: rgba(0, 0, 0, .14); }
