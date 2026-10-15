@@ -41,11 +41,11 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 ### ⭐ ระบบหลัก = CHARTSYS (สัญญาณบนกราฟรายกรอบ) — ตั้งแต่ 9 ต.ค. 2569 · หน้าสัญญาณ/LINE "ระบบหลัก" = `CHARTSYS.MAIN_TF` = **1h** (30m จนถึง 15 ต.ค.)
 - **กติกาอยู่ที่ `chartsys.js` ที่เดียว** (UMD, **โหลดก่อน main.js**) ใช้ร่วมกันระหว่างเว็บ (`chartzones.js`, `main.js`, `chartchat.js`) และ `scripts/chart-run.js` · `SYS[tf]` มี `buy`/`sell` แยก `{ risky?, th, tp1, mult, confirm?, since?, win, q }` · ฝั่งที่ทดสอบไม่ผ่านไม่มี key (มีแค่ `sellQ` ไว้แสดง) · **`risky: '<เหตุผล>'` = สัญญาณเสี่ยง**: ยังมีจุดเข้าบนกราฟ + บันทึก (`risky: true` ในไม้) แต่ติด ⚠ ท้ายป้าย, คำตัดสิน "⚠️ มีสัญญาณ แต่เสี่ยง", `CHARTSYS.riskText(c)` บอกเหตุผล, **ไม่ส่ง LINE** (chart-run เช็ก `!risky` ด้วย) และไม่ใช่ระบบหลัก · `sideInfo` คืน `risky`
 - คะแนน = โหวตตัวชี้วัด (`indicators.js`) ของหลายกรอบรวมกัน ผ่าน `INTRA.decideWith` · `CHARTSYS.dirOf` ตัดสินจุดเข้า (เกณฑ์ + ตัวยืนยัน + noChase + ข่าวเฉพาะกรอบที่ `news: true`) · `sideInfo` = % ความพร้อมเข้า + คำตัดสิน (✅ / ⏸ / ⚠️ / ⛔) ใช้ทุกหน้า · `levelsFor`/`usdList` = SL/TP (SL $15 × `mult`, `tp1: true` = TP1 อย่างเดียว ไม่งั้น TP $15/20/30 × mult — ค่าคงที่ใน usdList **ไม่ใช่ `INTRA.RULE.tpUsd`** ซึ่งเป็น [15]; บั๊ก 9–15 ต.ค. ทำให้ 1h/5h/5m SELL ได้ TP1 อย่างเดียว)
-- **กรอบที่กำไรครบ 4 ช่วงทดสอบ (15 ต.ค. 2569): 1h BUY · 5h BUY · 1d BUY · 5m SELL** · เสี่ยง (risky): 5m BUY (ช่วงล่าสุดขาดทุน) · 15m (กำไรน้อยมาก) · 30m (ขาดทุน) · 1w (ไม้น้อย ไม่สม่ำเสมอ)
+- **จุดเข้าปกติ (15 ต.ค. 2569): 1h BUY · 5h BUY · 1d BUY** · เสี่ยง (risky): 5m BUY (ช่วงล่าสุดขาดทุน) · 5m SELL (ผลจริง 14 ไม้ ชนะ 4 vs ทดสอบ 53%) · 15m (กำไรน้อยมาก) · 30m (ขาดทุน) · 1w (ไม้น้อย ไม่สม่ำเสมอ)
 
 | กรอบ | กรอบที่ใช้คิด | BUY | SELL | หลบข่าว ±30 นาที |
 |---|---|---|---|---|
-| 5m | 5m · 30m · 1h | ⚠️ เสี่ยง: +5 · TP1 · SL $15 | −6 + SMA20<50 · SL $10 · TP $10/13/20 | ✅ |
+| 5m | 5m · 30m · 1h | ⚠️ เสี่ยง: +5 · TP1 · SL $15 | ⚠️ เสี่ยง: −6 + SMA20<50 · SL $10 · TP $10/13/20 | ✅ |
 | 15m | FRAMES15 (15m · 1h · 5h) | ⚠️ เสี่ยง: +6 + EMA9>21 · TP1 · SL $22.5 | ไม่ผ่าน | — |
 | 30m | FRAMES (30m · 1h · 5h) | ⚠️ เสี่ยง: +5 · TP1 · SL $15 | ไม่ผ่าน | — |
 | **1h (หลัก, หน้าแรก)** | 1h · 4h · 5h | +5 · SL $30 · TP 30/40/60 | ไม่ผ่าน | ✅ |
@@ -287,6 +287,12 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 # 📜 บันทึกการเปลี่ยนแปลง (ใหม่สุดอยู่บน)
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
+
+## 🛠️ ทำตามผลตรวจ (15 ต.ค. 2569 · เวอร์ชัน 202610152200 · commit bc40fb7)
+- ผู้ใช้: "ทำมาเลยทั้งหมด" · (1) chartsys `SYS['5m'].sell.risky = 'ผลจริงชนะต่ำกว่าทดสอบมาก (14 ไม้ ชนะ 4)'` → ไม่มีฝั่ง SELL ปกติแล้ว · ข้อความ "SELL ที่ทดสอบผ่าน: 5 นาที" ใน chartzones/chartchat เปลี่ยนเป็น "SELL มีแค่กรอบ 5 นาที — ติดป้ายเสี่ยง"
+- (2) บทวิเคราะห์แดชบอร์ดใหม่ `zframes-build/notes/{ndx,spx,div}.json` asOf 2026-10-15 (คัดลอกไป D:\โปรเจคทันเดอร์\zframes\notes ด้วย) จากตัวเลขแดชบอร์ดเช้านี้ (scratchpad facts.js อ่าน dash-*.json จาก branch data: index/EMA/breadth/กลุ่มถ่วง cap/ผู้นำ-ผู้ตาม/RSI/rates) + CPI 14 ต.ค. จากปฏิทิน + หัวข่าว investing.com ไทย · สั่ง zframes-refresh (run 38678436324) สำเร็จ notesAsOf = 2026-10-15 ทั้ง 3 ชุด
+- (5) scripts/zframes-refresh.sh ไม่ build gold แล้ว (รอบนี้ ~9 นาที)
+- (3)(4) FRED_API_KEY / LINE_OWNER_ID: workflow รอรับแล้ว (zframes-refresh.yml env FRED_API_KEY → gold_model.fred ที่ stocks/div import · new-members/monthly-research env LINE_OWNER_ID) — ผู้ใช้ต้องสมัคร/หาค่าเองแล้วตั้งด้วย `gh secret set`
 
 ## 🩺 ตรวจทุกส่วน (15 ต.ค. 2569 · ไม่แก้เว็บ)
 - ผู้ใช้: "ดูข้อมูลทุกส่วนว่าควรปรับแก้อะไรไหม" · workflows 30 รอบล่าสุด: price-alerts 29/29 สำเร็จ (1 กำลังรัน), morning-plan 27 + ล้ม 2 (5 ต.ค. ตอนตั้ง token LINE), new-members 30/30, zframes-refresh ทุกวัน · branch data สดทุก 5 นาที · LINE 59/300 คาด 128 · เวลาหน้าหนาว 1 พ.ย. เลื่อนเองแล้ว (marketShift = 1 ชม. ตั้งแต่ 2 พ.ย.) · `gold-signal-tools/alltabs.cjs` ทุกแท็บคอม/มือถือ ไม่มี error ไม่ล้น (ข้อความ "โหลดบันทึกไม่ได้" ในสมุดเทรด = ข้อมูลจำลองของสคริปต์ผิดรูป ต้องส่ง {entries})
