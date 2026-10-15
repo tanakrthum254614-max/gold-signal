@@ -25,7 +25,7 @@ build() { # asset, model command…
     echo "⚠️ $a failed — keeping the previous dashboard"
   fi
 }
-build gold models/gold_model.py
+# gold: removed from the site menu on 15 Oct 2026 (user: "ตัดในส่วนนี้ออก ทอง/Gold") — not built any more
 build ndx models/stocks_model.py ndx
 build spx models/stocks_model.py spx
 build div models/div_model.py

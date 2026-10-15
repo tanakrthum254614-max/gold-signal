@@ -8,7 +8,8 @@
 // timeframes: no indicator beat the current rules reliably, so none added. 5m SELL also needs SMA 20 < SMA 50 (+$136 →
 // +$353, win 51 → 52%, better in all 4 periods; added 9 Oct after the 5m run finished). SL $15 × mult; TP1 $15 × mult (tp1) or TP $15/20/30 × mult. long = 5h/1d/1w: no session close,
 // trades held up to `hold`.
-// risky (15 Oct 2026): only 1h BUY, 5h BUY, 1d BUY and 5m SELL made money in ALL 4 test periods. 5m BUY (latest period
+// risky (15 Oct 2026): only 1h BUY, 5h BUY, 1d BUY and 5m SELL made money in ALL 4 test periods (5m SELL turned risky the
+// same day: live 4 wins in 14 vs 53% tested). 5m BUY (latest period
 // −$433), 15m BUY, 30m BUY (−$7) and 1w BUY are "risky": their entries still show on the chart and are recorded, but
 // labelled ⚠️ เสี่ยง, never the main system and not in LINE (CHART_NOTIFY). Briefly switched off the same morning; the
 // user wanted entries visible on every timeframe ("เปิดกลับให้เห็นบนกราฟ แต่ติดป้ายเสี่ยง"). Entry filters and
@@ -22,7 +23,7 @@
     // 2026, research/indicators/newstest.js): it helps on 5m (BUY +$407 → +$554, 4/4 periods; SELL +$353 → +$451) and
     // 1h (+$774 → +$792), but hurts 15m (+$465 → +$377) and 30m (+$957 → +$828) — so only 5m and 1h skip the news.
     '5m': { news: true, frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', H, 60, '1 ชม.']], span: '2 ปี',
-      buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 54, q: [331, 551, 104, -433] }, sell: { th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T09:54:00+07:00', win: 53, q: [39, 84, 156, 172] },
+      buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 54, q: [331, 551, 104, -433] }, sell: { risky: 'ผลจริงชนะต่ำกว่าทดสอบมาก (14 ไม้ ชนะ 4)', th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T09:54:00+07:00', win: 53, q: [39, 84, 156, 172] },
       every: -1480 }, // taking every small arrow one at a time, SL / TP1 $15
     '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดกำไรน้อยมาก', th: 6, tp1: true, mult: 1.5, confirm: 'ema921', since: '2026-10-09T09:40:00+07:00', win: 56, q: [261, 72, 84, 48] }, sellQ: [115, -233, -72, 204] },
     '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 57, q: [264, 462, 239, -7] }, sellQ: [129, -174, -58, 113] },
