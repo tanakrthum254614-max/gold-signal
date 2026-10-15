@@ -19,7 +19,7 @@ try { CS.applyStats(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'test-
 const ROOT = path.join(__dirname, '..');
 const FILE = process.env.CHART_FILE || path.join(ROOT, 'chart-signals.json'); // CHART_FILE / CHART_NOW: tests only
 const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
-const NOTIFY = (process.env.CHART_NOTIFY || '30m,1h,5h,1d,1w').split(',').map((s) => s.trim()).filter(Boolean);
+const NOTIFY = (process.env.CHART_NOTIFY || '1h,5h,1d').split(',').map((s) => s.trim()).filter(Boolean);
 const TF_TH = { '5m': '5 นาที', '15m': '15 นาที', '30m': '30 นาที', '1h': '1 ชม.', '5h': '5 ชม.', '1d': '1 วัน', '1w': '1 สัปดาห์' };
 const API = 'https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT';
 const H = 3600e3;
@@ -96,7 +96,7 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
     console.log(`${tf}: ${tr.side} ${tr.entry} SL ${tr.sl} TP ${tr.tps.join('/')} (score ${dec.score})${paused ? ' — paused, not announced' : ''}`);
     if (NOTIFY.includes(tf) && !paused) {
       const c = dir > 0 ? sys.buy : sys.sell;
-      texts.push(`${tf === '30m' ? '⏱️ สัญญาณ 30 นาที (ระบบหลัก)' : `🎯 สัญญาณกราฟ ${TF_TH[tf]}`} · ${dir > 0 ? '🟢 ซื้อ (BUY)' : '🔴 ขาย (SELL)'}\n`
+      texts.push(`${tf === CS.MAIN_TF ? `⏱️ สัญญาณ ${TF_TH[tf]} (ระบบหลัก)` : `🎯 สัญญาณกราฟ ${TF_TH[tf]}`} · ${dir > 0 ? '🟢 ซื้อ (BUY)' : '🔴 ขาย (SELL)'}\n`
         + `เข้า ~${f2(tr.entry)} · SL ${f2(tr.sl)} · ${tr.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}\n`
         + `แท่ง ${when(tf, t - dur)} ปิดแล้ว · คะแนน ${dec.score > 0 ? '+' : ''}${dec.score} · ทดสอบชนะ ${c.win}% (ไม่รับประกัน)\n${SITE_URL}/#chart`);
     }

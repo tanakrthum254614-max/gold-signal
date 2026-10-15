@@ -196,6 +196,6 @@ function flexMessage(a, sig, prev, sum, bt, news, intra, now) {
   const news = (data.news || []).filter((n) => n.time >= now && n.time <= close);
   console.log(`news today: ${news.length}`);
   const chartFile = path.join(__dirname, '..', 'chart-signals.json');
-  const intra = fs.existsSync(chartFile) ? JSON.parse(fs.readFileSync(chartFile, 'utf8')).trades.filter((t) => t.tf === '30m') : null;
+  const intra = fs.existsSync(chartFile) ? JSON.parse(fs.readFileSync(chartFile, 'utf8')).trades.filter((t) => t.tf === CS.MAIN_TF) : null;
   await sendFlex(flexMessage(a, sig, prev, sum, bt, news, intra, now));
 })().catch((e) => { console.error(e); process.exit(1); });

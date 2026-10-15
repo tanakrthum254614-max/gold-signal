@@ -162,7 +162,7 @@
     if (!sy.long && d.lastHour) out.push('🕐 ใกล้ตลาดปิด — ระบบไม่เปิดไม้ใหม่');
     if (n.stretched) out.push('📏 ราคายืดเกินขอบกรอบราคา (Bollinger) — มักย่อกลับก่อน อย่าไล่ราคา');
     if (n.unconf) { const c = CHARTSYS.CONFIRM[(d.score > 0 ? sy.buy : sy.sell || sy.buy).confirm]; if (c) out.push(`⏳ คะแนนถึงแล้ว แต่ ${c.name} ยังไม่ยืนยัน — รอ${c.wait}`); }
-    if (s) { const x = side(n, s); if (x && !x.tested) out.push(`⚠️ ฝั่ง${s > 0 ? 'ซื้อ' : 'ขาย'}ของกรอบ ${nameOf(n.tf)} ทดสอบย้อนหลังแล้วขาดทุน — ระบบไม่ให้สัญญาณฝั่งนี้`); }
+    if (s) { const x = side(n, s); if (x && !x.tested) out.push(`⚠️ ฝั่ง${s > 0 ? 'ซื้อ' : 'ขาย'}ของกรอบ ${nameOf(n.tf)} ${CHARTSYS.whyNo(x.c)}`); }
     return out;
   }
   function ansNow(n) {
@@ -196,7 +196,7 @@
     const name = s > 0 ? 'ซื้อ' : 'ขาย';
     let t = `${sideName(s)} · กรอบ ${nameOf(n.tf)}: ความพร้อม <b>${x.pct}%</b> · ${x.verdict}`;
     if (x.go) return `${t}<br>✅ เข้าได้ตอนนี้ที่ ~<b>${p2(n.price)}</b> · ${levelsTxt(c, n.price, s)}`;
-    if (!x.tested) t += `<br>⚠️ ฝั่ง${name}ของกรอบนี้ทดสอบย้อนหลังแล้วขาดทุน ระบบจึงไม่ให้สัญญาณ${s < 0 && n.tf !== '5m' ? ' — Sell ที่ทดสอบผ่านมีแค่กรอบ 5 นาที (กดเลือกกรอบ 5 นาทีด้านบนแล้วถามใหม่)' : ''}`;
+    if (!x.tested) t += `<br>⚠️ ฝั่ง${name}ของกรอบนี้${CHARTSYS.whyNo(x.c)}${s < 0 && n.tf !== '5m' ? ' — Sell ที่ใช้อยู่มีแค่กรอบ 5 นาที (กดเลือกกรอบ 5 นาทีด้านบนแล้วถามใหม่)' : s > 0 ? ' — Buy ที่ใช้อยู่: กรอบ 1 ชม. (เลือกด้านบน) · 5 ชม. · 1 วัน (เปลี่ยนกรอบที่กราฟ)' : ''}`;
     else if (!n.br) t += `<br>ขาดอีก ${need(n, x)} คะแนน${c.confirm ? ` และต้องมี ${CHARTSYS.CONFIRM[c.confirm].name} ยืนยัน` : ''}`;
     const zone = s > 0 ? z.buy : z.sell, spots = [];
     if (zone) spots.push(`โซน${s > 0 ? 'ซื้อ (แนวรับ)' : 'ขาย (แนวต้าน)'} <b>${zTxt(zone)}</b> — ห่างจากราคาตอนนี้ ${p2(Math.abs((s > 0 ? zone.top : zone.bottom) - n.price))} ดอลลาร์`);
@@ -214,7 +214,7 @@
     if (n.env) out.push(`🚫 อย่าไล่ซื้อเหนือ <b>${p2(n.env.up)}</b> หรือไล่ขายใต้ <b>${p2(n.env.lo)}</b> (นอกกรอบราคา) — มักย่อกลับเข้ากรอบ`);
     nextNews().slice(0, 3).forEach((x) => out.push(`🚫 อย่าเปิดไม้ช่วง <b>${hhmm(x.time - 30 * 60e3)}–${hhmm(x.time + 30 * 60e3)} น.</b> — ข่าว ${esc(x.title)}`));
     const [b, s] = [side(n, 1), side(n, -1)];
-    if (!b.tested) out.push(`🚫 ฝั่งซื้อกรอบ ${nameOf(n.tf)} ทดสอบไม่ผ่าน`);
+    if (!b.tested) out.push(`🚫 ฝั่งซื้อกรอบ ${nameOf(n.tf)} ${b.off ? 'ปิดจุดเข้าแล้ว' : 'ทดสอบไม่ผ่าน'}`);
     if (!s.tested) out.push(`🚫 ฝั่งขายกรอบ ${nameOf(n.tf)} ทดสอบไม่ผ่าน — ไม่มีสัญญาณ Sell ในกรอบนี้`);
     if (n.d.score <= -sy.buy.th / 2) out.push(`🚫 แนวโน้มลง (คะแนน ${signedScore(n.d.score)}) — อย่าซื้อสวนเทรนด์`);
     if (n.d.score >= sy.buy.th / 2) out.push(`🚫 แนวโน้มขึ้น (คะแนน ${signedScore(n.d.score)}) — อย่าขายสวนเทรนด์`);
@@ -243,6 +243,7 @@
     const row = (name, c, k) => {
       const mine = fin.filter((r) => (r.side === 'SELL') === (k === 'SELL')), w = mine.filter((r) => r.pnl > 0).length, pnl = mine.reduce((a, r) => a + (r.pnl || 0), 0);
       const real = mine.length ? `ผลจริง ${mine.length} ไม้ ชนะ ${w} (${Math.round((w / mine.length) * 100)}%) ${pnl >= 0 ? '+' : '−'}$${Math.abs(SIG.round(pnl))}` : 'ผลจริง: ยังไม่มีไม้';
+      if (c && c.off) return `• ${name}: ⏸ ${CHARTSYS.whyNo(c)} · ทดสอบชนะ ${c.win}% (${c.q.map((v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v)}`).join(' / ')})`;
       if (!c) return `• ${name}: ❌ ทดสอบขาดทุน — ไม่ให้สัญญาณ${sy.sellQ ? ` (${sy.sellQ.map((v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v)}`).join(' / ')})` : ''}`;
       return `• ${name}: ทดสอบ ${sy.span} ชนะ <b>${c.win}%</b> · 4 ช่วง ${c.q.map((v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v)}`).join(' / ')}<br>&nbsp;&nbsp;${real}`;
     };
@@ -266,7 +267,7 @@
       if (e && px < e.lo) bad.push(`ต่ำกว่าขอบล่างกรอบราคา ${p2(e.lo)} = ไล่ราคา`);
       if (e && px >= e.up) good.push(`สูงกว่า/ชิดขอบบนกรอบราคา ${p2(e.up)} ✅`);
     }
-    if (!x.tested) bad.push(`ฝั่ง${name}กรอบ ${nameOf(n.tf)} ทดสอบย้อนหลังขาดทุน — ระบบไม่ให้สัญญาณฝั่งนี้`);
+    if (!x.tested) bad.push(`ฝั่ง${name}กรอบ ${nameOf(n.tf)} ${CHARTSYS.whyNo(x.c)}`);
     if (n.br) bad.push(`ระบบกรอบนี้พักอยู่: ${n.br.why}`);
     const verdict = bad.length ? `🚫 <b>ไม่ควร${name}ที่ ${p2(px)}</b>` : good.length ? `👍 <b>${p2(px)} เป็นจุดรอ${name}ที่ดี</b>` : `🤔 <b>${p2(px)} เป็นจุดกลาง ๆ</b> — ไม่ใช่แนวรับ/แนวต้านเด่น`;
     let t = `${verdict} · กรอบ ${nameOf(n.tf)} (ราคาตอนนี้ ${p2(n.price)})`;

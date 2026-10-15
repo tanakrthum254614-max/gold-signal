@@ -608,7 +608,7 @@ function renderDailyVsMain() {
   const clash = (mainDir && mainDir !== d) || !mine.tested;
   const now = m.open ? `ถือไม้${m.open.side === 'BUY' ? 'ซื้อ' : 'ขาย'}อยู่` : mainDir ? `${mainDir > 0 ? 'Buy' : 'Sell'} ✅ ควรเข้า` : `รอก่อน · Buy ${m.sides[0].pct}% · Sell ${m.sides[1].pct}%`;
   el.className = `sig-main${clash ? ' clash' : ''}`;
-  el.innerHTML = `${clash ? '⚠️ <b>ขัดกับระบบหลัก — ยึดระบบหลัก</b><br>' : '🔗 '}ระบบหลัก (30 นาที) ตอนนี้: ${now}`
+  el.innerHTML = `${clash ? '⚠️ <b>ขัดกับระบบหลัก — ยึดระบบหลัก</b><br>' : '🔗 '}ระบบหลัก (${mainLabel()}) ตอนนี้: ${now}`
     + `${!mine.tested ? ` · ระบบหลักไม่เปิดฝั่ง${d > 0 ? 'ซื้อ' : 'ขาย'} (ทดสอบแล้วขาดทุน)` : ''}`;
 }
 
@@ -987,17 +987,30 @@ function patchIntraCandles(now = Date.now()) {
     last.high = Math.max(last.high, price);
     last.low = Math.min(last.low, price);
   });
+  // the Binance 4-hour candle of the main system (1h + 4h + 5h) follows the live price too (refreshSlow replaces it)
+  const h4 = state.h4 && state.h4[state.h4.length - 1];
+  if (h4 && fresh && now < h4.time + 4 * 3600e3) { h4.close = price; h4.high = Math.max(h4.high, price); h4.low = Math.min(h4.low, price); }
 }
 
-// The main system = the chart tab's 30m system (chartsys.js, recorded in chart-signals.json) since 9 Oct 2026, when
-// the old 30-minute system (intraday.json, TP $15/20/30) was merged into it — so the signals tab, the chart tab, the
-// stats and LINE all show one system (user: "อยากให้ทุกส่วนสัมพันธ์กัน").
-const MAIN_TF = '30m';
+// The main system = one of the chart tab's systems (chartsys.js, recorded in chart-signals.json), so the signals tab,
+// the chart tab and LINE all show one system (user, 9 Oct: "อยากให้ทุกส่วนสัมพันธ์กัน"). 30m from 9 Oct 2026 (when the
+// old 30-minute system, intraday.json, was merged into it); 1h since 15 Oct 2026 (30m BUY switched off — see chartsys.js).
+const MAIN_TF = CHARTSYS.MAIN_TF;
 const mainSys = () => CHARTSYS.SYS[MAIN_TF];
+const mainLabel = () => mainSys().frames[0][3];
+const mainDur = () => mainSys().frames[0][1];
 const intraTrades = () => ((state.chartSig && state.chartSig.trades) || []).filter((t) => t.tf === MAIN_TF).map(live);
+// Candles for the main system's frames: investing.com 30m / 1h / 5h + Binance 4h (chartzones.js refreshSlow)
+const homeCandles = () => state.intraCandles && { ...state.intraCandles, h4: state.h4 || [] };
+// The main system's score as a decision with its own threshold (for the meter's texts and reasons); entries = CHARTSYS.dirOf
+function homeDecide(now, news, live) {
+  const sys = mainSys(), C = homeCandles();
+  if (!C) return null;
+  return INTRA.decideWith(sys.frames, { ...INTRA.RULE, threshold: sys.buy.th, sides: sys.sell && !sys.sell.off ? 'both' : 'buy', noChase: true }, C, now, sys.news ? news : null, live);
+}
 
 // ----- Trend strength meter: 13 segments for scores −6 … +6, and a card per voting timeframe -----
-const SM_FRAMES = [['m30', '30 นาที'], ['h1', '1 ชม.'], ['h5', '5 ชม.']];
+const SM_FRAMES = mainSys().frames.map(([k, , , label]) => [k, label]);
 const SM_VOTE = { strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 };
 const smMood = (s) => (s >= 5 ? 'ซื้อแรง · ถึงเกณฑ์ +5' : s >= 3 ? 'เอียงขึ้นชัด' : s >= 1 ? 'เอียงขึ้นเล็กน้อย'
   : s === 0 ? 'สมดุล ยังไม่มีทิศ' : s >= -2 ? 'เอียงลงเล็กน้อย' : s >= -4 ? 'เอียงลงชัด' : 'ขายแรง');
@@ -1046,7 +1059,7 @@ function renderMeter(dec, off) {
   $('smCursor').style.left = `calc((100% - ${12 * gap}px) / 13 * ${i + 0.5} + ${gap * i}px)`;
 
   // One card per voting timeframe: mini candlestick chart + its trend and vote
-  const C = state.intraCandles;
+  const C = homeCandles();
   SM_FRAMES.forEach(([k]) => {
     const card = $(`smf-${k}`), trend = dec && dec.keys[k];
     const v = trend ? SM_VOTE[trend] : 0;
@@ -1086,15 +1099,15 @@ function renderMeter(dec, off) {
   renderCycle();
 }
 
-// Progress to the next official half-hourly check (the candle close the system decides on)
+// Progress to the next official check (the main system's candle close it decides on)
 function renderCycle() {
-  const now = Date.now(), start = INTRA.slotOf(now), left = start + INTRA.SLOT - now;
-  const bar = $('smCycle'), p = ((now - start) / INTRA.SLOT) * 100;
-  bar.style.transition = p < (bar.dataset.p || 0) ? 'none' : ''; // jump back to 0 when a new half hour starts
+  const now = Date.now(), dur = mainDur(), start = Math.floor(now / dur) * dur, left = start + dur - now;
+  const bar = $('smCycle'), p = ((now - start) / dur) * 100;
+  bar.style.transition = p < (bar.dataset.p || 0) ? 'none' : ''; // jump back to 0 when a new candle starts
   bar.dataset.p = p;
   bar.style.width = `${p}%`;
   const mm = Math.floor(left / 60e3), ss = Math.floor((left % 60e3) / 1000);
-  $('smCycleTx').textContent = `แท่ง 30 นาทีปิดในอีก ${mm}:${String(ss).padStart(2, '0')}`;
+  $('smCycleTx').textContent = `แท่ง ${mainLabel()} ปิดในอีก ${mm}:${String(ss).padStart(2, '0')}`;
 }
 
 // ----- Donuts: what happened historically to trades opened at this score -----
@@ -1165,7 +1178,7 @@ function renderOpenTrade(open, price) {
   if (box.dataset.id !== `${open.id}|${hit}`) {
     box.dataset.id = `${open.id}|${hit}`;
     box.innerHTML = `<div class="card lt ${buy ? 'buy' : 'sell'}">
-      <div class="sig-top"><span class="muted">📌 ไม้ที่เปิดอยู่ · ระบบ 30 นาที <span class="lv-tag">สด</span></span><span class="muted small">เข้า ${hhmm(open.createdAt)} น. · ปิดเองไม่เกิน ${hhmm(open.expiresAt)} น.</span></div>
+      <div class="sig-top"><span class="muted">📌 ไม้ที่เปิดอยู่ · ระบบหลัก ${mainLabel()} <span class="lv-tag">สด</span></span><span class="muted small">เข้า ${hhmm(open.createdAt)} น. · ปิดเองไม่เกิน ${hhmm(open.expiresAt)} น.</span></div>
       <div class="lt-head"><b style="font-size:20px">${buy ? '🟢 ซื้อ' : '🔴 ขาย'}ที่ <span class="mono">${f2(open.entry)}</span></b><span class="lt-pnl mono" id="ltPnl">—</span></div>
       <small class="muted">กำไร/ขาดทุนตอนนี้ ต่อทอง 1 ออนซ์ (0.01 lot)${hit ? ` · ถึง TP${hit} แล้ว SL เลื่อนมาที่ทุน` : ''}</small>
       <div class="lt-bar" style="--entry:${pct(open.entry)}%">
@@ -1189,13 +1202,12 @@ function renderIntra() {
   const now = Date.now();
   const trades = intraTrades();
   const open = trades.find((t) => t.status === 'active');
-  const C = state.intraCandles;
-  // the main system (30m) doesn't skip news (tested: skipping hurt it) — so no news blackout here either
+  // the main system skips high-impact news only if its timeframe does (1h: yes — chartsys.js `news`)
   const nw = mainSys().news ? state.news : null;
-  const dec = C ? INTRA.decide(C, now, nw, true) : null; // live: includes the forming candles
-  const official = C ? INTRA.decide(C, now, nw) : null; // what the half-hourly check sees
+  const dec = homeDecide(now, nw, true); // live: includes the forming candles
+  const official = homeDecide(now, nw); // what the recorder's check sees (closed candles)
   const price = nowPrice();
-  const next = INTRA.slotOf(now) + INTRA.SLOT;
+  const next = Math.floor(now / mainDur()) * mainDur() + mainDur();
   $('inNext').textContent = `เช็กทางการรอบถัดไป ${hhmm(next)} น.`;
   showBeat('inBeat');
 
@@ -1205,9 +1217,9 @@ function renderIntra() {
   renderMeter(dec, off);
   $('gScoreSub').textContent = official && dec && official.score !== dec.score
     ? `คะแนนสดจากแท่งที่กำลังวิ่ง · รอบล่าสุดแท่งปิดได้ ${signedScore(official.score)}`
-    : `คะแนนสดจาก 3 กรอบเวลา · ระบบเข้าซื้อเมื่อแท่งปิดได้ +${INTRA.RULE.threshold}`;
+    : `คะแนนสดจาก 3 กรอบเวลา · ระบบเข้าซื้อเมื่อแท่ง ${mainLabel()} ปิดได้ +${mainSys().buy.th}`;
 
-  // Everything below comes from the main system (CHARTSYS 30m) — the same verdicts and % as the chart tab
+  // Everything below comes from the main system (CHARTSYS MAIN_TF) — the same verdicts and % as the chart tab
   const sys = mainSys(), br = CHARTSYS.brake(sys, trades, now);
   const pause = br ? { reason: br.why, until: br.until } : null;
   const offDir = official ? CHARTSYS.dirOf(sys, official) : 0;
@@ -1260,7 +1272,7 @@ function renderIntra() {
     updateDonut($(x.side > 0 ? 'dnBuy' : 'dnSell'), x.side, dec ? x : null, v, price);
   });
   $('dnNote').innerHTML = dec
-    ? `วงกลม = <b>ความพร้อมเข้า</b> ของระบบหลัก (กรอบ 30 นาที — ตัวเดียวกับหน้ากราฟ) · 100% = ถึงจุดเข้า · <b>ผลทดสอบ</b> = ชนะกี่ % ใน 2 ปีที่ผ่านมา หลังหักสเปรด · ฝั่งที่ทดสอบแล้วขาดทุนขึ้น ⚠️ ไม่แนะนำ · ราคาเปลี่ยนตามตลาดสดทุก 3 วินาที`
+    ? `วงกลม = <b>ความพร้อมเข้า</b> ของระบบหลัก (กรอบ ${mainLabel()} — ตัวเดียวกับหน้ากราฟ) · 100% = ถึงจุดเข้า · <b>ผลทดสอบ</b> = ชนะกี่ % ใน 2 ปีที่ผ่านมา หลังหักสเปรด · ฝั่งที่ทดสอบแล้วขาดทุนขึ้น ⚠️ ไม่แนะนำ · ราคาเปลี่ยนตามตลาดสดทุก 3 วินาที`
     : '';
 
   $('inNews').innerHTML = newsTimelineHtml(now);
@@ -1270,7 +1282,7 @@ function renderIntra() {
   const today = trades.filter((t) => t.id.startsWith(todayId));
   const done = today.filter((t) => t.status === 'win' || t.status === 'loss');
   const sum = done.reduce((a, t) => a + (t.pnl || 0), 0);
-  $('inToday').innerHTML = `<h4>⏱️ ไม้วันนี้ (ระบบ 30 นาที)</h4>` + (today.length
+  $('inToday').innerHTML = `<h4>⏱️ ไม้วันนี้ (ระบบหลัก ${mainLabel()})</h4>` + (today.length
     ? `<p class="muted small">${today.length} ไม้ · ปิดแล้ว ${done.length} · ${money(SIG.round(sum))}/ออนซ์</p>
        <div class="in-chips">${today.map((t) => `<span class="chip-r ${t.status}">${hhmm(t.createdAt)} ${t.side === 'BUY' ? 'ซื้อ' : 'ขาย'} ${t.status === 'active' ? '…' : money(t.pnl)}</span>`).join('')}</div>`
     : '<p class="muted small">ยังไม่มีไม้ — ระบบจะเข้าเมื่อทั้ง 3 ช่วงเวลาชี้ขึ้นชัดเจน (คะแนน +5)</p>');

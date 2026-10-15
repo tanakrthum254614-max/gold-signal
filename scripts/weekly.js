@@ -56,10 +56,11 @@ function section(name, trades) {
   const from = weekStart(now), prevFrom = from - 7 * DAY;
   const done = (t) => t.status === 'win' || t.status === 'loss';
   const inWeek = (list, a, b) => list.filter((t) => t.createdAt >= a && t.createdAt < b && done(t));
-  // Main system = the chart 30m record (the same as the website and LINE since the merge on 9 Oct 2026); the old
-  // 30-minute record (intraday.json) is listed apart and not counted
-  const main = chart.trades.filter((t) => t.tf === '30m');
-  const i30 = section('⏱️ สัญญาณ 30 นาที (ระบบหลัก)', inWeek(main, from, now));
+  // Main system = the chart record of CS.MAIN_TF (30m from 9 Oct 2026, 1h since 15 Oct — the same as the website and
+  // LINE); the old 30-minute record (intraday.json) is listed apart and not counted
+  const MAIN_TH = { '30m': '30 นาที', '1h': '1 ชม.' }[CS.MAIN_TF] || CS.MAIN_TF;
+  const main = chart.trades.filter((t) => t.tf === CS.MAIN_TF);
+  const i30 = section(`⏱️ สัญญาณ ${MAIN_TH} (ระบบหลัก)`, inWeek(main, from, now));
   const oldWeek = inWeek(intra.trades, from, now);
   if (oldWeek.length) { const o = SIG.summary(oldWeek, SPREAD); i30.lines.push(`   (ระบบ 30 นาทีแบบเดิม ก่อนรวมระบบ: ${o.traded} ไม้ · ${signed(o.pnl)} — ไม่นับรวม)`); }
   // Advisory daily calls (overview only, SIG.RULE.advisory) are reported but not counted in the total
@@ -82,7 +83,7 @@ function section(name, trades) {
   const TF_TH = { '5m': '5 นาที', '15m': '15 นาที', '30m': '30 นาที', '1h': '1 ชม.', '5h': '5 ชม.', '1d': '1 วัน', '1w': '1 สัปดาห์' };
   const chartLines = [];
   Object.entries(CS.SYS).forEach(([tf, sys]) => {
-    if (tf === '30m') return; // = the main system, above
+    if (tf === CS.MAIN_TF) return; // = the main system, above
     const all = chart.trades.filter((t) => t.tf === tf);
     const s = SIG.summary(inWeek(all, from, now), SPREAD), b = CS.brake(sys, all, now);
     if (!s.traded && !b) return;
