@@ -1,6 +1,6 @@
 const $ = s => document.querySelector(s);
 const params = new URLSearchParams(location.search);
-let current = params.get('d') || 'gold', mtime = 0, dash = null, extra = '';
+let current = params.get('d') || 'ndx', mtime = 0, dash = null, extra = '';
 
 // ---------- ภาษาไทย (ผู้ใช้ 12 ต.ค.: "ขอภาษาไทย") ----------
 const ZONE_TH = { live: 'ราคาสด', cockpit: 'ภาพรวม', tech: 'เทคนิค', macro: 'เศรษฐกิจมหภาค', context: 'ข่าวและข้อมูล', heatmap: 'แผนที่ตลาด', stocks: 'หุ้นทุกตัว', screens: 'คัดหุ้น' };
@@ -32,7 +32,7 @@ async function j(url) { const r = await fetch(url); if (!r.ok) throw new Error(r
 
 async function loadList() {
   const list = [
-    {id:'gold', title:'ทองคำ / GOLD'},
+    // ทองคำ / GOLD removed from the site menu (user, 15 Oct 2026: "ตัดในส่วนนี้ออก ทอง/Gold ส่วนที่เหลือเอาไว้") — ?d=gold falls back to the first
     {id:'ndx', title:'Nasdaq 100'},
     {id:'spx', title:'S&P 500'},
     {id:'div', title:'หุ้นปันผล'}
