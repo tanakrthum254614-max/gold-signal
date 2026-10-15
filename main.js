@@ -1006,7 +1006,7 @@ const homeCandles = () => state.intraCandles && { ...state.intraCandles, h4: sta
 function homeDecide(now, news, live) {
   const sys = mainSys(), C = homeCandles();
   if (!C) return null;
-  return INTRA.decideWith(sys.frames, { ...INTRA.RULE, threshold: sys.buy.th, sides: sys.sell && !sys.sell.off ? 'both' : 'buy', noChase: true }, C, now, sys.news ? news : null, live);
+  return INTRA.decideWith(sys.frames, { ...INTRA.RULE, threshold: sys.buy.th, sides: sys.sell ? 'both' : 'buy', noChase: true }, C, now, sys.news ? news : null, live);
 }
 
 // ----- Trend strength meter: 13 segments for scores −6 … +6, and a card per voting timeframe -----

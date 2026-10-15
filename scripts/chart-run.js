@@ -91,10 +91,12 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
     if (!dir) continue;
     // While the safety brake is on, keep recording (so it can lift by itself) but don't announce
     const paused = !!CS.brake(sys, mine, now);
-    const tr = keep({ ...CS.trade(sys, dec, dir, fast[fast.length - 1].close, t), tf, id: `${tf}-${t}`, score: dec.score, ...(paused ? { paused } : {}) });
+    // risky sides (chartsys.js, 15 Oct 2026) are recorded too, flagged — they're shown with ⚠️ and never in LINE
+    const risky = !!(dir > 0 ? sys.buy : sys.sell).risky;
+    const tr = keep({ ...CS.trade(sys, dec, dir, fast[fast.length - 1].close, t), tf, id: `${tf}-${t}`, score: dec.score, ...(paused ? { paused } : {}), ...(risky ? { risky } : {}) });
     store.trades.push(tr);
     console.log(`${tf}: ${tr.side} ${tr.entry} SL ${tr.sl} TP ${tr.tps.join('/')} (score ${dec.score})${paused ? ' — paused, not announced' : ''}`);
-    if (NOTIFY.includes(tf) && !paused) {
+    if (NOTIFY.includes(tf) && !paused && !risky) {
       const c = dir > 0 ? sys.buy : sys.sell;
       texts.push(`${tf === CS.MAIN_TF ? `⏱️ สัญญาณ ${TF_TH[tf]} (ระบบหลัก)` : `🎯 สัญญาณกราฟ ${TF_TH[tf]}`} · ${dir > 0 ? '🟢 ซื้อ (BUY)' : '🔴 ขาย (SELL)'}\n`
         + `เข้า ~${f2(tr.entry)} · SL ${f2(tr.sl)} · ${tr.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}\n`
