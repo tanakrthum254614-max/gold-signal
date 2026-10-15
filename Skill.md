@@ -88,6 +88,7 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 - **สเปรด**: เซิร์ฟเวอร์ `vars.SPREAD_USD` (0.4) · เว็บใช้ค่าที่ผู้ใช้ตั้ง · **ขนาดไม้** 0.01 lot = 1 ออนซ์ → lot = ทุน × %เสี่ยง ÷ (SL × 100) ปัดลง
 - **ข่าวแรงสหรัฐ**: `endpoints.investing.com/pd-instruments/v1/calendars/economic/events/occurrences?domain_id=1&country_ids=5&importance=high` (CORS เปิด) — งดเข้า ±30 นาทีเฉพาะกรอบ 5m / 1h (หน้าแรกด้วย เพราะระบบหลักคือ 1h)
 - **LINE ทั้งระบบ = สัญญาณเข้า + เตือนข่าว + ภาพรวมเช้า** · รวมเป็นคำขอเดียวต่อรอบ (`OUTBOX` → `flush.js`) · โควตาฟรี 300/เดือน (ดูข้อ 7) · ส่งพลาด = log ไม่ล้ม
+  - **ชนิดข้อความ + กันโควตา** (16 ต.ค.): scripts/notify.js `send(texts, { kind })` / `sendFlex(flex, { kind })` — `signal` (ค่าเริ่มต้น: chart-run, alerts) ส่ง LINE เสมอ · `extra` (morning-plan ภาพรวม, intraday-run เตือนข่าว, weekly) ส่ง LINE เฉพาะเมื่อ `lineRoom()`: โควตาเหลือ − เพื่อน ≥ เพื่อน × 15 (เพื่อน = /v2/bot/insight/followers เมื่อวาน; ไม่รู้ = ใช้ไม่เกิน 50%) ไม่งั้นแจ้งเตือนเว็บอย่างเดียว · `admin` (notify-failure, line-quota เตือน 80%) = web push เครื่องแอดมิน + LINE push ถึง LINE_OWNER_ID ถ้ามี — **ไม่ broadcast** · env LINE_EXTRAS=on|off บังคับได้ · OUTBOX เก็บ {text, kind} (string เก่า = signal) · ทดสอบ `node scripts/test-notify-kinds.js` (fake LINE API)
 
 ### แจ้งเตือนบนเครื่อง (PWA) + สมาชิก + หลังบ้าน
 - PWA: `manifest.webmanifest`, `icons/`, `sw.js` (ไม่แคชข้อมูล, รับ push) · `pwa.js` ปุ่มติดตั้ง + เปิดแจ้งเตือน → เก็บใน Clerk `unsafeMetadata.push` (≤5 เครื่อง) · `scripts/push.js` ส่ง web push ทุกครั้งที่ส่ง LINE · VAPID ตั้งแล้ว (8 ต.ค., config.js มี vapidPublicKey)
@@ -297,6 +298,9 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 # 📜 บันทึกการเปลี่ยนแปลง (ใหม่สุดอยู่บน)
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
+
+## 📨 กันโควตา LINE (16 ต.ค. 2569 · เวอร์ชัน 202610161400)
+- ผู้ใช้: "ต้องเพิ่มอะไรไหมที่สำคัญ" → ชี้ว่า LINE ฟรี 300/เดือนนับต่อคน (51/เดือน × 6 เพื่อน ≈ เกิน → หยุดส่งรวมสัญญาณ) → "ทำมา" · notify.js kinds signal/extra/admin + lineRoom (สำรองสัญญาณ 15 รอบ) · morning-plan/intraday-run/weekly = extra · notify-failure/line-quota = admin (เดิม broadcast ถึงทุกคน) · หน้าบัญชีบอกให้เปิดแจ้งเตือนบนเครื่อง · test-notify-kinds.js ผ่าน 8 กรณี · ตอนนี้เพื่อน 1 คน = ส่ง LINE ครบเหมือนเดิม · ผลจริง 8 วันแรก (chart-signals.json): 1h BUY 2 ไม้ (1/1, −23.5) · 5m BUY 11 (6/5, +5.1) · 5m SELL 14 (4/10, −51.2) · 30m BUY 6 (2/4) — น้อยเกินสรุป · commit 9b6b2fc
 
 ## 🔧 ข้อความ LINE เช้า: ระบบหลัก 1 ชม. (16 ต.ค. 2569 · เวอร์ชัน 202610161300)
 - เห็นจากรูป LINE ของผู้ใช้: ภาพรวมเช้าเขียน "จึงใช้สัญญาณ 30 นาทีเป็นหลัก" (ล้าสมัย) → scripts/morning-plan.js "จึงใช้ระบบหลัก 1 ชม. เป็นหลัก (ส่งแยกเมื่อถึงจุดเข้า)" · index.html #sgAdv (ซ่อนอยู่) แก้ตาม · chart-run.js คอมเมนต์ CHART_NOTIFY = 1h,5h,1d · commit 4727c76
