@@ -1,0 +1,29 @@
+name: Guru filings (live)
+
+on:
+  # every 10 minutes (user, 16 Oct 2026: "ขอทุกอย่างแบบเรียลไทม์"): the gurus' new SEC filings — Form 4 buys / sells,
+  # 13D / 13G stakes — and a new quarterly 13F rebuilds the portfolios right away (not only at the 06:00 refresh)
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gurus-live
+  cancel-in-progress: false
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check the gurus' latest SEC filings, save to the data branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/gurus-live.sh

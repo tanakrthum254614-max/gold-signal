@@ -99,6 +99,7 @@
         <div class="gu-v"><b class="mono" data-gtot>—</b><small class="mono" data-gtc>—</small><small>${g.count} ตัว · ตั้งแต่สิ้นไตรมาส</small></div></div>
       <section class="card"><h3><span>หุ้นในพอร์ต (${Math.min(g.top.length, g.count)} อันดับแรก)</span><small>ราคาสด × จำนวนหุ้นที่รายงาน</small></h3>
         <div class="tbl"><table class="st gt"><thead><tr><th>#</th><th>หุ้น</th><th class="r">% พอร์ต</th><th class="r">จำนวนหุ้น</th><th class="r">ราคาสด</th><th class="r">มูลค่าสด</th><th class="r">ตั้งแต่สิ้นไตรมาส</th><th class="r">เทียบไตรมาสก่อน</th></tr></thead><tbody></tbody></table></div></section>
+      ${(LV?.items || []).some((x) => x.cik === g.cik) ? `<section class="card"><h3><span>⚡ ล่าสุดจาก SEC</span><small>ฟอร์ม 4 · 13D/G ใน ${LV.days} วัน</small></h3><ul class="gu-live">${liveRows(LV.items.filter((x) => x.cik === g.cik).slice(0, 10))}</ul></section>` : ''}
       ${g.moves.length ? `<section class="card"><h3><span>เคลื่อนไหวไตรมาสนี้</span><small>เทียบ ${g.prevPeriod ? qLabel(g.prevPeriod) : 'ไตรมาสก่อน'}</small></h3><div class="gmv">${g.moves.slice(0, 20).map((x) => `<span class="gact ${ACT[x.act][1]}">${ACT[x.act][0]} <b>${e(x.s || x.name)}</b>${x.pct != null && x.act !== 'exit' ? ` ${x.pct > 0 ? '+' : ''}${x.pct}%` : ''}</span>`).join('')}</div></section>` : ''}
       <p class="foot">${credit(g) ? `${credit(g)}<br>` : ""}ที่มา: รายงาน 13F ต่อ SEC — ยื่นไตรมาสละครั้ง ช้าสุด 45 วันหลังจบไตรมาส จึงไม่ใช่พอร์ตปัจจุบันจริง · รวมเฉพาะหุ้น/ETF ที่จดทะเบียนในสหรัฐ ไม่รวมออปชัน · ไม่ใช่คำแนะนำการลงทุน</p></div>`;
     document.body.appendChild(m);
@@ -112,6 +113,7 @@
   document.addEventListener('click', (ev) => {
     const s = ev.target.closest('[data-gsort], [data-gact]');
     if (s) { s.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === s)); paint(); return; }
+    if (ev.target.closest('a')) return; // SEC links open in a new tab, not the guru page
     const g = ev.target.closest('#gurus [data-guru]'); if (g) return openGuru(g.dataset.guru);
     const st = ev.target.closest('#gurus tr[data-stock]'); if (st && window.dash?.stockMap?.[st.dataset.stock] && typeof openStock === 'function') openStock(st.dataset.stock);
   });
@@ -120,21 +122,59 @@
   FRAMES.guruFocus = () => `<div class="chips"><button type="button" data-gact="all" class="on">ทั้งหมด</button><button type="button" data-gact="buy">ซื้อ</button><button type="button" data-gact="sell">ขาย</button></div><div class="tbl"><table class="st gt"><thead><tr><th>กูรู</th><th>ทำอะไร</th><th>หุ้น</th><th class="r">มูลค่า</th></tr></thead><tbody id="guFocus"></tbody></table></div>`;
   FRAMES.guruCrowd = () => `<div class="tbl"><table class="st gt"><thead><tr><th>หุ้น</th><th class="r">กูรูที่ถือ</th><th class="r">ราคาสด</th><th class="r">วันนี้</th><th>ใครถือ</th></tr></thead><tbody id="guCrowd"></tbody></table></div>`;
 
+  // ⚡ live SEC filings (scripts/gurus-live.js every 10 min → dashboards/gurus-live.json): Form 4 buys / sells,
+  // 13D / 13G stakes, new 13F — user, 16 Oct 2026: "ขอทุกอย่างแบบเรียลไทม์". Re-read every 2 minutes.
+  let LV = null;
+  const KIND = { f4: 'ฟอร์ม 4 · ซื้อขายจริง', '13d': '13D · ถือเกิน 5% (เชิงรุก)', '13g': '13G · ถือเกิน 5%', '13f': '13F · พอร์ตไตรมาสใหม่' };
+  const ago = (iso) => { const m = Math.round((Date.now() - Date.parse(iso)) / 60e3); return m < 60 ? `${m} นาทีที่แล้ว` : m < 1440 ? `${Math.round(m / 60)} ชม.ที่แล้ว` : `${Math.round(m / 1440)} วันที่แล้ว`; };
+  const num = (v) => (v >= 1e6 ? `${(v / 1e6).toFixed(2)} ล้าน` : Math.round(v).toLocaleString('en-US'));
+  function liveText(x) {
+    const s = x.symbol ? `<b>${e(x.symbol)}</b>` : `<b>${e(x.issuer || '—')}</b>`;
+    if (x.kind === 'f4') {
+      const parts = [];
+      if (x.buy) parts.push(`<span class="gact up">ซื้อ</span> ${s} ${num(x.buy)} หุ้น ≈ ${money(x.buyUsd)}${x.buyUsd && x.buy ? ` @ $${(x.buyUsd / x.buy).toFixed(2)}` : ''}`);
+      if (x.sell) parts.push(`<span class="gact down">ขาย</span> ${s} ${num(x.sell)} หุ้น ≈ ${money(x.sellUsd)}${x.sellUsd && x.sell ? ` @ $${(x.sellUsd / x.sell).toFixed(2)}` : ''}`);
+      const px = x.symbol && q(x.symbol), avg = x.buy ? x.buyUsd / x.buy : x.sell ? x.sellUsd / x.sell : null;
+      const since = px && avg ? ` · ราคาตอนนี้ $${px.toFixed(2)} <span class="${cls(px / avg - 1)}">${pct(px / avg - 1)}</span>` : '';
+      return `${parts.join(' · ')}${x.after ? ` · ถือหลังทำรายการ ${num(x.after)} หุ้น` : ''}${since}${x.date ? ` · วันที่ซื้อขาย ${thDate(x.date)}` : ''}`;
+    }
+    if (x.kind === '13f') return 'ยื่นพอร์ตรายไตรมาสใหม่ — ระบบกำลังอัปเดตพอร์ตของคนนี้';
+    if (x.pct === 0) return `<span class="gact down">ลดลงต่ำกว่า 5%</span> ${s}`;
+    return `${s}${x.issuer && x.symbol ? ` <small>${e(x.issuer)}</small>` : ''}${x.pct != null ? ` · ถือ <b>${x.pct}%</b> ของบริษัท` : ''}${x.shares ? ` (${num(x.shares)} หุ้น)` : ''}`;
+  }
+  const liveRows = (list) => list.map((x) => { const g = G?.gurus.find((y) => y.cik === x.cik);
+    return `<li data-guru="${x.cik}">${g ? avatar(g) : ''}<div><div class="lv-h"><b>${e(x.th)}</b><span class="lv-k ${x.kind}">${KIND[x.kind] || e(x.form)}</span><small>${ago(x.at)}</small></div>
+      <div class="lv-t">${liveText(x)}</div><a class="lv-a" href="${e(x.url)}" target="_blank" rel="noopener">เอกสาร SEC ↗</a></div></li>`; }).join('');
+  function paintLive() {
+    const el = document.getElementById('guLive'); if (!el) return;
+    if (!LV) { el.innerHTML = '<p class="muted">กำลังโหลด…</p>'; return; }
+    el.innerHTML = LV.items.length ? `<ul class="gu-live">${liveRows(LV.items.slice(0, 20))}</ul>` : `<p class="muted">ยังไม่มีรายงานใหม่ใน ${LV.days} วัน</p>`;
+    const st = document.getElementById('guLiveAt'); if (st) st.textContent = `ข้อมูล SEC ถึง ${new Date(LV.asOf).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })} · เช็กทุก 10 นาที`;
+  }
+  async function loadLive() {
+    try { const r = await fetch('./dashboards/gurus-live.json', { cache: 'no-store' }); if (r.ok) { LV = await r.json(); paintLive(); } } catch (err) { /* keep the last copy */ }
+  }
+  setInterval(() => { if (!document.hidden) loadLive(); }, 120e3);
+  setInterval(() => { if (!document.hidden && document.getElementById('gurus')?.hidden === false) paintLive(); }, 30e3); // "x นาทีที่แล้ว" + live price
+  FRAMES.guruLive = () => '<div id="guLive"><p class="muted">กำลังโหลด…</p></div><p class="gu-credit" id="guLiveAt"></p>';
+
   // app.js calls this after loading a dashboard: adds the tab and the gurus' tickers to the live price feed
   window.GURUS = {
     async inject(dash) {
       if (!dash || !['ndx', 'spx', 'div'].includes(dash.id || window.current)) { /* only the US stock sets */ }
       try { if (!G) { const r = await fetch('./dashboards/gurus.json', { cache: 'no-store' }); if (r.ok) G = await r.json(); } } catch (err) { G = null; }
       if (!G || !G.gurus?.length) return;
-      const tickers = [...new Set(G.gurus.flatMap((g) => g.top.map((h) => h.s)).filter((s) => s && /^[A-Z][A-Z0-9.\-]{0,9}$/.test(s)))];
+      if (!LV) await loadLive();
+      const tickers = [...new Set([...G.gurus.flatMap((g) => g.top.map((h) => h.s)), ...(LV?.items || []).map((x) => x.symbol)].filter((s) => s && /^[A-Z][A-Z0-9.\-]{0,9}$/.test(s)))];
       dash.liveKeys = [...new Set([...(dash.liveKeys || []), ...tickers])];
       const asOf = G.gurus.map((g) => g.filed).sort().at(-1);
       dash.zones = [...dash.zones.filter((z) => z.id !== 'gurus'), { id: 'gurus', short: 'พอร์ตกูรู', title: 'พอร์ตกูรู',
         subtitle: `แกะพอร์ตนักลงทุนชั้นนำ ${G.gurus.length} คน จากรายงาน 13F ต่อ SEC (ล่าสุดยื่น ${thDate(asOf)}) · มูลค่าคิดด้วยราคาสดทุกวินาที · กดชื่อเพื่อดูหุ้นทั้งพอร์ต`,
-        frames: [{ type: 'gurus', span: 3, title: 'Guru Portfolio — พอร์ตกูรู', source: 'SEC 13F · ราคาสด' },
+        frames: [{ type: 'guruLive', span: 3, title: '⚡ ล่าสุดจาก SEC — กูรูซื้อขายอะไร (สด)', source: 'ฟอร์ม 4 · 13D/G · 13F · เช็กทุก 10 นาที' },
+          { type: 'gurus', span: 3, title: 'Guru Portfolio — พอร์ตกูรู', source: 'SEC 13F · ราคาสด' },
           { type: 'guruFocus', span: 2, title: 'Guru Focus — เคลื่อนไหวล่าสุด', source: 'เทียบไตรมาสก่อน' },
           { type: 'guruCrowd', span: 1, title: 'หุ้นที่กูรูถือซ้ำกันมากสุด', source: 'ถือตั้งแต่ 3 คน' }] }];
-      setTimeout(paint, 0);
+      setTimeout(() => { paint(); paintLive(); }, 0);
     },
     paint,
   };

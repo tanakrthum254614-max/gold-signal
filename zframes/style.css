@@ -465,3 +465,15 @@ html.light .gu-av.mark { background: radial-gradient(circle at 30% 25%, #fff8e1,
 .gu-av.mark i { font-size: 8px; letter-spacing: 0; }
 .gu-av.mark.long i { font-size: 6.8px; } .gu-av.mark.xl i { font-size: 6px; }
 .gu-av.big.mark i { font-size: 12px; } .gu-av.big.mark.long i { font-size: 10px; } .gu-av.big.mark.xl i { font-size: 9px; }
+/* ⚡ live SEC filings (gurus.js guruLive) */
+.gu-live { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 8px; }
+.gu-live li { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; background: #1e2329; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; cursor: pointer; }
+.gu-live li:hover { border-color: #f0b90b; }
+.lv-h { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; } .lv-h b { font-size: 13.5px; } .lv-h small { color: var(--muted); font-size: 11px; margin-left: auto; }
+.lv-k { font-size: 10.5px; font-weight: 700; border-radius: 4px; padding: 1px 6px; color: #f0b90b; background: rgba(240, 185, 11, .12); }
+.lv-k.f4 { color: #0ecb81; background: rgba(14, 203, 129, .12); } .lv-k.\31 3d { color: #f6465d; background: rgba(246, 70, 93, .12); }
+.lv-t { font-size: 12.5px; margin-top: 3px; line-height: 1.55; } .lv-t small { color: var(--muted); }
+.lv-t .up { color: var(--up); } .lv-t .down { color: var(--down); }
+.lv-a { font-size: 11px; color: var(--muted); }
+html.light .gu-live li { background: #fff; border-color: #ece6d8; }
+@media (max-width: 700px) { .gu-live { grid-template-columns: 1fr; } }

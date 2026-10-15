@@ -220,7 +220,8 @@ async function mapCusips(cusips, cache) {
   cache._tried2 = [...new Set([...(cache._tried2 || []), ...second])];
 }
 
-(async () => {
+module.exports = { GURUS, UA }; // scripts/gurus-live.js reads the same list
+if (require.main === module) (async () => {
   const [out, cacheFile = 'gurus-cusip.json'] = process.argv.slice(2);
   if (!out) throw new Error('usage: node scripts/gurus-13f.js <out.json> [cusipCache.json]');
   const cache = fs.existsSync(cacheFile) ? JSON.parse(fs.readFileSync(cacheFile, 'utf8')) : {};

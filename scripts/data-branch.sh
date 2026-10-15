@@ -5,7 +5,7 @@
 #   source scripts/data-branch.sh
 #   data_load            → the data branch's files into the working tree (call right after checkout / before each check)
 #   data_save "message"  → commit the changed data files onto the data branch (rebased on newer data commits, as before)
-DATA_FILES="signals.json intraday.json chart-signals.json quota.json backtest.json backtest-30m.json backtest-15m.json zframes/dashboards/gold.json zframes/dashboards/ndx.json zframes/dashboards/spx.json zframes/dashboards/div.json zframes/dashboards/gurus.json zframes/dashboards/gurus-cusip.json"  # + member dashboards, guru portfolios (scripts/gurus-13f.js) (scripts/zframes-refresh.sh)
+DATA_FILES="signals.json intraday.json chart-signals.json quota.json backtest.json backtest-30m.json backtest-15m.json zframes/dashboards/gold.json zframes/dashboards/ndx.json zframes/dashboards/spx.json zframes/dashboards/div.json zframes/dashboards/gurus.json zframes/dashboards/gurus-cusip.json zframes/dashboards/gurus-live.json"  # + member dashboards, guru portfolios (scripts/gurus-13f.js) (scripts/zframes-refresh.sh)
 
 data_load() {
   git fetch -q --depth=50 origin +refs/heads/data:refs/remotes/origin/data || return 1  # actions/checkout clones main only, shallow
