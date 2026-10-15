@@ -278,3 +278,12 @@ html.dark #tab-account .settings input:focus, html.dark #tab-account .settings s
   :is(html, html.dark) .nf-hd:not(:first-child) .nf-cat { display: none; }
   :is(html, html.dark) .nf-hd:first-child h3 { font-size: 19px; }
 }
+/* every story always shows a picture (15 Oct: "ข่าวต้องมีรูปทุกวัน"): a cover for its category sits behind the photo
+   and shows when the feed has no picture or it fails to load (the img then removes itself) */
+:is(html, html.dark) .nf-img { background: radial-gradient(circle at 30% 20%, rgba(240,185,11,.35), transparent 60%), linear-gradient(135deg, #3a2c08, #0b0e11); }
+:is(html, html.dark) .nf-img[data-cat="econ"] { background: radial-gradient(circle at 30% 20%, rgba(56,189,248,.35), transparent 60%), linear-gradient(135deg, #0c2a3d, #0b0e11); }
+:is(html, html.dark) .nf-img[data-cat="data"] { background: radial-gradient(circle at 30% 20%, rgba(14,203,129,.32), transparent 60%), linear-gradient(135deg, #0b3326, #0b0e11); }
+:is(html, html.dark) .nf-img::before { content: '🪙'; position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(34px, 6vw, 64px); }
+:is(html, html.dark) .nf-img[data-cat="econ"]::before { content: '🏛️'; } :is(html, html.dark) .nf-img[data-cat="data"]::before { content: '📊'; }
+:is(html, html.dark) .nf-img img { position: relative; z-index: 1; }
+:is(html, html.dark) .nf-img .nf-cat { z-index: 2; }

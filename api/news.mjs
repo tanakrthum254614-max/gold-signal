@@ -10,7 +10,7 @@ const FEEDS = [
   ['econ', 'เศรษฐกิจ', 'https://th.investing.com/rss/news_14.rss'],
   ['data', 'ตัวเลขเศรษฐกิจ', 'https://th.investing.com/rss/news_95.rss'],
 ];
-const TTL = 5 * 60e3;
+const TTL = 60e3; // 1 minute (user, 15 Oct: "ขอทุกอย่างอัพแบบเรียลไทม์")
 let cache = { at: 0, items: null };
 
 const unent = (s) => s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'")

@@ -254,7 +254,7 @@
   const pic = (x, big) => (x.img ? `<img loading="lazy" alt="" src="${esc(big ? x.img.replace(/_M\.jpg$/, '_L.jpg') : x.img)}" data-fb="${esc(x.img)}" onerror="if(this.dataset.fb&&this.src!==this.dataset.fb){this.src=this.dataset.fb}else{this.remove()}">` : '');
   const src = (x) => `<span class="nf-src"><i class="nf-logo">I</i>Investing.com · ${esc(x.label)}</span>`;
   const story = (x, kind) => `<a class="nf-${kind}" href="${esc(x.link)}" target="_blank" rel="noopener">
-      <div class="nf-img">${pic(x, kind !== 'card')}<span class="nf-cat ${x.cat}">${esc(x.label)}</span></div>
+      <div class="nf-img" data-cat="${x.cat}">${pic(x, kind !== 'card')}<span class="nf-cat ${x.cat}">${esc(x.label)}</span></div>
       <div class="nf-txt">${src(x)}<h3>${esc(x.title)}</h3><small class="nf-ago" data-t="${x.t || ''}">${ago(x.t)}</small></div></a>`;
   function renderFeed() {
     const box = $('nfBody'); if (!box) return;
@@ -270,7 +270,7 @@
     if (nf.html !== html) { nf.html = html; box.innerHTML = html; } // only when something changed: no picture flicker
   }
   async function loadFeed(force) {
-    if (nf.loading || (!force && Date.now() - nf.at < 5 * 60e3)) return;
+    if (nf.loading || (!force && Date.now() - nf.at < 55e3)) return; // every minute while the tab is open (user: "เรียลไทม์")
     nf.loading = true;
     try {
       const r = await fetch('/api/news', { cache: 'no-store' });
