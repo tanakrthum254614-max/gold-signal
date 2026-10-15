@@ -197,5 +197,5 @@ function flexMessage(a, sig, prev, sum, bt, news, intra, now) {
   console.log(`news today: ${news.length}`);
   const chartFile = path.join(__dirname, '..', 'chart-signals.json');
   const intra = fs.existsSync(chartFile) ? JSON.parse(fs.readFileSync(chartFile, 'utf8')).trades.filter((t) => t.tf === CS.MAIN_TF) : null;
-  await sendFlex(flexMessage(a, sig, prev, sum, bt, news, intra, now));
+  await sendFlex(flexMessage(a, sig, prev, sum, bt, news, intra, now), { kind: 'extra' }); // overview: LINE only while the quota has room
 })().catch((e) => { console.error(e); process.exit(1); });

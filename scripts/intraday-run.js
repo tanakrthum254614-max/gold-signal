@@ -81,7 +81,7 @@ function newsWarning(n, open) {
     }
   } else delete next.backupSince;
 
-  await send([...important, ...routine]);
+  await send([...important, ...routine], { kind: 'extra' }); // news warnings: LINE only while the quota has room (notify.js)
 
   if (process.env.RECORD === 'true') {
     fs.mkdirSync(STATE_DIR, { recursive: true });

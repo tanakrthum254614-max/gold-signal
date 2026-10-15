@@ -37,8 +37,8 @@ async function get(url) {
     await send([[
       `⚠️ โควตา LINE เดือนนี้ใช้ไปแล้ว ${out.used} / ${limit} ข้อความ (${Math.round((out.used / limit) * 100)}%)`,
       `เหลือ ${left} ข้อความ — ถ้าหมด จะไม่ได้รับแจ้งเตือนจนถึงต้นเดือนหน้า`,
-      'ดูสัญญาณสดได้ที่เว็บเสมอ · ถ้าต้องการรับครบทุกข้อความ อัปเกรดแพ็กเกจ LINE OA ได้ที่ manager.line.biz',
-    ].join('\n')]);
+      'ภาพรวมเช้า / เตือนข่าว ย้ายไปแจ้งเตือนเว็บเองเมื่อโควตาเหลือน้อย (LINE เก็บไว้ส่งสัญญาณเข้าไม้) · ดูสัญญาณสดได้ที่เว็บเสมอ',
+    ].join('\n')], { kind: 'admin' }); // admins only (notify.js) — not broadcast to members, no quota spent
     out.warned = now;
   }
   if (process.env.RECORD === 'true') fs.writeFileSync(FILE, `${JSON.stringify(out, null, 1)}\n`);

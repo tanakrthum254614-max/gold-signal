@@ -100,7 +100,7 @@ function section(name, trades) {
   const text = lines.join('\n');
   console.log(text);
 
-  await send([text]);
+  await send([text], { kind: 'extra' });
   if (changed && process.env.RECORD === 'true') {
     daily.summary = SIG.summary(daily.signals, SPREAD);
     daily.updatedAt = now;

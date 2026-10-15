@@ -13,7 +13,7 @@ const now = Date.now();
   const state = fs.existsSync(FILE) ? JSON.parse(fs.readFileSync(FILE, 'utf8')) : {};
   if (state[job] && now - state[job] < 3 * 3600e3) return console.log('already notified recently');
   const at = new Date(now).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Bangkok' });
-  await send([`⚠️ ระบบ Gold Signal มีปัญหา\nงาน: ${job}\nเวลา: ${at}\nระบบจะลองใหม่รอบถัดไปอัตโนมัติ — ถ้าเงียบนานผิดปกติ แปลว่ายังแก้ไม่ได้${process.env.RUN_URL ? `\nรายละเอียด: ${process.env.RUN_URL}` : ''}`]);
+  await send([`⚠️ ระบบ Gold Signal มีปัญหา\nงาน: ${job}\nเวลา: ${at}\nระบบจะลองใหม่รอบถัดไปอัตโนมัติ — ถ้าเงียบนานผิดปกติ แปลว่ายังแก้ไม่ได้${process.env.RUN_URL ? `\nรายละเอียด: ${process.env.RUN_URL}` : ''}`], { kind: 'admin' }); // admins only, never a broadcast
   fs.mkdirSync(STATE_DIR, { recursive: true });
   fs.writeFileSync(FILE, JSON.stringify({ ...state, [job]: now }));
 })().catch((e) => { console.error(e); process.exit(0); });
