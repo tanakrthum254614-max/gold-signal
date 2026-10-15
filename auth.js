@@ -9,40 +9,40 @@
     } catch (e) { return false; }
   })();
 
-  // Loading screen (15 Oct 2026 redesign: no panel / ring / chips): a gold price line draws itself left → right with
-  // the %, a glowing dot at its tip. The line is a fixed, gently rising walk (decoration, not market data).
-  // Shown for at least MIN_MS (14 Oct: 6500 ms; 15 Oct: "ขอให้เร็วขึ้น" → 4000 ms, the user's choice). The line can't run
-  // ahead of the clock, so it fills evenly over the whole MIN_MS.
-  const MIN_MS = 4000;
-  const W = 600, H = 140, N = 64;
-  const pts = (() => {
-    let y = 116, seed = 7;
-    const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
-    return Array.from({ length: N }, (_, i) => {
-      const trend = -1.45, wave = Math.sin(i / 5.5) * 2.6;
-      y = Math.max(18, Math.min(124, y + trend + wave + (rnd() - 0.5) * 9));
-      return [(i / (N - 1)) * W, y];
-    });
-  })();
-  const d = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
-  $('spxLine').setAttribute('d', d);
-  $('spxArea').setAttribute('d', `${d} L${W} ${H} L0 ${H} Z`);
-  const yAt = (x) => { const f = (x / W) * (N - 1), i = Math.min(N - 2, Math.floor(f)), t = f - i; return pts[i][1] + (pts[i + 1][1] - pts[i][1]) * t; };
+  // Progress ring (r = 72) + a counting percentage — no step texts (user, 12 Oct: too many words on the loading screen)
+  const RING = 2 * Math.PI * 72;
+  // Shown for at least MIN_MS so the logo animation plays once (14 Oct: 1200 → 2800 → 4000 → 6000 → 8000 ms after four
+  // "slower" requests, then 6500 ms: "ขอเร็วนิดนึง อีกนิดกำลังดีแล้ว"). The ring (and the loading candles, splashfx.js)
+  // can't run ahead of the clock, so they fill evenly over the whole MIN_MS.
+  const MIN_MS = 4000; // 15 Oct: "เอาแบบเดิมกลับมา แต่ขอให้เร็วขึ้นกว่าเดิม" (the line-chart redesign was rejected; 4 s = the user's pick)
   let shown = 0, target = 0, raf = 0, startAt = Date.now();
   function count() {
     const goal = Math.min(target, ((Date.now() - startAt) / MIN_MS) * 100); // paced by the clock
-    if (shown < goal) shown = Math.min(goal, shown + Math.max(0.4, (goal - shown) * 0.08));
-    const x = (shown / 100) * W;
-    $('splashPct').textContent = `${Math.round(shown)}%`;
-    $('spxReveal').setAttribute('width', x.toFixed(1));
-    const dot = $('spxDot');
-    dot.style.left = `${shown}%`;
-    dot.style.top = `${(yAt(x) / H) * 100}%`;
-    dot.classList.toggle('on', shown > 0.5);
+    if (shown < goal) shown = Math.min(goal, shown + Math.max(0.16, (goal - shown) * 0.05));
+    const pct = Math.round(shown), el = $('splashPct');
+    // Bump the number every 25%
+    if (Math.floor(pct / 25) > Math.floor(parseInt(el.textContent, 10) / 25)) {
+      el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+    }
+    el.textContent = `${pct}%`;
+    $('splashFill').style.strokeDashoffset = RING * (1 - shown / 100);
+    // Comet head at the tip of the ring (the svg is rotated −90°, so 0 rad = top)
+    const a = 2 * Math.PI * shown / 100, head = $('splashHead');
+    head.setAttribute('cx', (80 + 72 * Math.cos(a)).toFixed(2));
+    head.setAttribute('cy', (80 + 72 * Math.sin(a)).toFixed(2));
+    head.classList.toggle('on', shown > 0.5 && shown < 100);
+    // chips: done (✓) once the ring passes their mark, the next one pulses as "loading"
+    let active = false;
+    document.querySelectorAll('#splashChips li').forEach((li) => {
+      const done = shown >= +li.dataset.at;
+      li.classList.toggle('done', done);
+      li.classList.toggle('on', !done && !active);
+      if (!done) active = true;
+    });
     raf = shown < target ? requestAnimationFrame(count) : 0; // keeps running while the clock holds it back
   }
   window.SPLASH = {
-    step(text, pct) { // text: kept for the callers, not shown
+    step(text, pct) { // text: kept for the callers, no longer shown
       if (pct != null && pct > target) {
         target = pct;
         if (!raf) raf = requestAnimationFrame(count);
@@ -53,14 +53,16 @@
       setTimeout(() => {
         this.step('พร้อมแล้ว!', 100);
         const finish = () => {
-          if (shown < 100) return setTimeout(finish, 60);
+          if (shown < 100) return setTimeout(finish, 80);
           $('splash').classList.add('done');
-          setTimeout(() => $('splash').classList.add('gone'), 450);
+          setTimeout(() => $('splash').classList.add('gone'), 900);
         };
         finish();
       }, Math.max(0, startAt + MIN_MS - Date.now()));
     },
   };
+  $('splashFill').style.strokeDasharray = RING;
+  $('splashFill').style.strokeDashoffset = RING;
   SPLASH.step('กำลังเริ่มต้น…', 5);
 
   // Signing in happens on /login.html (Clerk); the server only serves this page to a signed-in member.
