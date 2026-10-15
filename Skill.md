@@ -93,6 +93,7 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 ### แจ้งเตือนบนเครื่อง (PWA) + สมาชิก + หลังบ้าน
 - PWA: `manifest.webmanifest`, `icons/`, `sw.js` (ไม่แคชข้อมูล, รับ push) · `pwa.js` ปุ่มติดตั้ง + เปิดแจ้งเตือน → เก็บใน Clerk `unsafeMetadata.push` (≤5 เครื่อง) · `scripts/push.js` ส่ง web push ทุกครั้งที่ส่ง LINE · VAPID ตั้งแล้ว (8 ต.ค., config.js มี vapidPublicKey)
 - **สมาชิกเท่านั้น**: `login.html` (Clerk อีเมล/Google) → `POST /api/session` → คุกกี้ `gs_auth` 14 วัน · `middleware.js` ตรวจทุก request (ห้าม import แพ็กเกจ, ไม่รับ body) · ไม่ล็อกอิน: หน้า → 302 /login.html, ไฟล์อื่น 401 · ระงับสมาชิกได้ (`access/banned.json`) · `?demo=1` เลิกใช้แล้ว
+  - **หน้า Demo** (16 ต.ค., ผู้ใช้อยากให้คนสแกน QR ดูก่อนสมัคร): `demo.html` อยู่ใน PUBLIC ของ middleware.js · ราคาสด + กราฟแท่งเทียนธรรมดา (lightweight-charts, investing.com → Binance PAXG สำรอง, โหลดใหม่ทุก 5 วิ, กรอบ 5m/15m/1h/5h/1d/1w) · **ไม่โหลดไฟล์ของสมาชิกเลย** (chartsys/chartzones/chartchat/main ฯลฯ ยัง 401 สำหรับคนไม่ล็อกอิน — ตรวจบนเว็บจริงแล้ว) · การ์ด 🔒 ฟีเจอร์สมาชิก (ข้อความเบลอเป็นตัวอย่าง ไม่ใช่ข้อมูลจริง) + ปุ่ม → /login.html#signup · login.html มีปุ่ม "👀 ทดลองดูก่อน (Demo)" เหนือกล่องล็อกอิน · ทดสอบ gold-signal-tools/demotest.cjs (ไม่มีคำขอไฟล์สมาชิก) + demolive.cjs
 - **หลังบ้าน** `/admin.html` (อีเมลใน env `ADMIN_EMAILS`): สมาชิก, บันทึกการเข้าใช้ (`access/log.json`), ระงับ/คืนสิทธิ์, เขียนบทความ · `new-members.yml` ทุก 15 นาที: `new-members.js` (แจ้งสมาชิกใหม่) + `watchdog.js` (ตัวบันทึกหยุด/ค้าง/ล้ม) → web push เฉพาะเครื่องแอดมิน (+ LINE push เจ้าของถ้ามี `LINE_OWNER_ID`) — **ห้าม broadcast**
 - **Vercel Functions** `api/*.mjs` (journal, articles, coach, news) + `lib/gs.mjs` (ก๊อปจาก middleware — **แก้ต้องแก้ทั้งสองที่**) · ข้อมูลใน Vercel Blob · ระบบชำระเงินเก็บไว้ที่ branch `payments-shelved` (ทุกอย่างฟรีตอนนี้)
 
@@ -298,6 +299,9 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 # 📜 บันทึกการเปลี่ยนแปลง (ใหม่สุดอยู่บน)
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
+
+## 👀 หน้า Demo สำหรับคนยังไม่สมัคร (16 ต.ค. 2569 · เวอร์ชัน 202610161500)
+- ผู้ใช้: "ตอนให้คนแสกน … อยากให้มี Demo ให้สมัครสมาชิก ถ้าคนไม่สมัครสมาชิกจะไม่เห็นเส้นสัญญาณ … เป็นกราฟแท่งปกติ … แชทถามตอบจะไม่มี · ถ้าสมัครจะเห็นทุกอย่าง" (เปลี่ยนจากเดิมที่ไม่มี demo) → demo.html (public) กราฟแท่งเทียนล้วน + การ์ดล็อก + ปุ่มสมัคร · login.html ปุ่ม Demo · middleware PUBLIC += demo.html · เว็บจริง: demo 200, chartsys/chartzones/chartchat/main/chart-signals.json 401 · commit 217b9f1
 
 ## 📮 LINE: ข้อความตอบอัตโนมัติ + รูปชวนเพิ่มเพื่อน QR (16 ต.ค. 2569 · ไม่ได้แก้เว็บ)
 - ผู้ใช้: "ทำต่อ้ลย" → `gold-signal-tools/lineqr.cjs <outDir> <previewDir>` (npm qrcode, ECC H + โลโก้กลาง) → Downloads gold-signal-line-addfriend-poster.png (1080×1350) / -square.png (1080×1080) · QR = https://line.me/R/ti/p/@279arudw — ถอดด้วย jsQR แล้วอ่านได้ทั้งสองไฟล์ · gold-signal-line-ตั้งค่า.txt เพิ่มข้อ 5 ข้อความ Auto-response (ตอบทุกข้อความ: ตอบแชทไม่ได้ → ปุ่มเมนู/เว็บ) และข้อ 6 รูป QR · ข้อความตอบกลับ (reply) ไม่กินโควตา
