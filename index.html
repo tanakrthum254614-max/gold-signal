@@ -11,13 +11,22 @@
       var S = 1.75, phone = Math.min(screen.width, screen.height) <= 600 && matchMedia('(pointer: coarse)').matches;
       if (!phone) return;
       document.documentElement.classList.add('vp-scaled');
+      // iPhone (user's phone: iPhone 13, 16 Oct): Safari keeps screen.width/height in portrait values and its innerWidth is the
+      // layout width we set, so the orientation comes from screen.orientation / window.orientation, not innerWidth.
+      // No viewport-fit=cover on scaled phones: Safari then keeps the page clear of the notch in landscape.
+      // minimum-scale = initial-scale so iOS re-applies the scale after a rotation and can't stay zoomed out.
+      function land() {
+        if (screen.orientation && screen.orientation.type) return /landscape/.test(screen.orientation.type);
+        if (typeof window.orientation === 'number') return Math.abs(window.orientation) === 90;
+        return innerWidth > innerHeight;
+      }
       function fit() {
-        var land = innerWidth > innerHeight || (screen.orientation && /landscape/.test(screen.orientation.type));
-        var w = Math.round((land ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)) * S);
-        document.getElementById('vp').setAttribute('content', 'width=' + w + ', initial-scale=' + (1 / S).toFixed(4) + ', viewport-fit=cover');
+        var w = Math.round((land() ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)) * S), k = (1 / S).toFixed(4);
+        document.getElementById('vp').setAttribute('content', 'width=' + w + ', initial-scale=' + k + ', minimum-scale=' + k);
       }
       fit();
-      addEventListener('orientationchange', function () { setTimeout(fit, 150); });
+      addEventListener('orientationchange', function () { setTimeout(fit, 150); setTimeout(fit, 600); });
+      if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', function () { setTimeout(fit, 150); });
     })();
   </script>
   <meta name="theme-color" content="#f3f5f9">
@@ -31,14 +40,14 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Gold Signal">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black"><!-- opaque: with no viewport-fit=cover on phones the page starts below the status bar (16 Oct) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=202610141600">
   <link rel="stylesheet" href="live.css?v=202610141600">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
-  <link rel="stylesheet" href="terminal.css?v=202610161000">
+  <link rel="stylesheet" href="terminal.css?v=202610161100">
   <link rel="stylesheet" href="splash.css?v=202610152000">
   <script>/* apply the saved theme before the first paint */ var gsT = "dark"; try { gsT = localStorage.getItem("gs-theme") === "light" ? "light" : "dark"; } catch (e) {} /* dark trading terminal = default since 14 Oct 2026 */ if (gsT === "dark") { document.getElementById("themeLight").disabled = true; document.documentElement.classList.add("dark"); document.querySelector("meta[name=theme-color]").content = "#0b0e11"; }</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -461,7 +470,7 @@
       </section>
 
       <section id="tab-zframes" class="tab" hidden>
-        <iframe id="zframesFrame" class="zframes-shell" title="หุ้นสหรัฐ — Nasdaq 100 · S&amp;P 500 · หุ้นปันผล" data-src="/zframes/index.html?d=ndx&amp;embed=1&amp;v=202610161000"></iframe>
+        <iframe id="zframesFrame" class="zframes-shell" title="หุ้นสหรัฐ — Nasdaq 100 · S&amp;P 500 · หุ้นปันผล" data-src="/zframes/index.html?d=ndx&amp;embed=1&amp;v=202610161100"></iframe>
       </section>
 
       <!-- 📓 Private trade journal (journal.js ← api/journal.mjs) — only the owner can read it -->
@@ -571,7 +580,7 @@
 
         <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610161000 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610161100 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
@@ -588,7 +597,7 @@
   <script src="signals.js?v=202610121500"></script>
   <script src="intraday.js?v=202610121500"></script>
   <script src="pwa.js?v=202610121500"></script>
-  <script src="ui.js?v=202610160000"></script>
+  <script src="ui.js?v=202610161100"></script>
   <script src="chartsys.js?v=202610152200"></script>
   <script src="main.js?v=202610160800"></script>
   <script src="tradeplan.js?v=202610121500"></script>

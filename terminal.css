@@ -369,3 +369,8 @@ html.vp-scaled .nf-chips button, html.vp-scaled .jr-tools .btn, html.vp-scaled .
 }
 html.vp-scaled .cc-quick { gap: 8px; }
 html.vp-scaled #tab-account p.muted a { display: inline-block; padding: 11px 0; }
+
+/* iPhone (16 Oct, user on iPhone 13): Safari enlarges text by itself in landscape unless told not to; inputs stay 16px so
+   tapping a field doesn't zoom the page in (and leave it zoomed) */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+html.vp-scaled input, html.vp-scaled select, html.vp-scaled textarea { font-size: 16px; }

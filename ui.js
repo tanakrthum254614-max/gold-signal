@@ -157,14 +157,16 @@
   try { skip = sessionStorage.getItem('gs-portrait-ok') === '1'; } catch (e) { /* storage blocked */ }
   if (!skip) html.classList.add('need-landscape');
   const canLock = !!(screen.orientation && screen.orientation.lock && html.requestFullscreen);
+  // iPhone (user's phone, 16 Oct): no full-screen lock in Safari → the button stays hidden, the hint says where the rotation lock is
+  const iOS = /iPhone|iPod/.test(navigator.userAgent);
   const el = document.createElement('div');
   el.id = 'rotateCover';
   el.setAttribute('role', 'dialog');
   el.innerHTML = `<div class="rot-box"><div class="rot-phone" aria-hidden="true"><i></i></div>
     <b>หมุนโทรศัพท์เป็นแนวนอน</b><p>Gold Signal ออกแบบให้ดูแนวนอนบนมือถือ กราฟ ตาราง และแดชบอร์ดจะกว้างขึ้น</p>
-    ${canLock ? '<button type="button" class="btn gold" id="rotGo">เปิดแนวนอนเต็มจอ</button>' : ''}
+    ${canLock && !iOS ? '<button type="button" class="btn gold" id="rotGo">เปิดแนวนอนเต็มจอ</button>' : ''}
     <button type="button" class="rot-skip" id="rotSkip">ดูแนวตั้งชั่วคราว</button>
-    <small>ถ้าหมุนแล้วจอไม่หมุน ให้ปิด “ล็อกการหมุนจอ” ของโทรศัพท์ก่อน</small></div>`;
+    <small>${iOS ? 'iPhone: ถ้าหมุนแล้วจอไม่หมุน ปัดลงจากมุมขวาบน → แตะไอคอนแม่กุญแจ (ล็อกการหมุนจอ) ให้ปิด แล้วหมุนเครื่องอีกครั้ง' : 'ถ้าหมุนแล้วจอไม่หมุน ให้ปิด “ล็อกการหมุนจอ” ของโทรศัพท์ก่อน'}</small></div>`;
   document.body.appendChild(el);
   const lock = async () => {
     try {

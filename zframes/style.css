@@ -406,3 +406,7 @@ html.light .livebadge.on { color: #0f9f6e; border-color: rgba(15, 159, 110, .4);
 /* inside the site on a scaled phone (~57%): taller tap areas, same text size (16 Oct, phone sweep) */
 html.site-scaled .zn button, html.site-scaled .rng, html.site-scaled .top select { min-height: 44px; }
 html.site-scaled .rng { min-width: 48px; }
+
+/* iPhone: no automatic text enlarging in landscape; 16px fields so tapping the search box doesn't zoom */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+html.site-scaled input, html.site-scaled select { font-size: 16px; }
