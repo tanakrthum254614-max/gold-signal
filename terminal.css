@@ -239,8 +239,8 @@ html.dark #tab-account .settings input:focus, html.dark #tab-account .settings s
 :is(html, html.dark) .nf-logo { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; font-style: normal; font-size: 11px; font-weight: 800; background: #f0b90b; color: #111; }
 :is(html, html.dark) .nf h3 { margin: 6px 0 6px; font-weight: 700; line-height: 1.45; transition: color .2s; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
 :is(html, html.dark) .nf-ago { font-size: 13px; color: #f6465d; font-weight: 500; }
-:is(html, html.dark) .nf-top { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 20px; }
-:is(html, html.dark) .nf-lead h3 { font-size: 24px; -webkit-line-clamp: 3; }
+:is(html, html.dark) .nf-top { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+:is(html, html.dark) .nf-lead h3, :is(html, html.dark) .nf-top .nf-sub h3 { font-size: 20px; -webkit-line-clamp: 2; }
 :is(html, html.dark) .nf-side { display: flex; flex-direction: column; gap: 16px; }
 :is(html, html.dark) .nf-sub { display: block; }
 :is(html, html.dark) .nf-sub h3 { font-size: 17px; -webkit-line-clamp: 2; }
@@ -263,4 +263,18 @@ html.dark #tab-account .settings input:focus, html.dark #tab-account .settings s
   :is(html, html.dark) .nf-sub .nf-src, :is(html, html.dark) .nf-card .nf-src { font-size: 12px; }
 }
 /* the lead picture fills the height of the two side stories on wide screens */
-@media (min-width: 761px) { :is(html, html.dark) .nf-lead .nf-img { aspect-ratio: 6 / 5; } }
+/* top row: the lead and the story beside it are the same size (16:9) — 15 Oct "ใหญ่ไป เอาขนาดเดียวกันเท่ากับด้านขวา" */
+/* top row = 3 stories the same size (15 Oct: the lead was "ใหญ่ไป เอาขนาดเดียวกันเท่ากับด้านขวา") — replaces lead + side */
+:is(html, html.dark) .nf .nf-top { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+:is(html, html.dark) .nf-hd { display: flex; flex-direction: column; }
+:is(html, html.dark) .nf-hd h3 { font-size: 18px; -webkit-line-clamp: 3; }
+@media (max-width: 1000px) { :is(html, html.dark) .nf .nf-top { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  :is(html, html.dark) .nf .nf-top { grid-template-columns: 1fr; }
+  /* phones: the first story with its picture on top, the next two as rows like the list */
+  :is(html, html.dark) .nf-hd:not(:first-child) { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: start; }
+  :is(html, html.dark) .nf-hd:not(:first-child) .nf-txt { padding-top: 0; }
+  :is(html, html.dark) .nf-hd:not(:first-child) h3 { font-size: 15px; margin: 4px 0; }
+  :is(html, html.dark) .nf-hd:not(:first-child) .nf-cat { display: none; }
+  :is(html, html.dark) .nf-hd:first-child h3 { font-size: 19px; }
+}

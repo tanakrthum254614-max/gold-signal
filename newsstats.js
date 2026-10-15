@@ -254,7 +254,7 @@
   const pic = (x, big) => (x.img ? `<img loading="lazy" alt="" src="${esc(big ? x.img.replace(/_M\.jpg$/, '_L.jpg') : x.img)}" data-fb="${esc(x.img)}" onerror="if(this.dataset.fb&&this.src!==this.dataset.fb){this.src=this.dataset.fb}else{this.remove()}">` : '');
   const src = (x) => `<span class="nf-src"><i class="nf-logo">I</i>Investing.com · ${esc(x.label)}</span>`;
   const story = (x, kind) => `<a class="nf-${kind}" href="${esc(x.link)}" target="_blank" rel="noopener">
-      <div class="nf-img">${pic(x, kind === 'lead')}<span class="nf-cat ${x.cat}">${esc(x.label)}</span></div>
+      <div class="nf-img">${pic(x, kind !== 'card')}<span class="nf-cat ${x.cat}">${esc(x.label)}</span></div>
       <div class="nf-txt">${src(x)}<h3>${esc(x.title)}</h3><small class="nf-ago" data-t="${x.t || ''}">${ago(x.t)}</small></div></a>`;
   function renderFeed() {
     const box = $('nfBody'); if (!box) return;
@@ -262,8 +262,8 @@
     if (!nf.items) { nf.html = ''; box.innerHTML = `<p class="muted">${nf.err ? `โหลดข่าวไม่ได้ (${esc(nf.err)}) — ลองใหม่อีกครั้งภายหลัง` : 'กำลังโหลดข่าว…'}</p>`; return; }
     const list = nf.items.filter((x) => nf.cat === 'all' || x.cat === nf.cat);
     if (!list.length) { nf.html = ''; box.innerHTML = '<p class="muted">ยังไม่มีข่าวในหมวดนี้</p>'; return; }
-    const [lead, ...rest] = list, side = rest.slice(0, 2), grid = rest.slice(2, 2 + nf.show);
-    const html = `<div class="nf-top">${story(lead, 'lead')}<div class="nf-side">${side.map((x) => story(x, 'sub')).join('')}</div></div>
+    const [lead, ...rest] = list, side = rest.slice(0, 2), grid = rest.slice(2, 2 + nf.show); // top row: 3 stories the same size (user, 15 Oct: the big lead was "ใหญ่ไป")
+    const html = `<div class="nf-top">${[lead, ...side].map((x) => story(x, 'hd')).join('')}</div>
       ${grid.length ? `<div class="nf-grid">${grid.map((x) => story(x, 'card')).join('')}</div>` : ''}
       ${rest.length > 2 + nf.show ? `<button type="button" class="btn nf-more" data-nfmore="1">ดูข่าวเพิ่ม (${rest.length - 2 - nf.show})</button>` : ''}
       <p class="nf-note">ข่าวจาก Investing.com ภาษาไทย · กดที่ข่าวเพื่ออ่านฉบับเต็มที่เว็บต้นทาง · ข่าวไม่ใช่คำแนะนำการลงทุน</p>`;
