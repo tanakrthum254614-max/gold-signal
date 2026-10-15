@@ -63,7 +63,7 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 - **แชทถามจุดเข้า** (`chartchat.js`) ในการ์ดสัญญาณหน้ากราฟ (`#ccSlot`): ตอบจากระบบ (ไม่ใช้ AI) กรอบ 5m/15m/30m/1h + โหมด 🤖 โค้ช AI (`api/coach.mjs`) · `window.GS_SIGNALS / GS_NEWS / GS_RECORD / GS_LIVE` ให้แดชบอร์ด zframes อ่าน
 - **การ์ดขวาหน้ากราฟ** `#signalCard`: หัวตามระบบของกรอบนั้น (Buy / Sell / ถือ / รอก่อน) · investing.com = "ความเห็นภายนอก" · เครื่องคำนวณ lot `#calcCard` (`tradeplan.js`) ใต้กราฟ เติมด้วยปุ่ม 🧮
 - **หน้าสัญญาณ** (`#tab-home`): ราคาสด `#liveHero` · การ์ดระบบหลัก 1h `#intraCard` (`homeDecide` = `decideWith(SYS[MAIN_TF].frames …)` บน `homeCandles()` = investing h1/h5 + Binance `state.h4` จาก chartzones refreshSlow, แท่ง h4 กำลังวิ่งขยับตามราคาสดใน patchIntraCandles · แถบคะแนน −6…+6 `#sm`, การ์ดย่อย 1 ชม./4 ชม./5 ชม., นับถอยหลังแท่ง 1 ชม., `#inDetail` เหตุผลรายตัวชี้วัด, ไม้ที่ถือ, `#inBeat` สถานะตัวบันทึกจาก GitHub API) · "ถ้าเข้าตอนนี้" โดนัท `#dnBuy/#dnSell` · ข่าวถัดไป `#inNews` · ภาพรวมรายวัน `#sigCard` (`#sgMain` เทียบกับระบบหลัก)
-- **ข่าวสหรัฐ** (`#tab-stats`, `newsstats.js`): ปฏิทินข่าวแรง (`importance=high` — **ไม่ใช่ `importances`**) 60 วันย้อนหลัง + 8 วันหน้า, ทองหลังข่าว, ข่าวไหนทำให้ทองวิ่งแรง, กดอ่านคำอธิบายไทย, แถบ `#newsLive` นับถอยหลังทุกแท็บ · การ์ดบทความ `#artCard` · **ไม่มีหน้าสถิติไม้จริงแล้ว** (ลบ 9 ต.ค. — ระบบหลังบ้านยังบันทึกครบ)
+- **ข่าวสหรัฐ** (`#tab-stats`, `newsstats.js`) แบบเว็บข่าว (15 ต.ค.): (1) **ข่าวล่าสุด** `#nfCard` = ข่าวจริงภาษาไทยมีรูปจาก `api/news.mjs` (RSS th.investing.com news_11 ทองคำ/โภคภัณฑ์ · news_14 เศรษฐกิจ · news_95 ตัวเลขเศรษฐกิจ, สมาชิกเท่านั้น, แคช 5 นาทีใน function, เวลาในฟีดเป็น UTC, id = `article-<key>` ทั้งก้อน) ข่าวเด่นรูปใหญ่ (_L.jpg → fallback _M) + 2 ข่าวข้าง + การ์ด 3 คอลัมน์ (มือถือ = รูปซ้ายหัวข้อขวา) ชิปหมวด, "x นาทีที่ผ่านมา", ลิงก์ไปอ่านที่ต้นทาง · (2) ปฏิทินข่าวแรง (`importance=high` — **ไม่ใช่ `importances`**) 60 วันย้อนหลัง + 8 วันหน้า: การ์ดข่าวถัดไป `.nc-hero` (ชื่อข่าว + นับถอยหลัง + "ทองมักขยับ ~$" + ผลกับทองจาก ABOUT) · ข่าวที่จะออกแบ่งวัน `.nc-day` ป้าย 🔥 ≥$15 / ⚡ ≥$8 / เบา (`impactOf` จากค่าเฉลี่ย 1 ชม. ของข่าวชื่อเดียวกัน) · ข่าวที่ออกแล้วเป็นการ์ด `.nc.past` (ทอง 1 ชม. + ✓ ไปตามตำรา) · ตารางสถิติพับใน `details.nc-stats` · กดอ่านคำอธิบายไทย, แถบ `#newsLive` นับถอยหลังทุกแท็บ · การ์ดบทความ `#artCard` · **ไม่มีหน้าสถิติไม้จริงแล้ว** (ลบ 9 ต.ค. — ระบบหลังบ้านยังบันทึกครบ)
 - **แดชบอร์ด** (`#tab-zframes`): iframe `/zframes/index.html?embed=1` (ทอง / Nasdaq 100 / S&P 500 / ปันผล) ข้อมูลจาก branch data อัปเดต 06:00 ทุกวัน · **สมุดเทรด** (`#tab-journal`, `journal.js` → `api/journal.mjs`) · **บัญชี** (`#tab-account`): ตั้งค่าทุน/ความเสี่ยง/สเปรด (Clerk `unsafeMetadata.goldSettings` + localStorage), แจ้งเตือน/ติดตั้งแอป `#pwaCard`, โควตา LINE, ลิงก์หลังบ้าน (แอดมิน)
 - เมนู 6 แท็บ: สัญญาณ · ข่าวสหรัฐ · กราฟ · แดชบอร์ด · สมุดเทรด · บัญชี — ไอคอนเส้น SVG (**ห้ามกลับไปใช้อีโมจิ**) · ≥900px เป็นเมนูซ้าย, มือถือเป็นแถบล่าง
 
@@ -83,7 +83,7 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 - PWA: `manifest.webmanifest`, `icons/`, `sw.js` (ไม่แคชข้อมูล, รับ push) · `pwa.js` ปุ่มติดตั้ง + เปิดแจ้งเตือน → เก็บใน Clerk `unsafeMetadata.push` (≤5 เครื่อง) · `scripts/push.js` ส่ง web push ทุกครั้งที่ส่ง LINE · VAPID ตั้งแล้ว (8 ต.ค., config.js มี vapidPublicKey)
 - **สมาชิกเท่านั้น**: `login.html` (Clerk อีเมล/Google) → `POST /api/session` → คุกกี้ `gs_auth` 14 วัน · `middleware.js` ตรวจทุก request (ห้าม import แพ็กเกจ, ไม่รับ body) · ไม่ล็อกอิน: หน้า → 302 /login.html, ไฟล์อื่น 401 · ระงับสมาชิกได้ (`access/banned.json`) · `?demo=1` เลิกใช้แล้ว
 - **หลังบ้าน** `/admin.html` (อีเมลใน env `ADMIN_EMAILS`): สมาชิก, บันทึกการเข้าใช้ (`access/log.json`), ระงับ/คืนสิทธิ์, เขียนบทความ · `new-members.yml` ทุก 15 นาที: `new-members.js` (แจ้งสมาชิกใหม่) + `watchdog.js` (ตัวบันทึกหยุด/ค้าง/ล้ม) → web push เฉพาะเครื่องแอดมิน (+ LINE push เจ้าของถ้ามี `LINE_OWNER_ID`) — **ห้าม broadcast**
-- **Vercel Functions** `api/*.mjs` (journal, articles, coach) + `lib/gs.mjs` (ก๊อปจาก middleware — **แก้ต้องแก้ทั้งสองที่**) · ข้อมูลใน Vercel Blob · ระบบชำระเงินเก็บไว้ที่ branch `payments-shelved` (ทุกอย่างฟรีตอนนี้)
+- **Vercel Functions** `api/*.mjs` (journal, articles, coach, news) + `lib/gs.mjs` (ก๊อปจาก middleware — **แก้ต้องแก้ทั้งสองที่**) · ข้อมูลใน Vercel Blob · ระบบชำระเงินเก็บไว้ที่ branch `payments-shelved` (ทุกอย่างฟรีตอนนี้)
 
 ---
 
@@ -107,7 +107,7 @@ indicators.js   ตัวชี้วัด + เครื่องโหวต 
 investing.js / explain.js / dailyplan.js   แปลผล investing.com · แนวโน้ม 3 ช่วง · Pivot (PLAN.levelsFromDaily)
 pwa.js · sw.js · manifest.webmanifest · icons/ · logo.svg
 middleware.js   ตรวจสมาชิก, /api/session|me|logout|push|visit|admin/*, เสิร์ฟ JSON + แดชบอร์ดจาก branch data (raw.githubusercontent.com)
-api/            journal.mjs · articles.mjs · coach.mjs (Vercel Functions) · lib/gs.mjs (cookie/Blob ร่วม)
+api/            journal.mjs · articles.mjs · coach.mjs · news.mjs (Vercel Functions) · lib/gs.mjs (cookie/Blob ร่วม)
 zframes/        หน้าแดชบอร์ด (สำเนาเว็บของ /zframes) · zframes-build/ ตัวสร้างแดชบอร์ดที่ GitHub ใช้
 research/indicators/  งานวิจัย + monthly-research (indlab.js, monthly.js, verify.js, fetch_news.py)
 compare.html + compare/   ภาพเทียบแบบเก่า/ใหม่ทุกงาน
@@ -287,6 +287,13 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 # 📜 บันทึกการเปลี่ยนแปลง (ใหม่สุดอยู่บน)
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
+
+## 📰 หน้าข่าวสหรัฐแบบเว็บข่าว: ข่าวจริงมีรูป + ปฏิทินเป็นการ์ด (15 ต.ค. 2569 · เวอร์ชัน 202610151400 · commit 0e64014)
+- ผู้ใช้ (รูปหน้าข่าวเดิม): "หน้าข่าวยังดูยาก ไม่น่าสนใจ" → เลือก "การ์ดข่าวทีละเรื่อง" → ระหว่างทำส่งรูปเว็บข่าว (IUX24 / เว็บข่าวไทย): "อยากให้เป็นแบบนี้ ให้รูปและข้อความบอก … น่าดูและน่าเชื่อถือ" → เลือก "ดึงข่าวจริงจากสำนักข่าว" (ไม่เอาภาพปกที่เราทำเอง)
+- แหล่ง: th.investing.com/rss/news_11 · news_14 · news_95 (ฟีดละ 10 ข่าว: หัวข้อไทย, enclosure รูป Reuters บน content-media.investing.com, pubDate UTC, link) · เบราว์เซอร์อ่านเองไม่ได้ (ไม่มี CORS) · Node fetch ธรรมดาได้ 200 (ไม่ติด Cloudflare แบบ api.investing.com) → `api/news.mjs` (member() จาก lib/gs.mjs, รับเฉพาะลิงก์/รูปโดเมน investing.com, `collect()` export ไว้ทดสอบในเครื่อง) · probe: `gold-signal-tools/probe-news.cjs`, `probe-rss.cjs` (news HTML ไม่มี API ให้ใช้)
+- **บั๊กที่เจอ**: id จาก `article-(\\d+)` ได้ "93" ซ้ำทุกข่าวแบบ `article-93CH-798426` → ตัดซ้ำเหลือ 13 จาก 30 → ใช้ทั้งก้อน · คอมเมนต์ `//` กลาง object บรรทัดเดียวกินโค้ดที่เหลือ (SyntaxError)
+- newsstats.js: `renderFeed` วาดใหม่เฉพาะเมื่อ HTML เปลี่ยน (`nf.html`, กันรูปกะพริบ เพราะ renderStats ถูกเรียกบ่อย) · `loadFeed` ทุก 5 นาทีเมื่อแท็บเปิด · ปฏิทิน: `statsByName`/`impactOf`/`dayLabel`/`goldRule` · CSS ท้าย terminal.css `.nf*` และ `.nc*` (`:is(html, html.dark)` ทั้ง 2 ธีม)
+- ทดสอบ: `gold-signal-tools/newsshot.cjs <port> <tag> <out> [light]` (NEWS_JSON = ข่าวจริงจาก collect()) + `nfview.cjs` 1440/390 มืด/สว่าง ไม่ล้น ไม่มี error · production `/api/news` ไม่ล็อกอิน = 401 · **ยังไม่ได้ยืนยันว่าเครื่อง Vercel ดึง RSS ได้** (ต้องเป็นสมาชิกถึงจะเรียกได้) — ถ้าดึงไม่ได้ หน้าเว็บขึ้น "โหลดข่าวไม่ได้" ส่วนปฏิทินยังทำงาน · ทางสำรอง: GitHub Actions + curl_cffi เขียนลง branch data
 
 ## ⚠️ จุดเข้ากลับมาทุกกรอบ แบบติดป้ายเสี่ยง (15 ต.ค. 2569 · เวอร์ชัน 202610151300 · commit 1a643e6)
 - ผู้ใช้ (รูปกราฟ 1 ชม.): "ทำไมไม่เห็นจุดเข้าของทุกทามเฟรมเลย ตั้งแต่ 5 15 30 1ชม. 5ชม. 1วัน 1สัปดาห์" → เลือก "เปิดกลับให้เห็นบนกราฟ แต่ติดป้ายเสี่ยง" (ไม่เอาเปิดกลับทั้งหมด / ไม่เอาคงไว้) — **บทเรียน: ผู้ใช้อยากเห็นจุดเข้าทุกกรอบ อย่าซ่อนจุดเข้า ให้ติดป้ายแทน**
