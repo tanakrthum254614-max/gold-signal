@@ -362,3 +362,44 @@ select option { background: #161a1e; }
 .rng.on { background: rgba(240, 185, 11, .14); color: #f0b90b; border-color: rgba(240, 185, 11, .5); }
 .lc .ref.now { background: rgba(240, 185, 11, .25); }
 table.st tbody tr:hover { background: rgba(240, 185, 11, .06); }
+
+/* ---------- Light mode inside the site (html.light from app.js) — palette = theme.css :root ---------- */
+html.light { --bg0: #faf8f3; --bg1: #faf8f3; --bg2: #ffffff; --card: #ffffff; --line: #ece6d8;
+  --ink: #1f2430; --dim: #4a4f5c; --muted: #6e6a60; --up: #0f9f6e; --down: #e0424f; --warn: #d27d06; --acc: #b9800c; color-scheme: light; }
+html.light body, html.light body::before { background: #faf8f3; }
+html.light .top { background: rgba(250, 248, 243, .95); }
+html.light .brand { color: #1f2430; }
+html.light .card { background: #fff; border-color: #ece6d8; box-shadow: 0 1px 2px rgba(60, 45, 10, .05); }
+html.light .zn { background: linear-gradient(180deg, rgba(250, 248, 243, .97), rgba(250, 248, 243, .9)); }
+html.light .zn button, html.light .zn a { background: #fff; border-color: #ece6d8; color: #4a4f5c; }
+html.light .zn button:hover, html.light .zn a:hover { color: #1f2430; border-color: #b9800c; }
+html.light .zn button.on { color: #1f2430; background: #f0b429; border-color: #f0b429; }
+html.light select, html.light .tbar input { background: #fff; border-color: #ece6d8; color: #1f2430; }
+html.light select option { background: #fff; }
+html.light .bar, html.light .rbar, html.light .dsc, html.light .gs-bar { background: rgba(0, 0, 0, .07); }
+html.light .tile, html.light .bt, html.light .q, html.light .gs-call, html.light ul.gs-news li, html.light .candle-state.waiting, html.light .candle-ohlc span { background: #f7f4ec; }
+html.light .lc .grid { stroke: rgba(0, 0, 0, .07); }
+html.light .lc .ref { background: rgba(255, 255, 255, .85); }
+html.light .lc .ref.now, html.light .candle-chart .ref.now { color: #1f2430; background: #f0b429; }
+html.light .rng.on { background: rgba(240, 180, 41, .18); color: #8a5d00; border-color: rgba(185, 128, 12, .5); }
+html.light .rng:hover, html.light .rng:focus-visible { color: #1f2430; }
+html.light table.st th { background: #f7f4ec; } html.light table.st th.on { color: #1f2430; }
+html.light table.st tbody tr:hover, html.light table.peers tbody tr:hover td { background: rgba(240, 180, 41, .08); }
+html.light table.peers tbody tr.me td { background: rgba(240, 180, 41, .16); }
+html.light .mbox { background: #faf8f3; border-color: #ece6d8; }
+html.light .hm, html.light .hm-sec, html.light .hm-t { border-color: #faf8f3; } html.light .hm { background: #faf8f3; }
+html.light .dots i { color: rgba(185, 128, 12, .35); }
+html.light .rbar span, html.light .dsc i { background: linear-gradient(90deg, #d9a21b, #b9800c); }
+html.light .candle-state.fresh, html.light .livebadge.on { color: #0f9f6e; }
+/* SVG drawn by frames*.js with white strokes / dots (CSS beats SVG presentation attributes) */
+html.light svg [stroke="#fff"] { stroke: #1f2430; }
+html.light svg [fill="#fff"] { fill: #1f2430; }
+html.light svg [stroke="rgba(255,255,255,.35)"] { stroke: rgba(0, 0, 0, .3); }
+html.light svg [stroke="rgba(255,255,255,.08)"] { stroke: rgba(0, 0, 0, .08); }
+html.light .scard .sc-read b { color: #1f2430; }
+/* bottom price ticker + live badge: dark+gold in dark mode, cream in light mode */
+.ticker { background: rgba(11, 14, 17, .96); }
+.livebadge { background: #161a1e; }
+html.light .ticker { background: rgba(255, 255, 255, .97); border-top-color: #ece6d8; }
+html.light .livebadge { background: #fff; border-color: #ece6d8; color: #4a4f5c; }
+html.light .livebadge.on { color: #0f9f6e; border-color: rgba(15, 159, 110, .4); }
