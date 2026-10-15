@@ -2,7 +2,24 @@
 <html lang="th">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" id="vp">
+  <script>
+    // Phones: the whole site drawn 1.5× wider and scaled down by the phone (user, 16 Oct 2026: "ใหญ่ไป ขอเล็กลงมาก ๆ เลย
+    // ในของโทรศัพท์") — everything shrinks together (text, numbers, cards, charts, the US stocks iframe) and charts keep
+    // correct touch positions (real viewport scaling, not CSS zoom). Desktop / tablets unchanged.
+    (function () {
+      var S = 1.5, phone = Math.min(screen.width, screen.height) <= 600 && matchMedia('(pointer: coarse)').matches;
+      if (!phone) return;
+      document.documentElement.classList.add('vp-scaled');
+      function fit() {
+        var land = innerWidth > innerHeight || (screen.orientation && /landscape/.test(screen.orientation.type));
+        var w = Math.round((land ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)) * S);
+        document.getElementById('vp').setAttribute('content', 'width=' + w + ', initial-scale=' + (1 / S).toFixed(4) + ', viewport-fit=cover');
+      }
+      fit();
+      addEventListener('orientationchange', function () { setTimeout(fit, 150); });
+    })();
+  </script>
   <meta name="theme-color" content="#f3f5f9">
   <title>Gold Signal · สัญญาณเทรดทองคำ</title>
   <meta name="description" content="สัญญาณเทรดทองคำ XAU/USD ทุกกรอบเวลา (5 นาที – 1 สัปดาห์) Buy/Sell พร้อมจุดเข้า SL TP ที่ทดสอบย้อนหลังแล้ว และสถิติข่าวเศรษฐกิจสหรัฐที่มีผลกับทอง">
@@ -441,7 +458,7 @@
       </section>
 
       <section id="tab-zframes" class="tab" hidden>
-        <iframe id="zframesFrame" class="zframes-shell" title="หุ้นสหรัฐ — Nasdaq 100 · S&amp;P 500 · หุ้นปันผล" data-src="/zframes/index.html?d=ndx&amp;embed=1&amp;v=202610160100"></iframe>
+        <iframe id="zframesFrame" class="zframes-shell" title="หุ้นสหรัฐ — Nasdaq 100 · S&amp;P 500 · หุ้นปันผล" data-src="/zframes/index.html?d=ndx&amp;embed=1&amp;v=202610160200"></iframe>
       </section>
 
       <!-- 📓 Private trade journal (journal.js ← api/journal.mjs) — only the owner can read it -->
@@ -551,7 +568,7 @@
 
         <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610160100 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610160200 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
