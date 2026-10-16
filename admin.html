@@ -391,7 +391,8 @@
         ].join('') + (s.problems.length ? `<li class="err" style="margin-top:4px">${s.problems.map(esc).join('<br>')}</li>` : '')
           + (() => { // what Stripe still wants (17 Oct 2026)
             const d = a.due || {}, list = [...(d.past || []), ...(d.now || [])];
-            if (!list.length && !(d.pending || []).length && !d.reason) return '';
+            if (!s.account || (a.payouts && !list.length)) return '';
+            if (!list.length && !(d.pending || []).length && !d.reason) return `<li class="note" style="margin-top:6px">📋 <b>Stripe แจ้ง:</b> ไม่ได้ขอข้อมูลเพิ่ม และไม่มีอะไรรอตรวจ — ส่วนใหญ่ Stripe แค่ยังเปิดโอนเงินออกไม่เสร็จหลังเพิ่มบัญชีธนาคาร (รอ 1–2 วันทำการแล้วกดตรวจใหม่) · ถ้าเกิน 3 วัน ติดต่อ Stripe Support: "Payouts are not enabled on my Thailand account"</li>`;
             return `<li class="note" style="margin-top:6px">📋 <b>Stripe แจ้ง:</b> ${d.reason ? `เหตุผล <code>${esc(d.reason)}</code> · ` : ''}${list.length ? `ต้องกรอกเพิ่ม <code>${list.map(esc).join('</code>, <code>')}</code> → Stripe → Settings → Business → Account details` : ''}${(d.pending || []).length ? ` · กำลังตรวจ (รอ Stripe): <code>${d.pending.map(esc).join('</code>, <code>')}</code>` : ''}${d.deadline ? ` · กำหนด ${new Date(d.deadline * 1000).toLocaleDateString('th-TH')}` : ''}</li>`;
           })();
         $('glLaunch').disabled = !s.ready;
