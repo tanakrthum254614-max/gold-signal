@@ -28,7 +28,7 @@ export async function status() {
           deadline: (a.requirements || {}).current_deadline || 0 } };
       if (a.country !== 'TH') s.problems.push(`บัญชีเป็นประเทศ ${a.country} — PromptPay ต้องเป็นบัญชีไทย (TH)`);
       if (!a.charges_enabled) s.problems.push('Stripe ยังไม่เปิดให้รับเงิน (รอยืนยันธุรกิจ)');
-      if (!a.payouts_enabled) s.problems.push('ยังโอนเงินออกไม่ได้ (เพิ่มบัญชีธนาคารใน Stripe) — รับเงินได้แต่จะค้างใน Stripe');
+      if (!a.payouts_enabled) s.problems.push(`ยังโอนเงินออกไม่ได้${(a.external_accounts && a.external_accounts.total_count) || ((a.requirements || {}).currently_due || []).every((x) => !/external_account/.test(x)) ? '' : ' (เพิ่มบัญชีธนาคารใน Stripe)'} — รับเงินได้ตามปกติ เงินพักไว้ใน Stripe จนกว่าจะเปิดโอน (ดู 📋 ด้านล่าง)`);
     } catch (e) { s.problems.push(`ตรวจบัญชีไม่ได้: ${e.message}${e.status === 403 ? ' (restricted key ต้องมีสิทธิ์ Accounts: Read)' : ''}`); }
   }
   const cfg = hasLiveKey() ? await liveConfig(true) : null;
