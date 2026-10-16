@@ -415,6 +415,40 @@ async function refreshSignals() {
   renderSignalHome();
   renderIntra();
   renderStats();
+  renderRecord();
+}
+
+// 📒 Every real trade of the timeframes that give entries (user, 16 Oct 2026: "ขอแม่นยำและเข้าใจง่ายในการใช้เทรดทอง") —
+// wins and losses alike, straight from chart-signals.json, so members judge the system by what really happened.
+// Per timeframe: tested win %, how often it trades, live record; then the last closed trades. Off timeframes' old
+// results stay in the total at the bottom (not hidden).
+function renderRecord() {
+  const box = $('recCard');
+  if (!box) return;
+  const all = (state.chartSig && state.chartSig.trades) || [];
+  const used = CHARTSYS.ENTRY_TFS, days = { '1h': 730, '5h': 700, '1d': 1826 };
+  const closed = (t) => t.status === 'win' || t.status === 'loss';
+  const sum = (a) => a.reduce((x, t) => x + (t.pnl || 0), 0);
+  const tiles = used.map((tf) => {
+    const c = CHARTSYS.SYS[tf].buy, mine = all.filter((t) => t.tf === tf), done = mine.filter(closed), w = done.filter((t) => t.pnl > 0).length;
+    const perWeek = c.n ? (c.n / (days[tf] / 7)) : { '1h': 2.4, '5h': 0.9, '1d': 0.35 }[tf];
+    const often = perWeek >= 1 ? `~${Math.round(perWeek)} ไม้/สัปดาห์` : `~${Math.max(1, Math.round(perWeek * 4.3))} ไม้/เดือน`;
+    const open = mine.find((t) => t.status === 'active');
+    return `<div class="rc-tile"><b>Buy ${TF_LABEL[tf]}${tf === CHARTSYS.MAIN_TF ? ' <small>ระบบหลัก</small>' : ''}</b>
+      <div class="rc-big mono">${c.win}%</div><small class="muted">ทดสอบย้อนหลังชนะ · ${often}</small>
+      <div class="rc-live">${done.length ? `ผลจริง ${done.length} ไม้ ชนะ ${w} · <b class="${sum(done) >= 0 ? 'up' : 'down'}">${money(sum(done))}</b>` : 'ผลจริง: ยังไม่มีไม้ที่ปิด'}${open ? '<br>🟡 ถือไม้อยู่ 1 ไม้' : ''}</div></div>`;
+  }).join('');
+  const rows = all.filter((t) => used.includes(t.tf) && closed(t)).sort((a, b) => (b.exitAt || b.createdAt) - (a.exitAt || a.createdAt)).slice(0, 10);
+  const day = (ms) => new Date(ms).toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
+  const why = { tp: 'ถึง TP', sl: 'โดน SL', be: 'ออกที่ทุน', eod: 'หมดเวลาถือ' };
+  const list = rows.length ? rows.map((t) => `<li class="${t.pnl > 0 ? 'win' : 'loss'}"><span>${t.pnl > 0 ? '✅' : '❌'} ${day(t.createdAt)} · ${t.side === 'SELL' ? 'Sell' : 'Buy'} ${TF_LABEL[t.tf]}</span>
+      <span class="mono">${f2(t.entry)} → ${f2(t.exitPrice)} <small>${why[t.closedBy] || ''}</small></span><b class="mono ${t.pnl > 0 ? 'up' : 'down'}">${money(t.pnl)}</b></li>`).join('')
+    : '<li class="muted">ยังไม่มีไม้ที่ปิดในกรอบ 1 ชม. / 5 ชม. / 1 วัน</li>';
+  const old = all.filter((t) => !used.includes(t.tf) && closed(t)), ow = old.filter((t) => t.pnl > 0).length;
+  const since = state.chartSig && state.chartSig.startedAt ? new Date(state.chartSig.startedAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Bangkok' }) : '';
+  box.innerHTML = `<div class="rc-tiles">${tiles}</div>
+    <h4 class="rc-h">ไม้ล่าสุด (ทั้งชนะและแพ้)</h4><ul class="rc-list">${list}</ul>
+    <p class="muted small">ต่อทอง 1 ออนซ์ ก่อนหักสเปรด · บันทึกอัตโนมัติตั้งแต่ ${since}${old.length ? ` · กรอบ 5 นาที – 30 นาที ปิดจุดเข้าแล้ว 16 ต.ค. (ผลจริงเดิม ${old.length} ไม้ ชนะ ${ow} · ${money(sum(old))})` : ''} · ผลในอดีตไม่รับประกันอนาคต ไม่ใช่คำแนะนำการลงทุน</p>`;
 }
 
 // Is the 30-minute system actually checking? intraday.json only changes when a trade changes, so ask

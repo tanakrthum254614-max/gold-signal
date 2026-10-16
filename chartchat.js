@@ -31,7 +31,7 @@
       <div class="cc-tfs" id="ccTfs" role="group" aria-label="ถามกรอบเวลา"><span>กรอบ:</span><button type="button" data-tf="">ตามกราฟ <small id="ccScreen"></small></button>${CHAT_TFS.map((t) => `<button type="button" data-tf="${t}">${nameOf(t)}</button>`).join('')}</div>
       <div class="cc-log" id="ccLog" aria-live="polite"></div>
       <div class="cc-quick" id="ccQuick">${QUICK.map(([t, k]) => `<button type="button" data-q="${k}">${t}</button>`).join('')}</div>
-      <form class="cc-form" id="ccForm"><input id="ccIn" autocomplete="off" placeholder="เช่น ซื้อที่ 4150 ได้ไหม · Sell 5 นาทีเมื่อไร"><button type="submit" class="btn">ส่ง</button></form>
+      <form class="cc-form" id="ccForm"><input id="ccIn" autocomplete="off" placeholder="เช่น ซื้อที่ 4150 ได้ไหม · Buy 1 ชม. เมื่อไร"><button type="submit" class="btn">ส่ง</button></form>
       <p class="cc-foot" id="ccFoot">ตอบจากระบบที่ทดสอบแล้ว · ไม่ใช่คำแนะนำการลงทุน</p>
     </section>`);
   const log = $('ccLog'), panel = $('ccPanel');
@@ -70,7 +70,7 @@
     $('ccMode').querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
     panel.classList.toggle('cc-ai', m === 'ai');
     $('ccTitle').textContent = m === 'ai' ? '🤖 พี่โค้ช AI' : '💬 ถามจุดเข้า Buy / Sell';
-    $('ccIn').placeholder = m === 'ai' ? 'เล่าให้พี่โค้ชฟัง เช่น แพ้ติดกัน 3 ไม้ ควรทำยังไง' : 'เช่น ซื้อที่ 4150 ได้ไหม · Sell 5 นาทีเมื่อไร';
+    $('ccIn').placeholder = m === 'ai' ? 'เล่าให้พี่โค้ชฟัง เช่น แพ้ติดกัน 3 ไม้ ควรทำยังไง' : 'เช่น ซื้อที่ 4150 ได้ไหม · Buy 1 ชม. เมื่อไร';
     $('ccFoot').textContent = m === 'ai' ? 'AI อ่านสัญญาณตอนนี้ + สมุดเทรดของคุณ · อาจผิดพลาดได้ · ไม่ใช่คำแนะนำการลงทุน' : 'ตอบจากระบบที่ทดสอบแล้ว · ไม่ใช่คำแนะนำการลงทุน';
   }
   // the coach's reply is plain text: escape, then keep line breaks and **bold**
@@ -164,7 +164,7 @@
     if (!sy.long && d.lastHour) out.push('🕐 ใกล้ตลาดปิด — ระบบไม่เปิดไม้ใหม่');
     if (n.stretched) out.push('📏 ราคายืดเกินขอบกรอบราคา (Bollinger) — มักย่อกลับก่อน อย่าไล่ราคา');
     if (n.unconf) { const c = CHARTSYS.CONFIRM[(d.score > 0 ? sy.buy : sy.sell || sy.buy).confirm]; if (c) out.push(`⏳ คะแนนถึงแล้ว แต่ ${c.name} ยังไม่ยืนยัน — รอ${c.wait}`); }
-    if (s) { const x = side(n, s); if (x && !x.tested) out.push(`⚠️ ฝั่ง${s > 0 ? 'ซื้อ' : 'ขาย'}ของกรอบ ${nameOf(n.tf)} ทดสอบย้อนหลังแล้วขาดทุน — ระบบไม่ให้สัญญาณฝั่งนี้`);
+    if (s) { const x = side(n, s); if (x && !x.tested) out.push(`⚠️ ฝั่ง${s > 0 ? 'ซื้อ' : 'ขาย'}ของกรอบ ${nameOf(n.tf)} ${CHARTSYS.whyNo(x.c)}`);
       if (x && x.risky) out.push(`${CHARTSYS.riskText(x.c)} — ถ้าเข้า ใช้ไม้เล็กกว่าปกติ`); }
     return out;
   }
@@ -187,7 +187,7 @@
     let t = `<b>ทำไมกรอบ ${nameOf(n.tf)} ยังไม่เข้า</b><br>คะแนนรวม <b>${signedScore(d.score)}</b> จาก ${fr}`;
     t += `<br>• Buy ต้องได้ +${B.th}${B.confirm ? ` และ ${CHARTSYS.CONFIRM[B.confirm].name} ยืนยันขาขึ้น` : ''} → ${side(n, 1).go ? '✅ ถึงแล้ว' : `ขาดอีก ${need(n, side(n, 1))} คะแนน`}`;
     t += S ? `<br>• Sell ต้องได้ −${S.th}${S.confirm ? ` และ ${CHARTSYS.CONFIRM[S.confirm].name} ยืนยันขาลง` : ''} → ${side(n, -1).go ? '✅ ถึงแล้ว' : `ขาดอีก ${need(n, side(n, -1))} คะแนน`}`
-      : `<br>• Sell: กรอบนี้ไม่มีสัญญาณขาย (ทดสอบย้อนหลังขาดทุน) — Sell มีแค่กรอบ 5 นาที (ติดป้ายเสี่ยง)`;
+      : `<br>• Sell: กรอบนี้ไม่มีสัญญาณขาย (ทดสอบย้อนหลังขาดทุน) — ตอนนี้ระบบไม่มีสัญญาณ Sell ที่ผ่านการทดสอบ`;
     const bl = blockers(n);
     if (bl.length) t += `<br>${bl.join('<br>')}`;
     t += `<br><small>คะแนนแต่ละกรอบ: ขาขึ้นแรง +2 · ขาขึ้น +1 · แกว่ง 0 · ขาลง −1 · ขาลงแรง −2 — ระบบเข้าเมื่อหลายกรอบเห็นตรงกัน</small>`;
@@ -201,7 +201,7 @@
     const risk = x.risky ? `<br>${CHARTSYS.riskText(x.c)} — Buy ที่กำไรครบทุกช่วงทดสอบ: กรอบ 1 ชม. · 5 ชม. · 1 วัน` : '';
     if (x.go) return `${t}<br>${x.risky ? '⚠️ มีสัญญาณ' : '✅ เข้าได้ตอนนี้'}ที่ ~<b>${p2(n.price)}</b> · ${levelsTxt(c, n.price, s)}${risk}`;
     t += risk;
-    if (!x.tested) t += `<br>⚠️ ฝั่ง${name}ของกรอบนี้ทดสอบย้อนหลังแล้วขาดทุน ระบบจึงไม่ให้สัญญาณ${s < 0 && n.tf !== '5m' ? ' — Sell มีแค่กรอบ 5 นาที ซึ่งติดป้ายเสี่ยง (กดเลือกกรอบ 5 นาทีด้านบนแล้วถามใหม่)' : ''}`;
+    if (!x.tested) t += `<br>⚠️ ฝั่ง${name}ของกรอบนี้ ${CHARTSYS.whyNo(x.c)}${s < 0 ? ' — ตอนนี้ไม่มีสัญญาณ Sell ที่ผ่านการทดสอบ' : ''}`;
     else if (!n.br) t += `<br>ขาดอีก ${need(n, x)} คะแนน${c.confirm ? ` และต้องมี ${CHARTSYS.CONFIRM[c.confirm].name} ยืนยัน` : ''}`;
     const zone = s > 0 ? z.buy : z.sell, spots = [];
     if (zone) spots.push(`โซน${s > 0 ? 'ซื้อ (แนวรับ)' : 'ขาย (แนวต้าน)'} <b>${zTxt(zone)}</b> — ห่างจากราคาตอนนี้ ${p2(Math.abs((s > 0 ? zone.top : zone.bottom) - n.price))} ดอลลาร์`);
@@ -219,9 +219,9 @@
     if (n.env) out.push(`🚫 อย่าไล่ซื้อเหนือ <b>${p2(n.env.up)}</b> หรือไล่ขายใต้ <b>${p2(n.env.lo)}</b> (นอกกรอบราคา) — มักย่อกลับเข้ากรอบ`);
     nextNews().slice(0, 3).forEach((x) => out.push(`🚫 อย่าเปิดไม้ช่วง <b>${hhmm(x.time - 30 * 60e3)}–${hhmm(x.time + 30 * 60e3)} น.</b> — ข่าว ${esc(x.title)}`));
     const [b, s] = [side(n, 1), side(n, -1)];
-    if (!b.tested) out.push(`🚫 ฝั่งซื้อกรอบ ${nameOf(n.tf)} ทดสอบไม่ผ่าน`);
+    if (!b.tested) out.push(`🚫 ฝั่งซื้อกรอบ ${nameOf(n.tf)} ${b.off ? 'ปิดจุดเข้าแล้ว — ใช้กรอบ 1 ชม. / 5 ชม. / 1 วัน' : 'ทดสอบไม่ผ่าน'}`);
     if (b.risky) out.push(`⚠️ ฝั่งซื้อกรอบ ${nameOf(n.tf)} เป็นสัญญาณเสี่ยง (ช่วงทดสอบล่าสุดไม่กำไร)`);
-    if (!s.tested) out.push(`🚫 ฝั่งขายกรอบ ${nameOf(n.tf)} ทดสอบไม่ผ่าน — ไม่มีสัญญาณ Sell ในกรอบนี้`);
+    if (!s.tested) out.push(`🚫 ฝั่งขายกรอบ ${nameOf(n.tf)} ${s.off ? 'ปิดจุดเข้าแล้ว' : 'ทดสอบไม่ผ่าน'} — ไม่มีสัญญาณ Sell ในกรอบนี้`);
     if (n.d.score <= -sy.buy.th / 2) out.push(`🚫 แนวโน้มลง (คะแนน ${signedScore(n.d.score)}) — อย่าซื้อสวนเทรนด์`);
     if (n.d.score >= sy.buy.th / 2) out.push(`🚫 แนวโน้มขึ้น (คะแนน ${signedScore(n.d.score)}) — อย่าขายสวนเทรนด์`);
     return `<b>ตำแหน่งที่ไม่ควรเข้า · กรอบ ${nameOf(n.tf)}</b> (ราคาตอนนี้ ${p2(n.price)})<br>${[...blockers(n), ...out].join('<br>') || 'ตอนนี้ไม่มีจุดอันตรายเด่น ๆ — แต่ยังต้องรอสัญญาณ 100% ก่อนเข้า'}`;
@@ -229,7 +229,7 @@
   function ansSLTP(n) {
     const h = holding(n); if (h) return h;
     const rows = n.sides.map((x) => { const c = x.c || sysOf(n).buy, L = CHARTSYS.levelsFor(c, n.price, x.side);
-      return `${sideName(x.side)} ถ้าเข้าที่ ${p2(n.price)} → SL <b>${p2(L.sl)}</b> (−$${Math.round(15 * c.mult)}) · ${L.tps.map((v, k) => `TP${k + 1} <b>${p2(v)}</b> (+$${CHARTSYS.usdList(c)[k]})`).join(' · ')}${x.tested ? '' : ' ⚠️ ฝั่งนี้ทดสอบไม่ผ่าน'}`; });
+      return `${sideName(x.side)} ถ้าเข้าที่ ${p2(n.price)} → SL <b>${p2(L.sl)}</b> (−$${Math.round(15 * c.mult)}) · ${L.tps.map((v, k) => `TP${k + 1} <b>${p2(v)}</b> (+$${CHARTSYS.usdList(c)[k]})`).join(' · ')}${x.tested ? '' : x.off ? ' ⏸ ฝั่งนี้ปิดจุดเข้า' : ' ⚠️ ฝั่งนี้ทดสอบไม่ผ่าน'}`; });
     return `<b>SL / TP ของระบบกรอบ ${nameOf(n.tf)}</b><br>${rows.join('<br>')}<br><small>ตัวเลขต่อทอง 1 ออนซ์ (0.01 lot) · ใช้ปุ่ม 🧮 บนการ์ดเพื่อคำนวณ lot ตามทุน</small>`;
   }
   function ansLevels(n) {
@@ -250,7 +250,7 @@
       const mine = fin.filter((r) => (r.side === 'SELL') === (k === 'SELL')), w = mine.filter((r) => r.pnl > 0).length, pnl = mine.reduce((a, r) => a + (r.pnl || 0), 0);
       const real = mine.length ? `ผลจริง ${mine.length} ไม้ ชนะ ${w} (${Math.round((w / mine.length) * 100)}%) ${pnl >= 0 ? '+' : '−'}$${Math.abs(SIG.round(pnl))}` : 'ผลจริง: ยังไม่มีไม้';
       if (!c) return `• ${name}: ❌ ทดสอบขาดทุน — ไม่ให้สัญญาณ${sy.sellQ ? ` (${sy.sellQ.map((v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v)}`).join(' / ')})` : ''}`;
-      return `• ${name}${c.risky ? ' ⚠️ เสี่ยง' : ''}: ทดสอบ ${sy.span} ชนะ <b>${c.win}%</b> · 4 ช่วง ${c.q.map((v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v)}`).join(' / ')}<br>&nbsp;&nbsp;${real}`;
+      return `• ${name}${c.off ? ` ⏸ ปิดจุดเข้า (${c.off})` : c.risky ? ' ⚠️ เสี่ยง' : ''}: ทดสอบ ${sy.span} ชนะ <b>${c.win}%</b> · 4 ช่วง ${c.q.map((v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v)}`).join(' / ')}<br>&nbsp;&nbsp;${real}`;
     };
     return `<b>ความแม่นยำ · กรอบ ${nameOf(n.tf)}</b><br>${row('🟢 Buy', sy.buy, 'BUY')}<br>${row('🔴 Sell', sy.sell, 'SELL')}<br><small>ทดสอบหลังหักสเปรด $0.4 · ผลจริง = ไม้ที่ระบบบันทึกตั้งแต่เริ่มบันทึก (ต่อทอง 1 ออนซ์) · ไม้น้อยยังสรุปไม่ได้</small>`;
   }
@@ -272,7 +272,7 @@
       if (e && px < e.lo) bad.push(`ต่ำกว่าขอบล่างกรอบราคา ${p2(e.lo)} = ไล่ราคา`);
       if (e && px >= e.up) good.push(`สูงกว่า/ชิดขอบบนกรอบราคา ${p2(e.up)} ✅`);
     }
-    if (!x.tested) bad.push(`ฝั่ง${name}กรอบ ${nameOf(n.tf)} ทดสอบย้อนหลังขาดทุน — ระบบไม่ให้สัญญาณฝั่งนี้`);
+    if (!x.tested) bad.push(`ฝั่ง${name}กรอบ ${nameOf(n.tf)} ${CHARTSYS.whyNo(x.c)}`);
     if (x.risky) bad.push(CHARTSYS.riskText(x.c));
     if (n.br) bad.push(`ระบบกรอบนี้พักอยู่: ${n.br.why}`);
     const verdict = bad.length ? `🚫 <b>ไม่ควร${name}ที่ ${p2(px)}</b>` : good.length ? `👍 <b>${p2(px)} เป็นจุดรอ${name}ที่ดี</b>` : `🤔 <b>${p2(px)} เป็นจุดกลาง ๆ</b> — ไม่ใช่แนวรับ/แนวต้านเด่น`;
@@ -306,7 +306,7 @@
     }
     if (hold.length) rec += `<br>📌 ถือไม้อยู่: ${hold.map(({ n }) => `กรอบ ${nameOf(n.tf)} ${n.open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}`).join(' · ')}`;
     const ups = ok.filter(({ n }) => (window.CZ_FDIR ? CZ_FDIR(n.d) : 0) > 0).length, downs = ok.filter(({ n }) => (window.CZ_FDIR ? CZ_FDIR(n.d) : 0) < 0).length;
-    const mood = ups === ok.length ? 'ทุกกรอบชี้ขึ้น — ฝั่งซื้อได้เปรียบ' : downs === ok.length ? 'ทุกกรอบชี้ลง — ฝั่งขายได้เปรียบ (Sell มีแค่กรอบ 5 นาที — ติดป้ายเสี่ยง)' : 'กรอบเล็กกับกรอบใหญ่ไม่ตรงกัน — ระวังสวนทาง รอให้ตรงกันก่อน';
+    const mood = ups === ok.length ? 'ทุกกรอบชี้ขึ้น — ฝั่งซื้อได้เปรียบ' : downs === ok.length ? 'ทุกกรอบชี้ลง — ฝั่งขายได้เปรียบ (ระบบยังไม่มีสัญญาณ Sell ที่ผ่านการทดสอบ — อย่าซื้อสวน)' : 'กรอบเล็กกับกรอบใหญ่ไม่ตรงกัน — ระวังสวนทาง รอให้ตรงกันก่อน';
     return `<b>สรุป 4 กรอบ</b> (ราคา ${p2(nowPrice())})<br>${rows.join('<br>')}<br>${rec}<br>🧭 ${mood}<br><small>% = ความพร้อมเข้า (100% = ถึงจุดเข้า) · ⚠️ = ฝั่งที่ทดสอบไม่ผ่าน ไม่ให้สัญญาณ</small>`;
   }
   async function ansBest(s) {
@@ -323,7 +323,7 @@
     if (go) t += `<br>✅ <b>เข้า ${name} กรอบ ${nameOf(go.n.tf)} ได้ตอนนี้</b> ที่ ~${p2(go.n.price)} · ${levelsTxt(go.x.c, go.n.price, s)}`;
     else if (tested.length) { const b = tested.filter((r) => !r.n.open && !r.n.br)[0]; t += b ? `<br>⏸ ยังไม่มีกรอบไหนถึงจุดเข้า — ใกล้สุดคือ ${nameOf(b.n.tf)} (${b.x.pct}%, ขาดอีก ${need(b.n, b.x)} คะแนน)` : ''; }
     else t += `<br>⚠️ ไม่มีกรอบไหนที่ ${name} ทดสอบผ่าน`;
-    if (s < 0) t += `<br><small>Sell ทดสอบผ่านแค่กรอบ 5 นาที (ต้องได้คะแนน −6 = ทุกกรอบลงแรง + SMA 20 &lt; SMA 50) — ช่วงทองขาขึ้นจะไม่ค่อยเกิด</small>`;
+    if (s < 0) t += `<br><small>ตอนนี้ระบบไม่มีสัญญาณ Sell ที่ผ่านการทดสอบ (Sell 5 นาทีปิดแล้ว 16 ต.ค. — ผลจริงชนะ 4 จาก 14) · จุดเข้าที่ใช้: Buy กรอบ 1 ชม. / 5 ชม. / 1 วัน</small>`;
     return t;
   }
   function ansNews() {

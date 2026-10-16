@@ -33,7 +33,7 @@
   </script>
   <meta name="theme-color" content="#f3f5f9">
   <title>Gold Signal · สัญญาณเทรดทองคำ</title>
-  <meta name="description" content="สัญญาณเทรดทองคำ XAU/USD ทุกกรอบเวลา (5 นาที – 1 สัปดาห์) Buy/Sell พร้อมจุดเข้า SL TP ที่ทดสอบย้อนหลังแล้ว และสถิติข่าวเศรษฐกิจสหรัฐที่มีผลกับทอง">
+  <meta name="description" content="สัญญาณเทรดทองคำ XAU/USD กราฟทุกกรอบเวลา จุดเข้า Buy กรอบ 1 ชม. / 5 ชม. / 1 วัน พร้อม SL TP ที่ทดสอบย้อนหลังแล้ว และผลจริงทุกไม้ และสถิติข่าวเศรษฐกิจสหรัฐที่มีผลกับทอง">
   <meta property="og:title" content="Gold Signal · สัญญาณเทรดทองคำ">
   <meta property="og:description" content="สัญญาณ Buy/Sell ทองคำทุกกรอบเวลา · จุดเข้า / SL / TP ที่ทดสอบย้อนหลังแล้ว · สถิติข่าวสหรัฐที่ทำให้ทองวิ่ง">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
@@ -46,7 +46,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=202610141600">
-  <link rel="stylesheet" href="live.css?v=202610170200">
+  <link rel="stylesheet" href="live.css?v=202610170600">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
   <link rel="stylesheet" href="terminal.css?v=202610170200">
@@ -226,6 +226,10 @@
           <div class="card dn sell" id="dnSell"></div>
         </div>
         <p class="muted small dn-note" id="dnNote"></p>
+
+        <!-- 📒 Real results of every trade on the timeframes with entries (main.js renderRecord, 16 Oct 2026) -->
+        <h3 class="sec-title">📒 ผลจริงทุกไม้ · จุดเข้าที่ใช้เทรด</h3>
+        <div class="card rec" id="recCard"><p class="muted">กำลังโหลดผลจริง…</p></div>
 
         <!-- US news + today's trades card hidden (user, 16 Oct 2026, screenshot: "เอาออก"); main.js still fills it, news pause still applies -->
         <div class="card news-card home-off">
@@ -598,7 +602,7 @@
 
         <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610170400 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610170600 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
@@ -617,12 +621,12 @@
   <script src="intraday.js?v=202610121500"></script>
   <script src="pwa.js?v=202610121500"></script>
   <script src="ui.js?v=202610161100"></script>
-  <script src="chartsys.js?v=202610152200"></script>
-  <script src="main.js?v=202610160800"></script>
+  <script src="chartsys.js?v=202610170600"></script>
+  <script src="main.js?v=202610170600"></script>
   <script src="tradeplan.js?v=202610121500"></script>
-  <script src="chartzones.js?v=202610170200"></script>
+  <script src="chartzones.js?v=202610170600"></script>
   <script src="newsstats.js?v=202610170000"></script>
-  <script src="chartchat.js?v=202610170200"></script>
+  <script src="chartchat.js?v=202610170600"></script>
   <script src="journal.js?v=202610170400"></script>
   <script src="pricealerts.js?v=202610170100"></script>
   <script src="motion.js?v=202610141800"></script>

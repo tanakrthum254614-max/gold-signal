@@ -683,3 +683,19 @@ body.cz-clean .charts > .legend { display: none; }
 .cc-mode button.on { background: var(--gold); color: #1c2433; font-weight: 700; }
 .cc-ai .cc-quick, .cc-ai .cc-tfs { display: none; }
 .cc-ai .cc-log:empty::before { content: "เล่าให้พี่โค้ชฟังได้เลย — ขาดทุน หัวร้อน หรืออยากให้ช่วยดูสมุดเทรด"; }
+
+/* 📒 Real results of every trade (main.js renderRecord, 16 Oct 2026) */
+.rec .rc-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.rec .rc-tile { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 2px; align-content: start; }
+.rec .rc-tile b small { font-weight: 600; font-size: 11px; color: var(--gold); margin-left: 4px; }
+.rec .rc-big { font-size: 26px; font-weight: 700; color: var(--gold); line-height: 1.2; }
+.rec .rc-live { margin-top: 6px; font-size: 13px; }
+.rec .up { color: var(--up); } .rec .down { color: var(--down); }
+.rec .rc-h { margin: 14px 0 6px; font-size: 14px; }
+.rec .rc-list { list-style: none; margin: 0 0 8px; padding: 0; }
+.rec .rc-list li { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 7px 2px; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.rec .rc-list li small { color: var(--muted); }
+@media (max-width: 640px) {
+  .rec .rc-tiles { grid-template-columns: 1fr; }
+  .rec .rc-list li { grid-template-columns: 1fr auto; } .rec .rc-list li > span.mono { grid-column: 1 / -1; order: 3; }
+}

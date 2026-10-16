@@ -14,6 +14,11 @@
 // labelled ⚠️ เสี่ยง, never the main system and not in LINE (CHART_NOTIFY). Briefly switched off the same morning; the
 // user wanted entries visible on every timeframe ("เปิดกลับให้เห็นบนกราฟ แต่ติดป้ายเสี่ยง"). Entry filters and
 // multi-timeframe agreement were tested first (research/indicators/qualtest.js, confluence.js) — none held up.
+// off (16 Oct 2026, user: "ขอความแม่นยำสูงในการเข้าเทรด ไม่อยากให้คนที่สมัครมาผิดหวัง" → "ทำมาเลย"): the risky sides
+// are switched off — live 7–16 Oct 38 trades, 39% win, −$103, nearly all on 5m/15m/30m, and the SL/TP study
+// (research/indicators/exitlab.js, 72 exits per timeframe) found nothing that makes 5m/15m BUY pay in the latest period.
+// Entries now only on 1h, 5h and 1d BUY (profitable in all 4 test periods). Off sides keep their settings and numbers
+// (shown as "ปิดจุดเข้า"), but give no entries, no records, no LINE.
 // MAIN_TF = the timeframe of the signals tab and LINE's "ระบบหลัก" (30m until 15 Oct 2026, now 1h).
 (function (root) {
   const INTRA = root.INTRA || (typeof require === 'function' ? require('./intraday.js') : null);
@@ -23,10 +28,10 @@
     // 2026, research/indicators/newstest.js): it helps on 5m (BUY +$407 → +$554, 4/4 periods; SELL +$353 → +$451) and
     // 1h (+$774 → +$792), but hurts 15m (+$465 → +$377) and 30m (+$957 → +$828) — so only 5m and 1h skip the news.
     '5m': { news: true, frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', H, 60, '1 ชม.']], span: '2 ปี',
-      buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 54, q: [331, 551, 104, -433] }, sell: { risky: 'ผลจริงชนะต่ำกว่าทดสอบมาก (14 ไม้ ชนะ 4)', th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T09:54:00+07:00', win: 53, q: [39, 84, 156, 172] },
+      buy: { off: 'ช่วงทดสอบล่าสุดขาดทุน', risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 54, q: [331, 551, 104, -433] }, sell: { off: 'ผลจริงชนะต่ำกว่าทดสอบมาก (14 ไม้ ชนะ 4)', risky: 'ผลจริงชนะต่ำกว่าทดสอบมาก (14 ไม้ ชนะ 4)', th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T09:54:00+07:00', win: 53, q: [39, 84, 156, 172] },
       every: -1480 }, // taking every small arrow one at a time, SL / TP1 $15
-    '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดกำไรน้อยมาก', th: 6, tp1: true, mult: 1.5, confirm: 'ema921', since: '2026-10-09T09:40:00+07:00', win: 56, q: [261, 72, 84, 48] }, sellQ: [115, -233, -72, 204] },
-    '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 57, q: [264, 462, 239, -7] }, sellQ: [129, -174, -58, 113] },
+    '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { off: 'ช่วงทดสอบล่าสุดกำไรน้อยมาก', risky: 'ช่วงทดสอบล่าสุดกำไรน้อยมาก', th: 6, tp1: true, mult: 1.5, confirm: 'ema921', since: '2026-10-09T09:40:00+07:00', win: 56, q: [261, 72, 84, 48] }, sellQ: [115, -233, -72, 204] },
+    '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { off: 'ช่วงทดสอบล่าสุดขาดทุน', risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 57, q: [264, 462, 239, -7] }, sellQ: [129, -174, -58, 113] },
     '1h': { news: true, frames: [['h1', H, 60, '1 ชม.'], ['h4', 4 * H, 60, '4 ชม.'], ['h5', 5 * H, 40, '5 ชม.']], span: '2 ปี',
       buy: { th: 5, tp1: false, mult: 2, win: 57, q: [192, 209, 359, 32] }, sellQ: [-62, 4, -112, 8] },
     '5h': { frames: [['h5', 5 * H, 60, '5 ชม.'], ['d1', DAY, 60, '1 วัน']], span: '2 ปี', long: true, hold: 5 * DAY,
@@ -34,7 +39,7 @@
     '1d': { frames: [['d1', DAY, 60, '1 วัน'], ['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '5 ปี', long: true, hold: 20 * DAY,
       buy: { th: 3, tp1: true, mult: 8, win: 64, q: [128, 218, 1243, 966] }, sellQ: [92, -120, 0, 12] },
     '1w': { frames: [['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '4 ปี', long: true, hold: 84 * DAY, few: 23,
-      buy: { risky: 'ไม้ทดสอบน้อย และผลช่วงล่าสุดไม่สม่ำเสมอ', th: 1, tp1: true, mult: 20, win: 70, q: [196, 737, 1167, 296] } },
+      buy: { off: 'ไม้ทดสอบน้อย และผลช่วงล่าสุดไม่สม่ำเสมอ', risky: 'ไม้ทดสอบน้อย และผลช่วงล่าสุดไม่สม่ำเสมอ', th: 1, tp1: true, mult: 20, win: 70, q: [196, 737, 1167, 296] } },
   };
   const NONE = { ...INTRA.RULE, threshold: 99, sides: 'both', noChase: false }; // score only; entries decided by dirOf
   // TP $ before × mult: TP1 only, or TP $15/20/30 — the targets the tests used (indlab / monthly / qualtest). Not
@@ -50,19 +55,22 @@
     sma2050: { name: 'SMA 20/50', wait: ' SMA 20 ตัดผ่าน SMA 50' },
   };
   const confirmed = (c, dec, side) => !c.confirm || !dec.conf || dec.conf[c.confirm] === side;
+  // A side in use: has settings and isn't switched off
+  const on = (c) => (c && !c.off ? c : null);
+  const ENTRY_TFS = ['1h', '5h', '1d']; // where entries are on (shown in "use these instead" texts)
   // Entry direction for a decision: only on a side that passed its test (risky sides included), never chasing outside the Bollinger band,
   // and with the side's confirmation indicator agreeing
   function dirOf(sys, dec) {
     if (!dec || (!sys.long && (dec.stale || dec.lastHour || (sys.news && dec.news)))) return 0;
-    const B = sys.buy, S = sys.sell;
+    const B = on(sys.buy), S = on(sys.sell);
     if (B && dec.score >= B.th) return dec.bbPos >= 1 || !confirmed(B, dec, 1) ? 0 : 1;
     if (S && dec.score <= -S.th) return dec.bbPos <= 0 || !confirmed(S, dec, -1) ? 0 : -1;
     return 0;
   }
   // Score is there (and not stretched) but the confirmation indicator disagrees
-  const unconfirmed = (sys, dec) => { const B = sys.buy, S = sys.sell;
+  const unconfirmed = (sys, dec) => { const B = on(sys.buy), S = on(sys.sell);
     return !!dec && ((B && dec.score >= B.th && dec.bbPos < 1 && !confirmed(B, dec, 1)) || (S && dec.score <= -S.th && dec.bbPos > 0 && !confirmed(S, dec, -1))); };
-  const stretched = (sys, dec) => { const B = sys.buy, S = sys.sell;
+  const stretched = (sys, dec) => { const B = on(sys.buy), S = on(sys.sell);
     return !!dec && ((B && dec.score >= B.th && dec.bbPos >= 1) || (S && dec.score <= -S.th && dec.bbPos <= 0)); };
   // Score at time t from closed candles (live = also the forming ones). data: { <frame key>: candles (ms) }
   const decide = (sys, data, t, news, live) => INTRA.decideWith(sys.frames, NONE, data, t, sys.news ? news : null, live);
@@ -79,12 +87,12 @@
   // agree. pct = how far the score has come toward that side's threshold (100 = entry); a side that failed its test uses
   // the Buy threshold mirrored and is never "ควรเข้า". br = the safety brake (brake()) or null.
   function sideInfo(sys, dec, side, br) {
-    const c = side > 0 ? sys.buy : sys.sell, cc = c || sys.buy, dir = dirOf(sys, dec), risky = !!(c && c.risky);
-    const tested = !!c, go = tested && dir === side && !br;
+    const c = side > 0 ? sys.buy : sys.sell, cc = c || sys.buy, dir = dirOf(sys, dec), off = !!(c && c.off), risky = !off && !!(c && c.risky);
+    const tested = !!on(c), go = tested && dir === side && !br;
     const pct = !dec ? 0 : dir === side ? 100 : Math.max(0, Math.min(tested ? 99 : 100, Math.round(((side > 0 ? dec.score : -dec.score) / cc.th) * 100)));
     const verdict = br && tested ? '⛔ พัก — ไม่เข้า' : go ? (risky ? '⚠️ มีสัญญาณ แต่เสี่ยง' : '✅ ควรเข้า')
-      : !tested ? (pct >= 100 ? '⚠️ ถึงเกณฑ์ แต่ไม่แนะนำ' : '⚠️ ไม่แนะนำ') : '⏸ ยังไม่ควรเข้า';
-    return { side, c, pct, tested, risky, go, verdict, key: br && tested ? 'bad' : go ? 'good' : !tested ? 'bad' : 'wait' };
+      : off ? '⏸ ปิดจุดเข้า — ดูทิศเท่านั้น' : !tested ? (pct >= 100 ? '⚠️ ถึงเกณฑ์ แต่ไม่แนะนำ' : '⚠️ ไม่แนะนำ') : '⏸ ยังไม่ควรเข้า';
+    return { side, c, pct, tested, risky, off, go, verdict, key: br && tested ? 'bad' : go ? 'good' : !tested ? 'bad' : 'wait' };
   }
 
   // Test results refreshed by the monthly study (test-stats.json, written by research/indicators/monthly.js:
@@ -123,9 +131,11 @@
   }
 
   // Why a side is risky (messages: chart card, chat); c.risky = the reason (15 Oct 2026 study, qualtest.js)
-  const riskText = (c) => (c && c.risky ? `⚠️ สัญญาณเสี่ยง — ${c.risky} · ไม่ส่ง LINE` : '');
+  const riskText = (c) => (c && c.risky && !c.off ? `⚠️ สัญญาณเสี่ยง — ${c.risky} · ไม่ส่ง LINE` : '');
+  // Why a side gives no entries (chart card, chat)
+  const whyNo = (c) => (c && c.off ? `ปิดจุดเข้าแล้ว (${c.off}) — ใช้ดูทิศเท่านั้น · จุดเข้าอยู่ที่กรอบ 1 ชม. / 5 ชม. / 1 วัน` : 'ทดสอบย้อนหลังแล้วขาดทุน — ระบบไม่ให้สัญญาณฝั่งนี้');
   const MAIN_TF = '1h';
-  const CHARTSYS = { SYS, MAIN_TF, riskText, NONE, CONFIRM, usdList, levelsFor, maxScore, dirOf, stretched, unconfirmed, sideInfo, applyStats, decide, trade, brake };
+  const CHARTSYS = { SYS, MAIN_TF, ENTRY_TFS, on, whyNo, riskText, NONE, CONFIRM, usdList, levelsFor, maxScore, dirOf, stretched, unconfirmed, sideInfo, applyStats, decide, trade, brake };
   if (typeof module !== 'undefined' && module.exports) module.exports = CHARTSYS;
   else root.CHARTSYS = CHARTSYS;
 })(typeof window !== 'undefined' ? window : globalThis);
