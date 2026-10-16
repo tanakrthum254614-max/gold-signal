@@ -22,7 +22,7 @@ export async function POST(request) {
   const meta = { uid: m.id, plan, days: PLANS[plan].days, method };
   const common = {
     client_reference_id: m.id, metadata: meta, locale: 'th', integration_identifier: 'gold-signal-pro-qmtkrbzx',
-    success_url: `${origin}/?pay=ok#account`, cancel_url: `${origin}/?pay=cancel#account`,
+    success_url: `${origin}/pay.html?pay=ok`, cancel_url: `${origin}/pay.html?pay=cancel`,
     ...(customer ? { customer } : { customer_email: m.email || undefined }),
   };
   try {

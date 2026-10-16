@@ -252,6 +252,14 @@ export default async function middleware(request) {
     if (isAdmin(who)) await markAdminDevices(who.id).catch(() => {});
     return json({ name: who.name, email: who.email, admin: isAdmin(who) });
   }
+  // 💰 Paid membership (user, 16 Oct 2026: "อยากให้ตอนสมัครสมาชิกเสียตังเลย แยกเป็นรายเดือนและรายปี … ยกเว้นบัญชีแอดมิน"):
+  // once the paywall is on, a member who hasn't paid (or whose PRO ran out) only reaches /pay.html and what it needs.
+  if (path === '/api/paid') return json({ ok: true, paid: await paidOk(who, true) });
+  if (!PAY_OPEN.test(path) && !(await paidOk(who))) {
+    const page = path === '/' || path.endsWith('.html') || (request.headers.get('accept') || '').includes('text/html');
+    if (page) return new Response(null, { status: 302, headers: { location: '/pay.html', 'cache-control': 'no-store' } });
+    return json({ ok: false, pay: true, error: 'ต้องสมัครแพ็กเกจก่อน' }, 402);
+  }
   if (path === '/api/push') return pushApi(request, who);
   if (path === '/api/gurus/follow') return (await proOk(who, 'dashboard')) ? guruFollowApi(request, who) : proWall(path); // ⭐ gurus = PRO
   if (path === '/api/alerts') return priceAlertApi(request, who);
@@ -411,11 +419,24 @@ async function adminMembers() {
 // ---------- PRO (access/pro.json, written by api/pay/webhook.mjs and api/pro.mjs — same rules as lib/gs.mjs proOf) ----------
 // Paywall on = env PRO_ENABLED=1 or access/pro-config.json { enabled } (the back office's go-live button)
 let proCache = { at: 0, users: {}, enabled: false };
-async function proOk(m, feature) {
-  if (Date.now() - proCache.at > 30e3) {
+async function proState(fresh) {
+  if (fresh || Date.now() - proCache.at > 30e3) {
     const [cfg, all] = await Promise.all([readJson('access/pro-config.json', {}), readJson('access/pro.json', { users: {} })]);
     proCache = { at: Date.now(), users: all.users || {}, enabled: !!cfg.enabled };
   }
+  return proCache;
+}
+// The pay page, its price list and Stripe checkout stay open to signed-in members who haven't paid
+const PAY_OPEN = /^\/(pay\.html|api\/pro|api\/pay\/(checkout|portal)|api\/visit)$/;
+async function paidOk(m, fresh) {
+  const c = await proState(fresh);
+  if (process.env.PRO_ENABLED !== '1' && !c.enabled) return true; // paywall off = everyone in
+  if (isAdmin(m)) return true;
+  const u = c.users[m.id];
+  return !!(u && u.until > Date.now());
+}
+async function proOk(m, feature) {
+  await proState();
   if (process.env.PRO_ENABLED !== '1' && !proCache.enabled) return true;
   if (!(process.env.PRO_FEATURES || 'ai,dashboard,signals,alerts').split(',').map((s) => s.trim()).includes(feature)) return true;
   if (isAdmin(m)) return true;

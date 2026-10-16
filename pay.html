@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- 💰 Pay page (user, 16 Oct 2026: "อยากให้ตอนสมัครสมาชิกเสียตังเลย แยกเป็นรายเดือนและรายปี … ยกเว้นบัญชีแอดมิน").
+       middleware.js sends every signed-in member who hasn't paid here (admins never). Stripe returns to ?pay=ok / ?pay=cancel;
+       PRO is switched on by the webhook, so ?pay=ok waits for /api/paid before going into the site. -->
+  <title>เลือกแพ็กเกจ · Gold Signal</title>
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #f3f5f9; --panel: #fff; --line: #e2e7ef; --text: #1c2433; --muted: #697386; --gold: #b9800c; --btn: #f0b90b; --down: #e0424f; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #0d1016; --panel: #151a23; --line: #262e3b; --text: #e6e9ef; --muted: #8a93a3; --gold: #e8b64c; } }
+    * { box-sizing: border-box; } [hidden] { display: none !important; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px calc(24px + env(safe-area-inset-bottom)); background: var(--bg); color: var(--text);
+      font-family: "IBM Plex Sans Thai", system-ui, sans-serif; line-height: 1.6; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    main { width: 100%; max-width: 720px; display: grid; gap: 16px; justify-items: center; }
+    .brand { display: flex; align-items: center; gap: 12px; } .brand img { width: 44px; height: 44px; } .brand b { font-size: 26px; }
+    h1 { font-size: 21px; margin: 0; text-align: center; }
+    .lead { margin: 0; color: var(--muted); font-size: 14.5px; text-align: center; }
+    .plans { width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+    .plan { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px; display: grid; gap: 10px; align-content: start; }
+    .plan.best { border-color: var(--btn); box-shadow: 0 0 0 1px var(--btn); }
+    .tag { position: absolute; top: -11px; right: 16px; background: var(--btn); color: #1c2433; font-size: 12.5px; font-weight: 700; padding: 1px 10px; border-radius: 999px; }
+    .plan b { font-size: 16px; } .price { font-size: 30px; font-weight: 700; color: var(--gold); line-height: 1.2; } .price small { font-size: 15px; color: var(--muted); font-weight: 400; }
+    .plan .muted { margin: 0; }
+    button { font: inherit; font-weight: 700; font-size: 15px; min-height: 46px; padding: 10px 14px; border-radius: 12px; cursor: pointer; border: 1px solid var(--line); background: transparent; color: inherit; }
+    button.gold { background: var(--btn); border-color: var(--btn); color: #1c2433; }
+    button:disabled { opacity: .55; cursor: wait; }
+    .card { width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; }
+    .card ul { margin: 6px 0 0; padding-left: 20px; } .card li { font-size: 14.5px; }
+    .muted { color: var(--muted); font-size: 13.5px; } a { color: var(--gold); }
+    #status { margin: 0; text-align: center; font-size: 15px; } #status:empty { display: none; } .foot { margin: 0; } #status.err { color: var(--down); }
+    .foot { text-align: center; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand"><img src="logo.svg" alt=""><b>Gold Signal</b></div>
+    <h1 id="title">เลือกแพ็กเกจเพื่อเริ่มใช้งาน</h1>
+    <p class="lead" id="who">สมาชิก Gold Signal ใช้ได้ทุกฟีเจอร์ — เลือกรายเดือนหรือรายปี</p>
+    <div class="plans" id="plans">
+      <div class="plan" data-k="month">
+        <b>รายเดือน</b><div class="price"><span data-amount>199 บาท</span> <small>/ 30 วัน</small></div>
+        <button class="gold" type="button" data-plan="month" data-method="card">💳 บัตร · ต่ออายุอัตโนมัติ</button>
+        <button type="button" data-plan="month" data-method="promptpay">📱 PromptPay / บัตร · จ่ายครั้งเดียว 30 วัน</button>
+      </div>
+      <div class="plan best" data-k="year">
+        <span class="tag">คุ้มกว่า ~2 เดือน</span>
+        <b>รายปี</b><div class="price"><span data-amount>1,990 บาท</span> <small>/ 365 วัน</small></div>
+        <button class="gold" type="button" data-plan="year" data-method="card">💳 บัตร · ต่ออายุอัตโนมัติ</button>
+        <button type="button" data-plan="year" data-method="promptpay">📱 PromptPay / บัตร · จ่ายครั้งเดียว 365 วัน</button>
+      </div>
+    </div>
+    <p id="status" role="status"></p>
+    <div class="card">
+      <b>ได้ทุกอย่างในเว็บ</b>
+      <ul>
+        <li>ราคาทองสด · สัญญาณ Buy/Sell ทุกกรอบเวลา 5 นาที – 1 สัปดาห์ · แชทถามจุดเข้า</li>
+        <li>หุ้นสหรัฐ Nasdaq 100 · S&amp;P 500 · หุ้นปันผล + พอร์ตกูรู 28 คน + แจ้งเตือนกูรูซื้อขาย</li>
+        <li>โค้ช AI · ข่าว + ปฏิทินข่าวแรง · สมุดเทรด · แจ้งเตือนราคาทอง 10 รายการ · แจ้งเตือน LINE</li>
+      </ul>
+    </div>
+    <p class="muted foot">ชำระผ่าน Stripe — เว็บนี้ไม่เห็นและไม่เก็บเลขบัตร · เปิดสิทธิ์ทันทีที่ชำระสำเร็จ · ยกเลิกการต่ออายุได้ทุกเมื่อ · คืนเงินได้ภายใน 7 วัน<br>
+      <a href="/terms.html">เงื่อนไข ยกเลิก และคืนเงิน</a> · <a href="/demo.html">ทดลองดู (Demo)</a> · <a href="/api/logout">ออกจากระบบ</a> · ไม่ใช่คำแนะนำการลงทุน</p>
+  </main>
+  <script>
+    (function () {
+      const $ = (id) => document.getElementById(id);
+      const say = (t, err) => { $('status').textContent = t; $('status').className = err ? 'err' : ''; };
+      const get = (u) => fetch(u, { cache: 'no-store', credentials: 'same-origin' }).then((r) => r.json());
+      const baht = (p) => `${(p.amount / 100).toLocaleString('th-TH')} บาท`;
+      const enter = () => { location.replace('/'); };
+      const q = new URLSearchParams(location.search).get('pay');
+      history.replaceState(null, '', location.pathname);
+
+      get('/api/me').then((m) => { if (m && m.email) $('who').textContent = `บัญชี ${m.email} · สมาชิกใช้ได้ทุกฟีเจอร์ — เลือกรายเดือนหรือรายปี`; }).catch(() => {});
+      get('/api/pro').then((s) => {
+        const p = s.prices || {};
+        ['month', 'year'].forEach((k) => { const el = document.querySelector(`.plan[data-k="${k}"] [data-amount]`); if (p[k]) el.textContent = baht(p[k]); });
+      }).catch(() => {});
+
+      if (q === 'ok') { // Stripe is done; the webhook switches PRO on within seconds
+        $('title').textContent = 'ชำระเงินสำเร็จ ✅';
+        $('plans').hidden = true;
+        say('กำลังเปิดสิทธิ์สมาชิก…');
+        let n = 0;
+        (function poll() {
+          get('/api/paid').then((r) => {
+            if (r.paid) { say('เปิดสิทธิ์แล้ว — กำลังเข้าเว็บ'); setTimeout(enter, 600); return; }
+            if (++n < 45) return setTimeout(poll, 2000);
+            say('ยังไม่ได้รับการยืนยันจาก Stripe — ลองรีเฟรชหน้านี้อีกครั้ง หรือทักทาง LINE @279arudw', true);
+          }).catch(() => setTimeout(poll, 3000));
+        })();
+        return;
+      }
+      if (q === 'cancel') say('ยกเลิกการชำระเงินแล้ว — เลือกแพ็กเกจใหม่ได้');
+      get('/api/paid').then((r) => { if (r.paid) enter(); }).catch(() => {}); // already a member / paywall off
+
+      document.addEventListener('click', async (ev) => {
+        const b = ev.target.closest('button[data-plan]');
+        if (!b) return;
+        document.querySelectorAll('button[data-plan]').forEach((x) => { x.disabled = true; });
+        say('กำลังเปิดหน้าชำระเงิน…');
+        try {
+          const r = await fetch('/api/pay/checkout', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ plan: b.dataset.plan, method: b.dataset.method }) });
+          const j = await r.json();
+          if (!j.url) throw new Error(j.error || 'เปิดหน้าชำระเงินไม่ได้');
+          location.href = j.url;
+        } catch (e) {
+          say(e.message || 'เปิดหน้าชำระเงินไม่ได้ ลองใหม่อีกครั้ง', true);
+          document.querySelectorAll('button[data-plan]').forEach((x) => { x.disabled = false; });
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
