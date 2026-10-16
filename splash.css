@@ -142,3 +142,6 @@ html:not(.dark) .sp-cbar i::before { background: rgba(0, 0, 0, .06); } html:not(
    toolbars showing; dvh follows them) and is centred in that; the sides use the visual viewport width. */
 .splash { top: 0; bottom: auto; height: 100vh; height: 100svh; height: 100dvh; width: 100%; left: 0; right: 0; }
 @supports (height: 100dvh) { .splash { min-height: 0; } }
+
+/* refresh / later visit in the same tab: no loading screen (index.html head script adds html.no-splash, 16 Oct 2026) */
+html.no-splash #splash { display: none !important; }
