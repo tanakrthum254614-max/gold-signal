@@ -388,7 +388,12 @@
           row(a.promptpay === 'active', `PromptPay: ${esc(a.promptpay || '—')}`, s.account && a.promptpay !== 'active'),
           row(!!s.configured, s.configured ? `ราคาจริง ${s.configured.amounts ? `${s.configured.amounts.month} / ${s.configured.amounts.year} บาท` : ''} + webhook พร้อม` : 'ราคาจริง + webhook (สร้างตอนกดเปิด)'),
           row(s.enabled, s.enabled ? '🟢 ระบบเก็บเงินเปิดอยู่' : 'ระบบเก็บเงินยังปิด — ทุกคนใช้ฟรี'),
-        ].join('') + (s.problems.length ? `<li class="err" style="margin-top:4px">${s.problems.map(esc).join('<br>')}</li>` : '');
+        ].join('') + (s.problems.length ? `<li class="err" style="margin-top:4px">${s.problems.map(esc).join('<br>')}</li>` : '')
+          + (() => { // what Stripe still wants (17 Oct 2026)
+            const d = a.due || {}, list = [...(d.past || []), ...(d.now || [])];
+            if (!list.length && !(d.pending || []).length && !d.reason) return '';
+            return `<li class="note" style="margin-top:6px">📋 <b>Stripe แจ้ง:</b> ${d.reason ? `เหตุผล <code>${esc(d.reason)}</code> · ` : ''}${list.length ? `ต้องกรอกเพิ่ม <code>${list.map(esc).join('</code>, <code>')}</code> → Stripe → Settings → Business → Account details` : ''}${(d.pending || []).length ? ` · กำลังตรวจ (รอ Stripe): <code>${d.pending.map(esc).join('</code>, <code>')}</code>` : ''}${d.deadline ? ` · กำหนด ${new Date(d.deadline * 1000).toLocaleDateString('th-TH')}` : ''}</li>`;
+          })();
         $('glLaunch').disabled = !s.ready;
         $('glLaunch').textContent = s.enabled ? '🚀 กดซ้ำ (ข้ามขั้นที่ทำแล้ว)' : '🚀 เปิดรับเงินจริง';
         $('glOff').hidden = !s.enabled;

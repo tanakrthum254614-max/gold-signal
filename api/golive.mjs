@@ -21,7 +21,11 @@ export async function status() {
     try {
       const a = await stripe('account');
       s.account = { country: a.country, currency: a.default_currency, name: (a.settings && a.settings.dashboard && a.settings.dashboard.display_name) || (a.business_profile && a.business_profile.name) || '',
-        charges: !!a.charges_enabled, payouts: !!a.payouts_enabled, details: !!a.details_submitted, promptpay: (a.capabilities || {}).promptpay_payments || 'ไม่มี' };
+        charges: !!a.charges_enabled, payouts: !!a.payouts_enabled, details: !!a.details_submitted, promptpay: (a.capabilities || {}).promptpay_payments || 'ไม่มี',
+        // why payouts / charges are held (17 Oct 2026: bank linked but still ⚠️) — Stripe's own field names, shown as-is
+        due: { now: ((a.requirements || {}).currently_due || []).slice(0, 12), past: ((a.requirements || {}).past_due || []).slice(0, 12),
+          pending: ((a.requirements || {}).pending_verification || []).slice(0, 12), reason: (a.requirements || {}).disabled_reason || '',
+          deadline: (a.requirements || {}).current_deadline || 0 } };
       if (a.country !== 'TH') s.problems.push(`บัญชีเป็นประเทศ ${a.country} — PromptPay ต้องเป็นบัญชีไทย (TH)`);
       if (!a.charges_enabled) s.problems.push('Stripe ยังไม่เปิดให้รับเงิน (รอยืนยันธุรกิจ)');
       if (!a.payouts_enabled) s.problems.push('ยังโอนเงินออกไม่ได้ (เพิ่มบัญชีธนาคารใน Stripe) — รับเงินได้แต่จะค้างใน Stripe');
