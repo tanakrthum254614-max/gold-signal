@@ -33,7 +33,8 @@ window.GS_LIVE = () => { let prev = null; try { prev = prevClose(); } catch (e) 
 window.GS_NEWS = () => state.news || [];
 window.GS_RECORD = () => ({ chart: state.chartSig, daily: state.signals });
 const state = {
-  tf: (() => { try { const t = sessionStorage.getItem('gs-tf'); return TFS.some((x) => x.key === t) ? t : '1h'; } catch (e) { return '1h'; } })(), bars: [], // refresh keeps the timeframe (16 Oct 2026) daily: [], tech: null, techAt: null, source: null,
+  // tf: a refresh keeps the timeframe (16 Oct 2026, sessionStorage gs-tf)
+  tf: (() => { try { const t = sessionStorage.getItem('gs-tf'); return TFS.some((x) => x.key === t) ? t : '1h'; } catch (e) { return '1h'; } })(), bars: [], daily: [], tech: null, techAt: null, source: null,
   locked: null, lastPrice: null, chartKey: '', pivotKey: '', busy: false, zoneKey: '', signals: [], m15: [], backtest: null, intra: null, bt30: null, intraCandles: null, news: [], thb: null,
   tick: [], tickAt: 0, tickSrc: null, livePrice: null, livePrev: null, s15: null, bt15: null, stream: null,
 };
@@ -698,7 +699,7 @@ function startStream() {
   const send = (obj) => ws.send(JSON.stringify([JSON.stringify(obj)]));
   ws.onmessage = (e) => {
     const d = String(e.data);
-    if (d === 'o') { send({ _event: 'bulk-subscribe', tzID: 8, message: `pid-${PAIR_ID}:` }); STREAM.retry = 0; return; }
+    if (d === 'o') { send({ _event: 'bulk-subscribe', tzID: 8, message: `pid-${PAIR_ID}:` }); STREAM.retry = 0; STREAM.openAt = Date.now(); return; }
     if (d[0] !== 'a') return; // 'h' = server heartbeat
     JSON.parse(d.slice(1)).forEach((m) => {
       try {
@@ -715,6 +716,21 @@ function retryStream() {
   clearTimeout(STREAM.timer);
   STREAM.timer = setTimeout(startStream, Math.min(30e3, 2000 * 2 ** STREAM.retry++));
 }
+// Watchdog (user, 17 Oct 2026: "ไม่เอาค้างหรือตัวเลขไม่รัน"): a socket can stay open yet go silent — the price then froze
+// for 30 s+ (soak test). In market hours, no tick for 10 s → close it now (onclose reconnects in 2 s). And when the tab
+// comes back into view, reconnect at once instead of waiting out the back-off, and fetch a price straight away.
+setInterval(() => {
+  if (!INTRA.marketOpen(Date.now()) || !STREAM.ws || STREAM.ws.readyState !== 1) return;
+  if (Date.now() - Math.max(STREAM.lastTick, STREAM.openAt || 0) > 10e3) { STREAM.retry = 0; try { STREAM.ws.close(); } catch (e) { retryStream(); } }
+}, 2e3);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (!streamFresh()) {
+    STREAM.retry = 0;
+    if (!STREAM.ws || STREAM.ws.readyState > 1) { clearTimeout(STREAM.timer); startStream(); }
+    refreshTick();
+  }
+});
 // Keep-alive, as investing.com's own page does
 setInterval(() => {
   if (STREAM.ws && STREAM.ws.readyState === 1) STREAM.ws.send(JSON.stringify([JSON.stringify({ _event: 'heartbeat', data: 'h' })]));
