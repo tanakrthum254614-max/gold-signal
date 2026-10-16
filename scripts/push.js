@@ -22,7 +22,7 @@ function toNote(text, i) {
   const lines = String(text).trim().split('\n').map((l) => l.trim()).filter(Boolean);
   const title = (lines.shift() || 'Gold Signal').slice(0, 80);
   const body = lines.join('\n').slice(0, 300);
-  return { title, body, tag: `gs-${Date.now()}-${i}`, url: /^🔔 ทองถึง/.test(title) ? '/#chart' : /^🔔/.test(title) ? '/#zframes' : '/' }; // price alerts open the chart, guru alerts หุ้นสหรัฐ
+  return { title, body, tag: `gs-${Date.now()}-${i}`, url: /^⏰ สมาชิก/.test(title) ? '/#account' : /^🔔 ทองถึง/.test(title) ? '/#chart' : /^🔔/.test(title) ? '/#zframes' : '/' }; // price alerts open the chart, guru alerts หุ้นสหรัฐ
 }
 
 // opts.adminsOnly: only the devices marked admin: true by middleware.js (e.g. "new member" messages)

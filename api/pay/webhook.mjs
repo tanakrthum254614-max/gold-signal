@@ -38,7 +38,9 @@ export async function handle(event, all) {
   if (event.type === 'invoice.paid') {
     const subId = o.subscription || (o.parent && o.parent.subscription_details && o.parent.subscription_details.subscription);
     if (!subId) return 'no sub';
-    fromSub(all, await stripe(`subscriptions/${subId}`), 'renew');
+    const uid = fromSub(all, await stripe(`subscriptions/${subId}`), 'renew');
+    // the money, for the back office's revenue summary (17 Oct 2026) — the first invoice of a card subscription lands here too
+    if (uid && all.history.length) Object.assign(all.history[all.history.length - 1], { amount: o.amount_paid, currency: o.currency });
     return 'renew';
   }
   if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.deleted') {

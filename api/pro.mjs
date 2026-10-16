@@ -10,7 +10,7 @@ export async function GET(request) {
   if (new URL(request.url).searchParams.get('list') === '1') {
     if (!isAdmin(m)) return fail('เฉพาะแอดมิน', 403);
     const all = await loadPro().catch(() => ({ users: {}, history: [] }));
-    return json({ ok: true, users: all.users || {}, history: (all.history || []).slice(-200).reverse() });
+    return json({ ok: true, users: all.users || {}, history: (all.history || []).slice(-200).reverse(), summary: summary(all) });
   }
   let p = {};
   try { p = await prices(); } catch (e) { /* Stripe not set up yet */ }
@@ -37,4 +37,19 @@ export async function POST(request) {
   }
   await savePro(all);
   return json({ ok: true, user: all.users[q.uid] });
+}
+
+// 💰 Back-office summary (17 Oct 2026): money in (PromptPay payments + card invoices, satang → baht), paying members now,
+// and who runs out within 7 days without auto-renewal (the expiry reminder, scripts/pro-expiry.js, writes `reminded`)
+function summary(all) {
+  const now = Date.now(), th = (t) => new Date(t + 7 * 3600e3).toISOString().slice(0, 7), month = th(now);
+  const paid = (all.history || []).filter((h) => h.amount > 0);
+  const baht = (list) => Math.round(list.reduce((a, h) => a + h.amount, 0) / 100);
+  const users = Object.entries(all.users || {});
+  const paying = users.filter(([, u]) => u.until > now && (u.source === 'card' || u.source === 'promptpay'));
+  return {
+    month: baht(paid.filter((h) => th(h.at) === month)), d30: baht(paid.filter((h) => h.at > now - 30 * 864e5)), total: baht(paid), payments: paid.length,
+    paying: paying.length, auto: paying.filter(([, u]) => u.sub).length,
+    expiring: users.filter(([, u]) => u.until > now && u.until < now + 7 * 864e5 && !u.sub).map(([uid, u]) => ({ uid, until: u.until, reminded: !!u.reminded })),
+  };
 }

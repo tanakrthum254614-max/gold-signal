@@ -431,7 +431,7 @@ function renderRecord() {
   const closed = (t) => t.status === 'win' || t.status === 'loss';
   const sum = (a) => a.reduce((x, t) => x + (t.pnl || 0), 0);
   const tiles = used.map((tf) => {
-    const c = CHARTSYS.SYS[tf].buy, mine = all.filter((t) => t.tf === tf), done = mine.filter(closed), w = done.filter((t) => t.pnl > 0).length;
+    const c = CHARTSYS.SYS[tf].buy, mine = all.filter((t) => t.tf === tf && t.side !== 'SELL'), done = mine.filter(closed), w = done.filter((t) => t.pnl > 0).length;
     const perWeek = c.n ? (c.n / (days[tf] / 7)) : { '1h': 2.4, '5h': 0.9, '1d': 0.35 }[tf];
     const often = perWeek >= 1 ? `~${Math.round(perWeek)} ไม้/สัปดาห์` : `~${Math.max(1, Math.round(perWeek * 4.3))} ไม้/เดือน`;
     const open = mine.find((t) => t.status === 'active');
@@ -439,17 +439,17 @@ function renderRecord() {
       <div class="rc-big mono">${c.win}%</div><small class="muted">ทดสอบย้อนหลังชนะ · ${often}</small>
       <div class="rc-live">${done.length ? `ผลจริง ${done.length} ไม้ ชนะ ${w} · <b class="${sum(done) >= 0 ? 'up' : 'down'}">${money(sum(done))}</b>` : 'ผลจริง: ยังไม่มีไม้ที่ปิด'}${open ? '<br>🟡 ถือไม้อยู่ 1 ไม้' : ''}</div></div>`;
   }).join('');
-  const rows = all.filter((t) => used.includes(t.tf) && closed(t)).sort((a, b) => (b.exitAt || b.createdAt) - (a.exitAt || a.createdAt)).slice(0, 10);
+  const rows = all.filter((t) => used.includes(t.tf) && closed(t) && !t.risky).sort((a, b) => (b.exitAt || b.createdAt) - (a.exitAt || a.createdAt)).slice(0, 10);
   const day = (ms) => new Date(ms).toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
   const why = { tp: 'ถึง TP', sl: 'โดน SL', be: 'ออกที่ทุน', eod: 'หมดเวลาถือ' };
   const list = rows.length ? rows.map((t) => `<li class="${t.pnl > 0 ? 'win' : 'loss'}"><span>${t.pnl > 0 ? '✅' : '❌'} ${day(t.createdAt)} · ${t.side === 'SELL' ? 'Sell' : 'Buy'} ${TF_LABEL[t.tf]}</span>
       <span class="mono">${f2(t.entry)} → ${f2(t.exitPrice)} <small>${why[t.closedBy] || ''}</small></span><b class="mono ${t.pnl > 0 ? 'up' : 'down'}">${money(t.pnl)}</b></li>`).join('')
     : '<li class="muted">ยังไม่มีไม้ที่ปิดในกรอบ 1 ชม. / 5 ชม. / 1 วัน</li>';
-  const old = all.filter((t) => !used.includes(t.tf) && closed(t)), ow = old.filter((t) => t.pnl > 0).length;
+  const old = all.filter((t) => (!used.includes(t.tf) || t.risky) && closed(t)), ow = old.filter((t) => t.pnl > 0).length;
   const since = state.chartSig && state.chartSig.startedAt ? new Date(state.chartSig.startedAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Bangkok' }) : '';
   box.innerHTML = `<div class="rc-tiles">${tiles}</div>
     <h4 class="rc-h">ไม้ล่าสุด (ทั้งชนะและแพ้) · กรอบ 1 ชม. / 5 ชม. / 1 วัน</h4><ul class="rc-list">${list}</ul>
-    <p class="muted small">ต่อทอง 1 ออนซ์ ก่อนหักสเปรด · บันทึกอัตโนมัติตั้งแต่ ${since}${old.length ? ` · กรอบอื่น (5 นาที – 30 นาที, 1 สัปดาห์) = ⚠️ สัญญาณเสี่ยง ไม่ส่ง LINE: ผลจริง ${old.length} ไม้ ชนะ ${ow} · ${money(sum(old))}` : ''} · ผลในอดีตไม่รับประกันอนาคต ไม่ใช่คำแนะนำการลงทุน</p>`;
+    <p class="muted small">ต่อทอง 1 ออนซ์ ก่อนหักสเปรด · บันทึกอัตโนมัติตั้งแต่ ${since}${old.length ? ` · กรอบอื่น (5 นาที – 30 นาที, 1 สัปดาห์) + Sell 1 ชม. = ⚠️ สัญญาณเสี่ยง ไม่ส่ง LINE: ผลจริง ${old.length} ไม้ ชนะ ${ow} · ${money(sum(old))}` : ''} · ผลในอดีตไม่รับประกันอนาคต ไม่ใช่คำแนะนำการลงทุน</p>`;
 }
 
 // Is the 30-minute system actually checking? intraday.json only changes when a trade changes, so ask
@@ -1056,7 +1056,7 @@ const homeCandles = () => state.intraCandles && { ...state.intraCandles, h4: sta
 function homeDecide(now, news, live) {
   const sys = mainSys(), C = homeCandles();
   if (!C) return null;
-  return INTRA.decideWith(sys.frames, { ...INTRA.RULE, threshold: sys.buy.th, sides: sys.sell ? 'both' : 'buy', noChase: true }, C, now, sys.news ? news : null, live);
+  return INTRA.decideWith(sys.frames, { ...INTRA.RULE, threshold: sys.buy.th, sides: sys.sell && !sys.sell.risky ? 'both' : 'buy', noChase: true }, C, now, sys.news ? news : null, live);
 }
 
 // ----- Trend strength meter: 13 segments for scores −6 … +6, and a card per voting timeframe -----

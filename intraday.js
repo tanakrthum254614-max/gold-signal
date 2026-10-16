@@ -90,7 +90,14 @@
     const cl = fi.close.filter((x) => x != null), n = cl.length;
     const ema = (p) => cl.reduce((e, x, i) => (i ? x * (2 / (p + 1)) + e * (1 - 2 / (p + 1)) : x), 0);
     const sma = (p) => (n >= p ? cl.slice(-p).reduce((a, x) => a + x, 0) / p : NaN);
-    const conf = { ema921: Math.sign(ema(9) - ema(21)), roc12: n > 12 ? Math.sign(cl[n - 1] - cl[n - 13]) : 0, sma2050: n >= 50 ? Math.sign(sma(20) - sma(50)) : 0 };
+    // bbrev (17 Oct 2026, selltest.js "Bollinger (กลับตัวจากขอบ)"): the side of the band the price last closed outside of,
+    // latched — +1 after a close under the lower band, −1 after a close over the upper band (a top to sell from)
+    let bbrev = 0;
+    for (let i = 19; i < n; i++) {
+      const w = cl.slice(i - 19, i + 1), m = w.reduce((a, x) => a + x, 0) / 20, sd = Math.sqrt(w.reduce((a, x) => a + (x - m) ** 2, 0) / 20);
+      if (cl[i] < m - 2 * sd) bbrev = 1; else if (cl[i] > m + 2 * sd) bbrev = -1;
+    }
+    const conf = { ema921: Math.sign(ema(9) - ema(21)), roc12: n > 12 ? Math.sign(cl[n - 1] - cl[n - 13]) : 0, sma2050: n >= 50 ? Math.sign(sma(20) - sma(50)) : 0, bbrev };
     return {
       conf,
       slot: slotOf(now), score, keys, lean, rule,

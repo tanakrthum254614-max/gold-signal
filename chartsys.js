@@ -34,7 +34,11 @@
     '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดกำไรน้อยมาก', th: 6, tp1: true, mult: 1.5, confirm: 'ema921', since: '2026-10-09T09:40:00+07:00', win: 56, q: [261, 72, 84, 48] }, sellQ: [115, -233, -72, 204] },
     '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 57, q: [264, 462, 239, -7] }, sellQ: [129, -174, -58, 113] },
     '1h': { news: true, frames: [['h1', H, 60, '1 ชม.'], ['h4', 4 * H, 60, '4 ชม.'], ['h5', 5 * H, 40, '5 ชม.']], span: '2 ปี',
-      buy: { th: 5, tp1: false, mult: 2, win: 57, q: [192, 209, 359, 32] }, sellQ: [-62, 4, -112, 8] },
+      buy: { th: 5, tp1: false, mult: 2, win: 57, q: [192, 209, 359, 32] },
+      // SELL (17 Oct 2026, user: "ทำมาหมดเลย" — no tested Sell left for falling markets): selltest.js 12 Oct best 1h Sell,
+      // score −4 + Bollinger reversal, SL $30, TP 30/40/60 — profitable in all 4 periods but one of ~680 tried, so ⚠️ risky
+      // (shown + recorded, no LINE) until 20 live trades say otherwise. Old score-only Sell: −62 / 4 / −112 / 8. Replayed with the site code 17 Oct: 74 trades, 65%, +$593.
+      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 ไม้', th: 4, tp1: false, mult: 2, confirm: 'bbrev', since: '2026-10-17T12:00:00+07:00', win: 65, q: [63, 98, 208, 224] } },
     '5h': { frames: [['h5', 5 * H, 60, '5 ชม.'], ['d1', DAY, 60, '1 วัน']], span: '2 ปี', long: true, hold: 5 * DAY,
       buy: { th: 3, tp1: false, mult: 4, confirm: 'roc12', since: '2026-10-09T09:40:00+07:00', win: 65, q: [483, 511, 635, 205] }, sellQ: [-72, -179, -6, 105] },
     '1d': { frames: [['d1', DAY, 60, '1 วัน'], ['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '5 ปี', long: true, hold: 20 * DAY,
@@ -54,6 +58,7 @@
     ema921: { name: 'EMA 9/21', wait: ' EMA 9 ตัดผ่าน EMA 21' },
     roc12: { name: 'ROC 12', wait: 'ราคาปิดสูง/ต่ำกว่าเมื่อ 12 แท่งก่อน' },
     sma2050: { name: 'SMA 20/50', wait: ' SMA 20 ตัดผ่าน SMA 50' },
+    bbrev: { name: 'Bollinger กลับตัว', wait: 'ราคาปิดหลุดขอบ Bollinger แล้วกลับเข้ามา (Sell: ขอบบน)' },
   };
   const confirmed = (c, dec, side) => !c.confirm || !dec.conf || dec.conf[c.confirm] === side;
   // A side in use: has settings and isn't switched off

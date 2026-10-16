@@ -170,6 +170,8 @@
         </div></div>
         <p class="note" id="glNote">กดได้เมื่อทุกข้อเป็น ✅ · กดแล้ว: สร้างราคา + webhook ในบัญชี Stripe จริง → ให้ PRO ฟรีสมาชิกเดิม → เปิดเก็บเงิน (กดซ้ำได้ ขั้นที่ทำแล้วจะข้าม)</p>
       </div>
+      <div class="tiles" id="pSum"></div>
+      <p class="note" id="pExp" hidden></p>
       <p id="pState" class="note" style="margin-top:0"></p>
       <form class="ed" id="pForm"><div class="row">
         <select id="pWho" style="flex:1;min-width:220px"></select>
@@ -430,6 +432,13 @@
       try {
         const [st, list] = await Promise.all([api('/api/pro'), api('/api/pro?list=1')]);
         pro = list;
+        const sm = list.summary || {};
+        const bt = (v) => `${(v || 0).toLocaleString('th-TH')} ฿`;
+        $('pSum').innerHTML = [['รายได้เดือนนี้', bt(sm.month)], ['รายได้ 30 วัน', bt(sm.d30)], ['รายได้ทั้งหมด', `${bt(sm.total)}<small>${sm.payments || 0} รายการ</small>`],
+          ['สมาชิกที่จ่ายอยู่', `${sm.paying || 0}<small>ต่ออายุอัตโนมัติ ${sm.auto || 0}</small>`], ['หมดอายุใน 7 วัน', (sm.expiring || []).length]]
+          .map(([k, v]) => `<div class="tile"><small>${k}</small><b class="mono">${v}</b></div>`).join('');
+        $('pExp').hidden = !(sm.expiring || []).length;
+        $('pExp').innerHTML = (sm.expiring || []).map((x) => `⏰ ${esc(nameOf(x.uid))} หมด ${when(x.until)}${x.reminded ? ' · แจ้งเตือนแล้ว' : ''}`).join('<br>');
         const pr = st.prices || {};
         const priceTxt = ['month', 'year'].map((k) => (pr[k] ? `${k === 'month' ? 'เดือน' : 'ปี'} ${(pr[k].amount / 100).toLocaleString('th-TH')} ${esc(pr[k].currency.toUpperCase())}` : '')).filter(Boolean).join(' · ') || 'ยังไม่ตั้ง';
         $('pState').innerHTML = `ระบบเก็บเงิน: <b>${st.enabled ? '🟢 เปิด' : '⚪ ปิด — ทุกคนใช้ฟีเจอร์ PRO ได้ฟรี'}</b> · PRO ปลดล็อก: ${esc(st.features.join(', '))} · ราคาใน Stripe: ${priceTxt}`;

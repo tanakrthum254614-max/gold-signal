@@ -80,6 +80,8 @@
       get('/api/pro').then((s) => {
         const p = s.prices || {};
         ['month', 'year'].forEach((k) => { const el = document.querySelector(`.plan[data-k="${k}"] [data-amount]`); if (p[k]) el.textContent = baht(p[k]); });
+        // was a member before → "หมดอายุแล้ว" instead of a first-time title (17 Oct 2026)
+        if (s.until && s.until < Date.now() && q !== 'ok') { $('title').textContent = 'สมาชิกของคุณหมดอายุแล้ว — ต่ออายุเพื่อใช้งานต่อ'; }
       }).catch(() => {});
 
       if (q === 'ok') { // Stripe is done; the webhook switches PRO on within seconds
@@ -89,7 +91,7 @@
         let n = 0;
         (function poll() {
           get('/api/paid').then((r) => {
-            if (r.paid) { say('เปิดสิทธิ์แล้ว — กำลังเข้าเว็บ'); setTimeout(enter, 600); return; }
+            if (r.paid) { say('เปิดสิทธิ์แล้ว — กำลังเข้าเว็บ'); try { localStorage.setItem('gs-welcome', '1'); } catch (e) { /* the guide is also in the account tab */ } setTimeout(enter, 600); return; }
             if (++n < 45) return setTimeout(poll, 2000);
             say('ยังไม่ได้รับการยืนยันจาก Stripe — ลองรีเฟรชหน้านี้อีกครั้ง หรือทักทาง LINE @279arudw', true);
           }).catch(() => setTimeout(poll, 3000));

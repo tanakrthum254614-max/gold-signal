@@ -699,3 +699,14 @@ body.cz-clean .charts > .legend { display: none; }
   .rec .rc-tiles { grid-template-columns: 1fr; }
   .rec .rc-list li { grid-template-columns: 1fr auto; } .rec .rc-list li > span.mono { grid-column: 1 / -1; order: 3; }
 }
+
+/* ⏰ membership expiry bar + 📘 getting-started guide (pro.js, 17 Oct 2026) */
+.exp-bar { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 14px; background: #3a2d0b; color: #ffe7a3; border-bottom: 1px solid #f0b90b; font-size: 14px; }
+.exp-bar span { flex: 1; min-width: 200px; } .exp-bar .btn { padding: 6px 14px; min-height: 0; }
+.exp-bar button { background: none; border: 0; color: inherit; font-size: 16px; cursor: pointer; padding: 4px 8px; }
+html.light .exp-bar { background: #fff4d6; color: #6b4a00; }
+.welcome { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .6); }
+.welcome .wl-box { width: 100%; max-width: 520px; max-height: 90vh; overflow: auto; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
+.welcome h2 { margin: 0 0 2px; font-size: 20px; }
+.welcome .wl-steps { margin: 14px 0; padding-left: 22px; display: grid; gap: 12px; }
+.welcome .wl-steps li b { display: block; margin-bottom: 2px; } .welcome .wl-steps li span { font-size: 14px; line-height: 1.6; }

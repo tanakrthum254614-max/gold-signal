@@ -180,7 +180,8 @@
         <button class="btn gold" type="button" data-plan="${k}" data-method="card"${dis}>💳 บัตร (ต่ออายุอัตโนมัติ)</button>
         <button class="btn" type="button" data-plan="${k}" data-method="promptpay"${dis}>📱 จ่ายครั้งเดียว ${k === 'month' ? '30' : '365'} วัน${p[k].currency === 'thb' ? ' (PromptPay / บัตร)' : ''}</button></div>`).join('')}</div>
         <p class="muted small">ชำระผ่าน Stripe — เว็บนี้ไม่เห็นและไม่เก็บเลขบัตร · <a href="/terms.html" target="_blank" rel="noopener">เงื่อนไข ยกเลิก และคืนเงิน</a> · สิทธิ์ PRO เปิดทันทีที่ชำระสำเร็จ · ไม่ใช่คำแนะนำการลงทุน</p>` : ''}
-      ${s.sub ? '<button class="btn" type="button" id="proPortal">จัดการ / ยกเลิกการต่ออายุ</button>' : ''}`;
+      ${s.sub ? '<button class="btn" type="button" id="proPortal">จัดการ / ยกเลิกการต่ออายุ</button>' : ''}
+      <button class="btn" type="button" onclick="window.gsWelcome && gsWelcome()">📘 วิธีเริ่มใช้งาน (3 ขั้น)</button>`;
   }
   document.addEventListener('click', async (ev) => {
     const b = ev.target.closest('#proCard button[data-plan], #proPortal');
