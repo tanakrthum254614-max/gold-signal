@@ -313,6 +313,10 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 17 ต.ค. 2569 — 💸 Stripe: ผูกกสิกรแล้ว ราคา 149/1,290 แล้ว · หลังบ้านโชว์สิ่งที่ Stripe ยังขอ
+- ผู้ใช้ผูกบัญชี KASIKORNBANK (THB, Default) ที่ Settings → Linked accounts and payouts · กด 💲 แล้ว (Blob stripe-live.json amounts 149/1290 ✓) · Stripe Home ไม่มี Action required มีปุ่ม Pay out funds · แต่หลังบ้านยัง ⚠️ โอนเงินออก (API payouts_enabled = false)
+- api/golive.mjs status: `account.due = { now: requirements.currently_due, past: past_due, pending: pending_verification, reason: disabled_reason, deadline }` · admin.html ใต้เช็กลิสต์ "📋 Stripe แจ้ง: …" (ชื่อฟิลด์ของ Stripe ตามจริง + ที่ไปกรอก) · ทดสอบ adminrisk.cjs (ข้อมูลจำลอง) · deploy 8865b95
+
 ## 17 ต.ค. 2569 — 🧰 สมาชิก: เตือนหมดอายุ · วิธีเริ่มใช้ · Sell 1 ชม. · สรุปรายได้
 - ผู้ใช้ถาม "ส่วนต่าง ๆ ของเว็บต้องเพิ่มหรือปรับตรงไหน" → เสนอ 11 ข้อ → "ทำมาหมดเลย" = ข้อที่ผมทำได้ (6, 7, 8, 10) · ข้อ 1–5 ผู้ใช้ต้องทำ (กด 💲, ผูกธนาคาร, ทดลองจ่าย, Clerk production ต้องมีโดเมน, ซื้อ .com) · ข้อ 9 รอผลจริง · ข้อ 11 กฎหมาย/ภาษี แนะนำให้ถามผู้รู้
 - **⏰ เตือนหมดอายุ**: `scripts/pro-expiry.js` (ใน check-loop.sh หลัง price-alerts) — pro.json users ที่ไม่มี `sub` และ until ≤ 3 วัน → web push เฉพาะเครื่องเจ้าของ 1 ครั้งต่อวันหมดอายุ (`reminded = until` เขียนก่อนส่ง) · push.js หัวข้อ "⏰ สมาชิก" เปิด /#account · pro.js `expiryBar()` แถบบนสุด (ไม่ใช่แอดมิน/ไม่ใช่ sub/≤ 3 วัน, ปิด ✕ ได้ต่อแท็บ) · pay.html: เคยเป็นสมาชิกแล้วหมด → หัว "สมาชิกของคุณหมดอายุแล้ว"
