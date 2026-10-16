@@ -18,7 +18,8 @@
 // are switched off — live 7–16 Oct 38 trades, 39% win, −$103, nearly all on 5m/15m/30m, and the SL/TP study
 // (research/indicators/exitlab.js, 72 exits per timeframe) found nothing that makes 5m/15m BUY pay in the latest period.
 // Entries now only on 1h, 5h and 1d BUY (profitable in all 4 test periods). Off sides keep their settings and numbers
-// (shown as "ปิดจุดเข้า"), but give no entries, no records, no LINE.
+// (shown as "ปิดจุดเข้า"), but give no entries, no records, no LINE. Same night the user asked where the entries had
+// gone ("จุดที่ให้เข้าซื้อไปไหนหมดของทุกทามเฟรม") — back to ⚠️ risky (as on 15 Oct); `off` stays available.
 // MAIN_TF = the timeframe of the signals tab and LINE's "ระบบหลัก" (30m until 15 Oct 2026, now 1h).
 (function (root) {
   const INTRA = root.INTRA || (typeof require === 'function' ? require('./intraday.js') : null);
@@ -28,10 +29,10 @@
     // 2026, research/indicators/newstest.js): it helps on 5m (BUY +$407 → +$554, 4/4 periods; SELL +$353 → +$451) and
     // 1h (+$774 → +$792), but hurts 15m (+$465 → +$377) and 30m (+$957 → +$828) — so only 5m and 1h skip the news.
     '5m': { news: true, frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', H, 60, '1 ชม.']], span: '2 ปี',
-      buy: { off: 'ช่วงทดสอบล่าสุดขาดทุน', risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 54, q: [331, 551, 104, -433] }, sell: { off: 'ผลจริงชนะต่ำกว่าทดสอบมาก (14 ไม้ ชนะ 4)', risky: 'ผลจริงชนะต่ำกว่าทดสอบมาก (14 ไม้ ชนะ 4)', th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T09:54:00+07:00', win: 53, q: [39, 84, 156, 172] },
+      buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 54, q: [331, 551, 104, -433] }, sell: { risky: 'ผลจริงชนะต่ำกว่าทดสอบมาก (14 ไม้ ชนะ 4)', th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T09:54:00+07:00', win: 53, q: [39, 84, 156, 172] },
       every: -1480 }, // taking every small arrow one at a time, SL / TP1 $15
-    '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { off: 'ช่วงทดสอบล่าสุดกำไรน้อยมาก', risky: 'ช่วงทดสอบล่าสุดกำไรน้อยมาก', th: 6, tp1: true, mult: 1.5, confirm: 'ema921', since: '2026-10-09T09:40:00+07:00', win: 56, q: [261, 72, 84, 48] }, sellQ: [115, -233, -72, 204] },
-    '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { off: 'ช่วงทดสอบล่าสุดขาดทุน', risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 57, q: [264, 462, 239, -7] }, sellQ: [129, -174, -58, 113] },
+    '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดกำไรน้อยมาก', th: 6, tp1: true, mult: 1.5, confirm: 'ema921', since: '2026-10-09T09:40:00+07:00', win: 56, q: [261, 72, 84, 48] }, sellQ: [115, -233, -72, 204] },
+    '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 57, q: [264, 462, 239, -7] }, sellQ: [129, -174, -58, 113] },
     '1h': { news: true, frames: [['h1', H, 60, '1 ชม.'], ['h4', 4 * H, 60, '4 ชม.'], ['h5', 5 * H, 40, '5 ชม.']], span: '2 ปี',
       buy: { th: 5, tp1: false, mult: 2, win: 57, q: [192, 209, 359, 32] }, sellQ: [-62, 4, -112, 8] },
     '5h': { frames: [['h5', 5 * H, 60, '5 ชม.'], ['d1', DAY, 60, '1 วัน']], span: '2 ปี', long: true, hold: 5 * DAY,
@@ -39,7 +40,7 @@
     '1d': { frames: [['d1', DAY, 60, '1 วัน'], ['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '5 ปี', long: true, hold: 20 * DAY,
       buy: { th: 3, tp1: true, mult: 8, win: 64, q: [128, 218, 1243, 966] }, sellQ: [92, -120, 0, 12] },
     '1w': { frames: [['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '4 ปี', long: true, hold: 84 * DAY, few: 23,
-      buy: { off: 'ไม้ทดสอบน้อย และผลช่วงล่าสุดไม่สม่ำเสมอ', risky: 'ไม้ทดสอบน้อย และผลช่วงล่าสุดไม่สม่ำเสมอ', th: 1, tp1: true, mult: 20, win: 70, q: [196, 737, 1167, 296] } },
+      buy: { risky: 'ไม้ทดสอบน้อย และผลช่วงล่าสุดไม่สม่ำเสมอ', th: 1, tp1: true, mult: 20, win: 70, q: [196, 737, 1167, 296] } },
   };
   const NONE = { ...INTRA.RULE, threshold: 99, sides: 'both', noChase: false }; // score only; entries decided by dirOf
   // TP $ before × mult: TP1 only, or TP $15/20/30 — the targets the tests used (indlab / monthly / qualtest). Not
