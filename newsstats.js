@@ -131,7 +131,7 @@
       <div class="ns-about">
         ${ab ? `<p>📖 <b>คืออะไร:</b> ${ab.what}</p><p>🪙 <b>ผลกับทอง:</b> ${ab.gold}</p>` : ''}
         ${desc ? `<p class="ns-en">${desc.length > 600 ? `${desc.slice(0, 600)}…` : desc}</p>` : ''}
-        <p class="ns-src">${e.source ? `แหล่งข้อมูล: ${e.source} · ` : ''}${e.page_link ? `<a href="https://www.investing.com${e.page_link}" target="_blank" rel="noopener">อ่านต่อ / ดูประวัติที่ investing.com ↗</a>` : ''}</p>
+        <p class="ns-src">${e.source ? `แหล่งข้อมูล: ${e.source} · ` : ''}${e.page_link ? `<a href="https://www.investing.com${e.page_link}" target="_blank" rel="noopener noreferrer">อ่านต่อ / ดูประวัติที่ investing.com ↗</a>` : ''}</p>
       </div>
     </details>`;
   }
@@ -250,12 +250,27 @@
     if (m < 24 * 60) return `${Math.floor(m / 60)} ชั่วโมงที่ผ่านมา`;
     return new Date(t).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' });
   }
-  // bigger picture for the lead story (_L), falling back to the feed's own (_M) if it doesn't exist
-  const pic = (x, big) => (x.img ? `<img loading="lazy" alt="" src="${esc(big ? x.img.replace(/_M\.jpg$/, '_L.jpg') : x.img)}" data-fb="${esc(x.img)}" onerror="if(this.dataset.fb&&this.src!==this.dataset.fb){this.src=this.dataset.fb}else{this.remove()}">` : '');
+  // Pictures (16 Oct 2026, user: "เครื่องอื่นรูปภาพไม่ขึ้น … 403"): investing.com's image host sits behind Cloudflare, which
+  // answers 403 to some devices / browsers and not others. They load through wsrv.nl, a free image relay that fetches them
+  // server-side (and caches); then straight from investing as before; then the category cover (.nf-img background).
+  // The lead story asks for the bigger picture (_L) first.
+  const relay = (u, w) => `https://wsrv.nl/?url=${encodeURIComponent(u.replace(/^https?:\/\//, ''))}&w=${w}&output=webp`;
+  const pic = (x, big) => {
+    if (!x.img) return '';
+    const tries = [...(big ? [relay(x.img.replace(/_M\.jpg$/, '_L.jpg'), 960)] : []), relay(x.img, 640), x.img];
+    return `<img loading="lazy" alt="" referrerpolicy="no-referrer" src="${esc(tries[0])}" data-tries="${esc(tries.slice(1).join(' '))}" onerror="var t=(this.dataset.tries||'').split(' ').filter(Boolean);if(t.length){this.dataset.tries=t.slice(1).join(' ');this.src=t[0]}else{this.remove()}">`;
+  };
+  // investing.com can answer 403 to the article page on those devices too: a second way in — the headline on Google News
+  const alt = (x) => `https://news.google.com/search?q=${encodeURIComponent(x.title)}&hl=th&gl=TH&ceid=TH:th`;
   const src = (x) => `<span class="nf-src"><i class="nf-logo">I</i>Investing.com · ${esc(x.label)}</span>`;
-  const story = (x, kind) => `<a class="nf-${kind}" href="${esc(x.link)}" target="_blank" rel="noopener">
+  const story = (x, kind) => `<a class="nf-${kind}" href="${esc(x.link)}" target="_blank" rel="noopener noreferrer">
       <div class="nf-img" data-cat="${x.cat}">${pic(x, kind !== 'card')}<span class="nf-cat ${x.cat}">${esc(x.label)}</span></div>
-      <div class="nf-txt">${src(x)}<h3>${esc(x.title)}</h3><small class="nf-ago" data-t="${x.t || ''}">${ago(x.t)}</small></div></a>`;
+      <div class="nf-txt">${src(x)}<h3>${esc(x.title)}</h3><small class="nf-ago" data-t="${x.t || ''}">${ago(x.t)}</small><span class="nf-alt" role="link" data-alt="${esc(alt(x))}">เปิดไม่ได้? หาข่าวนี้จากแหล่งอื่น ›</span></div></a>`;
+  // the second link sits inside the card's <a>: open it without following the card
+  document.addEventListener('click', (ev) => {
+    const a = ev.target.closest('.nf-alt'); if (!a) return;
+    ev.preventDefault(); ev.stopPropagation(); window.open(a.dataset.alt, '_blank', 'noopener');
+  }, true);
   function renderFeed() {
     const box = $('nfBody'); if (!box) return;
     $('nfChips').innerHTML = NF_CATS.map(([k, l]) => `<button type="button" data-nf="${k}" class="${nf.cat === k ? 'on' : ''}">${l}</button>`).join('');
