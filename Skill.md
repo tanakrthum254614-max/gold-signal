@@ -307,6 +307,9 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 🔔 แจ้งเตือนราคาที่ตั้งเอง · 🩺 สถานะระบบ · 🧑‍💼 กูรูที่ถือหุ้นแต่ละตัว (17 ต.ค. 2569 · เวอร์ชัน 202610170100)
+- ผู้ใช้: "เพิ่มเติมอะไรไหม" → "ทำมา" · (1) แท็บบัญชี #paCard + pricealerts.js → middleware /api/alerts (GET / POST x-alert {price,dir} / DELETE {id}, สูงสุด 10, Blob access/price-alerts.json) → check-loop.sh เรียก scripts/price-alerts-user.js ทุก 5 นาที: ถึงราคาเมื่อ high/low ของแท่ง 15 นาทีตั้งแต่ตั้ง → ลบก่อนแล้ว push เฉพาะเครื่องของเจ้าของ (push.js pick) · ข้อความ 🔔 ทองถึง… → เปิด /#chart · ทดสอบ scripts/test-price-alerts-user.js · รันจริงบน GitHub: "price alerts: none set" (2) admin.html แท็บ 🩺 สถานะระบบ: GitHub Actions API (repo สาธารณะ) 7 workflow รอบล่าสุด/ผล/🟢🟡🔴 ตามรอบที่ควรรัน + ความสดไฟล์ข้อมูล 5 ไฟล์ (3) zframes gurus.js attachHolders(m, s) เรียกจาก frames3.js openStock/openDiv → การ์ด "กูรูที่ถือหุ้นนี้" (40 อันดับแรก/พอร์ต + ฟีด SEC ของหุ้นนั้น) · ทดสอบ gold-signal-tools/alerts-admin-holders.cjs · commit 149fe81
+
 ## 🖼️ ข่าว: รูปผ่าน wsrv.nl + ลิงก์สำรอง Google News (17 ต.ค. 2569 · เวอร์ชัน 202610170000)
 - ผู้ใช้: "เครื่องอื่นรูปภาพไม่ขึ้นโชว์ และกดเข้าไปขึ้น 403" → สาเหตุ Cloudflare ของ investing.com บล็อกบางเครื่อง · รูปผ่าน wsrv.nl (ทดสอบ 8/8 ขึ้น) · ลิงก์สำรอง Google News · หน้าบทความ 403 แก้ที่ต้นทางไม่ได้ · newsstats.js / terminal.css v=202610170000
 
