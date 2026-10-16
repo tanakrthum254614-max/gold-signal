@@ -5,9 +5,10 @@
     try {
       const skip = sessionStorage.getItem('gs-skip-splash-once') === '1';
       sessionStorage.removeItem('gs-skip-splash-once');
-      return skip;
+      return skip || document.documentElement.classList.contains('no-splash'); // reload / same tab (index.html head)
     } catch (e) { return false; }
   })();
+  if (skipSplash) $('splash').classList.add('gone');
 
   // Progress ring (r = 72) + a counting percentage — no step texts (user, 12 Oct: too many words on the loading screen)
   const RING = 2 * Math.PI * 72;
@@ -56,6 +57,7 @@
           if (shown < 100) return setTimeout(finish, 80);
           $('splash').classList.add('done');
           setTimeout(() => $('splash').classList.add('gone'), 900);
+          try { sessionStorage.setItem('gs-splash-seen', '1'); } catch (e) { /* storage blocked: the splash just plays again */ }
         };
         finish();
       }, Math.max(0, startAt + MIN_MS - Date.now()));
