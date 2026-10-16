@@ -157,6 +157,29 @@ async function guruFollowApi(request, m) {
   return json({ ok: true, ciks });
 }
 
+// 🔔 Gold price alerts each member sets (account tab, 17 Oct 2026): private Blob access/price-alerts.json
+// { alerts: [{ id, who, price, dir: 'up' | 'down', at }] }, checked every 5 minutes by scripts/price-alerts-user.js (web push to
+// that member's devices, then removed). GET → { alerts } (mine) · POST header x-alert: base64 JSON { price, dir } → added (max 10)
+// · DELETE header x-alert: base64 JSON { id } → removed.
+const ALERTS = 'access/price-alerts.json';
+async function priceAlertApi(request, m) {
+  const all = await readJson(ALERTS, { alerts: [] });
+  const mine = () => all.alerts.filter((a) => a.who === m.id).map(({ id, price, dir, at }) => ({ id, price, dir, at }));
+  if (request.method === 'GET') return json({ alerts: mine() });
+  let body = {};
+  try { const h = request.headers.get('x-alert'); body = h ? JSON.parse(atob(h)) : await request.json(); } catch (e) { return json({ ok: false }, 400); }
+  if (request.method === 'POST') {
+    const price = Math.round(Number(body.price) * 100) / 100, dir = body.dir === 'down' ? 'down' : 'up';
+    if (!(price > 100 && price < 100000)) return json({ ok: false, error: 'ราคาไม่ถูกต้อง' }, 400);
+    if (all.alerts.filter((a) => a.who === m.id).length >= 10) return json({ ok: false, error: 'ตั้งได้สูงสุด 10 รายการ' }, 400);
+    all.alerts.push({ id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, who: m.id, price, dir, at: Date.now() });
+  } else if (request.method === 'DELETE') {
+    all.alerts = all.alerts.filter((a) => !(a.who === m.id && a.id === String(body.id)));
+  } else return json({ ok: false }, 405);
+  await writeJson(ALERTS, all);
+  return json({ ok: true, alerts: mine() });
+}
+
 async function pushApi(request, m) {
   const who = m.id;
   const all = await readJson(SUBS, { subs: [] });
@@ -225,6 +248,7 @@ export default async function middleware(request) {
   }
   if (path === '/api/push') return pushApi(request, who);
   if (path === '/api/gurus/follow') return guruFollowApi(request, who);
+  if (path === '/api/alerts') return priceAlertApi(request, who);
   if (path === '/api/visit' && request.method === 'POST') { await logEvent(request, who, 'visit').catch(() => {}); return json({ ok: true }); }
   if (path === '/api/zframes/quotes' && request.method === 'GET') return zframesQuotes(request);
   // Back office: members and the access log — admins only (ADMIN_EMAILS)

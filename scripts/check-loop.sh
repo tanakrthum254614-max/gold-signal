@@ -24,6 +24,7 @@ check() {
   fi
   node scripts/intraday-run.js data.json || rc=1
   node scripts/chart-run.js data.json || rc=1   # every chart-timeframe signal → chart-signals.json
+  node scripts/price-alerts-user.js data.json   # members' own price alerts → web push (never fails the check)
   node scripts/flush.js   # everything from this check as one LINE request
   # Save results onto the data branch (no website deployment)
   if data_save "Signal update $(TZ=Asia/Bangkok date '+%F %H:%M')"; then savefails=0; else

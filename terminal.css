@@ -383,3 +383,18 @@ html.vp-scaled #app > .appbar { padding-right: calc(16px + env(safe-area-inset-r
 /* news: a second way to an article when investing.com answers 403 (newsstats.js .nf-alt) */
 :is(html, html.dark) .nf-alt { display: block; margin-top: 4px; font-size: 11.5px; color: var(--muted); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 :is(html, html.dark) .nf-alt:hover { color: var(--gold); }
+
+/* 🔔 price alerts card (pricealerts.js, 17 Oct 2026) */
+:is(html, html.dark) .pa-form { display: flex; gap: 8px; margin-top: 8px; }
+:is(html, html.dark) .pa-form input { flex: 1; min-width: 0; }
+:is(html, html.dark) .pa-quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+:is(html, html.dark) .pa-q { font: inherit; font-size: 12px; cursor: pointer; padding: 5px 9px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel-2, #1e2329); color: var(--muted); }
+:is(html, html.dark) .pa-q:hover { color: var(--gold); border-color: var(--gold); }
+:is(html, html.dark) .pa-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+:is(html, html.dark) .pa-list li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; }
+:is(html, html.dark) .pa-list li b { font-size: 15px; } :is(html, html.dark) .pa-list li small { margin-left: auto; }
+:is(html, html.dark) .pa-dir { font-size: 12px; font-weight: 700; } .pa-dir.up { color: var(--up); } .pa-dir.down { color: var(--down); }
+:is(html, html.dark) .pa-del { font: inherit; cursor: pointer; border: 0; background: none; color: var(--muted); padding: 2px 6px; } .pa-del:hover { color: var(--down); }
+html.vp-scaled .pa-q, html.vp-scaled .pa-del { min-height: 40px; }
+:is(html, html.dark) .pa-form input { background: var(--panel-2, #1e2329); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 9px 12px; font: inherit; font-size: 16px; }
+:is(html, html.dark) .pa-form input:focus { outline: 2px solid var(--gold); outline-offset: 0; }

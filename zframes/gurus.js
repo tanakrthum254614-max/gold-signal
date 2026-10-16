@@ -184,8 +184,37 @@
     <div id="guLive"><p class="muted">กำลังโหลด…</p></div><p class="gu-credit" id="guLiveAt"></p>
     <p class="gu-credit">🔔 แจ้งเตือนบนเครื่องเมื่อกูรูซื้อขาย (ฟอร์ม 4 · ARK รายวัน): เปิด "แจ้งเตือน" ที่แท็บบัญชี · ถ้ากด ☆ ติดตามไว้ จะแจ้งเฉพาะคนที่ติดตาม</p>`;
 
+  // 🧑‍💼 which gurus hold a stock — a card on every stock page (frames3.js openStock / openDiv, 17 Oct 2026). From each guru's
+  // top 40 holdings in the latest 13F, plus their SEC filings on that stock in the last 45 days.
+  function holdersHtml(s) {
+    if (!G) return '';
+    const rows = G.gurus.filter((g) => !stale(g)).map((g) => ({ g, h: g.top.find((x) => x.s === s), m: g.moves.find((x) => x.s === s) }))
+      .filter((x) => x.h || (x.m && x.m.act === 'exit')).sort((a, b) => (b.h?.w || 0) - (a.h?.w || 0));
+    const live = (LV?.items || []).filter((x) => x.symbol === s);
+    if (!rows.length && !live.length) return `<section class="card gh"><h3><span>🧑‍💼 กูรูที่ถือหุ้นนี้</span><small>SEC 13F</small></h3><p class="muted small">ไม่อยู่ใน 40 อันดับแรกของพอร์ตกูรู ${G.gurus.length} คนที่เราติดตาม</p></section>`;
+    const px = q(s);
+    return `<section class="card gh"><h3><span>🧑‍💼 กูรูที่ถือหุ้นนี้ · ${rows.filter((x) => x.h).length} คน</span><small>SEC 13F ${qLabel(G.gurus[0].period)} · 40 อันดับแรกของแต่ละพอร์ต</small></h3>
+      ${live.length ? `<ul class="gu-live">${liveRows(live.slice(0, 4))}</ul>` : ''}
+      <div class="tbl"><table class="st gt"><thead><tr><th>กูรู</th><th class="r">% พอร์ต</th><th class="r">จำนวนหุ้น</th><th class="r">มูลค่าสด</th><th class="r">เทียบไตรมาสก่อน</th></tr></thead><tbody>
+      ${rows.map(({ g, h, m }) => `<tr data-guru="${g.cik}" class="click"><td><span class="gh-who">${avatar(g)}<b>${e(g.th)}</b></span></td>
+        <td class="r">${h ? `${h.w}%` : '—'}</td><td class="mono r">${h ? Math.round(h.shares).toLocaleString('en-US') : '—'}</td>
+        <td class="mono r">${h ? money(px ? px * h.shares : h.value) : '—'}</td>
+        <td class="r">${!h ? '<span class="gact down">ขายหมด</span>' : h.chg == null ? '<span class="gact up">ซื้อใหม่</span>' : h.chg === 0 ? '<small>เท่าเดิม</small>' : `<span class="${h.chg > 0 ? 'up' : 'down'}">${h.chg > 0 ? '+' : ''}${h.chg}%</span>`}</td></tr>`).join('')}
+      </tbody></table></div></section>`;
+  }
+  async function attachHolders(m, s) {
+    if (!G) { try { const r = await fetch('./dashboards/gurus.json', { cache: 'no-store' }); if (r.ok) G = await r.json(); } catch (err) { return; } }
+    if (!LV) await loadLive();
+    const box = m.querySelector('.mbox'); if (!box || !G) return;
+    const html = holdersHtml(s); if (!html) return;
+    const wrap = document.createElement('div'); wrap.className = 'grid'; wrap.innerHTML = html;
+    const first = box.querySelector('.grid'); if (first) first.after(wrap); else box.appendChild(wrap);
+    wrap.addEventListener('click', (ev) => { if (ev.target.closest('a')) return; const g = ev.target.closest('[data-guru]'); if (g) openGuru(g.dataset.guru); });
+  }
+
   // app.js calls this after loading a dashboard: adds the tab and the gurus' tickers to the live price feed
   window.GURUS = {
+    attachHolders,
     async inject(dash) {
       if (!dash || !['ndx', 'spx', 'div'].includes(dash.id || window.current)) { /* only the US stock sets */ }
       try { if (!G) { const r = await fetch('./dashboards/gurus.json', { cache: 'no-store' }); if (r.ok) G = await r.json(); } } catch (err) { G = null; }

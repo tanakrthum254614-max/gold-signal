@@ -49,7 +49,7 @@
   <link rel="stylesheet" href="live.css?v=202610141600">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
-  <link rel="stylesheet" href="terminal.css?v=202610170000">
+  <link rel="stylesheet" href="terminal.css?v=202610170100">
   <link rel="stylesheet" href="splash.css?v=202610162200">
   <script>/* apply the saved theme before the first paint */ var gsT = "dark"; try { gsT = localStorage.getItem("gs-theme") === "light" ? "light" : "dark"; } catch (e) {} /* dark trading terminal = default since 14 Oct 2026 */ if (gsT === "dark") { document.getElementById("themeLight").disabled = true; document.documentElement.classList.add("dark"); document.querySelector("meta[name=theme-color]").content = "#0b0e11"; }</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -472,7 +472,7 @@
       </section>
 
       <section id="tab-zframes" class="tab" hidden>
-        <iframe id="zframesFrame" class="zframes-shell" title="หุ้นสหรัฐ — Nasdaq 100 · S&amp;P 500 · หุ้นปันผล" data-src="/zframes/index.html?d=ndx&amp;embed=1&amp;v=202610162000"></iframe>
+        <iframe id="zframesFrame" class="zframes-shell" title="หุ้นสหรัฐ — Nasdaq 100 · S&amp;P 500 · หุ้นปันผล" data-src="/zframes/index.html?d=ndx&amp;embed=1&amp;v=202610170100"></iframe>
       </section>
 
       <!-- 📓 Private trade journal (journal.js ← api/journal.mjs) — only the owner can read it -->
@@ -544,6 +544,19 @@
           <button class="btn" id="pwaTest" type="button" hidden>🧪 ส่งแจ้งเตือนทดสอบ</button>
         </section>
 
+        <!-- 🔔 price alerts the member sets (17 Oct 2026) — pricealerts.js; checked every 5 minutes (scripts/price-alerts-user.js) -->
+        <section class="card pa" id="paCard">
+          <h3>แจ้งเตือนราคาทอง 🔔</h3>
+          <p class="muted small">ตั้งราคาไว้ — เมื่อทอง (XAU/USD) ขึ้นหรือลงถึง ระบบเด้งแจ้งเตือนบนเครื่องที่เปิดแจ้งเตือนไว้ (เช็กทุก 5 นาที · ฟรี ไม่ใช้โควตา LINE) · ตั้งได้ 10 รายการ</p>
+          <div class="pa-form">
+            <input id="paPrice" type="number" inputmode="decimal" step="0.5" placeholder="เช่น 4200" aria-label="ราคาที่ต้องการให้เตือน">
+            <button class="btn gold" id="paAdd" type="button">ตั้งเตือน</button>
+          </div>
+          <div class="pa-quick" id="paQuick"></div>
+          <p class="small" id="paMsg" role="status"></p>
+          <ul class="pa-list" id="paList"></ul>
+        </section>
+
         <section class="card">
           <h3>ตั้งค่าการเทรดของฉัน ⚙️</h3>
           <p class="muted small">ใช้คำนวณขนาดไม้ (lot) ในทุกสัญญาณ และหักสเปรดในผลทดสอบ — บันทึกไว้กับบัญชีของคุณ</p>
@@ -582,7 +595,7 @@
 
         <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610170000 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610170100 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
@@ -607,6 +620,7 @@
   <script src="newsstats.js?v=202610170000"></script>
   <script src="chartchat.js?v=202610152200"></script>
   <script src="journal.js?v=202610140200"></script>
+  <script src="pricealerts.js?v=202610170100"></script>
   <script src="motion.js?v=202610141800"></script>
 </body>
 </html>

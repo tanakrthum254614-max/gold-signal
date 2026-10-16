@@ -23,6 +23,7 @@
     .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); text-decoration: none; cursor: pointer; font-size: 14px; font-weight: 600; }
     .btn:hover { border-color: var(--gold); }
     main { max-width: 1400px; margin: 0 auto; padding: 18px 16px 60px; }
+    .st-tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; } .st-tbl th, .st-tbl td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; } .st-tbl a { color: var(--gold); }
     .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 16px; }
     .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
     .tile small { display: block; color: var(--muted); font-size: 13px; }
@@ -89,7 +90,7 @@
   </header>
   <main>
     <div class="tiles" id="tiles"></div>
-    <div class="tabs" id="tabs"><button type="button" class="on" data-tab="members">👥 สมาชิก</button><button type="button" data-tab="log">📋 บันทึกการเข้าใช้</button><button type="button" data-tab="articles">📝 บทความ</button></div>
+    <div class="tabs" id="tabs"><button type="button" class="on" data-tab="members">👥 สมาชิก</button><button type="button" data-tab="log">📋 บันทึกการเข้าใช้</button><button type="button" data-tab="articles">📝 บทความ</button><button type="button" data-tab="status">🩺 สถานะระบบ</button></div>
 
     <section class="card" id="membersPane">
       <div class="filters">
@@ -122,6 +123,16 @@
       </table></div>
       <p class="note">เก็บล่าสุด 5,000 รายการ · ที่อยู่มาจาก Vercel (ประเทศ/เมืองโดยประมาณ) ไม่ได้เก็บ IP</p>
     </section>
+    <!-- 🩺 System status (17 Oct 2026): every scheduled job's last run (GitHub Actions API, public repo) and how fresh the
+         data files are — so a stuck job shows here before a member notices -->
+    <section class="card" id="statusPane" hidden>
+      <p class="muted small" id="stAt">กำลังโหลด…</p>
+      <table class="st-tbl"><thead><tr><th>งาน</th><th>ควรรัน</th><th>รอบล่าสุด</th><th>ผล</th><th>สถานะ</th></tr></thead><tbody id="stJobs"></tbody></table>
+      <h3 style="margin:18px 0 8px">ความสดของข้อมูล</h3>
+      <table class="st-tbl"><thead><tr><th>ข้อมูล</th><th>อัปเดตล่าสุด</th><th>สถานะ</th></tr></thead><tbody id="stData"></tbody></table>
+      <p class="muted small">🟢 ปกติ · 🟡 ช้ากว่ารอบปกติ · 🔴 พัง หรือค้างนานผิดปกติ · งานเช็กราคา/สัญญาณรันเฉพาะวันจันทร์–ศุกร์ · ดูรายละเอียดได้ที่ GitHub Actions (ลิงก์ในตาราง)</p>
+    </section>
+
     <section class="card" id="articlesPane" hidden>
       <form class="ed" id="aForm">
         <input id="aTitle" maxlength="140" placeholder="หัวข้อบทความ" required>
@@ -225,10 +236,55 @@
     function tab(t) {
       document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
       $('membersPane').hidden = t !== 'members'; $('logPane').hidden = t !== 'log';
-      $('articlesPane').hidden = t !== 'articles';
+      $('articlesPane').hidden = t !== 'articles'; $('statusPane').hidden = t !== 'status';
       if (t === 'articles') loadArticles();
+      if (t === 'status') loadStatus();
     }
     $('tabs').addEventListener('click', (e) => e.target.dataset.tab && tab(e.target.dataset.tab));
+    // ---- 🩺 system status ----
+    const REPO = 'tanakrthum254614-max/gold-signal';
+    const JOBS = [ // file, name, how often it should run (minutes; null = by calendar), what it does
+      ['price-alerts.yml', 'เช็กราคา / สัญญาณ (ทุก 5 นาที)', 30, 'จ.–ศ. · บันทึกสัญญาณ ส่ง LINE · แจ้งเตือนราคาที่สมาชิกตั้ง'],
+      ['gurus-live.yml', 'พอร์ตกูรู: SEC + ARK', 30, 'ทุก 10 นาที · แจ้งเตือนกูรูซื้อขาย'],
+      ['new-members.yml', 'สมาชิกใหม่', 45, 'ทุก 15 นาที · แจ้งแอดมิน'],
+      ['morning-plan.yml', 'ภาพรวมเช้า', 26 * 60, 'จ.–ศ. 07:05 · LINE'],
+      ['zframes-refresh.yml', 'แดชบอร์ดหุ้นสหรัฐ + พอร์ตกูรู', 26 * 60, 'ทุกวัน 06:00'],
+      ['weekly-summary.yml', 'สรุปรายสัปดาห์', 8 * 1440, 'เสาร์ 07:30'],
+      ['monthly-research.yml', 'ทดสอบระบบรายเดือน', 32 * 1440, 'วันที่ 2 ของเดือน'],
+    ];
+    const agoMin = (t) => { const m = Math.round((Date.now() - t) / 60e3); return m < 60 ? `${m} นาทีที่แล้ว` : m < 2880 ? `${Math.round(m / 60)} ชม.ที่แล้ว` : `${Math.round(m / 1440)} วันที่แล้ว`; };
+    const weekday = () => { const d = new Date(Date.now() + 7 * 3600e3).getUTCDay(); return d >= 1 && d <= 5; };
+    async function loadStatus() {
+      $('stAt').textContent = 'กำลังโหลด…';
+      const rows = await Promise.all(JOBS.map(async ([file, name, every, note]) => {
+        try {
+          const r = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${file}/runs?per_page=1`, { cache: 'no-store' });
+          const run = (await r.json()).workflow_runs?.[0];
+          if (!run) return [name, note, null, 'ไม่มีข้อมูล', '🟡', null];
+          const t = Date.parse(run.updated_at || run.created_at), late = (Date.now() - t) / 60e3 > every && (file !== 'price-alerts.yml' || weekday());
+          const ok = run.conclusion === 'success', busy = run.status !== 'completed';
+          const res = busy ? 'กำลังรัน' : ok ? 'ผ่าน' : run.conclusion === 'failure' ? 'พัง' : run.conclusion || '—';
+          return [name, note, t, res, !busy && !ok && run.conclusion === 'failure' ? '🔴' : late ? ((Date.now() - t) / 60e3 > every * 3 ? '🔴' : '🟡') : '🟢', run.html_url];
+        } catch (e) { return [name, note, null, 'โหลดไม่ได้', '🟡', null]; }
+      }));
+      $('stJobs').innerHTML = rows.map(([n, note, t, res, st, url]) => `<tr><td><b>${n}</b></td><td class="muted small">${note}</td><td>${t ? `${when(t)}<br><small class="muted">${agoMin(t)}</small>` : '—'}</td><td>${url ? `<a href="${url}" target="_blank" rel="noopener">${res}</a>` : res}</td><td>${st}</td></tr>`).join('');
+      const DATA = [ // file, label, field with the time, max age (min)
+        ['/chart-signals.json', 'สัญญาณกราฟ (บันทึกไม้)', 'updatedAt', 60, true],
+        ['/quota.json', 'โควตา LINE', 'at', 26 * 60, true],
+        ['/zframes/dashboards/ndx.json', 'แดชบอร์ด Nasdaq 100', 'generatedAt', 26 * 60],
+        ['/zframes/dashboards/gurus.json', 'พอร์ตกูรู (13F)', 'asOf', 26 * 60],
+        ['/zframes/dashboards/gurus-live.json', 'กูรูล่าสุดจาก SEC / ARK', 'asOf', 3 * 1440],
+      ];
+      const drows = await Promise.all(DATA.map(async ([url, label, field, maxAge, wk]) => {
+        try {
+          const j = await (await fetch(url, { cache: 'no-store' })).json(), v = j[field], t = typeof v === 'number' ? v : Date.parse(v);
+          const age = (Date.now() - t) / 60e3, st = !Number.isFinite(t) ? '🟡' : age > maxAge * 3 && (!wk || weekday()) ? '🔴' : age > maxAge && (!wk || weekday()) ? '🟡' : '🟢';
+          return `<tr><td><b>${label}</b></td><td>${Number.isFinite(t) ? `${when(t)}<br><small class="muted">${agoMin(t)}</small>` : '—'}</td><td>${st}</td></tr>`;
+        } catch (e) { return `<tr><td><b>${label}</b></td><td>โหลดไม่ได้</td><td>🔴</td></tr>`; }
+      }));
+      $('stData').innerHTML = drows.join('');
+      $('stAt').textContent = `เช็กเมื่อ ${when(Date.now())} · กด ↻ โหลดใหม่ เพื่อเช็กอีกครั้ง`;
+    }
     async function api(path, opt = {}) {
       const r = await fetch(path, { ...opt, headers: { 'content-type': 'application/json' }, cache: 'no-store' });
       const j = await r.json().catch(() => ({}));
@@ -309,7 +365,7 @@
         tiles(); renderMembers(); renderLog();
       } catch (e) { $('mBody').innerHTML = `<tr><td colspan="8" class="empty err">${esc(e.message)}</td></tr>`; }
     }
-    $('reload').addEventListener('click', load);
+    $('reload').addEventListener('click', () => { load(); if (!$('statusPane').hidden) loadStatus(); });
     load();
   </script>
 </body>

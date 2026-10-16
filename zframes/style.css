@@ -483,3 +483,8 @@ html.light .gu-live li { background: #fff; border-color: #ece6d8; }
 .gu.fol { border-color: rgba(240, 185, 11, .55); }
 .gu-hd h2 .gu-star { font-size: 20px; }
 .lv-k.ark { color: #a78bfa; background: rgba(167, 139, 250, .14); }
+/* stock page: gurus holding it (gurus.js holdersHtml) */
+.gh { grid-column: 1 / -1; }
+.gh-who { display: inline-flex; align-items: center; gap: 8px; } .gh-who .gu-av { width: 30px; height: 30px; font-size: 11px; }
+.gh-who .gu-av.mark i { font-size: 4.6px; letter-spacing: 0; }
+.gh .gu-live { margin-bottom: 10px; }

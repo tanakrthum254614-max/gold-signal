@@ -327,6 +327,7 @@ function openStock(s) {
       </tbody></table></div></section>` : ''}</div>`;
   document.body.appendChild(m);
   startStockCandles(m);
+  window.GURUS?.attachHolders?.(m, s); // which gurus hold this stock (gurus.js, 17 Oct 2026)
   const close = () => m.remove();
   m.addEventListener('click', ev => {
     const pr = ev.target.closest('tr[data-peer]');
@@ -445,6 +446,7 @@ function openDiv(x) {
       ${bars}<section class="card"><h3><span>ระหว่างวัน (5 นาที)</span><small>Yahoo · สด</small></h3><div class="msp">${sparkSvg(q?.spark, 420, 60)}</div></section></div></div>`;
   document.body.appendChild(m);
   startStockCandles(m);
+  window.GURUS?.attachHolders?.(m, s); // which gurus hold this stock (gurus.js, 17 Oct 2026)
   m.addEventListener('click', ev => { if (ev.target === m || ev.target.closest('.mx')) m.remove(); });
   document.addEventListener('keydown', function k(ev) { if (ev.key === 'Escape') { m.remove(); document.removeEventListener('keydown', k); } });
   STOCKS.paintModal();
