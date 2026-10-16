@@ -313,7 +313,13 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
-## 16 ต.ค. 2569 (ดึก) — 🔄 รีเฟรชแล้วอยู่ที่เดิม (หน้าโหลดครั้งเดียวต่อแท็บ)
+## 17 ต.ค. 2569 — ↩️ ย้อน "รีเฟรชแล้วอยู่ที่เดิม" กลับแบบเดิม
+- ผู้ใช้: "ไม่เอาแล้ว เอากลับมาแบบเดิม" → `git revert` 4e82569 (index.html head สคริปต์ no-splash, splash.css, auth.js gs-splash-seen, main.js gs-tf, ui.js restoreScroll/แสดงแท็บก่อน) · compare.html เก็บของเดิมไว้ + เพิ่มหัวข้อย้อน
+- **เลข ?v= ขยับเป็น 202610170900** (auth/ui/main/splash.css) ไม่ใช่กลับเลขเก่า — ไม่งั้นเครื่องที่โหลด 202610170800 ไปแล้วจะใช้ไฟล์ใหม่ที่ cache ไว้
+- ทดสอบ reload.cjs: รีเฟรชแล้ว splash ขึ้น (flex) · กราฟกลับ 1 ชม. · scroll 0 = แบบเดิม · deploy 320c46d
+- **อย่าทำ skip splash / จำตำแหน่งตอนรีเฟรชอีก ถ้าผู้ใช้ไม่ขอ**
+
+## 16 ต.ค. 2569 (ดึก) — 🔄 รีเฟรชแล้วอยู่ที่เดิม (หน้าโหลดครั้งเดียวต่อแท็บ) — ❌ ยกเลิกแล้ว 17 ต.ค. (320c46d)
 - ผู้ใช้: "พอกดรีเฟรชชอบไปเปิดหน้าตอนโหลดใหม่ทุกรอบ อยากกดรีเฟรชแล้วอยู่ที่เดิม ไม่ต้องไปเริ่มที่หน้าตอนโหลดใหม่ทุกครั้ง"
 - index.html `<head>` สคริปต์: navigation type `reload` หรือ sessionStorage `gs-splash-seen` → `html.no-splash` (splash.css ซ่อน #splash) · auth.js: skipSplash รวม no-splash + ใส่ `gone` ทันที · ตั้ง `gs-splash-seen` ตอนหน้าโหลดจบ · **ดีไซน์ splash ไม่เปลี่ยน** (ยังเล่นครั้งแรกของแท็บ MIN_MS 4000)
 - main.js `state.tf` อ่าน sessionStorage `gs-tf` (setTf บันทึก) · ui.js: `history.scrollRestoration = 'manual'`, pagehide บันทึก `gs-scroll {tab, y}`, `restoreScroll()` หลัง start() ลอง 0–6 วิ (หยุดถ้าผู้ใช้เลื่อนเอง) · แสดงแท็บตาม #hash ทันทีตอนโหลด ui.js (ไม่กะพริบหน้าสัญญาณก่อน)
