@@ -315,6 +315,7 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 ## 17 ต.ค. 2569 — 💸 Stripe: ผูกกสิกรแล้ว ราคา 149/1,290 แล้ว · หลังบ้านโชว์สิ่งที่ Stripe ยังขอ
 - ผู้ใช้ผูกบัญชี KASIKORNBANK (THB, Default) ที่ Settings → Linked accounts and payouts · กด 💲 แล้ว (Blob stripe-live.json amounts 149/1290 ✓) · Stripe Home ไม่มี Action required มีปุ่ม Pay out funds · แต่หลังบ้านยัง ⚠️ โอนเงินออก (API payouts_enabled = false)
+- ผลจริงในหลังบ้าน 17 ต.ค. 01:37: "📋 Stripe แจ้ง: ไม่ได้ขอข้อมูลเพิ่ม และไม่มีอะไรรอตรวจ" → รอ Stripe เปิด payouts (1–2 วันทำการ) · ข้อความ ⚠️ ไม่บอกให้เพิ่มธนาคารแล้วถ้า requirements ไม่มี external_account · admin.html แสดงบรรทัด 📋 ทุกครั้งที่ payouts ปิด
 - api/golive.mjs status: `account.due = { now: requirements.currently_due, past: past_due, pending: pending_verification, reason: disabled_reason, deadline }` · admin.html ใต้เช็กลิสต์ "📋 Stripe แจ้ง: …" (ชื่อฟิลด์ของ Stripe ตามจริง + ที่ไปกรอก) · ทดสอบ adminrisk.cjs (ข้อมูลจำลอง) · deploy 8865b95
 
 ## 17 ต.ค. 2569 — 🧰 สมาชิก: เตือนหมดอายุ · วิธีเริ่มใช้ · Sell 1 ชม. · สรุปรายได้
