@@ -309,6 +309,10 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 16 ต.ค. 2569 (ดึก) — แอดมินเหลือคนเดียว
+- ผู้ใช้: "เราเป็นแค่ Admin คนเดียวพอ เมลนี้เป็น admin : tanakrthum2546@gmail.com" (บัญชีอื่นยังเห็นปุ่ม 🛠️ หลังบ้าน) → env **ADMIN_EMAILS = tanakrthum2546@gmail.com เท่านั้น** (Production + Preview, sensitive) → redeploy · ไม่ได้แก้โค้ด (ปุ่ม #adminLink, /api/admin/*, admin.html, PRO แอดมิน, แจ้งเตือนแอดมิน ใช้ isAdmin จาก env ตัวเดียวกันหมด)
+- บัญชีที่เคยเป็นแอดมินตอนนี้เป็นสมาชิกฟรี และ**ไม่ได้ PRO ฟรี 30 วันตอนกด 🚀** (ระบบข้ามแอดมิน) ถ้าจะให้ ต้องให้ผ่านหลังบ้าน ⭐ PRO → ให้สิทธิ์ / ต่ออายุ
+
 ## 16 ต.ค. 2569 (ดึก) — 🚀 เปิดรับเงินจริง + แอดมินเห็นตัวอย่างปุ่มจ่ายเงิน
 - ผู้ใช้สร้าง restricted key (Full access—except sensitive operations) → ใส่ STRIPE_LIVE_SECRET_KEY ผ่านหน้าเว็บ Vercel (Production, Sensitive) → redeploy → หลังบ้านเช็กลิสต์ ✅ ทั้งหมด (โอนเงินออก ⚠️ ยังไม่ผูกธนาคาร · PromptPay active) → กด 🚀 199/1,990 · ให้ฟรี 30 วัน
 - ผู้ใช้: "ไม่เห็นมีให้เก็บตังเลย" → สาเหตุคือแอดมินเป็น PRO เสมอ การ์ดเลยซ่อนแพ็กเกจ → journal.js: แอดมินเห็นแพ็กเกจเป็นตัวอย่าง ปุ่ม disabled + ข้อความ "👀 ตัวอย่าง" · ทดสอบ gold-signal-tools/proadmin.cjs (admin/free/gifted × desktop 1440 + มือถือแนวนอน 844) ผ่าน · deploy 8d29ab7 · v202610170400
