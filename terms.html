@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Public terms + prices + refund policy (17 Oct 2026): Stripe's business verification needs a public page that shows what
+       is sold, the price, how to cancel / get a refund and how to contact us — the rest of the site is members-only. -->
+  <title>เงื่อนไขการใช้บริการและราคา · Gold Signal</title>
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #f3f5f9; --panel: #fff; --line: #e2e7ef; --text: #1c2433; --muted: #697386; --gold: #b9800c; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #0d1016; --panel: #151a23; --line: #262e3b; --text: #e6e9ef; --muted: #8a93a3; --gold: #e8b64c; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans Thai", system-ui, sans-serif; line-height: 1.7; }
+    main { max-width: 760px; margin: 0 auto; padding: 28px 16px 60px; }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; text-decoration: none; color: inherit; }
+    .brand img { width: 40px; height: 40px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 22px; margin-bottom: 14px; }
+    h1 { font-size: 22px; margin: 0 0 4px; } h2 { font-size: 16.5px; margin: 20px 0 6px; }
+    p, li { font-size: 15px; } ul { padding-left: 20px; margin: 6px 0; }
+    .muted { color: var(--muted); font-size: 13.5px; } a { color: var(--gold); }
+    .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 10px 0; }
+    .plan { border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+    .plan b { display: block; font-size: 15px; } .plan .p { font-size: 24px; font-weight: 700; color: var(--gold); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; } td, th { text-align: left; padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="brand" href="/demo.html"><img src="logo.svg" alt=""><b>Gold Signal</b></a>
+
+    <div class="card">
+      <h1>แพ็กเกจและราคา</h1>
+      <p>Gold Signal คือเว็บแอปข้อมูลประกอบการเทรดทองคำ XAU/USD และหุ้นสหรัฐ — ราคาสด กราฟ สัญญาณจากระบบที่ทดสอบย้อนหลัง ข่าว และเครื่องมือ (ไม่ใช่โบรกเกอร์ ไม่รับฝากเงินลงทุน ไม่ส่งคำสั่งซื้อขาย)</p>
+      <table>
+        <tr><th></th><th>สมาชิกฟรี</th><th>สมาชิก PRO</th></tr>
+        <tr><td>ราคาทองสด · กราฟ · ข่าวสหรัฐ · สมุดเทรด</td><td>✓</td><td>✓</td></tr>
+        <tr><td>สัญญาณระบบหลักกรอบ 1 ชั่วโมง</td><td>✓</td><td>✓</td></tr>
+        <tr><td>สัญญาณ Buy/Sell ทุกกรอบเวลา (5 นาที – 1 สัปดาห์) + แชทถามจุดเข้าทุกกรอบ</td><td>—</td><td>✓</td></tr>
+        <tr><td>หุ้นสหรัฐ (Nasdaq 100 · S&amp;P 500 · หุ้นปันผล) + พอร์ตกูรู + แจ้งเตือนกูรูซื้อขาย</td><td>—</td><td>✓</td></tr>
+        <tr><td>โค้ช AI</td><td>—</td><td>✓</td></tr>
+        <tr><td>แจ้งเตือนราคาทองที่ตั้งเอง</td><td>1 รายการ</td><td>10 รายการ</td></tr>
+      </table>
+      <div class="plans">
+        <div class="plan"><b>PRO รายเดือน</b><span class="p">199 บาท</span><p class="muted">ต่อ 30 วัน · บัตร: ต่ออายุอัตโนมัติ · PromptPay/บัตร: จ่ายครั้งเดียว 30 วัน</p></div>
+        <div class="plan"><b>PRO รายปี</b><span class="p">1,990 บาท</span><p class="muted">ต่อ 365 วัน (ถูกกว่ารายเดือน ~2 เดือน) · บัตร: ต่ออายุอัตโนมัติ · PromptPay/บัตร: จ่ายครั้งเดียว 365 วัน</p></div>
+      </div>
+      <p class="muted">ราคารวมภาษีแล้ว (ถ้ามี) · ชำระผ่าน Stripe — Gold Signal ไม่เห็นและไม่เก็บเลขบัตร · สิทธิ์ PRO เปิดทันทีที่ชำระสำเร็จ · <a href="/login.html#signup">สมัครสมาชิกฟรี</a> · <a href="/demo.html">ทดลองดู</a></p>
+    </div>
+
+    <div class="card">
+      <h1>เงื่อนไขการใช้บริการ</h1>
+      <p class="muted">ปรับปรุงล่าสุด 17 ตุลาคม 2569</p>
+      <h2>1. บริการ</h2>
+      <p>ข้อมูลทั้งหมดเป็น<b>ข้อมูลประกอบการตัดสินใจ ไม่ใช่คำแนะนำการลงทุน</b> ผลทดสอบย้อนหลังไม่รับประกันผลในอนาคต การเทรดทองคำและหุ้นมีความเสี่ยงสูง อาจขาดทุนเกินที่คาด ผู้ใช้ตัดสินใจและรับผิดชอบการลงทุนของตนเอง</p>
+      <h2>2. บัญชี</h2>
+      <p>สมัครด้วยอีเมลหรือ Google · 1 บัญชีต่อ 1 คน ห้ามแชร์บัญชีหรือนำข้อมูลไปเผยแพร่/ขายต่อ · เราระงับบัญชีที่ใช้ผิดเงื่อนไขได้</p>
+      <h2>3. การชำระเงินและการต่ออายุ</h2>
+      <ul>
+        <li><b>บัตร (ต่ออายุอัตโนมัติ):</b> ตัดเงินทุกรอบ 30 หรือ 365 วันตามแพ็กเกจ จนกว่าจะยกเลิก</li>
+        <li><b>จ่ายครั้งเดียว (PromptPay หรือบัตร):</b> ได้สิทธิ์ 30 หรือ 365 วัน ไม่ตัดเงินซ้ำ หมดแล้วกลับเป็นสมาชิกฟรี</li>
+        <li>ราคาอาจเปลี่ยนในอนาคต — จะแจ้งล่วงหน้าอย่างน้อย 30 วัน และไม่กระทบรอบที่จ่ายแล้ว</li>
+      </ul>
+      <h2>4. การยกเลิก</h2>
+      <p>ยกเลิกการต่ออายุได้ทุกเมื่อในแท็บ <b>บัญชี → สมาชิก PRO → จัดการ / ยกเลิกการต่ออายุ</b> · ยังใช้ PRO ได้จนจบรอบที่จ่ายไปแล้ว และจะไม่ถูกตัดเงินรอบถัดไป</p>
+      <h2>5. การคืนเงิน</h2>
+      <ul>
+        <li>ขอคืนเงินเต็มจำนวนได้ภายใน <b>7 วัน</b> หลังชำระครั้งแรกของแต่ละแพ็กเกจ</li>
+        <li>ถูกตัดเงินซ้ำหรือผิดพลาดจากระบบ — คืนเงินส่วนที่ผิดทั้งหมด</li>
+        <li>หลัง 7 วัน ไม่คืนเงินบางส่วนสำหรับรอบที่เหลือ (ยกเลิกการต่ออายุได้ตามข้อ 4)</li>
+        <li>คืนเงินเข้าช่องทางเดิมที่ชำระ ภายใน 5–10 วันทำการ</li>
+      </ul>
+      <h2>6. การเปลี่ยนแปลงบริการ</h2>
+      <p>เราปรับปรุง เพิ่ม หรือเปลี่ยนฟีเจอร์ได้ตลอด ถ้าบริการ PRO หยุดให้บริการถาวร จะคืนเงินตามสัดส่วนวันที่เหลือ</p>
+      <h2>7. ติดต่อ</h2>
+      <p>อีเมล: <a href="mailto:tanakrthum254614@gmail.com">tanakrthum254614@gmail.com</a> · LINE: <a href="https://line.me/R/ti/p/@279arudw">@279arudw</a> · ตอบภายใน 2 วันทำการ</p>
+      <p class="muted">ดูเพิ่มเติม: <a href="/privacy.html">นโยบายความเป็นส่วนตัว</a></p>
+    </div>
+  </main>
+</body>
+</html>

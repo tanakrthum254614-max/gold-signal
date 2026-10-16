@@ -41,7 +41,8 @@ const FAPI = 'delicate-tapir-2101.clerk.accounts.dev';
 const SUBS = 'access/push-subs.json';
 // Served to everyone: the login page and what it shows / the browser asks for on its own
 // demo.html (16 Oct 2026): plain candles for visitors — loads none of the members-only scripts
-const PUBLIC = /^\/(login\.html|demo\.html|privacy\.html|logo\.svg|favicon\.ico|manifest\.webmanifest|robots\.txt|icons\/.*)$/;
+// terms.html (17 Oct 2026): prices, terms, cancel / refund policy, contact — Stripe's business verification needs it public
+const PUBLIC = /^\/(login\.html|demo\.html|terms\.html|privacy\.html|logo\.svg|favicon\.ico|manifest\.webmanifest|robots\.txt|icons\/.*)$/;
 // Stripe calls this one itself (no cookie) — api/pay/webhook.mjs refuses anything without a valid Stripe signature
 const WEBHOOK = '/api/pay/webhook';
 
