@@ -52,6 +52,27 @@ export async function POST(request) {
     clearProCache();
     return json({ ok: true, enabled: false });
   }
+  // 💲 New prices (user, 16 Oct: "ปรับราคาเป็น 149" → 149 / 1,290): Stripe prices can't be edited, so a changed amount gets a
+  // new THB price and the old one is archived (existing subscriptions keep their old price until cancelled).
+  if (q.action === 'prices') {
+    const want = { month: Math.round(+q.month), year: Math.round(+q.year) };
+    if (!(want.month >= 20 && want.year >= 20)) return fail('ราคาไม่ถูกต้อง');
+    const cfg = await liveConfig(true);
+    if (!cfg || !cfg.product) return fail('ยังไม่ได้กด 🚀 เปิดรับเงินจริง');
+    const steps = [];
+    cfg.amounts = cfg.amounts || {};
+    for (const [plan, key, interval] of [['month', 'priceMonth', 'month'], ['year', 'priceYear', 'year']]) {
+      if (cfg.amounts[plan] === want[plan] && cfg[key]) { steps.push(`${plan === 'month' ? 'รายเดือน' : 'รายปี'} ${want[plan]} บาท เท่าเดิม (ข้าม)`); continue; }
+      const old = cfg[key];
+      cfg[key] = (await stripe('prices', { product: cfg.product, currency: 'thb', unit_amount: want[plan] * 100, recurring: { interval }, nickname: plan === 'month' ? 'รายเดือน' : 'รายปี' })).id;
+      if (old) await stripe(`prices/${old}`, { active: false }).catch(() => {});
+      steps.push(`${plan === 'month' ? 'รายเดือน' : 'รายปี'}: ${cfg.amounts[plan] ?? '—'} → ${want[plan]} บาท`);
+      cfg.amounts[plan] = want[plan];
+    }
+    await writeJson(LIVE_FILE, { ...cfg, at: Date.now(), by });
+    clearLiveCache();
+    return json({ ok: true, steps });
+  }
   if (q.action !== 'launch') return fail('action');
   const month = Math.round(+q.month), year = Math.round(+q.year), giftDays = Math.round(+(q.giftDays ?? 30));
   if (!(month >= 20 && year >= 20) || !(giftDays >= 0 && giftDays <= 365)) return fail('ราคา/จำนวนวันไม่ถูกต้อง');

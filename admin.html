@@ -159,12 +159,13 @@
         <h3 style="margin:0 0 6px;font-size:16px">🚀 เปิดรับเงินจริง</h3>
         <ul class="gl-checks" id="glChecks"><li>กำลังตรวจ…</li></ul>
         <div class="ed" style="margin:10px 0 0"><div class="row">
-          <label class="chk">รายเดือน <input id="glMonth" type="number" min="20" value="199"> บาท</label>
-          <label class="chk">รายปี <input id="glYear" type="number" min="20" value="1990"> บาท</label>
+          <label class="chk">รายเดือน <input id="glMonth" type="number" min="20" value="149"> บาท</label>
+          <label class="chk">รายปี <input id="glYear" type="number" min="20" value="1290"> บาท</label>
           <label class="chk">สมาชิกเดิมได้ PRO ฟรี <input id="glGift" type="number" min="0" max="365" value="30"> วัน</label>
         </div><div class="row">
           <button class="btn gold" type="button" id="glLaunch" disabled>🚀 เปิดรับเงินจริง</button>
           <button class="btn danger" type="button" id="glOff" hidden>ปิดระบบเก็บเงิน (ทุกคนใช้ฟรี)</button>
+          <button class="btn" type="button" id="glPrices" hidden>💲 บันทึกราคาใหม่</button>
           <button class="btn" type="button" id="glRecheck">↻ ตรวจใหม่</button>
         </div></div>
         <p class="note" id="glNote">กดได้เมื่อทุกข้อเป็น ✅ · กดแล้ว: สร้างราคา + webhook ในบัญชี Stripe จริง → ให้ PRO ฟรีสมาชิกเดิม → เปิดเก็บเงิน (กดซ้ำได้ ขั้นที่ทำแล้วจะข้าม)</p>
@@ -389,6 +390,7 @@
         $('glLaunch').disabled = !s.ready;
         $('glLaunch').textContent = s.enabled ? '🚀 กดซ้ำ (ข้ามขั้นที่ทำแล้ว)' : '🚀 เปิดรับเงินจริง';
         $('glOff').hidden = !s.enabled;
+        $('glPrices').hidden = !s.configured; // after go-live: change prices without touching anything else
       } catch (e) { $('glChecks').innerHTML = `<li class="err">${esc(e.message)}</li>`; }
     }
     $('glRecheck').addEventListener('click', loadGoLive);
@@ -402,6 +404,19 @@
         if (!r.ok || !j.ok) throw new Error([j.error || 'ไม่สำเร็จ', ...(j.problems || [])].join('\n'));
         alert('✅ ' + j.steps.join('\n✅ '));
       } catch (e) { alert(e.message); }
+      loadGoLive(); loadPro();
+    });
+    $('glPrices').addEventListener('click', async () => {
+      const month = +$('glMonth').value, year = +$('glYear').value;
+      if (!confirm(`เปลี่ยนราคาเป็น ${month} บาท/เดือน · ${year} บาท/ปี ?\n\n(คนที่สมัครแบบบัตรไว้แล้วจ่ายราคาเดิมต่อ จนกว่าจะยกเลิก)`)) return;
+      $('glPrices').disabled = true;
+      try {
+        const r = await fetch('/api/golive', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'prices', month, year }) });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || !j.ok) throw new Error(j.error || 'ไม่สำเร็จ');
+        alert('✅ ' + j.steps.join('\n✅ ') + '\n\nหน้าจ่ายเงินแสดงราคาใหม่ภายใน 1 นาที');
+      } catch (e) { alert(e.message); }
+      $('glPrices').disabled = false;
       loadGoLive(); loadPro();
     });
     $('glOff').addEventListener('click', async () => {
