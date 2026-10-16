@@ -398,3 +398,9 @@ html.vp-scaled #app > .appbar { padding-right: calc(16px + env(safe-area-inset-r
 html.vp-scaled .pa-q, html.vp-scaled .pa-del { min-height: 40px; }
 :is(html, html.dark) .pa-form input { background: var(--panel-2, #1e2329); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 9px 12px; font: inherit; font-size: 16px; }
 :is(html, html.dark) .pa-form input:focus { outline: 2px solid var(--gold); outline-offset: 0; }
+
+/* ⭐ PRO lock on the chart tab (chartzones.js adds #tab-chart.tf-locked for free members on a non-1h timeframe) */
+.tf-lock { display: none; }
+#tab-chart.tf-locked .tf-lock { display: block; margin: 8px 0; padding: 12px 14px; border-radius: 8px; border: 1px dashed rgba(240, 185, 11, .7); background: rgba(240, 185, 11, .08); font-size: 13.5px; }
+#tab-chart.tf-locked .tf-lock a { color: var(--gold); }
+#tab-chart.tf-locked .cz-box { display: none; }

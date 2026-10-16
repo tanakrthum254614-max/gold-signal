@@ -46,10 +46,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=202610141600">
-  <link rel="stylesheet" href="live.css?v=202610141600">
+  <link rel="stylesheet" href="live.css?v=202610170200">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
-  <link rel="stylesheet" href="terminal.css?v=202610170100">
+  <link rel="stylesheet" href="terminal.css?v=202610170200">
   <link rel="stylesheet" href="splash.css?v=202610162200">
   <script>/* apply the saved theme before the first paint */ var gsT = "dark"; try { gsT = localStorage.getItem("gs-theme") === "light" ? "light" : "dark"; } catch (e) {} /* dark trading terminal = default since 14 Oct 2026 */ if (gsT === "dark") { document.getElementById("themeLight").disabled = true; document.documentElement.classList.add("dark"); document.querySelector("meta[name=theme-color]").content = "#0b0e11"; }</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -345,6 +345,7 @@
               <nav class="tfs" id="sRange"></nav>
             </div>
             <div class="cz-box" id="czBoxS">กำลังคำนวณโซนเข้า…</div>
+            <div class="tf-lock">⭐ จุดเข้า Buy/Sell กรอบนี้สำหรับ<b>สมาชิก PRO</b> — สมาชิกฟรีดูสัญญาณได้กรอบ <b>1 ชม.</b> (ระบบหลัก) · <a href="#account">ดูแพ็กเกจ PRO</a></div>
             <ul class="s15-legend cz-legend"><li><i class="zone ok"></i>โซน BUY</li><li><i class="zone sell"></i>โซน SELL</li><li><i class="zone near"></i>ใกล้โซน</li><li><i class="zone bad"></i>ขาลง</li><li><i class="zone news"></i>ข่าว งดเข้า</li><li><i class="up">▲</i><i class="sell-mk">▼</i>กราฟนี้เปลี่ยนเป็นขึ้น/ลง</li><li><i class="up">▲</i><i class="lg-tag buy">Buy</i>เข้าซื้อ</li><li><i class="sell-mk">▼</i><i class="lg-tag sell">Sell</i>เข้าขาย</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul>
             <div id="simpleChart" class="chart-simple"></div>
             <p class="hint">เส้นสีทอง = ราคาทอง · 🎯 จุดเข้า · 🛑 ตัดขาดทุน · 💰 เป้าหมาย ของสัญญาณล่าสุด</p>
@@ -384,6 +385,7 @@
         </div>
         <p class="hint">🟩 แท่งเขียว = ราคาปิดสูงกว่าเปิด (ขึ้น) · 🟥 แท่งแดง = ราคาปิดต่ำกว่าเปิด (ลง) · ราคาอยู่เหนือเส้นค่าเฉลี่ย = แข็งแรง, อยู่ใต้เส้น = อ่อนแอ</p>
         <div class="cz-box" id="czBox">กำลังคำนวณโซนเข้า…</div>
+        <div class="tf-lock">⭐ จุดเข้า Buy/Sell กรอบนี้สำหรับ<b>สมาชิก PRO</b> — สมาชิกฟรีดูสัญญาณได้กรอบ <b>1 ชม.</b> (ระบบหลัก) · <a href="#account">ดูแพ็กเกจ PRO</a></div>
         <ul class="s15-legend cz-legend"><li><i class="zone ok"></i>โซน BUY</li><li><i class="zone sell"></i>โซน SELL</li><li><i class="zone near"></i>แนวโน้มขึ้น</li><li><i class="zone bad"></i>แนวโน้มลง</li><li><i class="zone news"></i>ช่วงข่าว งดเข้า</li><li><i class="up">▲</i><i class="sell-mk">▼</i>กราฟนี้เปลี่ยนเป็นขึ้น/ลง</li><li><i class="up">▲</i><i class="lg-tag buy">Buy</i>จุดเข้าซื้อ</li><li><i class="sell-mk">▼</i><i class="lg-tag sell">Sell</i>จุดเข้าขาย</li><li><i class="lg-env">〰</i>กรอบราคา</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul>
         <div id="mainChart" class="chart-main"></div>
         <div class="sub-title">RSI — วัดแรงซื้อ/ขาย <span class="muted">(เกิน 70 = ขึ้นแรงเกินไป · ต่ำกว่า 30 = ลงแรงเกินไป)</span></div>
@@ -517,6 +519,7 @@
             <a class="btn" id="accSignIn" href="./" hidden>เข้าสู่ระบบด้วย Google</a></div>
         </section>
 
+        <section class="card pro-card" id="proCard" hidden></section>
 
         <section class="card">
           <h3>หน้าจอ 🎨</h3>
@@ -595,7 +598,7 @@
 
         <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610170100 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610170200 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
@@ -603,6 +606,7 @@
   <div class="toast" id="toast" hidden></div>
 
   <script src="config.js?v=202610121500"></script>
+  <script src="pro.js?v=202610170200"></script>
   <script src="auth.js?v=202610151900"></script>
   <script src="splashfx.js?v=202610152000"></script>
   <script src="indicators.js?v=202610121500"></script>
@@ -616,10 +620,10 @@
   <script src="chartsys.js?v=202610152200"></script>
   <script src="main.js?v=202610160800"></script>
   <script src="tradeplan.js?v=202610121500"></script>
-  <script src="chartzones.js?v=202610152200"></script>
+  <script src="chartzones.js?v=202610170200"></script>
   <script src="newsstats.js?v=202610170000"></script>
-  <script src="chartchat.js?v=202610152200"></script>
-  <script src="journal.js?v=202610140200"></script>
+  <script src="chartchat.js?v=202610170200"></script>
+  <script src="journal.js?v=202610170200"></script>
   <script src="pricealerts.js?v=202610170100"></script>
   <script src="motion.js?v=202610141800"></script>
 </body>
