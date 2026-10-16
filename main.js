@@ -33,7 +33,7 @@ window.GS_LIVE = () => { let prev = null; try { prev = prevClose(); } catch (e) 
 window.GS_NEWS = () => state.news || [];
 window.GS_RECORD = () => ({ chart: state.chartSig, daily: state.signals });
 const state = {
-  tf: (() => { try { const t = sessionStorage.getItem('gs-tf'); return TFS.some((x) => x.key === t) ? t : '1h'; } catch (e) { return '1h'; } })(), bars: [], // refresh keeps the timeframe (16 Oct 2026) daily: [], tech: null, techAt: null, source: null,
+  tf: '1h', bars: [], daily: [], tech: null, techAt: null, source: null,
   locked: null, lastPrice: null, chartKey: '', pivotKey: '', busy: false, zoneKey: '', signals: [], m15: [], backtest: null, intra: null, bt30: null, intraCandles: null, news: [], thb: null,
   tick: [], tickAt: 0, tickSrc: null, livePrice: null, livePrev: null, s15: null, bt15: null, stream: null,
 };
@@ -1722,7 +1722,6 @@ function markTf() {
 function setTf(tf) {
   if (!tf || tf === state.tf) return;
   state.tf = tf;
-  try { sessionStorage.setItem('gs-tf', tf); } catch (e) { /* ok */ }
   state.tfAt = Date.now(); // scroll-back loading waits a moment (the chart re-fits)
   state.locked = null;
   markTf();

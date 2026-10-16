@@ -23,10 +23,6 @@
     emit(`tab:${tab}`);
   }
   window.addEventListener('hashchange', () => showTab(currentTab()));
-  // Right away (before the data has loaded) show the tab from the #hash, so a refresh doesn't flash the signals tab first;
-  // start() shows it again properly (events, zframes iframe) once main.js is ready
-  try { const t0 = currentTab(); TABS.forEach((t) => { const el = $(`tab-${t}`); if (el) el.hidden = t !== t0; });
-    document.querySelectorAll('#tabbar a').forEach((a) => a.classList.toggle('on', a.dataset.tab === t0)); } catch (e) { /* start() will */ }
 
   // ---------- Chart: simple vs trader view ----------
   function setChartMode(mode) {
@@ -136,25 +132,11 @@
   }
 
   // Called by main.js once the user is signed in and the first data has loaded
-  // Refresh = same place (user, 16 Oct 2026: "กดรีเฟรชแล้วอยู่ที่เดิม"): the tab comes from the #hash; the scroll position is
-  // saved when the page is left and put back once the content has drawn (a few tries, stops if the user scrolls first)
-  try { history.scrollRestoration = 'manual'; } catch (e) { /* old browser */ }
-  window.addEventListener('pagehide', () => { try { sessionStorage.setItem('gs-scroll', JSON.stringify({ tab: currentTab(), y: window.scrollY })); } catch (e) { /* ok */ } });
-  function restoreScroll() {
-    let s = null;
-    try { s = JSON.parse(sessionStorage.getItem('gs-scroll') || 'null'); sessionStorage.removeItem('gs-scroll'); } catch (e) { /* ok */ }
-    if (!s || s.tab !== currentTab() || !(s.y > 0)) return;
-    let moved = false;
-    const stop = () => { moved = true; };
-    ['wheel', 'touchstart', 'keydown'].forEach((ev) => window.addEventListener(ev, stop, { once: true, passive: true }));
-    [0, 400, 1200, 2500, 4000, 6000].forEach((ms) => setTimeout(() => { if (!moved && Math.abs(window.scrollY - s.y) > 4) window.scrollTo(0, s.y); }, ms));
-  }
   function start() {
     fillAccount();
     fillSettings();
     setChartMode(store.get('gs-chart') || 'simple');
     showTab(currentTab());
-    restoreScroll();
   }
 
   window.UI = {
