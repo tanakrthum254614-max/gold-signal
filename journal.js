@@ -167,14 +167,18 @@
     const status = s.admin ? '⭐ แอดมิน — ใช้ได้ทุกอย่าง'
       : s.pro ? `⭐ สมาชิก PRO ถึง ${new Date(s.until).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}${s.sub ? ' · ต่ออายุอัตโนมัติ' : ''}`
         : s.enabled ? 'สมาชิกฟรี' : '🎁 ช่วงทดลอง: ตอนนี้ทุกคนใช้ฟีเจอร์ PRO ได้ฟรี';
-    const canBuy = s.enabled && !s.admin && (p.month || p.year); // no selling while everyone has PRO free
+    // no selling while everyone has PRO free · admins see the same plans as a preview (16 Oct: "ไม่เห็นมีให้เก็บตังเลย")
+    const preview = s.enabled && s.admin && (p.month || p.year);
+    const canBuy = s.enabled && (!s.admin || preview) && (p.month || p.year);
+    const dis = preview ? ' disabled' : '';
     card.hidden = false;
     card.innerHTML = `<h3>สมาชิก PRO ⭐</h3>
       <p class="pro-status">${esc(status)}</p>
       <ul class="pro-feats">${feats.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
+      ${preview ? '<p class="muted small">👀 ตัวอย่าง — สมาชิกฟรีจะเห็นปุ่มจ่ายเงินแบบนี้ (บัญชีแอดมินกดซื้อไม่ได้)</p>' : ''}
       ${canBuy ? `<div class="pro-plans">${['month', 'year'].filter((k) => p[k]).map((k) => `<div class="pro-plan"><b>${k === 'month' ? 'รายเดือน' : 'รายปี'}</b><span class="mono">${baht(p[k])}</span>
-        <button class="btn gold" type="button" data-plan="${k}" data-method="card">💳 บัตร (ต่ออายุอัตโนมัติ)</button>
-        <button class="btn" type="button" data-plan="${k}" data-method="promptpay">📱 จ่ายครั้งเดียว ${k === 'month' ? '30' : '365'} วัน${p[k].currency === 'thb' ? ' (PromptPay / บัตร)' : ''}</button></div>`).join('')}</div>
+        <button class="btn gold" type="button" data-plan="${k}" data-method="card"${dis}>💳 บัตร (ต่ออายุอัตโนมัติ)</button>
+        <button class="btn" type="button" data-plan="${k}" data-method="promptpay"${dis}>📱 จ่ายครั้งเดียว ${k === 'month' ? '30' : '365'} วัน${p[k].currency === 'thb' ? ' (PromptPay / บัตร)' : ''}</button></div>`).join('')}</div>
         <p class="muted small">ชำระผ่าน Stripe — เว็บนี้ไม่เห็นและไม่เก็บเลขบัตร · <a href="/terms.html" target="_blank" rel="noopener">เงื่อนไข ยกเลิก และคืนเงิน</a> · สิทธิ์ PRO เปิดทันทีที่ชำระสำเร็จ · ไม่ใช่คำแนะนำการลงทุน</p>` : ''}
       ${s.sub ? '<button class="btn" type="button" id="proPortal">จัดการ / ยกเลิกการต่ออายุ</button>' : ''}`;
   }
