@@ -32,7 +32,7 @@
 <td><img src="docs/img/pricing.png" alt="Pricing"><br><sub><b>แพ็กเกจสมาชิก</b> — ชำระผ่าน Stripe (บัตร / PromptPay)</sub></td>
 </tr>
 <tr>
-<td><img src="docs/img/login.png" alt="Sign up"><br><sub><b>การสมัครสมาชิก</b> — ราคาทองคำแบบเรียลไทม์ ผลทดสอบย้อนหลังและผลจริงของแต่ละกรอบเวลา ขั้นตอน 3 ขั้น และคำถามที่พบบ่อย</sub></td>
+<td><img src="docs/img/login.png" alt="Sign up"><br><sub><b>การสมัครสมาชิก</b> — กล่องสมัครแสดงทันทีที่เปิดหน้า พร้อมราคาทองคำแบบเรียลไทม์ ผลทดสอบย้อนหลังและผลจริงของแต่ละกรอบเวลา ขั้นตอน 3 ขั้น และคำถามที่พบบ่อย</sub></td>
 <td><img src="docs/img/marketing.png" alt="Back office"><br><sub><b>ระบบหลังบ้าน</b> — ผู้ช่วยร่างประกาศการตลาดจากข้อมูลจริง</sub></td>
 </tr>
 </table>
