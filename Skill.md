@@ -313,6 +313,14 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 17 ต.ค. 2569 — 🛡️ คืนเงิน → ปิดสิทธิ์ · สำรองข้อมูลทุกวัน · privacy/terms
+- ผู้ใช้: "มีอย่างอื่นไหมที่ต้องทำเพิ่ม" → เสนอ 1–3 → "ทำมา"
+- **↩️ คืนเงิน**: webhook `charge.refunded` — uid จาก charge.metadata.uid (PromptPay ใส่ไว้ที่ payment_intent_data) หรือ customer · เต็มจำนวน (refunded / amount_refunded ≥ amount) → until = ตอนนี้, ยกเลิก sub (DELETE subscriptions/<id>), `refunded` · บางส่วน = history อย่างเดียว · history `{type:'refund', amount: −ส่วนที่เพิ่ม}` (amount_refunded สะสมต่อ charge → หักของเดิม) · summary รายได้ = สุทธิหักคืนเงิน + `refunds` · admin HT refund "↩️ คืนเงิน"
+- **⚠️ webhook จริงต้องเพิ่ม event**: golive EVENTS + 'charge.refunded' · status() อ่าน webhook_endpoints/<id> → `hookMissing` · ปุ่ม **🔄 อัปเดต webhook (รับแจ้งคืนเงิน)** ในหลังบ้าน (action 'hook' = อัปเดต enabled_events คง URL/secret) — **ผู้ใช้ต้องกด 1 ครั้ง** (endpoint สร้างตอน 🚀 ก่อนมี event นี้)
+- **🗄️ สำรอง**: `scripts/backup-blob.js` (check-loop.sh หลัง pro-expiry) วันละครั้ง (เช็ก backup/<วันไทย>/ ก่อน) คัดลอก access/ journal/ content/ → backup/<YYYY-MM-DD>/<path> · ลบเกิน 30 วัน · BACKUP_FORCE=1 บังคับ · รันจริงแล้ว 17 ต.ค.: 14 ไฟล์ 8 KB, รอบสองข้าม · กู้: คัดลอกไฟล์จาก backup/<วันที่>/ กลับไปที่เดิม
+- **privacy.html** ปรับปรุง 17 ต.ค.: แจ้งเตือนราคา/กูรู, LINE (broadcast ไม่ได้ข้อมูลบัญชี), ชำระเงินค่าสมาชิก/คืนเงิน, ใช้ข้อมูลเพื่อเปิดปิดสิทธิ์, เตือนหมดอายุ, การสำรอง 30 วัน, ลิงก์ terms · **terms.html** ข้อ 5: คืนเต็มจำนวน = สิทธิ์สิ้นสุดทันที + ยกเลิกต่ออายุ
+- ทดสอบ `gold-signal-tools/refundtest.mjs` (บางส่วน/เต็ม/บัตร/ไม่พบสมาชิก, นับคืนเงินไม่ซ้ำ, summary สุทธิ, hookMissing, action hook, 403) ALL PASS · memtest.mjs ยังผ่าน · pages.cjs privacy/terms 1440+390 ไม่ล้น · deploy 20dad78
+
 ## 17 ต.ค. 2569 — 💸 Stripe: ผูกกสิกรแล้ว ราคา 149/1,290 แล้ว · หลังบ้านโชว์สิ่งที่ Stripe ยังขอ
 - ผู้ใช้ผูกบัญชี KASIKORNBANK (THB, Default) ที่ Settings → Linked accounts and payouts · กด 💲 แล้ว (Blob stripe-live.json amounts 149/1290 ✓) · Stripe Home ไม่มี Action required มีปุ่ม Pay out funds · แต่หลังบ้านยัง ⚠️ โอนเงินออก (API payouts_enabled = false)
 - ผลจริงในหลังบ้าน 17 ต.ค. 01:37: "📋 Stripe แจ้ง: ไม่ได้ขอข้อมูลเพิ่ม และไม่มีอะไรรอตรวจ" → รอ Stripe เปิด payouts (1–2 วันทำการ) · ข้อความ ⚠️ ไม่บอกให้เพิ่มธนาคารแล้วถ้า requirements ไม่มี external_account · admin.html แสดงบรรทัด 📋 ทุกครั้งที่ payouts ปิด
