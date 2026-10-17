@@ -13,20 +13,21 @@
   <style>
     /* ✦ black & gold (premium.css, 17 Oct 2026) — page layout only */
     body { min-height: 100vh; display: grid; place-items: center; padding: 28px 16px calc(28px + env(safe-area-inset-bottom)); }
-    main { width: 100%; max-width: 460px; display: grid; justify-items: center; gap: 16px; }
+    main { position: relative; z-index: 1; width: 100%; max-width: 460px; display: grid; justify-items: center; gap: 16px; }
     .lead { margin: 0; color: var(--pm-muted); font-size: 14.5px; text-align: center; }
     .lead b { color: var(--pm-ivory); }
     .headline { margin: 4px 0 0; font-size: 26px; text-align: center; line-height: 1.45; }
     #status { color: var(--pm-muted); font-size: 15px; min-height: 1.5em; text-align: center; margin: 0; }
     #status.err { color: var(--pm-down); }
-    #signIn { width: 100%; display: flex; justify-content: center; }
+    #signIn { display: block; }
+    .glow { width: fit-content; }
     .privacy { margin: 0; max-width: 420px; color: var(--pm-muted); font-size: 12.5px; text-align: center; }
     .privacy a { color: inherit; }
     .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; max-width: 420px; padding: 5px; border-radius: 14px; background: var(--pm-panel); border: 1px solid var(--pm-line); }
     .tabs button { font: inherit; font-weight: 700; font-size: 15px; padding: 11px; border: 0; border-radius: 10px; cursor: pointer; background: transparent; color: var(--pm-muted); }
     .tabs button.on { background: var(--pm-grad); color: #1b1407; box-shadow: 0 6px 18px rgba(212, 175, 95, .25); }
     .tabs[hidden] { display: none; }
-    .demo { display: block; width: 100%; max-width: 420px; text-align: center; padding: 12px 14px; border-radius: 12px; text-decoration: none; font-size: 14.5px; color: var(--pm-text); border: 1px solid var(--pm-line); background: rgba(212, 175, 95, .06); }
+    .demo { display: block; width: 100%; max-width: 420px; text-align: center; padding: 12px 14px; border-radius: 12px; text-decoration: none; font-size: 14.5px; color: var(--pm-text); border: 1px solid var(--pm-line); background: linear-gradient(rgba(212, 175, 95, .06), rgba(212, 175, 95, .06)), #121214; }
     .demo b { color: var(--pm-gold-hi); }
     .rule { width: 100%; max-width: 420px; }
     /* ① ② ③ how joining works (17 Oct 2026, user: "ทำให้เข้าใจมากขึ้นตอนหน้าสมัครสมาชิก") — same bar on pay.html */
@@ -45,12 +46,55 @@
     .faq details[open] summary::after { content: "−"; } .faq p { margin: 0 0 12px; font-size: 13.5px; color: var(--pm-muted); line-height: 1.7; }
     .faq h2 { font-size: 15px; margin: 4px 0 2px; text-align: center; }
     body.mode-in .steps, body.mode-in .signup-only { display: none; }
+    /* ✨ "สด + มีชีวิต" (user, 17 Oct 2026: "ขอให้ดีกว่านี้ได้ไหมมันดูธรรมดาไป") — faint gold candles drifting behind,
+       the live gold price, the tested/real record and a gold light running round the sign-up box */
+    #bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: .4;
+      -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, #000 30%, transparent 100%); mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, #000 30%, transparent 100%); }
+    body.pm { background: radial-gradient(900px 520px at 50% -8%, rgba(212, 175, 95, .16), transparent 70%), var(--pm-bg); }
+    .livepx { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--pm-line); background: rgba(20, 20, 23, .75); backdrop-filter: blur(6px); font-size: 13.5px; color: var(--pm-muted); }
+    .livepx b { color: var(--pm-ivory); font-size: 16px; font-variant-numeric: tabular-nums; transition: color .6s; }
+    .livepx b.up { color: var(--pm-up); } .livepx b.down { color: var(--pm-down); }
+    .livepx .up { color: var(--pm-up); } .livepx .down { color: var(--pm-down); }
+    .livepx small { font-size: 11.5px; letter-spacing: .5px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pm-muted); display: inline-block; }
+    .dot.on { background: var(--pm-up); box-shadow: 0 0 0 0 rgba(60, 207, 145, .6); animation: ping 1.6s infinite; }
+    @keyframes ping { 70% { box-shadow: 0 0 0 8px rgba(60, 207, 145, 0); } 100% { box-shadow: 0 0 0 0 rgba(60, 207, 145, 0); } }
+    .rec { width: 100%; max-width: 460px; display: grid; gap: 8px; }
+    .rec .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .rec .tile { text-align: center; padding: 12px 6px 10px; border-radius: 14px; border: 1px solid var(--pm-line); background: linear-gradient(180deg, rgba(212, 175, 95, .09), rgba(20, 20, 23, .85)); }
+    .rec .tile .pc { display: block; font-family: var(--pm-serif); font-size: 26px; font-weight: 700; line-height: 1.2; }
+    .rec .tile .tf { display: block; font-size: 12.5px; color: var(--pm-ivory); font-weight: 600; }
+    .rec .tile .rl { display: block; font-size: 11.5px; color: var(--pm-muted); margin-top: 4px; line-height: 1.45; }
+    .rec .cap { margin: 0; text-align: center; font-size: 12px; color: var(--pm-muted); line-height: 1.6; }
+    .rec .cap a { color: var(--pm-gold-hi); }
+    .up { color: var(--pm-up); } .down { color: var(--pm-down); }
+    /* gold light running round the sign-up box */
+    @property --spin { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+    .glow { position: relative; border-radius: 22px; padding: 1.5px; max-width: 100%;
+      background: conic-gradient(from var(--spin), rgba(212, 175, 95, .18) 0deg, rgba(212, 175, 95, .18) 250deg, #f7e2a1 300deg, #d4af5f 330deg, rgba(212, 175, 95, .18) 360deg);
+      animation: spin 5s linear infinite; box-shadow: 0 0 40px rgba(212, 175, 95, .12); }
+    .glow:empty { display: none; }
+    @keyframes spin { to { --spin: 360deg; } }
+    .rise { animation: rise .7s ease-out both; } .rise.d1 { animation-delay: .08s; } .rise.d2 { animation-delay: .16s; } .rise.d3 { animation-delay: .24s; }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+    @media (prefers-reduced-motion: reduce) { .glow, .rise, .dot.on { animation: none; } }
+    @media (max-width: 400px) { .rec .tile .pc { font-size: 22px; } .headline { font-size: 23px; } }
   </style>
 </head>
 <body class="pm">
+  <canvas id="bg" aria-hidden="true"></canvas>
   <main>
     <a class="pm-brand" href="/"><img src="logo.svg" alt=""><span><b>GOLD SIGNAL</b><small>XAU/USD · Thailand</small></span></a>
-    <h1 class="headline">สัญญาณทองคำ<br><span class="gold-text">ที่ตรวจสอบได้ทุกไม้</span></h1>
+    <div class="livepx rise" id="livepx"><i class="dot"></i><small>XAU/USD</small><b id="lpx">—</b><span id="lchg"></span><small id="lsrc">กำลังเชื่อมต่อราคาสด…</small></div>
+    <h1 class="headline rise d1">สัญญาณทองคำ<br><span class="gold-text">ที่ตรวจสอบได้ทุกไม้</span></h1>
+    <section class="rec rise d2" aria-label="ผลทดสอบและผลจริง">
+      <div class="tiles" id="tiles">
+        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy 1 ชม.</span><span class="rl">กำลังโหลด…</span></div>
+        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy 5 ชม.</span><span class="rl">กำลังโหลด…</span></div>
+        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy 1 วัน</span><span class="rl">กำลังโหลด…</span></div>
+      </div>
+      <p class="cap" id="reccap">% = ชนะในการทดสอบย้อนหลัง · ตัวเลขล่าง = ผลจริงที่ระบบบันทึก ทั้งชนะและแพ้</p>
+    </section>
     <hr class="rule">
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
       <li class="on"><b>สมัครบัญชี</b>อีเมลหรือ Google</li>
@@ -62,7 +106,7 @@
     <p id="status">กำลังโหลด…</p>
     <!-- Demo (16 Oct 2026): visitors from the LINE QR can look first — plain candles only, signals stay members-only -->
     <a class="demo" href="/demo.html">👀 ยังไม่สมัคร? <b>ทดลองดูก่อน (Demo)</b> — กราฟทองแบบไม่มีสัญญาณ</a>
-    <div id="signIn"></div>
+    <div class="glow rise d3" id="glow" hidden><div id="signIn"></div></div>
     <div class="faq">
       <h2>คำถามที่พบบ่อย</h2>
       <details><summary>สมัครแล้วต้องจ่ายเงินทันทีไหม?</summary><p>ขั้นแรกสมัครบัญชีก่อน (ยังไม่มีค่าใช้จ่าย) จากนั้นระบบจะพาไปหน้าเลือกแพ็กเกจ เข้าใช้เว็บได้หลังชำระเงินเรียบร้อย</p></details>
@@ -93,7 +137,7 @@
       elements: {
         socialButtonsBlockButton: { padding: '12px', fontSize: '15px', border: '1px solid rgba(212,175,95,.3)', background: 'rgba(255,255,255,.02)' },
         formButtonPrimary: { background: 'linear-gradient(135deg,#f7e2a1 0%,#d9b465 38%,#b8892f 70%,#8c6524 100%)', color: '#1b1407', fontWeight: 700, boxShadow: '0 8px 22px rgba(212,175,95,.25)' },
-        cardBox: { boxShadow: '0 24px 60px rgba(0,0,0,.5)', border: '1px solid rgba(212,175,95,.24)', borderRadius: '20px' },
+        cardBox: { boxShadow: '0 24px 60px rgba(0,0,0,.5)', border: '0', borderRadius: '20.5px' }, // the gold edge is .glow round it
         headerTitle: { fontFamily: '"Noto Serif Thai", Georgia, serif', color: '#f4ecda' },
         footer: { background: '#141417' }, footerActionLink: { color: '#f3d68c' },
       },
@@ -172,7 +216,7 @@
         $('lead').innerHTML = m === 'in' ? 'สมาชิกเข้าสู่ระบบด้วยอีเมลหรือ Google ที่สมัครไว้ · ยังไม่มีบัญชี? กดแท็บ <b>“สมัครสมาชิก”</b>' : 'ขั้นที่ 1 — สร้างบัญชีด้วยอีเมลหรือ Google (ยังไม่มีค่าใช้จ่าย) แล้วไปเลือกแพ็กเกจในขั้นที่ 2';
         if (m === 'in') Clerk.mountSignIn($('signIn'), { ...opts, withSignUp: true }); else Clerk.mountSignUp($('signIn'), opts);
       };
-      $('tabs').hidden = false;
+      $('tabs').hidden = false; $('glow').hidden = false;
       $('tabs').addEventListener('click', (e) => e.target.dataset.mode && show(e.target.dataset.mode));
       show(location.hash === '#signup' ? 'up' : 'in');
       if (/^#(home|stats|chart|zframes|journal|account)$/.test(location.hash)) { try { sessionStorage.setItem('gs-back', location.hash); } catch (e) { /* ok */ } }
@@ -180,6 +224,82 @@
       { const ref = new URLSearchParams(location.search).get('ref'); if (ref && /^[a-z0-9]{6,12}$/.test(ref)) document.cookie = `gs_ref=${ref}; path=/; max-age=${30 * 86400}; SameSite=Lax; Secure`; }
       Clerk.addListener(({ user }) => { if (user) enter(); });
     })().catch((e) => { console.error(e); status(e.message || 'ระบบเข้าสู่ระบบมีปัญหา ลองรีเฟรชหน้าอีกครั้ง', true); });
+  </script>
+  <script>
+    // ✨ Live bits (17 Oct 2026) — same sources as welcome.html: investing.com stream (pid 68 = XAU/USD) with gold-api.com
+    // as the fallback, and the public record /api/market?blog=1&stats=1 (tested % + real trades, wins and losses).
+    (() => {
+      const $ = (id) => document.getElementById(id);
+      const f2 = (v) => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const money = (v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+      let px = null, prevClose = null, lastTick = 0;
+      function showPrice(p, src) {
+        if (!(p > 0)) return;
+        const el = $('lpx');
+        el.classList.remove('up', 'down'); if (px != null && p !== px) { void el.offsetWidth; el.classList.add(p > px ? 'up' : 'down'); }
+        px = p; el.textContent = f2(p);
+        if (prevClose) { const c = p - prevClose; $('lchg').innerHTML = `<span class="${c >= 0 ? 'up' : 'down'}">${c >= 0 ? '▲' : '▼'} ${((c / prevClose) * 100).toFixed(2)}%</span>`; }
+        document.querySelector('#livepx .dot').classList.add('on');
+        $('lsrc').textContent = src;
+      }
+      function stream() {
+        let ws; try { ws = new WebSocket(`wss://streaming.forexpros.com/echo/${Math.floor(Math.random() * 1000)}/${Math.random().toString(36).slice(2, 10)}/websocket`); } catch (e) { return; }
+        const send = (o) => ws.send(JSON.stringify([JSON.stringify(o)]));
+        const hb = setInterval(() => { if (ws.readyState === 1) send({ _event: 'heartbeat', data: 'h' }); }, 25e3);
+        ws.onmessage = (e) => { const d = String(e.data);
+          if (d === 'o') return send({ _event: 'bulk-subscribe', tzID: 8, message: 'pid-68:' });
+          if (d[0] !== 'a') return;
+          JSON.parse(d.slice(1)).forEach((m) => { try { const msg = JSON.parse(m).message || ''; if (!msg.startsWith('pid-68::')) return;
+            const t = JSON.parse(msg.slice(msg.indexOf('::') + 2)); const v = +t.last_numeric;
+            const pc = +String(t.last_close || '').replace(/,/g, ''); if (pc > 0) prevClose = pc;
+            if (v) { lastTick = Date.now(); showPrice(v, 'LIVE'); } } catch (err) { /* skip */ } }); };
+        ws.onclose = () => { clearInterval(hb); setTimeout(stream, 3000); };
+        ws.onerror = () => ws.close();
+      }
+      const closedNow = () => { const t = new Date(Date.now() + 7 * 3600e3), d = t.getUTCDay(), h = t.getUTCHours(); return (d === 6 && h >= 4) || d === 0 || (d === 1 && h < 5); };
+      function fallback() {
+        if (Date.now() - lastTick < 10e3) return;
+        fetch('https://api.gold-api.com/price/XAU').then((r) => r.json()).then((j) => {
+          if (Date.now() - lastTick < 10e3) return;
+          showPrice(j.price, closedNow() ? 'ตลาดปิด · ราคาล่าสุด' : 'อัปเดตทุก 10 วินาที');
+          if (closedNow()) document.querySelector('#livepx .dot').classList.remove('on');
+        }).catch(() => {});
+      }
+      function loadStats() {
+        fetch('/api/market?blog=1&stats=1', { cache: 'no-store' }).then((r) => r.json()).then((j) => {
+          const tiles = document.querySelectorAll('#tiles .tile');
+          (j.tfs || []).forEach((t, i) => { const c = tiles[i]; if (!c) return;
+            c.querySelector('.pc').textContent = t.tested != null ? `${t.tested}%` : '—';
+            c.querySelector('.rl').innerHTML = t.live ? `ผลจริง ${t.live} ไม้ · ชนะ ${t.wins}<br><b class="${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl)}</b>/ออนซ์` : 'ผลจริง: ยังไม่มีไม้ปิด'; });
+          // the whole record too, risky timeframes included — public numbers are never cherry-picked
+          const a = j.all;
+          if (a && a.live) $('reccap').innerHTML = `% = ชนะในการทดสอบย้อนหลัง · ล่าง = ผลจริง<br>รวมทุกไม้ที่ระบบบันทึก (รวมกรอบเสี่ยง): <b>${a.live}</b> ไม้ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b>/ออนซ์ · <a href="/welcome.html#stats">ดูรายละเอียด</a>`;
+        }).catch(() => document.querySelectorAll('#tiles .rl').forEach((x) => { x.textContent = 'ดูผลจริงหลังเข้าสู่ระบบ'; }));
+      }
+      loadStats(); setInterval(loadStats, 60e3);
+      stream(); setTimeout(fallback, 4000); setInterval(fallback, 10e3);
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { loadStats(); fallback(); } });
+
+      // faint gold candles drifting left behind the page (made-up shapes, decoration only — not a price chart)
+      const cv = $('bg'), ctx = cv.getContext('2d'), W = 14, still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let cs = [], off = 0, last = 0, sm = null, sx = null, w = 0, h = 0, dpr = 1;
+      const next = (p) => { const o = p ? p.c : 0, c = o + (Math.random() - .48) * 7; return { o, c, hi: Math.max(o, c) + Math.random() * 4, lo: Math.min(o, c) - Math.random() * 4 }; };
+      function size() { dpr = Math.min(devicePixelRatio || 1, 2); w = innerWidth; h = innerHeight; cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        while (cs.length < Math.ceil(w / W) + 3) cs.push(next(cs[cs.length - 1])); }
+      function draw(t) {
+        if (!still) { off += Math.min(t - last, 100) * .012; last = t; while (off >= W) { off -= W; cs.shift(); cs.push(next(cs[cs.length - 1])); } }
+        let mn = Infinity, mx = -Infinity; cs.forEach((k) => { mn = Math.min(mn, k.lo); mx = Math.max(mx, k.hi); });
+        sm = sm == null ? mn : sm + (mn - sm) * .02; sx = sx == null ? mx : sx + (mx - sx) * .02; mn = sm; mx = sx; // ease the scale, no jumps
+        const y = (v) => h * .82 - ((v - mn) / (mx - mn || 1)) * h * .5;
+        ctx.clearRect(0, 0, w, h);
+        cs.forEach((k, i) => { const x = i * W - off, up = k.c >= k.o;
+          ctx.strokeStyle = ctx.fillStyle = up ? 'rgba(212,175,95,.55)' : 'rgba(212,175,95,.22)';
+          ctx.beginPath(); ctx.moveTo(x + W / 2, y(k.hi)); ctx.lineTo(x + W / 2, y(k.lo)); ctx.stroke();
+          const top = y(Math.max(k.o, k.c)); ctx.fillRect(x + 3, top, W - 6, Math.max(1.5, y(Math.min(k.o, k.c)) - top)); });
+        if (!still) requestAnimationFrame(draw);
+      }
+      size(); addEventListener('resize', size); requestAnimationFrame((t) => { last = t; draw(t); });
+    })();
   </script>
 </body>
 </html>
