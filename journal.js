@@ -197,7 +197,7 @@
     const card = $('refCard');
     if (!card) return;
     let r;
-    try { r = await api('/api/ref'); } catch (e) { card.hidden = true; return; }
+    try { r = await api('/api/pro?ref=1'); } catch (e) { card.hidden = true; return; }
     if (!r.live) { card.hidden = true; return; }
     card.hidden = false;
     card.innerHTML = `<h3>🤝 ชวนเพื่อน ได้ใช้ฟรีเพิ่ม</h3>

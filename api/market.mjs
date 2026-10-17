@@ -11,6 +11,7 @@
 //   approve channel 'facebook' → Graph API /{FB_PAGE_ID}/feed with FB_PAGE_TOKEN · channel 'seo' → content/blog.json (public /blog)
 // Daily drafts: vercel.json cron → GET ?cron=1 with Authorization: Bearer CRON_SECRET (only while live).
 import { member, isAdmin, readJson, writeJson, json, fail, body, clip } from '../lib/gs.mjs';
+import { blogGET } from '../lib/blog.mjs'; // public /blog pages ride on this function (12-function Hobby limit)
 
 const CONFIG = 'marketing/config.json', DRAFTS = 'marketing/drafts.json', QUEUE = 'marketing/queue.json', BLOG = 'content/blog.json';
 const RAW = 'https://raw.githubusercontent.com/tanakrthum254614-max/gold-signal';
@@ -111,6 +112,7 @@ async function postFacebook(text) {
 
 export async function GET(request) {
   const url = new URL(request.url);
+  if (url.searchParams.get('blog') === '1') return blogGET(request);
   if (url.searchParams.get('cron') === '1') { // Vercel cron, daily — only while the switch is on
     const secret = (process.env.CRON_SECRET || '').trim();
     if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) return fail('cron', 401);

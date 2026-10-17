@@ -3,8 +3,10 @@
 // POST { uid, revoke: true } → end now. Payments themselves go through api/pay/webhook.mjs.
 import { member, isAdmin, proOf, proEnabled, proFeatures, json, fail, body } from '../lib/gs.mjs';
 import { prices, loadPro, savePro, extend } from '../lib/stripe.mjs';
+import { refGET } from '../lib/ref.mjs';
 
 export async function GET(request) {
+  if (new URL(request.url).searchParams.get('ref') === '1') return refGET(request); // 🤝 referral link (lib/ref.mjs)
   const m = await member(request);
   if (!m) return fail('ต้องเข้าสู่ระบบก่อน', 401);
   if (new URL(request.url).searchParams.get('list') === '1') {

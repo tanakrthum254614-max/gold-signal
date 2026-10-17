@@ -42,7 +42,7 @@ const SUBS = 'access/push-subs.json';
 // Served to everyone: the login page and what it shows / the browser asks for on its own
 // demo.html (16 Oct 2026): plain candles for visitors — loads none of the members-only scripts
 // terms.html (17 Oct 2026): prices, terms, cancel / refund policy, contact — Stripe's business verification needs it public
-const PUBLIC = /^\/(login\.html|demo\.html|terms\.html|privacy\.html|logo\.svg|favicon\.ico|manifest\.webmanifest|robots\.txt|icons\/.*|blog(\/[a-z0-9-]*)?|sitemap\.xml|api\/blog)$/; // blog = SEO articles (api/blog.mjs, 404 until marketing is live)
+const PUBLIC = /^\/(login\.html|demo\.html|terms\.html|privacy\.html|logo\.svg|favicon\.ico|manifest\.webmanifest|robots\.txt|icons\/.*|blog(\/[a-z0-9-]*)?|sitemap\.xml)$/; // blog = SEO articles (lib/blog.mjs via api/market.mjs, 404 until marketing is live)
 // Stripe calls this one itself (no cookie) — api/pay/webhook.mjs refuses anything without a valid Stripe signature
 const WEBHOOK = '/api/pay/webhook';
 
@@ -235,7 +235,7 @@ export default async function middleware(request) {
   const path = url.pathname;
   if (PUBLIC.test(path)) return next();
   if (path === WEBHOOK && request.method === 'POST') return next();
-  if (path === '/api/market' && url.searchParams.get('cron') === '1') return next(); // Vercel cron: api/market.mjs checks CRON_SECRET
+  if (path === '/api/market' && (url.searchParams.get('cron') === '1' || url.searchParams.get('blog') === '1')) return next(); // cron (checks CRON_SECRET) · public /blog (404 until live)
   if (path.startsWith('/lib/')) return new Response('Not found', { status: 404 }); // server code for api/ — not a page
   if (path === '/api/session' && request.method === 'POST') return session(request);
   if (path === '/api/logout') {

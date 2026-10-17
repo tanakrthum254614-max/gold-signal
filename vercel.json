@@ -121,15 +121,15 @@
   "rewrites": [
     {
       "source": "/blog",
-      "destination": "/api/blog"
+      "destination": "/api/market?blog=1"
     },
     {
       "source": "/blog/:slug",
-      "destination": "/api/blog?slug=:slug"
+      "destination": "/api/market?blog=1&slug=:slug"
     },
     {
       "source": "/sitemap.xml",
-      "destination": "/api/blog?sitemap=1"
+      "destination": "/api/market?blog=1&sitemap=1"
     }
   ],
   "crons": [
