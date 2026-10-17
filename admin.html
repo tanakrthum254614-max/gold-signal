@@ -166,6 +166,7 @@
           <button class="btn gold" type="button" id="glLaunch" disabled>🚀 เปิดรับเงินจริง</button>
           <button class="btn danger" type="button" id="glOff" hidden>ปิดระบบเก็บเงิน (ทุกคนใช้ฟรี)</button>
           <button class="btn" type="button" id="glPrices" hidden>💲 บันทึกราคาใหม่</button>
+          <button class="btn gold" type="button" id="glHook" hidden>🔄 อัปเดต webhook (รับแจ้งคืนเงิน)</button>
           <button class="btn" type="button" id="glRecheck">↻ ตรวจใหม่</button>
         </div></div>
         <p class="note" id="glNote">กดได้เมื่อทุกข้อเป็น ✅ · กดแล้ว: สร้างราคา + webhook ในบัญชี Stripe จริง → ให้ PRO ฟรีสมาชิกเดิม → เปิดเก็บเงิน (กดซ้ำได้ ขั้นที่ทำแล้วจะข้าม)</p>
@@ -372,7 +373,7 @@
     let pro = { users: {}, history: [] };
     const SRC = { card: '💳 บัตร', promptpay: '📱 PromptPay', admin: '🛠️ แอดมิน' };
     const nameOf = (id) => { const m = members.find((x) => x.id === id); return m ? `${m.name || ''} ${m.email}`.trim() : id; };
-    const HT = { launch: '🎁 ของขวัญเปิดตัว', promptpay: '📱 จ่ายครั้งเดียว', subscribe: '💳 สมัครแบบบัตร', renew: '💳 ต่ออายุ', cancel: '✕ ยกเลิก', update: 'อัปเดต', grant: '⭐ แอดมินให้สิทธิ์', revoke: '✕ แอดมินยกเลิก' };
+    const HT = { launch: '🎁 ของขวัญเปิดตัว', promptpay: '📱 จ่ายครั้งเดียว', subscribe: '💳 สมัครแบบบัตร', renew: '💳 ต่ออายุ', cancel: '✕ ยกเลิก', update: 'อัปเดต', grant: '⭐ แอดมินให้สิทธิ์', revoke: '✕ แอดมินยกเลิก', refund: '↩️ คืนเงิน' };
     // ---------- 🚀 go live (api/golive.mjs) ----------
     async function loadGoLive() {
       try {
@@ -399,6 +400,7 @@
         $('glLaunch').textContent = s.enabled ? '🚀 กดซ้ำ (ข้ามขั้นที่ทำแล้ว)' : '🚀 เปิดรับเงินจริง';
         $('glOff').hidden = !s.enabled;
         $('glPrices').hidden = !s.configured; // after go-live: change prices without touching anything else
+        $('glHook').hidden = !(s.hookMissing && s.hookMissing.length); // live webhook made before refunds were handled
       } catch (e) { $('glChecks').innerHTML = `<li class="err">${esc(e.message)}</li>`; }
     }
     $('glRecheck').addEventListener('click', loadGoLive);
@@ -413,6 +415,17 @@
         alert('✅ ' + j.steps.join('\n✅ '));
       } catch (e) { alert(e.message); }
       loadGoLive(); loadPro();
+    });
+    $('glHook').addEventListener('click', async () => {
+      $('glHook').disabled = true;
+      try {
+        const r = await fetch('/api/golive', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'hook' }) });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || !j.ok) throw new Error(j.error || 'ไม่สำเร็จ');
+        alert('✅ ' + j.steps.join('\n✅ ') + '\n\nต่อจากนี้ กดคืนเงินเต็มจำนวนใน Stripe แล้วสิทธิ์สมาชิกคนนั้นจะปิดเอง');
+      } catch (e) { alert(e.message); }
+      $('glHook').disabled = false;
+      loadGoLive();
     });
     $('glPrices').addEventListener('click', async () => {
       const month = +$('glMonth').value, year = +$('glYear').value;
@@ -440,7 +453,7 @@
         pro = list;
         const sm = list.summary || {};
         const bt = (v) => `${(v || 0).toLocaleString('th-TH')} ฿`;
-        $('pSum').innerHTML = [['รายได้เดือนนี้', bt(sm.month)], ['รายได้ 30 วัน', bt(sm.d30)], ['รายได้ทั้งหมด', `${bt(sm.total)}<small>${sm.payments || 0} รายการ</small>`],
+        $('pSum').innerHTML = [['รายได้เดือนนี้', bt(sm.month)], ['รายได้ 30 วัน', bt(sm.d30)], ['รายได้ทั้งหมด (หักคืนเงิน)', `${bt(sm.total)}<small>${sm.payments || 0} รายการ${sm.refunds ? ` · คืนเงิน ${sm.refunds}` : ''}</small>`],
           ['สมาชิกที่จ่ายอยู่', `${sm.paying || 0}<small>ต่ออายุอัตโนมัติ ${sm.auto || 0}</small>`], ['หมดอายุใน 7 วัน', (sm.expiring || []).length]]
           .map(([k, v]) => `<div class="tile"><small>${k}</small><b class="mono">${v}</b></div>`).join('');
         $('pExp').hidden = !(sm.expiring || []).length;

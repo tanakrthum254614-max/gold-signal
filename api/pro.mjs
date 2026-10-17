@@ -43,12 +43,13 @@ export async function POST(request) {
 // and who runs out within 7 days without auto-renewal (the expiry reminder, scripts/pro-expiry.js, writes `reminded`)
 function summary(all) {
   const now = Date.now(), th = (t) => new Date(t + 7 * 3600e3).toISOString().slice(0, 7), month = th(now);
-  const paid = (all.history || []).filter((h) => h.amount > 0);
+  const paid = (all.history || []).filter((h) => h.amount); // payments (+) and refunds (−) → net
   const baht = (list) => Math.round(list.reduce((a, h) => a + h.amount, 0) / 100);
   const users = Object.entries(all.users || {});
   const paying = users.filter(([, u]) => u.until > now && (u.source === 'card' || u.source === 'promptpay'));
   return {
-    month: baht(paid.filter((h) => th(h.at) === month)), d30: baht(paid.filter((h) => h.at > now - 30 * 864e5)), total: baht(paid), payments: paid.length,
+    month: baht(paid.filter((h) => th(h.at) === month)), d30: baht(paid.filter((h) => h.at > now - 30 * 864e5)), total: baht(paid),
+    payments: paid.filter((h) => h.amount > 0).length, refunds: paid.filter((h) => h.amount < 0).length,
     paying: paying.length, auto: paying.filter(([, u]) => u.sub).length,
     expiring: users.filter(([, u]) => u.until > now && u.until < now + 7 * 864e5 && !u.sub).map(([uid, u]) => ({ uid, until: u.until, reminded: !!u.reminded })),
   };

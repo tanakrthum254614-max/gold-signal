@@ -10,7 +10,7 @@ import { member, isAdmin, readJson, writeJson, json, fail, body, PRO_CONFIG, cle
 import { stripe, hasLiveKey, liveConfig, clearLiveCache, LIVE_FILE, loadPro, savePro, giftExisting } from '../lib/stripe.mjs';
 
 const SITE = () => (process.env.SITE_URL || 'https://gold-signal-ten.vercel.app').replace(/\/$/, '');
-const EVENTS = ['checkout.session.completed', 'checkout.session.async_payment_succeeded', 'invoice.paid', 'customer.subscription.updated', 'customer.subscription.deleted'];
+const EVENTS = ['checkout.session.completed', 'checkout.session.async_payment_succeeded', 'invoice.paid', 'customer.subscription.updated', 'customer.subscription.deleted', 'charge.refunded']; // + refunds 17 Oct 2026
 
 export async function status() {
   const key = (process.env.STRIPE_LIVE_SECRET_KEY || '').trim();
@@ -33,6 +33,11 @@ export async function status() {
   }
   const cfg = hasLiveKey() ? await liveConfig(true) : null;
   s.configured = cfg ? { priceMonth: cfg.priceMonth, priceYear: cfg.priceYear, amounts: cfg.amounts, webhook: cfg.webhookId, at: cfg.at } : null;
+  // events the live webhook doesn't send yet (the endpoint made at go-live predates charge.refunded) → "🔄 อัปเดต webhook"
+  if (cfg && cfg.webhookId) {
+    try { const h = await stripe(`webhook_endpoints/${cfg.webhookId}`); s.hookMissing = EVENTS.filter((e) => !(h.enabled_events || []).includes(e) && !(h.enabled_events || []).includes('*')); }
+    catch (e) { s.hookMissing = []; s.problems.push(`อ่าน webhook ไม่ได้: ${e.message}`); }
+  }
   s.enabled = await proEnabled();
   // payouts are a warning, not a blocker
   s.ready = s.liveKey && /^(sk|rk)_live_/.test(key) && !!s.account && s.account.country === 'TH' && s.account.charges;
@@ -76,6 +81,12 @@ export async function POST(request) {
     await writeJson(LIVE_FILE, { ...cfg, at: Date.now(), by });
     clearLiveCache();
     return json({ ok: true, steps });
+  }
+  if (q.action === 'hook') { // send every event in EVENTS to the live endpoint (keeps its URL and secret)
+    const cfg = await liveConfig(true);
+    if (!cfg || !cfg.webhookId) return fail('ยังไม่ได้กด 🚀 เปิดรับเงินจริง');
+    await stripe(`webhook_endpoints/${cfg.webhookId}`, { enabled_events: Object.fromEntries(EVENTS.map((e, i) => [i, e])) });
+    return json({ ok: true, steps: [`webhook รับ ${EVENTS.length} เหตุการณ์แล้ว (รวมการคืนเงิน)`] });
   }
   if (q.action !== 'launch') return fail('action');
   const month = Math.round(+q.month), year = Math.round(+q.year), giftDays = Math.round(+(q.giftDays ?? 30));

@@ -43,6 +43,21 @@ export async function handle(event, all) {
     if (uid && all.history.length) Object.assign(all.history[all.history.length - 1], { amount: o.amount_paid, currency: o.currency });
     return 'renew';
   }
+  // ↩️ Refund (17 Oct 2026): a FULL refund ends PRO now and cancels a card subscription; a partial one is only logged.
+  // The member comes from the payment's metadata (PromptPay: payment_intent_data) or, for card invoices, the customer.
+  if (event.type === 'charge.refunded') {
+    const uid = (o.metadata || {}).uid || Object.keys(all.users).find((k) => o.customer && all.users[k].customer === o.customer);
+    if (!uid) return 'refund: no member';
+    const full = !!o.refunded || (o.amount_refunded || 0) >= (o.amount || 0);
+    // amount_refunded is cumulative per charge: book only what's new since this charge's earlier refunds
+    const before = all.history.filter((h) => h.type === 'refund' && h.charge === o.id).reduce((x, h) => x - h.amount, 0);
+    all.history.push({ at: Date.now(), uid, type: 'refund', amount: -Math.max(0, (o.amount_refunded || 0) - before), currency: o.currency, charge: o.id, ...(full ? {} : { partial: true }) });
+    if (!full) return 'refund: partial';
+    const u = all.users[uid] || {};
+    if (u.sub) await stripe(`subscriptions/${u.sub}`, null, 'DELETE').catch((e) => console.error('refund cancel', e.message));
+    all.users[uid] = { ...u, until: Math.min(u.until || 0, Date.now()), sub: null, refunded: Date.now() };
+    return 'refund';
+  }
   if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.deleted') {
     fromSub(all, o, event.type === 'customer.subscription.deleted' ? 'cancel' : 'update');
     return 'sub';
