@@ -313,6 +313,11 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 17 ต.ค. 2569 — 💡 เข้าใจง่ายขึ้น (easy.js)
+- ผู้ใช้: "มีอะไรต้องเพิ่มไหม อยากปรับให้มันดูเข้าใจง่ายมากขึ้นอีกหน่อย" → เสนอ 4 อย่าง (มีตัวอย่าง) → เลือกครบ · **ไม่รื้อ layout / splash**
+- **easy.js** (โหลดหลัง chartchat.js): (1) `#easySum` บนสุดหน้าสัญญาณ "ตอนนี้ควรทำอะไร? · ระบบหลัก 1 ชม." — ข้อมูลจาก main.js renderIntra `state.easy = { cls, open, pause, go, near, news, closed, late, nextOpen, sides, price, sys, next }` + `renderEasy()` (คำตัดสินเดียวกับ #inCall, ระดับราคาจาก CHARTSYS.levelsFor) (2) ศัพท์ 12 คำ `TERMS`/`WORDS` → `.gl` ขีดประ + ⓘ กดแล้ว `.gl-pop` · ห่อคำแรกของแต่ละคำในพื้นที่ intraCard / tab-chart / recCard / dnBuy / dnSell ด้วย MutationObserver แบบ throttle 600 ms (debounce ไม่ได้ เพราะการ์ดวาดใหม่ทุกวินาที) (3) โหมด `html.easy` (localStorage `gs-mode`, ค่าเริ่ม easy) ซ่อน `.adv` (#sm แถบคะแนน, #inDetail, "ถ้าเข้าตอนนี้" + .donuts + #dnNote) + `#tab-chart .cz-box details` · **#sm ต้องซ่อนด้วย id เพราะ main.js เขียน className ทับทุกรอบ** · ปุ่ม `#modeBtn` บนแถบหัว (ไม่มีอีโมจิ) (4) ทัวร์ 5 จุด (easySum → liveHero → recCard → เมนูกราฟ → เมนูบัญชี) ครั้งแรกต่อเครื่อง (`gs-tour`), รอหน้าต่างวิธีเริ่มใช้ปิดก่อน · `window.gsTour()` ปุ่ม "ดูทัวร์แนะนำอีกครั้ง" แท็บบัญชี · CSS ท้าย live.css
+- ทดสอบ gold-signal-tools/easyui.cjs (1440 + 844 แนวนอน, chart-signals จริง): ทัวร์ 5 ขั้นจบ, กล่องสรุป (ตลาดปิด ส.), แถบคะแนนซ่อน/แสดงตามโหมด, ⓘ 16 จุด pop ถูก, จำโหมดหลังรีเฟรช, ทัวร์ไม่ขึ้นซ้ำ, ไม่ล้น ไม่มี error · deploy 4ec64aa · v202610171500
+
 ## 17 ต.ค. 2569 — ⚡ หน้าแรกเรียลไทม์
 - ผู้ใช้: "ขอแบบเรียลไทม์" → welcome.html: ป้าย `#livepx` ราคา XAU/USD จากสตรีม investing.com (wss streaming.forexpros.com, pid-68, `last_numeric` / `last_close` แบบเดียวกับ main.js) · เงียบ 10 วิ → gold-api.com ทุก 10 วิ · `closedNow()` (ส. 04:00 – จ. 05:00 ไทย) = "ตลาดปิด · ราคาปิดล่าสุด" · stats ทุก 30 วิ + `#upd` · `#holding` ไม้ที่ระบบถือ (1h/5h/1d) กำไรสดตามราคา
 - lib/blog.mjs statsJSON: ดึง chart-signals ทุก 20 วิ (query bucket), `open` (active main trades: tf/side/entry/sl ที่ทุนถ้า hit/tp ถัดไป), `updated`, cache-control max-age=15
