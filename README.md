@@ -20,7 +20,7 @@
 
 *A real-time gold (XAU/USD) trading signal platform for Thai traders: backtested entry, stop-loss and target levels, with every live trade published — profitable and losing alike.*
 
-<p align="center"><img src="docs/img/landing.png" alt="Landing page" width="100%"><br><sub>หน้าแรกของเว็บไซต์</sub></p>
+<p align="center"><img src="docs/img/landing.png" alt="Landing page" width="100%"><br><sub>หน้าแรกของเว็บไซต์ — ราคาทองคำแบบเรียลไทม์และผลการดำเนินงานที่อัปเดตอัตโนมัติ</sub></p>
 
 <table>
 <tr>
