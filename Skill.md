@@ -313,6 +313,14 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 17 ต.ค. 2569 — ✦ ดำ–ทอง พรีเมียม + หน้าแรก Landing
+- ผู้ใช้: "ขอแบบให้พรีเมียมและระดับทางการให้คนน่าเชื่อถือในการเข้ามาใช้" → ถามก่อน (มีตัวอย่าง) → เลือก หน้าคนนอก + Landing ใหม่ + เว็บสมาชิก · โทน **"ดำ–ทอง หรูหรา"**
+- **premium.css** (PUBLIC): ดำ #0a0a0c, ทองไล่เฉด `--pm-grad`, หัวข้อ **Noto Serif Thai** สีงาช้าง, การ์ดกรอบทองบาง, `.pm-btn.gold/.ghost`, `.trust`, `.rule`, `.pm-brand` (GOLD SIGNAL + XAU/USD · THAILAND) · ใช้กับ `<html class="pm-page"><body class="pm">` · ใช้แบบมืดเสมอ
+- **welcome.html** (ใหม่, PUBLIC): hero "สัญญาณเทรดทองคำ ที่ตรวจสอบได้ทุกไม้" · ความน่าเชื่อถือ (Stripe/ผลจริง/คืนเงิน 7 วัน/ยกเลิกได้) · บริการ 6 การ์ด · **ผลจริงสด** จาก `/api/market?blog=1&stats=1` (lib/blog.mjs `statsJSON`: 1h/5h/1d BUY ไม่ risky + test-stats, สาธารณะเสมอ แม้การตลาดปิด) · 3 ขั้นตอน · ราคา 2 แพ็กเกจ · FAQ 5 ข้อ · คำเตือนความเสี่ยง · ท้ายหน้า · **middleware: ไม่ล็อกอิน + path "/" → 302 /welcome.html** (หน้าอื่นยังไป login)
+- login.html (Clerk ธีมดำทอง: ปุ่มทอง, หัวข้อ serif, การ์ดกรอบทอง + headline + trust) · pay/demo/terms/privacy: map ตัวแปรสีเดิม → --pm-* + serif + ปุ่มทอง · lib/blog.mjs ใช้ premium.css · เว็บสมาชิก (terminal.css ท้ายไฟล์): ชื่อแบรนด์ serif ทองไล่เฉด, .btn.gold ไล่เฉด, การ์ดเส้นทองบาง, แถบ sec-title ทอง — **ไม่แตะ layout / splash**
+- ทดสอบ gold-signal-tools/pm.cjs (6 หน้า × 1440/390 ไม่ล้น ไม่มี error, serif ทำงาน) · มือถือ: ชื่อแบรนด์บนแถบหัวขึ้นสองบรรทัด → nowrap + เล็กลง ≤ 420px · entries.cjs เว็บสมาชิกไม่ล้น · production 84d4768: / → /welcome.html, stats 200 (1h 57% · ผลจริง 2 ไม้ ชนะ 1 −$23.51)
+- หมายเหตุ: กล่องล็อกอินยังขึ้น "Development mode" ของ Clerk จนกว่าจะย้าย Clerk เป็นโหมดจริง (ต้องมีโดเมน)
+
 ## 17 ต.ค. 2569 — 📣 ผู้ช่วยการตลาด AI (สร้างไว้ ปิดไว้จนซื้อ .com)
 - ผู้ใช้: "อยากให้สร้าง AI agent ที่สามารถเอาคอร์สเราไปโฆษณาให้เราแทน หาเงินให้เราแทน" → เลือก LINE OA + เพจ Facebook + SEO + Referral · ร่างให้กดอนุมัติ · จ่ายค่า AI ได้นิดหน่อย → **"สร้างไว้ก่อน ค่อยโพสต์หลังจากเราซื้อโดเมน .com แล้ว"**
 - **api/market.mjs** (แอดมิน): GET → config/drafts/queue/fb/site · POST generate | save | approve(channel line/facebook/seo) | discard | live · `facts()` = chart-signals.json (raw GitHub data, เฉพาะ 1h/5h/1d ไม่ risky ปิดแล้ว) + test-stats.json + gold-api.com · AI = AI Gateway (`AI_MARKET_MODEL` → AI_COACH_MODEL → gemini-2.5-flash, JSON) · AI ไม่ได้ → `template()` · `finish()` ต่อคำเตือนความเสี่ยงทุกช่อง + `BANNED` (การันตี/กำไรแน่/รวยแน่/ไม่ขาดทุน/100%…) → `blocked` อนุมัติไม่ได้ (422) · **ทุกช่องปิดจน Blob marketing/config.json live = true** (ปุ่ม 🚀 เปิดใช้การตลาด; ถ้า SITE_URL ยัง vercel.app = 409 ต้องตั้งโดเมนก่อน)
