@@ -158,17 +158,6 @@ function ago(ms) {
     if (!sys) return;
     const chart = ms(state.bars), dur = sys.frames[0][1], max = maxScore(sys);
     each((v) => { v.lines.forEach((l) => v.series.removePriceLine(l)); v.lines = []; });
-    // ⭐ PRO (pro.js): signals on timeframes other than the 1-hour main system are for PRO members once the paywall is on —
-    // a plain chart with a lock note instead
-    const locked = window.gsLocked && gsLocked('signals', tf);
-    const tabEl = document.getElementById('tab-chart');
-    if (tabEl) tabEl.classList.toggle('tf-locked', !!locked);
-    if (locked) {
-      each((v) => { v.zone.setData([]); v.series.setMarkers([]); });
-      if (window.setChartDecor) setChartDecor([]);
-      window.CZ_OPEN = null; window.CZ_PLANS = null; // no entry / TP / SL boxes either (they kept the last timeframe's)
-      return;
-    }
     const s = replay(tf, sys, chart);
     const byT = new Map(s.decs.map((d) => [d.t, d.dec]));
     const zd = state.bars.map((b) => {

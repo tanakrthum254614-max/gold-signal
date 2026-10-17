@@ -8,7 +8,7 @@
 // Env: ACCESS_SECRET (cookie signing), CLERK_SECRET_KEY (names / emails), BLOB_READ_WRITE_TOKEN, ADMIN_EMAILS (comma list).
 // 14 Oct 2026: routes that need request bodies are Vercel Functions in api/ (journal, articles, coach, pro, pay/*; shared
 // code in lib/gs.mjs) — this file lets members through to them (next()), lets Stripe reach /api/pay/webhook, hides lib/,
-// and, when PRO_ENABLED=1, keeps the ZFrames dashboard for PRO members (proOk / proWall at the bottom).
+// and the paid-membership gate (paidOk — every feature for paying members and admins, 16–17 Oct 2026).
 // NO imports on purpose: Vercel does not ship node_modules with Routing Middleware (with @vercel/blob imported, production
 // failed "Cannot find module '@vercel/blob'", and a bundled copy wouldn't load as a module). The Blob store is reached
 // with plain fetch — the same requests @vercel/blob makes (reads: the store host with ?cache=0; writes: the Blob API).
@@ -177,9 +177,7 @@ async function priceAlertApi(request, m) {
   if (request.method === 'POST') {
     const price = Math.round(Number(body.price) * 100) / 100, dir = body.dir === 'down' ? 'down' : 'up';
     if (!(price > 100 && price < 100000)) return json({ ok: false, error: 'ราคาไม่ถูกต้อง' }, 400);
-    // ⭐ PRO: 10 alerts · free member: 1 (always 10 while the paywall is off)
-    const cap = (await proOk(m, 'alerts')) ? 10 : 1;
-    if (all.alerts.filter((a) => a.who === m.id).length >= cap) return json({ ok: false, pro: cap === 1, error: cap === 1 ? 'สมาชิกฟรีตั้งได้ 1 รายการ — PRO ตั้งได้ 10' : 'ตั้งได้สูงสุด 10 รายการ' }, cap === 1 ? 402 : 400);
+    if (all.alerts.filter((a) => a.who === m.id).length >= 10) return json({ ok: false, error: 'ตั้งได้สูงสุด 10 รายการ' }, 400); // every member: 10 (paid-only since 16 Oct)
     all.alerts.push({ id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, who: m.id, price, dir, at: Date.now() });
   } else if (request.method === 'DELETE') {
     all.alerts = all.alerts.filter((a) => !(a.who === m.id && a.id === String(body.id)));
@@ -266,11 +264,9 @@ export default async function middleware(request) {
     return json({ ok: false, pay: true, error: 'ต้องสมัครแพ็กเกจก่อน' }, 402);
   }
   if (path === '/api/push') return pushApi(request, who);
-  if (path === '/api/gurus/follow') return (await proOk(who, 'dashboard')) ? guruFollowApi(request, who) : proWall(path); // ⭐ gurus = PRO
+  if (path === '/api/gurus/follow') return guruFollowApi(request, who);
   if (path === '/api/alerts') return priceAlertApi(request, who);
   if (path === '/api/visit' && request.method === 'POST') { await logEvent(request, who, 'visit').catch(() => {}); return json({ ok: true }); }
-  // PRO paywall (only when PRO_ENABLED=1 and PRO_FEATURES has "dashboard"): the ZFrames dashboard and its price API
-  if ((path.startsWith('/zframes/') || path.startsWith('/api/zframes/') || path === '/api/candles' || path === '/api/gurus/follow') && !(await proOk(who, 'dashboard'))) return proWall(path);
   if (path === '/api/zframes/quotes' && request.method === 'GET') return zframesQuotes(request);
   // Back office: members and the access log — admins only (ADMIN_EMAILS)
   if (path === '/admin.html' || path.startsWith('/api/admin/')) {
@@ -283,12 +279,6 @@ export default async function middleware(request) {
   }
   if (DATA.test(path)) {
     const r = await dataFile(path).catch(() => null);
-    // ⭐ PRO: free members' recorded chart signals are the 1-hour main system only (the other timeframes are PRO)
-    if (r && path === '/chart-signals.json' && !(await proOk(who, 'signals'))) {
-      const j = JSON.parse(await r.text());
-      j.trades = (j.trades || []).filter((t) => t.tf === '1h');
-      return new Response(JSON.stringify(j), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-gs-data': 'data-branch-free' } });
-    }
     if (r) return r;
   }
   return next();
@@ -449,18 +439,4 @@ async function paidOk(m, fresh) {
   const u = c.users[m.id];
   return !!(u && u.until > Date.now());
 }
-async function proOk(m, feature) {
-  await proState();
-  if (process.env.PRO_ENABLED !== '1' && !proCache.enabled) return true;
-  if (!(process.env.PRO_FEATURES || 'ai,dashboard,signals,alerts').split(',').map((s) => s.trim()).includes(feature)) return true;
-  if (isAdmin(m)) return true;
-  const u = proCache.users[m.id];
-  return !!(u && u.until > Date.now());
-}
-function proWall(path) {
-  if (!path.endsWith('.html')) return json({ ok: false, pro: true, error: 'สำหรับสมาชิก PRO' }, 402);
-  return new Response(`<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>สมาชิก PRO</title>
-<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0d1016;color:#e6e9ef;font-family:system-ui,sans-serif;text-align:center;padding:16px}a{display:inline-block;margin-top:14px;padding:10px 18px;border-radius:10px;background:#e8b64c;color:#1c2433;font-weight:700;text-decoration:none}</style></head>
-<body><div><div style="font-size:44px">⭐</div><h2>หุ้นสหรัฐ + พอร์ตกูรู สำหรับสมาชิก PRO</h2><p>Nasdaq 100 · S&amp;P 500 · หุ้นปันผล ราคาสด · พอร์ตกูรู 28 คน ซื้อขายล่าสุดจาก SEC · แจ้งเตือนเมื่อกูรูซื้อขาย</p><a href="/#account" target="_top">ดูแพ็กเกจ PRO</a></div></body></html>`,
-  { status: 402, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
-}
+// (proOk / proWall — the free-member feature locks — removed 17 Oct 2026: membership is paid-only, paidOk above covers it)

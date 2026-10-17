@@ -6,7 +6,7 @@
 // articles. The model is reached through Vercel AI Gateway (OpenAI-compatible Chat Completions) — on Vercel with the
 // project's OIDC token, elsewhere with AI_GATEWAY_API_KEY. Model: AI_COACH_MODEL (an id from
 // https://ai-gateway.vercel.sh/v1/models). Each member gets AI_DAILY_LIMIT questions a day (default 30, Thai date).
-import { member, isAdmin, allowed, readJson, writeJson, json, fail, body, clip } from '../lib/gs.mjs';
+import { member, isAdmin, readJson, writeJson, json, fail, body, clip } from '../lib/gs.mjs';
 
 const MODEL = () => process.env.AI_COACH_MODEL || 'google/gemini-2.5-flash'; // in the team's free AI credit (Claude / DeepSeek need paid credit);
 const LIMIT = () => Math.max(1, +process.env.AI_DAILY_LIMIT || 30);
@@ -72,7 +72,6 @@ function token(request) {
 export async function POST(request) {
   const m = await member(request);
   if (!m) return fail('ต้องเข้าสู่ระบบก่อน', 401);
-  if (!(await allowed(m, 'ai'))) return json({ ok: false, pro: true, error: 'โค้ช AI สำหรับสมาชิก PRO' }, 402);
   let q;
   try { q = await body(request, 30000); } catch (e) { return fail('ข้อมูลไม่ถูกต้อง'); }
   const message = clip(q.message, 1000).trim();

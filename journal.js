@@ -162,11 +162,11 @@
     let s;
     try { s = await api('/api/pro'); } catch (e) { card.hidden = true; return; }
     window.GS_PRO = s;
-    const feats = s.features.map((f) => ({ ai: '🤖 โค้ช AI ส่วนตัว (อ่านสัญญาณทุกกรอบ + สมุดเทรดของคุณ)', dashboard: '📊 หุ้นสหรัฐ Nasdaq 100 · S&P 500 · ปันผล + พอร์ตกูรู 28 คน + แจ้งเตือนกูรูซื้อขาย', signals: '📈 สัญญาณ Buy/Sell ทุกกรอบเวลา 5 นาที – 1 สัปดาห์ + แชทถามจุดเข้าทุกกรอบ (ฟรี: ระบบหลัก 1 ชม.)', alerts: '🔔 แจ้งเตือนราคาทอง 10 รายการ (ฟรี: 1 รายการ)' }[f] || f));
+    const feats = s.features.map((f) => ({ ai: '🤖 โค้ช AI ส่วนตัว (อ่านสัญญาณทุกกรอบ + สมุดเทรดของคุณ)', dashboard: '📊 หุ้นสหรัฐ Nasdaq 100 · S&P 500 · ปันผล + พอร์ตกูรู 28 คน + แจ้งเตือนกูรูซื้อขาย', signals: '📈 สัญญาณ Buy/Sell ทุกกรอบเวลา 5 นาที – 1 สัปดาห์ + แชทถามจุดเข้าทุกกรอบ', alerts: '🔔 แจ้งเตือนราคาทอง 10 รายการ' }[f] || f));
     const p = s.prices || {};
     const status = s.admin ? '⭐ แอดมิน — ใช้ได้ทุกอย่าง'
       : s.pro ? `⭐ สมาชิก PRO ถึง ${new Date(s.until).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}${s.sub ? ' · ต่ออายุอัตโนมัติ' : ''}`
-        : s.enabled ? 'สมาชิกฟรี' : '🎁 ช่วงทดลอง: ตอนนี้ทุกคนใช้ฟีเจอร์ PRO ได้ฟรี';
+        : s.enabled ? 'ยังไม่มีแพ็กเกจ' : '🎁 ช่วงทดลอง: ตอนนี้ทุกคนใช้ฟีเจอร์ PRO ได้ฟรี';
     // no selling while everyone has PRO free · admins see the same plans as a preview (16 Oct: "ไม่เห็นมีให้เก็บตังเลย")
     const preview = s.enabled && s.admin && (p.month || p.year);
     const canBuy = s.enabled && (!s.admin || preview) && (p.month || p.year);
@@ -175,7 +175,7 @@
     card.innerHTML = `<h3>สมาชิก PRO ⭐</h3>
       <p class="pro-status">${esc(status)}</p>
       <ul class="pro-feats">${feats.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
-      ${preview ? '<p class="muted small">👀 ตัวอย่าง — สมาชิกฟรีจะเห็นปุ่มจ่ายเงินแบบนี้ (บัญชีแอดมินกดซื้อไม่ได้)</p>' : ''}
+      ${preview ? '<p class="muted small">👀 สมาชิกที่ยังไม่จ่ายจะเห็นปุ่มจ่ายเงินแบบนี้ (บัญชีแอดมินกดซื้อไม่ได้)</p>' : ''}
       ${canBuy ? `<div class="pro-plans">${['month', 'year'].filter((k) => p[k]).map((k) => `<div class="pro-plan"><b>${k === 'month' ? 'รายเดือน' : 'รายปี'}</b><span class="mono">${baht(p[k])}</span>
         <button class="btn gold" type="button" data-plan="${k}" data-method="card"${dis}>💳 บัตร (ต่ออายุอัตโนมัติ)</button>
         <button class="btn" type="button" data-plan="${k}" data-method="promptpay"${dis}>📱 จ่ายครั้งเดียว ${k === 'month' ? '30' : '365'} วัน${p[k].currency === 'thb' ? ' (PromptPay / บัตร)' : ''}</button></div>`).join('')}</div>

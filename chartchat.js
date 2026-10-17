@@ -377,11 +377,8 @@
     say('bot', '<span class="cc-typing">กำลังดูกราฟ…</span>');
     const wait = log.lastElementChild;
     let out;
-    // ⭐ PRO (pro.js): free members ask about the 1-hour main system; other timeframes and the all-timeframe answers are PRO
-    const lockedQ = window.gsLocked && q.k !== 'news' && (['all', 'bestbuy', 'bestsell'].includes(q.k) ? gsLocked('signals', 'any') : gsLocked('signals', tf));
     try {
-      if (lockedQ) out = '⭐ สัญญาณกรอบนี้สำหรับสมาชิก PRO — สมาชิกฟรีถามได้กรอบ <b>1 ชม.</b> (ระบบหลัก) · <a href="#account">ดูแพ็กเกจ PRO</a>';
-      else if (!state.bars.length) out = 'กราฟยังโหลดไม่เสร็จ รอสักครู่แล้วถามใหม่ครับ';
+      if (!state.bars.length) out = 'กราฟยังโหลดไม่เสร็จ รอสักครู่แล้วถามใหม่ครับ';
       else if (q.k === 'all') out = await ansAll();
       else if (q.k === 'bestbuy') out = await ansBest(1);
       else if (q.k === 'bestsell') out = await ansBest(-1);

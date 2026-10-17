@@ -49,7 +49,7 @@
   <link rel="stylesheet" href="live.css?v=202610171500">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
-  <link rel="stylesheet" href="terminal.css?v=202610171400">
+  <link rel="stylesheet" href="terminal.css?v=202610171600">
   <link rel="stylesheet" href="splash.css?v=202610171000">
   <script>/* refresh = stay where you were, no loading screen (user, 16 Oct 2026: "กดรีเฟรชแล้วอยู่ที่เดิม ไม่ต้องไปเริ่มที่หน้าตอนโหลดใหม่ทุกครั้ง"): the splash plays once per tab; a reload or a later visit in the same tab skips it */ try { var gsNav = performance.getEntriesByType("navigation")[0]; if ((gsNav && gsNav.type === "reload") || sessionStorage.getItem("gs-splash-seen") === "1") document.documentElement.classList.add("no-splash"); } catch (e) {}</script>
   <script>/* apply the saved theme before the first paint */ var gsT = "dark"; try { gsT = localStorage.getItem("gs-theme") === "light" ? "light" : "dark"; } catch (e) {} /* dark trading terminal = default since 14 Oct 2026 */ if (gsT === "dark") { document.getElementById("themeLight").disabled = true; document.documentElement.classList.add("dark"); document.querySelector("meta[name=theme-color]").content = "#0b0e11"; }</script>
@@ -242,7 +242,7 @@
           <div id="inToday"></div>
         </div>
 
-        <!-- daily overview + "ตลาดทองตอนนี้" hidden (user, 16 Oct 2026, screenshot: "เอาอันนี้ออก"); main.js still fills it, LINE 07:05 unchanged -->
+        <!-- daily overview + "ตลาดทองตอนนี้" hidden (user, 16 Oct 2026, screenshot: "เอาอันนี้ออก"); main.js still fills it; the 07:05 LINE overview was switched off 17 Oct 2026 -->
         <h3 class="sec-title home-off">🧭 ภาพรวมรายวัน (ตลาดเปิด) <span class="tag neutral">ข้อมูลประกอบ</span></h3>
         <div class="home-cols home-off">
           <div class="card sig" id="sigCard">
@@ -354,7 +354,6 @@
               <nav class="tfs" id="sRange"></nav>
             </div>
             <div class="cz-box" id="czBoxS">กำลังคำนวณโซนเข้า…</div>
-            <div class="tf-lock">⭐ จุดเข้า Buy/Sell กรอบนี้สำหรับ<b>สมาชิก PRO</b> — สมาชิกฟรีดูสัญญาณได้กรอบ <b>1 ชม.</b> (ระบบหลัก) · <a href="#account">ดูแพ็กเกจ PRO</a></div>
             <ul class="s15-legend cz-legend"><li><i class="zone ok"></i>โซน BUY</li><li><i class="zone sell"></i>โซน SELL</li><li><i class="zone near"></i>ใกล้โซน</li><li><i class="zone bad"></i>ขาลง</li><li><i class="zone news"></i>ข่าว งดเข้า</li><li><i class="up">▲</i><i class="sell-mk">▼</i>กราฟนี้เปลี่ยนเป็นขึ้น/ลง</li><li><i class="up">▲</i><i class="lg-tag buy">Buy</i>เข้าซื้อ</li><li><i class="sell-mk">▼</i><i class="lg-tag sell">Sell</i>เข้าขาย</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul>
             <div id="simpleChart" class="chart-simple"></div>
             <p class="hint">เส้นสีทอง = ราคาทอง · 🎯 จุดเข้า · 🛑 ตัดขาดทุน · 💰 เป้าหมาย ของสัญญาณล่าสุด</p>
@@ -394,7 +393,6 @@
         </div>
         <p class="hint">🟩 แท่งเขียว = ราคาปิดสูงกว่าเปิด (ขึ้น) · 🟥 แท่งแดง = ราคาปิดต่ำกว่าเปิด (ลง) · ราคาอยู่เหนือเส้นค่าเฉลี่ย = แข็งแรง, อยู่ใต้เส้น = อ่อนแอ</p>
         <div class="cz-box" id="czBox">กำลังคำนวณโซนเข้า…</div>
-        <div class="tf-lock">⭐ จุดเข้า Buy/Sell กรอบนี้สำหรับ<b>สมาชิก PRO</b> — สมาชิกฟรีดูสัญญาณได้กรอบ <b>1 ชม.</b> (ระบบหลัก) · <a href="#account">ดูแพ็กเกจ PRO</a></div>
         <ul class="s15-legend cz-legend"><li><i class="zone ok"></i>โซน BUY</li><li><i class="zone sell"></i>โซน SELL</li><li><i class="zone near"></i>แนวโน้มขึ้น</li><li><i class="zone bad"></i>แนวโน้มลง</li><li><i class="zone news"></i>ช่วงข่าว งดเข้า</li><li><i class="up">▲</i><i class="sell-mk">▼</i>กราฟนี้เปลี่ยนเป็นขึ้น/ลง</li><li><i class="up">▲</i><i class="lg-tag buy">Buy</i>จุดเข้าซื้อ</li><li><i class="sell-mk">▼</i><i class="lg-tag sell">Sell</i>จุดเข้าขาย</li><li><i class="lg-env">〰</i>กรอบราคา</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul>
         <div id="mainChart" class="chart-main"></div>
         <div class="sub-title">RSI — วัดแรงซื้อ/ขาย <span class="muted">(เกิน 70 = ขึ้นแรงเกินไป · ต่ำกว่า 30 = ลงแรงเกินไป)</span></div>
@@ -591,7 +589,7 @@
 
         <section class="card">
           <h3>รับสัญญาณทาง LINE 📩</h3>
-          <p class="muted">ทุกเช้าวันทำการ 07:05 (ต้น พ.ย.–กลาง มี.ค. 08:05) ส่งภาพรวมรายวัน · ระหว่างวันส่ง <b>สัญญาณ 1 ชม. (ระบบหลัก)</b> และสัญญาณกราฟ 5 ชม. · 1 วัน เฉพาะตอนมีจุดเข้า (พร้อม SL / TP) · เตือนก่อนข่าวแรง 30 นาที — ไม่ส่งผลปิดไม้และสรุปรายสัปดาห์ · ถ้าโควตา LINE เดือนนั้นใกล้หมด ภาพรวมเช้ากับเตือนข่าวจะมาเป็น<b>แจ้งเตือนบนเครื่อง</b>แทน (LINE เก็บไว้ส่งสัญญาณเข้าไม้) — กด "เปิดแจ้งเตือน" ด้านบนไว้</p>
+          <p class="muted">ส่ง <b>สัญญาณ 1 ชม. (ระบบหลัก)</b> และสัญญาณกราฟ 5 ชม. · 1 วัน เฉพาะตอนมีจุดเข้า (พร้อม SL / TP) · เตือนก่อนข่าวแรง 30 นาที — ไม่ส่งผลปิดไม้ · ถ้าโควตา LINE เดือนนั้นใกล้หมด เตือนข่าวจะมาเป็น<b>แจ้งเตือนบนเครื่อง</b>แทน (LINE เก็บไว้ส่งสัญญาณเข้าไม้) — กด "เปิดแจ้งเตือน" ด้านบนไว้</p>
           <p class="muted small" id="lineQuota"></p>
           <a class="btn line" id="lineAdd" target="_blank" rel="noopener" hidden>เพิ่มเพื่อน LINE เพื่อรับสัญญาณ</a>
           <p class="muted small" id="lineSoon">กำลังเตรียมบัญชี LINE — เร็ว ๆ นี้</p>
@@ -599,7 +597,7 @@
 
         <section class="card">
           <h3>ชวนเพื่อนมาใช้ 🤝</h3>
-          <p class="muted">ส่งลิงก์ให้เพื่อน เพื่อนกดสมัครสมาชิกฟรี (อีเมลหรือ Google) แล้วใช้งานได้เลย</p>
+          <p class="muted">ส่งลิงก์ให้เพื่อน เพื่อนสมัครด้วยอีเมลหรือ Google แล้วเลือกแพ็กเกจ (149 บาท/เดือน · 1,290 บาท/ปี)</p>
           <div class="share">
             <a class="btn line" id="shareLine" target="_blank" rel="noopener">แชร์ทาง LINE</a>
             <button class="btn" id="shareCopy">คัดลอกลิงก์</button>
@@ -610,7 +608,7 @@
         <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
         <p class="muted small center"><button class="btn" type="button" onclick="window.gsTour && gsTour()">ดูทัวร์แนะนำอีกครั้ง</button></p>
-        <p class="muted small center">เวอร์ชัน 202610171500 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610171600 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
@@ -618,7 +616,7 @@
   <div class="toast" id="toast" hidden></div>
 
   <script src="config.js?v=202610121500"></script>
-  <script src="pro.js?v=202610171200"></script>
+  <script src="pro.js?v=202610171600"></script>
   <script src="auth.js?v=202610171000"></script>
   <script src="splashfx.js?v=202610152000"></script>
   <script src="indicators.js?v=202610121500"></script>
@@ -632,11 +630,11 @@
   <script src="chartsys.js?v=202610171200"></script>
   <script src="main.js?v=202610171500"></script>
   <script src="tradeplan.js?v=202610121500"></script>
-  <script src="chartzones.js?v=202610170700"></script>
+  <script src="chartzones.js?v=202610171600"></script>
   <script src="newsstats.js?v=202610170000"></script>
-  <script src="chartchat.js?v=202610170700"></script>
+  <script src="chartchat.js?v=202610171600"></script>
   <script src="easy.js?v=202610171500"></script>
-  <script src="journal.js?v=202610171300"></script>
+  <script src="journal.js?v=202610171600"></script>
   <script src="pricealerts.js?v=202610170100"></script>
   <script src="motion.js?v=202610141800"></script>
 </body>

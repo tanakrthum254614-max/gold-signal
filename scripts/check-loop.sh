@@ -22,7 +22,7 @@ check() {
   if node -e 'const S = require("./signals.js"), n = Date.now(), o = Date.parse(S.thaiDate(n) + "T07:00:00+07:00") + S.marketShift(n); process.exit(n >= o && n < o + 30 * 60e3 ? 1 : 0)'; then
     node scripts/alerts.js data.json || rc=1
   fi
-  node scripts/intraday-run.js data.json || rc=1
+  node scripts/news-warn.js data.json || rc=1   # ⚠️ news warning ~30 min ahead (old 30-minute system retired 17 Oct 2026)
   node scripts/chart-run.js data.json || rc=1   # every chart-timeframe signal → chart-signals.json
   node scripts/price-alerts-user.js data.json   # members' own price alerts → web push (never fails the check)
   node scripts/pro-expiry.js                     # ⏰ membership ends in ≤ 3 days → web push to that member (never fails the check)

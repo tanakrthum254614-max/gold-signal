@@ -1,4 +1,4 @@
-// Morning job: scores earlier signals, records today's signal in signals.json and sends it to LINE.
+// Morning job: scores earlier signals and records today's signal in signals.json (LINE overview off since 17 Oct 2026).
 // Advisory days (SIG.RULE.advisory) go out as a market overview, not as a trade to copy, together with
 // the state of the 30-minute system (the main signal).
 // Usage: node scripts/morning-plan.js data.json
@@ -197,5 +197,9 @@ function flexMessage(a, sig, prev, sum, bt, news, intra, now) {
   console.log(`news today: ${news.length}`);
   const chartFile = path.join(__dirname, '..', 'chart-signals.json');
   const intra = fs.existsSync(chartFile) ? JSON.parse(fs.readFileSync(chartFile, 'utf8')).trades.filter((t) => t.tf === CS.MAIN_TF) : null;
-  await sendFlex(flexMessage(a, sig, prev, sum, bt, news, intra, now), { kind: 'extra' }); // overview: LINE only while the quota has room
+  // LINE overview switched off 17 Oct 2026 (user: "ทำมา" — trim what isn't important): this daily formula tested at a loss
+  // (−$217 after spread) and is hidden on the site; the message used LINE quota the signals need. The record above stays.
+  // To bring it back: MORNING_LINE=on.
+  if (process.env.MORNING_LINE === 'on') await sendFlex(flexMessage(a, sig, prev, sum, bt, news, intra, now), { kind: 'extra' });
+  else console.log('morning LINE overview: off (MORNING_LINE=on to send)');
 })().catch((e) => { console.error(e); process.exit(1); });
