@@ -54,25 +54,29 @@
 
 ```mermaid
 flowchart LR
-  subgraph Browser["🖥️ เบราว์เซอร์สมาชิก"]
-    UI["index.html · main.js<br/>chartzones · chartchat · easy.js"]
+  INV["investing.com<br/>price + stream"]
+  subgraph B["Member browser"]
+    UI["index.html / main.js<br/>chartzones / chartchat / easy.js"]
   end
-  subgraph Vercel["▲ Vercel"]
-    MW["middleware.js<br/>ล็อกอิน · สิทธิ์สมาชิก"]
-    API["api/*.mjs<br/>pro · pay · coach · market …"]
-    BLOB[("Vercel Blob<br/>สมาชิก · สมุดเทรด · บทความ")]
+  subgraph V["Vercel"]
+    MW["middleware.js<br/>login + membership"]
+    API["api/*.mjs<br/>pro / pay / coach / market"]
+    BLOB[("Vercel Blob<br/>members / journals / articles")]
   end
-  subgraph GH["⚙️ GitHub Actions"]
-    LOOP["check-loop.sh ทุก 5 นาที<br/>chart-run · news-warn · alerts · backup"]
+  subgraph G["GitHub Actions"]
+    LOOP["check-loop.sh every 5 min<br/>chart-run / news-warn / alerts / backup"]
     DATA[("branch data<br/>chart-signals.json")]
   end
-  INV["investing.com<br/>ราคา + สตรีม"] --> UI
+  INV --> UI
   INV --> LOOP
-  UI <--> MW --> API <--> BLOB
-  LOOP --> DATA --> MW
-  LOOP --> LINE["💬 LINE · Web Push"]
-  API <--> STRIPE["💳 Stripe"]
-  API <--> CLERK["🔐 Clerk"]
+  UI --> MW
+  MW --> API
+  API --> BLOB
+  LOOP --> DATA
+  DATA --> MW
+  LOOP --> LINE["LINE + Web Push"]
+  API --> STRIPE["Stripe"]
+  API --> CLERK["Clerk"]
 ```
 
 ## ✦ โครงสร้างโปรเจกต์
