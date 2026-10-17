@@ -313,6 +313,11 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 17 ต.ค. 2569 — ⚡ หน้าแรกเรียลไทม์
+- ผู้ใช้: "ขอแบบเรียลไทม์" → welcome.html: ป้าย `#livepx` ราคา XAU/USD จากสตรีม investing.com (wss streaming.forexpros.com, pid-68, `last_numeric` / `last_close` แบบเดียวกับ main.js) · เงียบ 10 วิ → gold-api.com ทุก 10 วิ · `closedNow()` (ส. 04:00 – จ. 05:00 ไทย) = "ตลาดปิด · ราคาปิดล่าสุด" · stats ทุก 30 วิ + `#upd` · `#holding` ไม้ที่ระบบถือ (1h/5h/1d) กำไรสดตามราคา
+- lib/blog.mjs statsJSON: ดึง chart-signals ทุก 20 วิ (query bucket), `open` (active main trades: tf/side/entry/sl ที่ทุนถ้า hit/tp ถัดไป), `updated`, cache-control max-age=15
+- ทดสอบ welcomelive.cjs (1440/390): ป้ายราคา, holding +$16.1, ไม่ล้น ไม่มี error — ทดสอบตอนตลาดปิด (ส.) เลยเห็นแค่แหล่งสำรอง · **สตรีมสดยังไม่ได้เห็นวิ่งจริงบนหน้านี้ → เช็กวันจันทร์ตลาดเปิด**
+
 ## 17 ต.ค. 2569 — 📒 หน้าแรกแสดงผลจริงครบ
 - ผู้ใช้: "มาจากไหนตัวเลข" → อธิบาย: 57/65/64% = test-stats.json (monthly-research, PAXG 2 ปี/5 ปี หลังสเปรด, 258/93/94 ไม้) · ผลจริง = chart-signals.json ตั้งแต่ 7 ต.ค. (1h: 9 ต.ค. +6.49 eod, 12 ต.ค. −30 sl) · แจ้งว่าหน้านี้ไม่โชว์กรอบเสี่ยง → "ทำมา"
 - lib/blog.mjs statsJSON เพิ่ม `others` (ไม้ที่ปิดนอก 1h/5h/1d BUY ไม่ risky) + `all` · welcome.html กล่อง `#others` ใต้การ์ด · production: others 36 ไม้ ชนะ 14 −79.66 · all 38 ชนะ 15 −103.17
