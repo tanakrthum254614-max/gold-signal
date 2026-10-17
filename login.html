@@ -109,7 +109,7 @@
     .rec { order: 9; } .demo { order: 10; } .faq { order: 11; } .trust { order: 12; } .privacy { order: 13; }
     @media (max-width: 979px) {
       body { padding-top: 14px; } main { gap: 12px; }
-      .glow { width: 100%; } .panel { padding: 8px 8px 0; } #signIn .cl-rootBox, #signIn .cl-cardBox { width: 100%; }
+      .glow { width: 100%; } .panel { padding: 8px 8px 0; } .panel > #signIn, #signIn > div { width: 100%; } #signIn .cl-rootBox, #signIn .cl-cardBox { width: 100% !important; max-width: none !important; }
       .pm-brand img { width: 34px; height: 34px; } .pm-brand b { font-size: 19px; }
       .livepx { padding: 5px 14px; } .livepx small#lsrc { display: none; }
       .headline { font-size: 21px; margin: 0; line-height: 1.4; }
@@ -137,23 +137,23 @@
   <main>
     <div class="info">
     <a class="pm-brand" href="/"><img src="logo.svg" alt=""><span><b>GOLD SIGNAL</b><small>XAU/USD · Thailand</small></span></a>
-    <div class="livepx rise" id="livepx"><i class="dot"></i><small>XAU/USD</small><b id="lpx">—</b><span id="lchg"></span><small id="lsrc">กำลังเชื่อมต่อราคาสด…</small></div>
-    <h1 class="headline rise d1">สัญญาณทองคำ<br><span class="gold-text">ที่ตรวจสอบได้ทุกไม้</span></h1>
+    <div class="livepx rise" id="livepx"><i class="dot"></i><small>XAU/USD</small><b id="lpx">—</b><span id="lchg"></span><small id="lsrc">กำลังเชื่อมต่อ…</small></div>
+    <h1 class="headline rise d1">สัญญาณซื้อขายทองคำ<br><span class="gold-text">ตรวจสอบได้ทุกรายการ</span></h1>
     <section class="rec rise d2" aria-label="ผลทดสอบและผลจริง">
       <div class="tiles" id="tiles">
-        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy 1 ชม.</span><span class="rl">กำลังโหลด…</span></div>
-        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy 5 ชม.</span><span class="rl">กำลังโหลด…</span></div>
-        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy 1 วัน</span><span class="rl">กำลังโหลด…</span></div>
+        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 1 ชั่วโมง</span><span class="rl">กำลังโหลด…</span></div>
+        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 5 ชั่วโมง</span><span class="rl">กำลังโหลด…</span></div>
+        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 1 วัน</span><span class="rl">กำลังโหลด…</span></div>
       </div>
-      <p class="cap" id="reccap">% = ชนะในการทดสอบย้อนหลัง · ตัวเลขล่าง = ผลจริงที่ระบบบันทึก ทั้งชนะและแพ้</p>
+      <p class="cap" id="reccap">ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง</p>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
-      <li class="on"><b>สมัครบัญชี</b>อีเมลหรือ Google</li>
+      <li class="on"><b>สร้างบัญชี</b>อีเมลหรือ Google</li>
       <li><b>เลือกแพ็กเกจ</b>149 ฿/เดือน · 1,290 ฿/ปี</li>
-      <li><b>เริ่มใช้งาน</b>ได้ทุกฟีเจอร์ทันที</li>
+      <li><b>เริ่มใช้งาน</b>ใช้ได้ทุกฟังก์ชันทันที</li>
     </ol>
-    <p class="lead" id="lead">ยังไม่มีบัญชี? กดแท็บ <b>“สมัครสมาชิก”</b> — สมัครก่อน แล้วค่อยเลือกแพ็กเกจในขั้นถัดไป</p>
-    <a class="demo" href="/demo.html">👀 ยังไม่สมัคร? <b>ทดลองดูก่อน (Demo)</b> — กราฟทองแบบไม่มีสัญญาณ</a>
+    <p class="lead" id="lead">ผู้ใช้ใหม่โปรดเลือก <b>“สมัครสมาชิก”</b> เพื่อสร้างบัญชี แล้วจึงเลือกแพ็กเกจ</p>
+    <a class="demo" href="/demo.html"><b>ทดลองใช้งาน (Demo)</b> — ดูกราฟราคาทองคำได้ก่อนสมัคร →</a>
     </div>
     <div class="form">
     <p id="status">กำลังโหลด…</p>
@@ -172,7 +172,7 @@
         <details><summary><span class="ic"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="q">ดูตัวอย่างก่อนสมัครได้ไหม?</span><svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></summary><p>ได้ — เปิด <a href="/demo.html">หน้า Demo</a> ดูกราฟทองแบบสดได้โดยไม่ต้องสมัคร (สัญญาณ จุดเข้า และผู้ช่วย AI เปิดให้เฉพาะสมาชิก)</p></details>
       </div>
     </div>
-    <div class="trust"><span><i>🔒</i> ชำระผ่าน Stripe</span><span><i>✦</i> ผลจริงทุกไม้</span><span><i>↩</i> คืนเงินใน 7 วัน</span><span><i>✕</i> ยกเลิกได้ทุกเมื่อ</span></div>
+    <div class="trust"><span><i>🔒</i> ชำระผ่าน Stripe</span><span><i>✦</i> เปิดเผยผลจริงทุกรายการ</span><span><i>↩</i> คืนเงินใน 7 วัน</span><span><i>✕</i> ยกเลิกได้ทุกเมื่อ</span></div>
     <p class="privacy">การสมัครและเข้าใช้งาน ถือว่ายอมรับการเก็บอีเมล บันทึกการเข้าใช้ (เวลา อุปกรณ์ เมืองโดยประมาณ) เพื่อดูแลระบบ · <a href="/terms.html">เงื่อนไขการใช้บริการ</a> · <a href="/privacy.html">นโยบายความเป็นส่วนตัว</a></p>
   </main>
   <script>
@@ -270,7 +270,7 @@
         mode = m;
         document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
         document.body.classList.toggle('mode-in', m === 'in'); // the 1-2-3 steps only while signing up
-        $('lead').innerHTML = m === 'in' ? 'สมาชิกเข้าสู่ระบบด้วยอีเมลหรือ Google ที่สมัครไว้ · ยังไม่มีบัญชี? กดแท็บ <b>“สมัครสมาชิก”</b>' : 'ขั้นที่ 1 — สร้างบัญชีด้วยอีเมลหรือ Google (ยังไม่มีค่าใช้จ่าย) แล้วไปเลือกแพ็กเกจในขั้นที่ 2';
+        $('lead').innerHTML = m === 'in' ? 'เข้าสู่ระบบด้วยอีเมลหรือบัญชี Google ที่ลงทะเบียนไว้ · ผู้ใช้ใหม่โปรดเลือก <b>“สมัครสมาชิก”</b>' : 'ขั้นที่ 1 สร้างบัญชีด้วยอีเมลหรือ Google (ไม่มีค่าใช้จ่าย) จากนั้นเลือกแพ็กเกจในขั้นที่ 2';
         if (m === 'in') Clerk.mountSignIn($('signIn'), { ...opts, withSignUp: true }); else Clerk.mountSignUp($('signIn'), opts);
       };
       $('tabs').hidden = false; $('glow').hidden = false;
@@ -318,7 +318,7 @@
         if (Date.now() - lastTick < 10e3) return;
         fetch('https://api.gold-api.com/price/XAU').then((r) => r.json()).then((j) => {
           if (Date.now() - lastTick < 10e3) return;
-          showPrice(j.price, closedNow() ? 'ตลาดปิด · ราคาล่าสุด' : 'อัปเดตทุก 10 วินาที');
+          showPrice(j.price, closedNow() ? 'ตลาดปิด · ราคาปิดล่าสุด' : 'อัปเดตทุก 10 วินาที');
           if (closedNow()) document.querySelector('#livepx .dot').classList.remove('on');
         }).catch(() => {});
       }
@@ -327,11 +327,11 @@
           const tiles = document.querySelectorAll('#tiles .tile');
           (j.tfs || []).forEach((t, i) => { const c = tiles[i]; if (!c) return;
             c.querySelector('.pc').textContent = t.tested != null ? `${t.tested}%` : '—';
-            c.querySelector('.rl').innerHTML = t.live ? `ผลจริง ${t.live} ไม้ · ชนะ ${t.wins}<br><b class="${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl)}</b>/ออนซ์` : 'ผลจริง: ยังไม่มีไม้ปิด'; });
+            c.querySelector('.rl').innerHTML = t.live ? `ผลจริง ${t.live} รายการ · ชนะ ${t.wins}<br><b class="${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl)}</b> ต่อออนซ์` : 'ผลจริง: ยังไม่มีรายการที่ปิด'; });
           // the whole record too, risky timeframes included — public numbers are never cherry-picked
           const a = j.all;
-          if (a && a.live) $('reccap').innerHTML = `% = ชนะในการทดสอบย้อนหลัง · ล่าง = ผลจริง<br>รวมทุกไม้ที่ระบบบันทึก (รวมกรอบเสี่ยง): <b>${a.live}</b> ไม้ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b>/ออนซ์ · <a href="/welcome.html#stats">ดูรายละเอียด</a>`;
-        }).catch(() => document.querySelectorAll('#tiles .rl').forEach((x) => { x.textContent = 'ดูผลจริงหลังเข้าสู่ระบบ'; }));
+          if (a && a.live) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;
+        }).catch(() => document.querySelectorAll('#tiles .rl').forEach((x) => { x.textContent = 'แสดงผลจริงหลังเข้าสู่ระบบ'; }));
       }
       loadStats(); setInterval(loadStats, 60e3);
       stream(); setTimeout(fallback, 4000); setInterval(fallback, 10e3);
