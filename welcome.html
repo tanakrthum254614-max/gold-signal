@@ -60,6 +60,14 @@
     .faq details { padding: 4px 22px; } .faq summary { cursor: pointer; padding: 16px 0; font-weight: 600; color: var(--pm-ivory); list-style: none; display: flex; justify-content: space-between; gap: 12px; }
     .faq summary::-webkit-details-marker { display: none; } .faq summary::after { content: "+"; color: var(--pm-gold); font-size: 20px; line-height: 1; }
     .faq details[open] summary::after { content: "−"; } .faq details p { margin: 0 0 18px; color: var(--pm-muted); font-size: 14.5px; }
+    .livepx { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; padding: 8px 16px; margin-bottom: 18px; border-radius: 999px; border: 1px solid var(--pm-line); background: rgba(255, 255, 255, .02); font-size: 14px; }
+    .livepx b { font-size: 18px; color: var(--pm-ivory); transition: color .3s; } .livepx b.up { color: var(--pm-up); } .livepx b.down { color: var(--pm-down); }
+    .livepx small { color: var(--pm-muted); }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--pm-muted); vertical-align: middle; }
+    .dot.on, .livepx .dot.on { background: var(--pm-up); box-shadow: 0 0 0 0 rgba(60, 207, 145, .6); animation: pulse 1.6s infinite; }
+    @keyframes pulse { 70% { box-shadow: 0 0 0 8px rgba(60, 207, 145, 0); } 100% { box-shadow: 0 0 0 0 rgba(60, 207, 145, 0); } }
+    @media (prefers-reduced-motion: reduce) { .dot.on { animation: none; } }
+    .holding { max-width: 900px; margin: 16px auto 0; padding: 16px 22px; text-align: center; font-size: 14.5px; border-color: rgba(60, 207, 145, .35); }
     .others { max-width: 900px; margin: 16px auto 0; padding: 16px 22px; text-align: center; font-size: 14px; line-height: 1.8; }
     .risk { max-width: 900px; margin: 0 auto; padding: 20px 24px; font-size: 13.5px; color: var(--pm-muted); }
     .risk b { color: var(--pm-ivory); }
@@ -79,6 +87,7 @@
 
   <main>
     <section class="hero"><div class="wrap">
+      <div class="livepx" id="livepx"><i class="dot"></i><span>XAU/USD</span><b class="mono" id="lpx">—</b><span class="mono chg" id="lchg"></span><small id="lsrc">กำลังเชื่อมต่อ…</small></div>
       <div class="eyebrow">Gold Trading Signals · ตั้งแต่ 2569</div>
       <h1>สัญญาณเทรดทองคำ<br><span class="gold-text">ที่ตรวจสอบได้ทุกไม้</span></h1>
       <p class="sub">จุดเข้า จุดตัดขาดทุน และเป้าหมายกำไร ที่ทดสอบย้อนหลังหลายปี — และเปิดผลจริงทุกไม้ให้ดู ทั้งไม้ที่ชนะและไม้ที่แพ้</p>
@@ -110,7 +119,9 @@
         <div class="card stat"><div class="k">Buy · 5 ชั่วโมง</div><div class="big gold-text mono">—</div><div class="muted">ชนะในการทดสอบย้อนหลัง</div><div class="live muted">กำลังโหลด…</div></div>
         <div class="card stat"><div class="k">Buy · 1 วัน</div><div class="big gold-text mono">—</div><div class="muted">ชนะในการทดสอบย้อนหลัง</div><div class="live muted">กำลังโหลด…</div></div>
       </div>
+      <div class="card holding" id="holding" hidden></div>
       <div class="card others" id="others" hidden></div>
+      <p class="fine" style="text-align:center;margin-top:10px"><i class="dot"></i> อัปเดตอัตโนมัติทุก 30 วินาที · ล่าสุด <span class="mono" id="upd">—</span></p>
       <p class="fine" style="text-align:center;margin-top:18px">ทดสอบหลังหักสเปรด $0.4 · ผลจริงต่อทอง 1 ออนซ์ ก่อนหักสเปรด · ผลในอดีตไม่รับประกันผลในอนาคต</p>
     </div></section>
 
@@ -167,10 +178,59 @@
   </div></footer>
 
   <script>
-    // Live numbers (real trades — wins and losses — of the 3 timeframes that passed every test period)
-    (function () {
-      const money = (v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
-      fetch('/api/market?blog=1&stats=1').then((r) => r.json()).then((j) => {
+    // ⚡ Real time (user, 17 Oct 2026: "ขอแบบเรียลไทม์"): live gold price from investing.com's stream (the same feed as the
+    // member site, ~1 tick a second; gold-api.com every 10 s as a fallback), the record re-read every 30 s, and the trade the
+    // system holds (if any) priced live. Live numbers = real trades, wins and losses.
+    const money = (v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+    const f2 = (v) => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const TFN = { '1h': '1 ชม.', '5h': '5 ชม.', '1d': '1 วัน' };
+    let px = null, last = null, prevClose = null, lastTick = 0, open = [];
+    function showPrice(p, src) {
+      if (!(p > 0)) return;
+      const el = document.getElementById('lpx');
+      el.classList.remove('up', 'down'); if (px != null && p !== px) { void el.offsetWidth; el.classList.add(p > px ? 'up' : 'down'); }
+      px = p; el.textContent = f2(p);
+      if (prevClose) { const c = p - prevClose; document.getElementById('lchg').innerHTML = `<span class="${c >= 0 ? 'up' : 'down'}">${c >= 0 ? '▲' : '▼'} ${money(Math.round(c * 100) / 100)} (${((c / prevClose) * 100).toFixed(2)}%)</span>`; }
+      document.querySelector('#livepx .dot').classList.add('on');
+      document.getElementById('lsrc').textContent = src;
+      renderHolding();
+    }
+    function stream() { // investing.com SockJS stream, pid 68 = XAU/USD
+      let ws; try { ws = new WebSocket(`wss://streaming.forexpros.com/echo/${Math.floor(Math.random() * 1000)}/${Math.random().toString(36).slice(2, 10)}/websocket`); } catch (e) { return; }
+      const send = (o) => ws.send(JSON.stringify([JSON.stringify(o)]));
+      ws.onmessage = (e) => { const d = String(e.data);
+        if (d === 'o') return send({ _event: 'bulk-subscribe', tzID: 8, message: 'pid-68:' });
+        if (d[0] !== 'a') return;
+        JSON.parse(d.slice(1)).forEach((m) => { try { const msg = JSON.parse(m).message || ''; if (!msg.startsWith('pid-68::')) return;
+          const t = JSON.parse(msg.slice(msg.indexOf('::') + 2)); const v = +t.last_numeric; // same fields as main.js onStreamTick / prevClose
+          const pc = +String(t.last_close || '').replace(/,/g, ''); if (pc > 0) prevClose = pc;
+          if (v) { lastTick = Date.now(); showPrice(v, 'LIVE · investing.com'); } } catch (err) { /* skip */ } }); };
+      ws.onclose = () => setTimeout(stream, 3000);
+      ws.onerror = () => ws.close();
+      setInterval(() => { if (ws.readyState === 1) send({ _event: 'heartbeat', data: 'h' }); }, 25e3);
+    }
+    // gold trades ~Mon 05:00 → Sat 04:00 Thai time (an hour later in the US winter) — weekend = closed, last price shown
+    const closedNow = () => { const t = new Date(Date.now() + 7 * 3600e3), d = t.getUTCDay(), h = t.getUTCHours(); return (d === 6 && h >= 4) || d === 0 || (d === 1 && h < 5); };
+    function fallback() { // when the stream is quiet for 10 s
+      if (Date.now() - lastTick < 10e3) return;
+      fetch('https://api.gold-api.com/price/XAU').then((r) => r.json()).then((j) => {
+        if (Date.now() - lastTick < 10e3) return;
+        showPrice(j.price, closedNow() ? 'ตลาดปิด · ราคาปิดล่าสุด' : 'อัปเดตทุก 10 วินาที');
+        if (closedNow()) document.querySelector('#livepx .dot').classList.remove('on');
+      }).catch(() => {});
+    }
+    function renderHolding() {
+      const box = document.getElementById('holding');
+      if (!open.length) { box.hidden = true; return; }
+      box.hidden = false;
+      box.innerHTML = '<b><i class="dot on"></i> ระบบถือไม้อยู่ตอนนี้</b><br>' + open.map((t) => { const d = t.side === 'SELL' ? -1 : 1, pl = px ? d * (px - t.entry) : null;
+        return `${t.side === 'SELL' ? 'Sell' : 'Buy'} ${TFN[t.tf] || t.tf} · เข้า <span class="mono">${f2(t.entry)}</span> · SL <span class="mono">${f2(t.sl)}</span> · TP <span class="mono">${f2(t.tp)}</span>${pl != null ? ` · ตอนนี้ <b class="mono ${pl >= 0 ? 'up' : 'down'}">${money(Math.round(pl * 100) / 100)}</b>/ออนซ์` : ''}`; }).join('<br>');
+    }
+    function loadStats() {
+      fetch('/api/market?blog=1&stats=1', { cache: 'no-store' }).then((r) => r.json()).then((j) => {
+        open = j.open || []; renderHolding();
+        document.getElementById('upd').textContent = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
+        document.querySelector('p.fine .dot').classList.add('on');
         const cards = document.querySelectorAll('#stats .stat');
         j.tfs.forEach((t, i) => {
           const c = cards[i]; if (!c) return;
@@ -187,8 +247,11 @@
             + `<br><span class="muted">รวมทุกไม้ที่ระบบบันทึก: ${a.live} ไม้ · ชนะ ${a.wins} (${Math.round((a.wins / a.live) * 100)}%) · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b>/ออนซ์ — กรอบเสี่ยงไม่ส่งแจ้งเตือน LINE และระบบแนะนำให้ใช้ไม้เล็ก</span>`;
         }
         if (j.since) document.getElementById('since').textContent = `(${new Date(j.since).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })})`;
-      }).catch(() => document.querySelectorAll('#stats .live').forEach((x) => { x.textContent = 'ดูผลจริงได้หลังเข้าสู่ระบบ'; }));
-    })();
+      }).catch(() => document.querySelectorAll('#stats .live').forEach((x) => { if (/กำลังโหลด/.test(x.textContent)) x.textContent = 'ดูผลจริงได้หลังเข้าสู่ระบบ'; }));
+    }
+    loadStats(); setInterval(loadStats, 30e3);
+    stream(); setTimeout(fallback, 4000); setInterval(fallback, 10e3);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { loadStats(); fallback(); } });
   </script>
 </body>
 </html>
