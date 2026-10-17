@@ -59,7 +59,7 @@
   }
 
   const shareUrl = location.origin + location.pathname;
-  const shareText = 'ลองใช้ Gold Signal — สัญญาณเทรดทองคำ Buy/Sell ทุกกรอบเวลา พร้อมจุดเข้า SL TP ที่ทดสอบย้อนหลังแล้ว และสถิติข่าวเศรษฐกิจสหรัฐที่ทำให้ทองวิ่ง (สมัครสมาชิกฟรี)';
+  const shareText = 'ลองใช้ Gold Signal — สัญญาณซื้อขายทองคำ Buy/Sell ทุกกรอบเวลา พร้อมจุดเข้า SL TP ที่ทดสอบย้อนหลังแล้ว และสถิติข่าวเศรษฐกิจสหรัฐที่ทำให้ทองวิ่ง (สมัครสมาชิกฟรี)';
   $('shareLine').href = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
   $('shareCopy').addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(shareUrl); toast('คัดลอกลิงก์แล้ว ส่งให้เพื่อนได้เลย'); }
@@ -99,7 +99,7 @@
   function previewSettings() {
     const s = readForm();
     const lot = window.lotFor ? window.lotFor(15, s) : null;
-    $('setPreview').textContent = lot ? `ตัวอย่าง: SL $15 → ${lot.text}` : 'ใส่ทุนเพื่อให้ระบบคำนวณขนาดไม้ให้';
+    $('setPreview').textContent = lot ? `ตัวอย่าง: SL $15 → ${lot.text}` : 'ใส่ทุนเพื่อให้ระบบคำนวณขนาดการซื้อขายให้';
   }
   ['setCap', 'setCur', 'setRisk', 'setSpread'].forEach((id) => $(id).addEventListener('input', previewSettings));
   $('setSave').addEventListener('click', async () => {

@@ -44,7 +44,7 @@
         และตั้งเป้าขายทำกำไรที่ <b>${money(plan.tp1)}</b> หรือ <b>${money(plan.tp2)}</b>`);
     } else if (plan.action === 'SELL') {
       lines.push(`ถ้ามีทองอยู่: เป็นจังหวะขายเพื่อล็อกกำไรหรือลดความเสี่ยง ·
-        ถ้าเทรดขาลง (Short): เข้าขายแถว <b>${money(plan.entry)}</b> ตัดขาดทุนที่ <b>${money(plan.sl)}</b>
+        ถ้าซื้อขายขาลง (Short): เข้าขายแถว <b>${money(plan.entry)}</b> ตัดขาดทุนที่ <b>${money(plan.sl)}</b>
         เป้าทำกำไร <b>${money(plan.tp1)}</b> หรือ <b>${money(plan.tp2)}</b>`);
     } else {
       if (plan.warn && plan.warn[0]) lines.push(`เหตุผลที่ให้รอ: ${plan.warn[0]}`);

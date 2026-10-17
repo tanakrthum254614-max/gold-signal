@@ -18,7 +18,7 @@
   const QUICK = [
     ['ตอนนี้ควรเข้าไหม', 'now'], ['สรุป 4 กรอบ', 'all'], ['Buy กรอบไหนดี', 'bestbuy'], ['Sell กรอบไหนดี', 'bestsell'],
     ['ซื้อตรงไหนดี', 'buy'], ['ขายตรงไหนดี', 'sell'], ['ทำไมยังไม่เข้า', 'why'], ['ตรงไหนไม่ควรเข้า', 'avoid'],
-    ['SL / TP เท่าไร', 'sltp'], ['แนวรับ–แนวต้าน', 'levels'], ['ผลทดสอบ / ผลจริง', 'stats'], ['มีข่าวไหม', 'news'], ['ไม้ที่ถืออยู่', 'tfs'],
+    ['SL / TP เท่าไร', 'sltp'], ['แนวรับ–แนวต้าน', 'levels'], ['ผลทดสอบ / ผลจริง', 'stats'], ['มีข่าวไหม', 'news'], ['รายการที่ถืออยู่', 'tfs'],
   ];
 
   // Inside the chart's signal card (user, 12 Oct: "เอาถามตอบอยู่ตรงนี้แทน" — where investing.com's reasons were); the
@@ -70,8 +70,8 @@
     $('ccMode').querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
     panel.classList.toggle('cc-ai', m === 'ai');
     $('ccTitle').textContent = m === 'ai' ? '🤖 พี่โค้ช AI' : '💬 ถามจุดเข้า Buy / Sell';
-    $('ccIn').placeholder = m === 'ai' ? 'เล่าให้พี่โค้ชฟัง เช่น แพ้ติดกัน 3 ไม้ ควรทำยังไง' : 'เช่น ซื้อที่ 4150 ได้ไหม · Buy 1 ชม. เมื่อไร';
-    $('ccFoot').textContent = m === 'ai' ? 'AI อ่านสัญญาณตอนนี้ + สมุดเทรดของคุณ · อาจผิดพลาดได้ · ไม่ใช่คำแนะนำการลงทุน' : 'ตอบจากระบบที่ทดสอบแล้ว · ไม่ใช่คำแนะนำการลงทุน';
+    $('ccIn').placeholder = m === 'ai' ? 'เล่าให้พี่โค้ชฟัง เช่น ขาดทุนติดต่อกัน 3 รายการ ควรทำยังไง' : 'เช่น ซื้อที่ 4150 ได้ไหม · Buy 1 ชม. เมื่อไร';
+    $('ccFoot').textContent = m === 'ai' ? 'AI อ่านสัญญาณตอนนี้ + บันทึกการซื้อขายของคุณ · อาจผิดพลาดได้ · ไม่ใช่คำแนะนำการลงทุน' : 'ตอบจากระบบที่ทดสอบแล้ว · ไม่ใช่คำแนะนำการลงทุน';
   }
   // the coach's reply is plain text: escape, then keep line breaks and **bold**
   const plain = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
@@ -154,24 +154,24 @@
   function holding(n) {
     const o = n.open; if (!o) return null;
     const sell = o.side === 'SELL';
-    return `📌 กรอบ ${nameOf(n.tf)} <b>ถือไม้${sell ? 'ขาย' : 'ซื้อ'}อยู่แล้ว</b> — เข้า ${p2(o.entry)} · SL ${p2(o.hit ? o.entry : o.sl)}${o.hit ? ' (ที่ทุน)' : ''} · ${o.tps.map((v, k) => `TP${k + 1} ${p2(v)}`).join(' · ')}<br>ไม่ต้องเปิดไม้ใหม่ — ถือตามแผนจนถึง TP หรือ SL`;
+    return `📌 กรอบ ${nameOf(n.tf)} <b>ถือสถานะ${sell ? 'ขาย' : 'ซื้อ'}อยู่แล้ว</b> — เข้า ${p2(o.entry)} · SL ${p2(o.hit ? o.entry : o.sl)}${o.hit ? ' (ที่ทุน)' : ''} · ${o.tps.map((v, k) => `TP${k + 1} ${p2(v)}`).join(' · ')}<br>ไม่ต้องเปิดรายการใหม่ — ถือตามแผนจนถึง TP หรือ SL`;
   }
   function blockers(n, s) {
     const out = [], d = n.d, sy = sysOf(n);
     if (n.br) out.push(`⛔ ระบบกรอบนี้พักอยู่: ${n.br.why}`);
     if (!sy.long && d.stale) out.push('🌙 ตลาดปิดอยู่');
     if (!sy.long && d.news) out.push('📰 อยู่ในช่วงข่าวแรง ±30 นาที — ราคากระชากได้ทั้งสองทาง');
-    if (!sy.long && d.lastHour) out.push('🕐 ใกล้ตลาดปิด — ระบบไม่เปิดไม้ใหม่');
+    if (!sy.long && d.lastHour) out.push('🕐 ใกล้ตลาดปิด — ระบบไม่เปิดรายการใหม่');
     if (n.stretched) out.push('📏 ราคายืดเกินขอบกรอบราคา (Bollinger) — มักย่อกลับก่อน อย่าไล่ราคา');
     if (n.unconf) { const c = CHARTSYS.CONFIRM[(d.score > 0 ? sy.buy : sy.sell || sy.buy).confirm]; if (c) out.push(`⏳ คะแนนถึงแล้ว แต่ ${c.name} ยังไม่ยืนยัน — รอ${c.wait}`); }
     if (s) { const x = side(n, s); if (x && !x.tested) out.push(`⚠️ ฝั่ง${s > 0 ? 'ซื้อ' : 'ขาย'}ของกรอบ ${nameOf(n.tf)} ${CHARTSYS.whyNo(x.c)}`);
-      if (x && x.risky) out.push(`${CHARTSYS.riskText(x.c)} — ถ้าเข้า ใช้ไม้เล็กกว่าปกติ`); }
+      if (x && x.risky) out.push(`${CHARTSYS.riskText(x.c)} — ถ้าเข้า ใช้ขนาดเล็กกว่าปกติ`); }
     return out;
   }
   function ansNow(n) {
     const h = holding(n); if (h) return h;
     const go = n.sides.find((x) => x.go);
-    if (go) return `${go.side > 0 ? '🟢' : '🔴'} <b>${go.risky ? 'มีสัญญาณ (เสี่ยง)' : 'ควรเข้า'} ${go.side > 0 ? 'Buy' : 'Sell'}</b> — กรอบ ${nameOf(n.tf)} ถึงจุดเข้า 100% (คะแนน ${signedScore(n.d.score)})<br>เข้า ~<b>${p2(n.price)}</b> · ${levelsTxt(go.c, n.price, go.side)}${go.risky ? `<br>${CHARTSYS.riskText(go.c)} — ถ้าเข้า ใช้ไม้เล็กกว่าปกติ` : ''}<br><small>ทดสอบย้อนหลังชนะ ${go.c.win}% · สัญญาณยืนยันเมื่อแท่งนี้ปิดแล้วคะแนนยังถึง</small>`;
+    if (go) return `${go.side > 0 ? '🟢' : '🔴'} <b>${go.risky ? 'มีสัญญาณ (เสี่ยง)' : 'ควรเข้า'} ${go.side > 0 ? 'Buy' : 'Sell'}</b> — กรอบ ${nameOf(n.tf)} ถึงจุดเข้า 100% (คะแนน ${signedScore(n.d.score)})<br>เข้า ~<b>${p2(n.price)}</b> · ${levelsTxt(go.c, n.price, go.side)}${go.risky ? `<br>${CHARTSYS.riskText(go.c)} — ถ้าเข้า ใช้ขนาดเล็กกว่าปกติ` : ''}<br><small>ทดสอบย้อนหลังชนะ ${go.c.win}% · สัญญาณยืนยันเมื่อแท่งนี้ปิดแล้วคะแนนยังถึง</small>`;
     const [b, s] = [side(n, 1), side(n, -1)], bl = blockers(n);
     const best = [b, s].filter((x) => x.tested).sort((a, c) => c.pct - a.pct)[0];
     let t = `⏸ <b>ยังไม่ควรเข้า</b> — กรอบ ${nameOf(n.tf)} (${dirTxt(n)}): Buy ${b.pct}% · Sell ${s.pct}% (ต้องถึง 100%)`;
@@ -217,7 +217,7 @@
     if (z.sell) out.push(`🚫 อย่า<b>ซื้อ</b>ใกล้ <b>${zTxt(z.sell)}</b> (โซนขาย/แนวต้านเหนือราคา) — ราคามักถูกกดลงตรงนั้น`);
     if (z.buy) out.push(`🚫 อย่า<b>ขาย</b>ใกล้ <b>${zTxt(z.buy)}</b> (โซนซื้อ/แนวรับใต้ราคา) — ราคามักเด้งขึ้นตรงนั้น`);
     if (n.env) out.push(`🚫 อย่าไล่ซื้อเหนือ <b>${p2(n.env.up)}</b> หรือไล่ขายใต้ <b>${p2(n.env.lo)}</b> (นอกกรอบราคา) — มักย่อกลับเข้ากรอบ`);
-    nextNews().slice(0, 3).forEach((x) => out.push(`🚫 อย่าเปิดไม้ช่วง <b>${hhmm(x.time - 30 * 60e3)}–${hhmm(x.time + 30 * 60e3)} น.</b> — ข่าว ${esc(x.title)}`));
+    nextNews().slice(0, 3).forEach((x) => out.push(`🚫 อย่าเปิดรายการช่วง <b>${hhmm(x.time - 30 * 60e3)}–${hhmm(x.time + 30 * 60e3)} น.</b> — ข่าว ${esc(x.title)}`));
     const [b, s] = [side(n, 1), side(n, -1)];
     if (!b.tested) out.push(`🚫 ฝั่งซื้อกรอบ ${nameOf(n.tf)} ${b.off ? 'ปิดจุดเข้าแล้ว — ใช้กรอบ 1 ชม. / 5 ชม. / 1 วัน' : 'ทดสอบไม่ผ่าน'}`);
     if (b.risky) out.push(`⚠️ ฝั่งซื้อกรอบ ${nameOf(n.tf)} เป็นสัญญาณเสี่ยง (ช่วงทดสอบล่าสุดไม่กำไร)`);
@@ -248,11 +248,11 @@
     const sy = sysOf(n), fin = n.live.filter((r) => SIG.isFinal(r));
     const row = (name, c, k) => {
       const mine = fin.filter((r) => (r.side === 'SELL') === (k === 'SELL')), w = mine.filter((r) => r.pnl > 0).length, pnl = mine.reduce((a, r) => a + (r.pnl || 0), 0);
-      const real = mine.length ? `ผลจริง ${mine.length} ไม้ ชนะ ${w} (${Math.round((w / mine.length) * 100)}%) ${pnl >= 0 ? '+' : '−'}$${Math.abs(SIG.round(pnl))}` : 'ผลจริง: ยังไม่มีไม้';
+      const real = mine.length ? `ผลจริง ${mine.length} รายการ ชนะ ${w} (${Math.round((w / mine.length) * 100)}%) ${pnl >= 0 ? '+' : '−'}$${Math.abs(SIG.round(pnl))}` : 'ผลจริง: ยังไม่มีรายการ';
       if (!c) return `• ${name}: ❌ ทดสอบขาดทุน — ไม่ให้สัญญาณ${sy.sellQ ? ` (${sy.sellQ.map((v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v)}`).join(' / ')})` : ''}`;
       return `• ${name}${c.off ? ` ⏸ ปิดจุดเข้า (${c.off})` : c.risky ? ' ⚠️ เสี่ยง' : ''}: ทดสอบ ${sy.span} ชนะ <b>${c.win}%</b> · 4 ช่วง ${c.q.map((v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v)}`).join(' / ')}<br>&nbsp;&nbsp;${real}`;
     };
-    return `<b>ความแม่นยำ · กรอบ ${nameOf(n.tf)}</b><br>${row('🟢 Buy', sy.buy, 'BUY')}<br>${row('🔴 Sell', sy.sell, 'SELL')}<br><small>ทดสอบหลังหักสเปรด $0.4 · ผลจริง = ไม้ที่ระบบบันทึกตั้งแต่เริ่มบันทึก (ต่อทอง 1 ออนซ์) · ไม้น้อยยังสรุปไม่ได้</small>`;
+    return `<b>ความแม่นยำ · กรอบ ${nameOf(n.tf)}</b><br>${row('🟢 Buy', sy.buy, 'BUY')}<br>${row('🔴 Sell', sy.sell, 'SELL')}<br><small>ทดสอบหลังหักสเปรด $0.4 · ผลจริง = รายการที่ระบบบันทึกตั้งแต่เริ่มบันทึก (ต่อทอง 1 ออนซ์) · รายการน้อยยังสรุปไม่ได้</small>`;
   }
   function ansPrice(n, px, s) {
     const a = atrOf(n);
@@ -304,7 +304,7 @@
       const near = ok.flatMap(({ n }) => n.open || n.br ? [] : n.sides.filter((x) => x.tested).map((x) => ({ n, x }))).sort((a, b) => b.x.pct - a.x.pct)[0];
       rec = `⏸ <b>ยังไม่มีกรอบไหนถึงจุดเข้า</b>${near ? ` — ใกล้สุดคือ ${near.x.side > 0 ? 'Buy' : 'Sell'} กรอบ ${nameOf(near.n.tf)} (${near.x.pct}%, ขาดอีก ${need(near.n, near.x)} คะแนน)` : ''}`;
     }
-    if (hold.length) rec += `<br>📌 ถือไม้อยู่: ${hold.map(({ n }) => `กรอบ ${nameOf(n.tf)} ${n.open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}`).join(' · ')}`;
+    if (hold.length) rec += `<br>📌 ถือสถานะอยู่: ${hold.map(({ n }) => `กรอบ ${nameOf(n.tf)} ${n.open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}`).join(' · ')}`;
     const ups = ok.filter(({ n }) => (window.CZ_FDIR ? CZ_FDIR(n.d) : 0) > 0).length, downs = ok.filter(({ n }) => (window.CZ_FDIR ? CZ_FDIR(n.d) : 0) < 0).length;
     const mood = ups === ok.length ? 'ทุกกรอบชี้ขึ้น — ฝั่งซื้อได้เปรียบ' : downs === ok.length ? 'ทุกกรอบชี้ลง — ฝั่งขายได้เปรียบ (Sell มีแค่กรอบ 5 นาที — ⚠️ สัญญาณเสี่ยง)' : 'กรอบเล็กกับกรอบใหญ่ไม่ตรงกัน — ระวังสวนทาง รอให้ตรงกันก่อน';
     return `<b>สรุป 4 กรอบ</b> (ราคา ${p2(nowPrice())})<br>${rows.join('<br>')}<br>${rec}<br>🧭 ${mood}<br><small>% = ความพร้อมเข้า (100% = ถึงจุดเข้า) · ⚠️ = ฝั่งที่ทดสอบไม่ผ่าน ไม่ให้สัญญาณ</small>`;
@@ -333,8 +333,8 @@
   }
   function ansTfs() {
     const t = Date.now(), live = ((state.chartSig && state.chartSig.trades) || []).filter((r) => !SIG.isFinal(r) && (r.expiresAt || Infinity) > t);
-    if (!live.length) return 'ตอนนี้ไม่มีกรอบเวลาไหนถือไม้อยู่ — ทุกกรอบรอสัญญาณ (ถาม “สรุป 4 กรอบ” เพื่อดูว่ากรอบไหนใกล้เข้า)';
-    return `<b>ไม้ที่ระบบถืออยู่ (ทุกกรอบ)</b><br>${live.map((r) => `• กรอบ ${nameOf(r.tf)}: ${r.side === 'SELL' ? '🔴 ขาย' : '🟢 ซื้อ'} ที่ ${p2(r.entry)} · SL ${p2(r.hit ? r.entry : r.sl)} · TP ${r.tps.map(p2).join(' / ')}`).join('<br>')}`;
+    if (!live.length) return 'ตอนนี้ไม่มีกรอบเวลาไหนถือสถานะอยู่ — ทุกกรอบรอสัญญาณ (ถาม “สรุป 4 กรอบ” เพื่อดูว่ากรอบไหนใกล้เข้า)';
+    return `<b>รายการที่ระบบถืออยู่ (ทุกกรอบ)</b><br>${live.map((r) => `• กรอบ ${nameOf(r.tf)}: ${r.side === 'SELL' ? '🔴 ขาย' : '🟢 ซื้อ'} ที่ ${p2(r.entry)} · SL ${p2(r.hit ? r.entry : r.sl)} · TP ${r.tps.map(p2).join(' / ')}`).join('<br>')}`;
   }
 
   // ---------- understanding the question ----------
@@ -361,7 +361,7 @@
     if (/ไม่ควร|ห้าม|อันตราย|หลีกเลี่ยง|อย่า|ไม่เข้า|เลี่ยง/.test(s)) return { k: 'avoid', tf };
     if (/\bsl\b|\btp\b|ตัดขาดทุน|ทำกำไร|เป้า|stop|take ?profit/.test(s)) return { k: 'sltp', tf };
     if (/แนวรับ|แนวต้าน|โซน|support|resist/.test(s)) return { k: 'levels', tf };
-    if (/ถือไม้|ไม้ที่เปิด|ไม้ที่ถือ/.test(s)) return { k: 'tfs' };
+    if (/ถือไม้|ไม้ที่เปิด|ไม้ที่ถือ|ถือสถานะ|รายการที่ถือ|รายการที่เปิด/.test(s)) return { k: 'tfs' };
     if (sell && !buy) return { k: 'sell', tf };
     if (buy && !sell) return { k: 'buy', tf };
     return { k: 'now', tf };

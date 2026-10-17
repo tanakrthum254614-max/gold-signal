@@ -193,7 +193,7 @@
           <div class="ns-count"><b class="mono" id="nsLeft" data-t="${n.t}">${leftText(n.t)}</b><small>${dayTime(n.t)} น.</small></div></div>
         ${rule ? `<p class="nc-rule">🪙 ${rule}</p>` : ''}
         <div class="ns-next-items">${n.items.map((o) => itemLine(o, false)).join('')}</div>
-        <p class="ns-warn">⚠️ ราคาทองอาจวิ่งแรงในไม่กี่นาที · สัญญาณกรอบ ${window.CHARTSYS ? Object.entries(CHARTSYS.SYS).filter(([, s]) => s.news).map(([k]) => TF_LABEL[k]).join(' และ ') : '5 นาที และ 1 ชม.'} งดเปิดไม้ใหม่ ±30 นาทีรอบข่าวนี้</p>`;
+        <p class="ns-warn">⚠️ ราคาทองอาจวิ่งแรงในไม่กี่นาที · สัญญาณกรอบ ${window.CHARTSYS ? Object.entries(CHARTSYS.SYS).filter(([, s]) => s.news).map(([k]) => TF_LABEL[k]).join(' และ ') : '5 นาที และ 1 ชม.'} งดเปิดรายการใหม่ ±30 นาทีรอบข่าวนี้</p>`;
     } else $('nsNext').innerHTML = ns.at ? '<p class="muted">ไม่มีข่าวแรงของสหรัฐใน 8 วันข้างหน้า</p>' : '<p class="muted">กำลังโหลดปฏิทินข่าว…</p>';
     // 2) the coming days: one card per release time, grouped by day
     const days = new Map();

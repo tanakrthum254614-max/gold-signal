@@ -124,10 +124,10 @@
   function reasons(dec) {
     const rule = dec.rule || RULE;
     const lines = [`แนวโน้ม ${dec.frames.map((f) => `${f.label} ${TREND_TH[f.trend]}`).join(' · ')} (คะแนน ${dec.score > 0 ? '+' : ''}${dec.score} จาก ±6)`];
-    if (dec.stale && !dec.open) lines.push(`ตลาดปิดอยู่ (เปิด ${SIG.mt(dec.slot, '07:00')}–${SIG.mt(dec.slot, '03:00')} น.) — ไม่เปิดไม้ใหม่`);
-    else if (dec.stale) lines.push('ข้อมูลกราฟล่าช้า — ไม่เปิดไม้ใหม่จนกว่าข้อมูลจะกลับมา');
-    else if (dec.lastHour) lines.push(`ใกล้ปิดตลาด ${SIG.mt(dec.slot, '03:00')} น. — ไม่เปิดไม้ใหม่ในชั่วโมงสุดท้าย`);
-    else if (dec.news) lines.push(`📰 ช่วงข่าวแรง: ${dec.news.title} — ไม่เปิดไม้ใหม่ ±${RULE.newsMin} นาทีรอบข่าว`);
+    if (dec.stale && !dec.open) lines.push(`ตลาดปิดอยู่ (เปิด ${SIG.mt(dec.slot, '07:00')}–${SIG.mt(dec.slot, '03:00')} น.) — ไม่เปิดรายการใหม่`);
+    else if (dec.stale) lines.push('ข้อมูลกราฟล่าช้า — ไม่เปิดรายการใหม่จนกว่าข้อมูลจะกลับมา');
+    else if (dec.lastHour) lines.push(`ใกล้ปิดตลาด ${SIG.mt(dec.slot, '03:00')} น. — ไม่เปิดรายการใหม่ในชั่วโมงสุดท้าย`);
+    else if (dec.news) lines.push(`📰 ช่วงข่าวแรง: ${dec.news.title} — ไม่เปิดรายการใหม่ ±${RULE.newsMin} นาทีรอบข่าว`);
     else if (dec.stretched) lines.push(`ราคาทะลุขอบ${dec.score > 0 ? 'บน' : 'ล่าง'} Bollinger ของกรอบ ${dec.frames[0].label} (ยืดเกินไป) — ไม่ไล่${dec.score > 0 ? 'ซื้อ' : 'ขาย'} รอราคาย่อกลับเข้ากรอบก่อน`);
     else if (dec.sellSkipped) lines.push('แนวโน้มลงชัด แต่ระบบเข้าเฉพาะฝั่งซื้อ (สถิติ 2 ปี ฝั่งขายชนะแค่ ~50%) — แนะนำรอ');
     else if (!dec.dir) lines.push(`ต้องได้คะแนน ${rule.sides === 'buy' ? '+' : '±'}${rule.threshold} ขึ้นไปถึงจะเข้า (ทั้ง 3 ช่วงเวลาต้องชี้ทางเดียวกันชัดเจน)`);
@@ -149,7 +149,7 @@
   function verdict(o) {
     if (!o) return { key: 'unknown', th: '❔ ยังไม่มีสถิติพอ' };
     if (o.winRate >= 57) return { key: 'good', th: '✅ ควรเข้า' };
-    if (o.winRate >= 53) return { key: 'ok', th: '🟡 เข้าได้ แต่ลดขนาดไม้' };
+    if (o.winRate >= 53) return { key: 'ok', th: '🟡 เข้าได้ แต่ลดขนาดการซื้อขาย' };
     return { key: 'bad', th: '❌ ไม่ควรเข้า' };
   }
 
@@ -189,7 +189,7 @@
     const done = trades.filter((t) => (t.status === 'win' || t.status === 'loss') && t.createdAt >= since);
     const P = RULE.pause;
     const last = done.slice(-P.streak);
-    if (last.length === P.streak && last.every((t) => t.status === 'loss')) return { reason: `แพ้ติดกัน ${P.streak} ไม้` };
+    if (last.length === P.streak && last.every((t) => t.status === 'loss')) return { reason: `ขาดทุนติดต่อกัน ${P.streak} รายการ` };
     const week = done.filter((t) => t.createdAt >= weekStart(now)).reduce((a, t) => a + t.pnl - spread, 0);
     if (week <= -P.weekLoss) return { reason: `ขาดทุนสัปดาห์นี้ −$${Math.abs(SIG.round(week))}/ออนซ์ (เกินเพดาน $${P.weekLoss})` };
     return null;

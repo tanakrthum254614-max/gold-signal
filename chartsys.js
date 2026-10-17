@@ -29,7 +29,7 @@
     // 2026, research/indicators/newstest.js): it helps on 5m (BUY +$407 → +$554, 4/4 periods; SELL +$353 → +$451) and
     // 1h (+$774 → +$792), but hurts 15m (+$465 → +$377) and 30m (+$957 → +$828) — so only 5m and 1h skip the news.
     '5m': { news: true, frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', H, 60, '1 ชม.']], span: '2 ปี',
-      buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 54, q: [331, 551, 104, -433] }, sell: { risky: 'ผลจริงชนะต่ำกว่าทดสอบมาก (14 ไม้ ชนะ 4)', th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T09:54:00+07:00', win: 53, q: [39, 84, 156, 172] },
+      buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 54, q: [331, 551, 104, -433] }, sell: { risky: 'ผลจริงชนะต่ำกว่าทดสอบมาก (14 รายการ ชนะ 4)', th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T09:54:00+07:00', win: 53, q: [39, 84, 156, 172] },
       every: -1480 }, // taking every small arrow one at a time, SL / TP1 $15
     '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดกำไรน้อยมาก', th: 6, tp1: true, mult: 1.5, confirm: 'ema921', since: '2026-10-09T09:40:00+07:00', win: 56, q: [261, 72, 84, 48] }, sellQ: [115, -233, -72, 204] },
     '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 57, q: [264, 462, 239, -7] }, sellQ: [129, -174, -58, 113] },
@@ -38,13 +38,13 @@
       // SELL (17 Oct 2026, user: "ทำมาหมดเลย" — no tested Sell left for falling markets): selltest.js 12 Oct best 1h Sell,
       // score −4 + Bollinger reversal, SL $30, TP 30/40/60 — profitable in all 4 periods but one of ~680 tried, so ⚠️ risky
       // (shown + recorded, no LINE) until 20 live trades say otherwise. Old score-only Sell: −62 / 4 / −112 / 8. Replayed with the site code 17 Oct: 74 trades, 65%, +$593.
-      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 ไม้', th: 4, tp1: false, mult: 2, confirm: 'bbrev', since: '2026-10-17T12:00:00+07:00', win: 65, q: [63, 98, 208, 224] } },
+      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 4, tp1: false, mult: 2, confirm: 'bbrev', since: '2026-10-17T12:00:00+07:00', win: 65, q: [63, 98, 208, 224] } },
     '5h': { frames: [['h5', 5 * H, 60, '5 ชม.'], ['d1', DAY, 60, '1 วัน']], span: '2 ปี', long: true, hold: 5 * DAY,
       buy: { th: 3, tp1: false, mult: 4, confirm: 'roc12', since: '2026-10-09T09:40:00+07:00', win: 65, q: [483, 511, 635, 205] }, sellQ: [-72, -179, -6, 105] },
     '1d': { frames: [['d1', DAY, 60, '1 วัน'], ['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '5 ปี', long: true, hold: 20 * DAY,
       buy: { th: 3, tp1: true, mult: 8, win: 64, q: [128, 218, 1243, 966] }, sellQ: [92, -120, 0, 12] },
     '1w': { frames: [['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '4 ปี', long: true, hold: 84 * DAY, few: 23,
-      buy: { risky: 'ไม้ทดสอบน้อย และผลช่วงล่าสุดไม่สม่ำเสมอ', th: 1, tp1: true, mult: 20, win: 70, q: [196, 737, 1167, 296] } },
+      buy: { risky: 'รายการทดสอบน้อย และผลช่วงล่าสุดไม่สม่ำเสมอ', th: 1, tp1: true, mult: 20, win: 70, q: [196, 737, 1167, 296] } },
   };
   const NONE = { ...INTRA.RULE, threshold: 99, sides: 'both', noChase: false }; // score only; entries decided by dirOf
   // TP $ before × mult: TP1 only, or TP $15/20/30 — the targets the tests used (indlab / monthly / qualtest). Not
@@ -126,12 +126,12 @@
       streak = t.status === 'loss' ? streak + 1 : 0;
       if (streak >= 5) { const at = t.exitAt || t.createdAt; until = sys.long ? at + 30 * DAY : INTRA.nextWeek(at); streak = 0; }
     }
-    if (now < until) return { why: 'แพ้ติดกัน 5 ไม้', until };
+    if (now < until) return { why: 'ขาดทุนติดต่อกัน 5 รายการ', until };
     const last = done.slice(-20);
     if (last.length === 20) {
       const win = last.filter((t) => t.status === 'win').length * 5;
       const exp = Math.round(last.reduce((a, t) => a + ((t.side === 'SELL' && sys.sell) || sys.buy).win, 0) / 20);
-      if (win < exp - 12) return { why: `ชนะ ${win}% ใน 20 ไม้ล่าสุด (ทดสอบ ${exp}%)`, until: null };
+      if (win < exp - 12) return { why: `ชนะ ${win}% ใน 20 รายการล่าสุด (ทดสอบ ${exp}%)`, until: null };
     }
     return null;
   }

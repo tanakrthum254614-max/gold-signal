@@ -67,7 +67,7 @@
     const device = ios ? 'iPhone/iPad' : /android/i.test(ua) ? 'Android' : /mac/i.test(ua) ? 'Mac' : /windows/i.test(ua) ? 'Windows' : 'อุปกรณ์อื่น';
     await pushApi('POST', { endpoint: json.endpoint, keys: json.keys, device }); // the server keeps 5 devices per holder
     store.set('gs-push', 'on');
-    r.showNotification('🔔 เปิดแจ้งเตือนแล้ว', { body: 'จะเด้งเตือนเมื่อมีจังหวะ ✅ เข้าไม้ ถึง TP โดน SL และข่าวแรง — เหมือนใน LINE', icon: '/icons/icon-192.png', badge: '/icons/badge-96.png', tag: 'gs-test' });
+    r.showNotification('🔔 เปิดแจ้งเตือนแล้ว', { body: 'จะเด้งเตือนเมื่อมีจังหวะ ✅ เปิดรายการ ถึง TP โดน SL และข่าวแรง — เหมือนใน LINE', icon: '/icons/icon-192.png', badge: '/icons/badge-96.png', tag: 'gs-test' });
     render();
   }
   async function disablePush() {
@@ -112,7 +112,7 @@
     else {
       const sub = await currentSub();
       const on = !!sub && (await serverSubs()).some((s) => s.endpoint === sub.endpoint);
-      state = on ? ['✅ เปิดอยู่ — เด้งเตือนทุกครั้งที่ LINE ส่ง (ไม่กินโควตา LINE)', 'off'] : ['เด้งเตือนบนเครื่องนี้เมื่อมีจังหวะ ✅ เข้าไม้ ถึง TP โดน SL และข่าวแรง', 'on'];
+      state = on ? ['✅ เปิดอยู่ — เด้งเตือนทุกครั้งที่ LINE ส่ง (ไม่กินโควตา LINE)', 'off'] : ['เด้งเตือนบนเครื่องนี้เมื่อมีจังหวะ ✅ เปิดรายการ ถึง TP โดน SL และข่าวแรง', 'on'];
       $('pwaTest').hidden = !on;
     }
     tx.textContent = state[0];

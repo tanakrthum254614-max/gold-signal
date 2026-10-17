@@ -98,7 +98,7 @@ async function tick() {
   const l = { broker: QS['mt5:gold'], ea: QS['ea'] };
   const parts = [];
   if (l.broker) parts.push(`<span class="tk"><b>Exness ${esc(l.broker.symbol)}</b>${l.broker.bid.toFixed(2)} / ${l.broker.ask.toFixed(2)} <small class="muted">${l.broker.open ? '' : 'ตลาดปิด · '}${ago(l.broker.t)}</small></span>`);
-  if (l.ea) parts.push(`<span class="tk"><b>EA</b><span class="${l.ea.phase === 'blocked' ? 'down' : 'up'}">${esc(l.ea.phase)}</span> · equity ${usd(l.ea.equity)}${l.ea.position ? ' · มีไม้เปิด' : ''}</span>`);
+  if (l.ea) parts.push(`<span class="tk"><b>EA</b><span class="${l.ea.phase === 'blocked' ? 'down' : 'up'}">${esc(l.ea.phase)}</span> · equity ${usd(l.ea.equity)}${l.ea.position ? ' · มีรายการเปิด' : ''}</span>`);
   extra = parts.join('');
 }
 

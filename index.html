@@ -32,9 +32,9 @@
     })();
   </script>
   <meta name="theme-color" content="#f3f5f9">
-  <title>Gold Signal · สัญญาณเทรดทองคำ</title>
-  <meta name="description" content="สัญญาณเทรดทองคำ XAU/USD กราฟทุกกรอบเวลา จุดเข้า Buy/Sell ทุกกรอบเวลา (กรอบที่ทดสอบผ่านทุกช่วง: 1 ชม. / 5 ชม. / 1 วัน) พร้อม SL TP และผลจริงทุกไม้ และสถิติข่าวเศรษฐกิจสหรัฐที่มีผลกับทอง">
-  <meta property="og:title" content="Gold Signal · สัญญาณเทรดทองคำ">
+  <title>Gold Signal · สัญญาณซื้อขายทองคำ</title>
+  <meta name="description" content="สัญญาณซื้อขายทองคำ XAU/USD กราฟทุกกรอบเวลา จุดเข้า Buy/Sell ทุกกรอบเวลา (กรอบที่ทดสอบผ่านทุกช่วง: 1 ชม. / 5 ชม. / 1 วัน) พร้อม SL TP และผลจริงทุกรายการ และสถิติข่าวเศรษฐกิจสหรัฐที่มีผลกับทอง">
+  <meta property="og:title" content="Gold Signal · สัญญาณซื้อขายทองคำ">
   <meta property="og:description" content="สัญญาณ Buy/Sell ทองคำทุกกรอบเวลา · จุดเข้า / SL / TP ที่ทดสอบย้อนหลังแล้ว · สถิติข่าวสหรัฐที่ทำให้ทองวิ่ง">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -107,7 +107,7 @@
     <h1 class="sp-title" aria-label="Gold Signal"><span style="--i:0">G</span><span style="--i:1">o</span><span style="--i:2">l</span><span style="--i:3">d</span><span class="sp" style="--i:4"> </span><span style="--i:5">S</span><span style="--i:6">i</span><span style="--i:7">g</span><span style="--i:8">n</span><span style="--i:9">a</span><span style="--i:10">l</span></h1>
     <!-- Short and balanced (user, 12 Oct: long step sentences were "เยอะเกินไป", logo + % alone "น้อยไป"): a short tagline,
          the %, and three chips that tick off as the price, the chart data and the signals arrive -->
-    <p class="sp-sub">สัญญาณเทรดทองคำ · เรียลไทม์</p>
+    <p class="sp-sub">สัญญาณซื้อขายทองคำ · เรียลไทม์</p>
     <div class="sp-pct mono" id="splashPct" role="status" aria-label="กำลังโหลด">0%</div>
     <ul class="sp-chips" id="splashChips" aria-hidden="true"><li data-at="60">ราคาสด</li><li data-at="80">ข้อมูลกราฟ</li><li data-at="100">สัญญาณ</li></ul>
   </div>
@@ -116,7 +116,7 @@
   <section id="login" class="login" hidden>
     <div class="login-intro">
       <div class="brand big"><img class="logo" src="logo.svg" alt=""><h1>Gold Signal</h1></div>
-      <h2>อยากเทรดทองคำ<br>แต่ยังไม่มั่นใจ?</h2>
+      <h2>อยากซื้อขายทองคำ<br>แต่ยังไม่มั่นใจ?</h2>
       <p class="login-lead">ราคาทองสดทุกวินาที · สัญญาณ Buy/Sell ทุกกรอบเวลาที่ทดสอบย้อนหลังแล้ว · สถิติข่าวเศรษฐกิจสหรัฐ</p>
       <ul>
         <li><span>🎯</span>บอกชัด: จุดเข้า · ตัดขาดทุน · เป้าหมาย</li>
@@ -149,7 +149,7 @@
       <a href="#stats" data-tab="stats"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span>ข่าวสหรัฐ</a>
       <a href="#chart" data-tab="chart"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M9 5v4"/><rect x="7" y="9" width="4" height="6" rx="1"/><path d="M9 15v2"/><path d="M17 3v2"/><rect x="15" y="5" width="4" height="8" rx="1"/><path d="M17 13v3"/></svg></span>กราฟ</a>
       <a href="#zframes" data-tab="zframes"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span>หุ้นสหรัฐ</a>
-      <a href="#journal" data-tab="journal"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>สมุดเทรด</a>
+      <a href="#journal" data-tab="journal"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>บันทึกการซื้อขาย</a>
       <a href="#account" data-tab="account"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.66V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.66"/></svg></span>บัญชี</a>
     </nav>
 
@@ -233,7 +233,7 @@
         <p class="muted small dn-note adv" id="dnNote"></p>
 
         <!-- 📒 Real results of every trade on the timeframes with entries (main.js renderRecord, 16 Oct 2026) -->
-        <h3 class="sec-title">📒 ผลจริงทุกไม้ · กรอบที่ทดสอบผ่านทุกช่วง</h3>
+        <h3 class="sec-title">📒 ผลจริงทุกรายการ · กรอบที่ทดสอบผ่านทุกช่วง</h3>
         <div class="card rec" id="recCard"><p class="muted">กำลังโหลดผลจริง…</p></div>
 
         <!-- US news + today's trades card hidden (user, 16 Oct 2026, screenshot: "เอาออก"); main.js still fills it, news pause still applies -->
@@ -253,7 +253,7 @@
             <div class="sig-side" id="sgSide">กำลังโหลด…</div>
             <div class="sig-status" id="sgStatus"></div>
             <p class="sig-main" id="sgMain"></p>
-            <p class="adv-note" id="sgAdv" hidden>⚠️ <b>ข้อมูลประกอบ ไม่ใช่สัญญาณให้เข้าไม้</b> — สูตรรายวันทดสอบย้อนหลัง 1 ปีแล้วขาดทุนหลังหักสเปรด จึงใช้ <b>ระบบหลัก 1 ชม.</b> ด้านบนเป็นหลัก · ระบบยังบันทึกผลสมมติไว้ติดตามด้วยตัวเลขด้านล่าง</p>
+            <p class="adv-note" id="sgAdv" hidden>⚠️ <b>ข้อมูลประกอบ ไม่ใช่สัญญาณให้เปิดรายการ</b> — สูตรรายวันทดสอบย้อนหลัง 1 ปีแล้วขาดทุนหลังหักสเปรด จึงใช้ <b>ระบบหลัก 1 ชม.</b> ด้านบนเป็นหลัก · ระบบยังบันทึกผลสมมติไว้ติดตามด้วยตัวเลขด้านล่าง</p>
 
             <div class="sig-nums">
               <div class="n entry"><label>🎯 จุดเข้า</label><b class="mono" id="sgEntry">—</b></div>
@@ -344,7 +344,7 @@
       <section id="tab-chart" class="tab" hidden>
         <div class="seg" id="chartMode">
           <button data-mode="simple">แบบง่าย</button>
-          <button data-mode="pro">แบบนักเทรด</button>
+          <button data-mode="pro">แบบละเอียด</button>
         </div>
 
         <div id="chartSimple">
@@ -431,7 +431,7 @@
 
     <section class="card wide-card">
       <h3>ภาพรวมทุกกรอบเวลา <span class="muted small">— ข้อมูลจาก investing.com · <span id="techTime">—</span></span></h3>
-      <p class="hint">กรอบเวลาสั้น (นาที) เหมาะกับเทรดเร็ว · กรอบเวลายาว (วัน/สัปดาห์) บอกแนวโน้มใหญ่ ถ้าทุกกรอบไปทางเดียวกัน สัญญาณจะน่าเชื่อถือขึ้น</p>
+      <p class="hint">กรอบเวลาสั้น (นาที) เหมาะกับซื้อขายเร็ว · กรอบเวลายาว (วัน/สัปดาห์) บอกแนวโน้มใหญ่ ถ้าทุกกรอบไปทางเดียวกัน สัญญาณจะน่าเชื่อถือขึ้น</p>
       <div class="table-scroll">
         <table class="mtf" id="mtf">
           <thead><tr><th>กรอบเวลา</th><th>สรุปรวม</th><th>เส้นค่าเฉลี่ย</th><th>ตัวชี้วัด</th></tr></thead>
@@ -443,7 +443,7 @@
     <section class="layout2">
       <section class="card">
         <h3>ตัวชี้วัดทางเทคนิค · <span class="tfName">—</span> <span class="tag" id="indSum"></span></h3>
-        <p class="hint">เครื่องมือ 12 ตัวที่นักเทรดใช้ แต่ละตัวโหวตว่า “ซื้อ” หรือ “ขาย” — บรรทัดล่างคือความหมายแบบภาษาคน</p>
+        <p class="hint">เครื่องมือ 12 ตัวที่นักลงทุนใช้ แต่ละตัวโหวตว่า “ซื้อ” หรือ “ขาย” — บรรทัดล่างคือความหมายแบบภาษาคน</p>
         <table class="ind" id="ind">
           <thead><tr><th>ตัวชี้วัด / แปลว่า</th><th>ค่า</th><th>สัญญาณ</th></tr></thead>
           <tbody></tbody>
@@ -462,7 +462,7 @@
         </section>
         <!-- Lot calculator (the chart's 🧮 button fills it and scrolls here) -->
         <section class="card tp calc-card" id="calcCard">
-          <h3>🧮 คำนวณขนาดไม้ก่อนเข้า</h3>
+          <h3>🧮 คำนวณขนาดการซื้อขายก่อนเข้า</h3>
             <div class="tp-calc" id="tpCalc">
               <div class="tp-side"><button type="button" class="on" data-side="1">🟢 ซื้อ</button><button type="button" data-side="-1">🔴 ขาย</button></div>
               <label>จุดเข้า<input id="cEntry" type="number" step="0.01" inputmode="decimal"></label>
@@ -471,7 +471,7 @@
               <button type="button" class="btn" id="cNow">ใช้ราคาตอนนี้</button>
               <div class="tp-calc-out" id="cOut"></div>
             </div>
-            <p class="muted small tp-note">⚠️ จุดเข้าที่ผ่านการทดสอบย้อนหลังคือสัญญาณบนกราฟด้านบน (กดปุ่ม 🧮 ในกล่องเหนือกราฟเพื่อใส่ค่าให้) ตั้ง SL ทุกครั้ง และไม่เสี่ยงเกิน 1–2% ของทุนต่อไม้</p>
+            <p class="muted small tp-note">⚠️ จุดเข้าที่ผ่านการทดสอบย้อนหลังคือสัญญาณบนกราฟด้านบน (กดปุ่ม 🧮 ในกล่องเหนือกราฟเพื่อใส่ค่าให้) ตั้ง SL ทุกครั้ง และไม่เสี่ยงเกิน 1–2% ของทุนต่อรายการ</p>
         </section>
       </div>
     </section>
@@ -481,18 +481,18 @@
       </section>
 
       <section id="tab-zframes" class="tab" hidden>
-        <iframe id="zframesFrame" class="zframes-shell" title="หุ้นสหรัฐ — Nasdaq 100 · S&amp;P 500 · หุ้นปันผล" data-src="/zframes/index.html?d=ndx&amp;embed=1&amp;v=202610180100"></iframe>
+        <iframe id="zframesFrame" class="zframes-shell" title="หุ้นสหรัฐ — Nasdaq 100 · S&amp;P 500 · หุ้นปันผล" data-src="/zframes/index.html?d=ndx&amp;embed=1&amp;v=202610180200"></iframe>
       </section>
 
       <!-- 📓 Private trade journal (journal.js ← api/journal.mjs) — only the owner can read it -->
       <section id="tab-journal" class="tab" hidden>
         <section class="card jr-head">
-          <div class="jr-title"><h3>📓 สมุดบันทึกเทรดของฉัน</h3><button class="btn gold" type="button" id="jrCoach">🤖 ให้พี่โค้ชดูสมุดของฉัน</button></div>
-          <p class="hint">เห็นได้คนเดียว (แอดมินก็ไม่เห็น) · ใช้ให้โค้ช AI ดูนิสัยการเทรดของคุณ · ดาวน์โหลดหรือลบทั้งหมดได้ทุกเมื่อ</p>
+          <div class="jr-title"><h3>📓 สมุดบันทึกซื้อขายของฉัน</h3><button class="btn gold" type="button" id="jrCoach">🤖 ให้พี่โค้ชดูสมุดของฉัน</button></div>
+          <p class="hint">เห็นได้คนเดียว (แอดมินก็ไม่เห็น) · ใช้ให้โค้ช AI ดูนิสัยการซื้อขายของคุณ · ดาวน์โหลดหรือลบทั้งหมดได้ทุกเมื่อ</p>
           <div id="jrSum"></div>
         </section>
         <section class="card">
-          <div class="jr-title"><h3>✍️ บันทึกไม้</h3><button class="btn" type="button" id="jrFromSig">🎯 เติมจากสัญญาณตอนนี้</button></div>
+          <div class="jr-title"><h3>✍️ บันทึกรายการ</h3><button class="btn" type="button" id="jrFromSig">🎯 เติมจากสัญญาณตอนนี้</button></div>
           <form class="jr-form" id="jrForm" autocomplete="off">
             <label>เวลาเข้า<input name="at" type="datetime-local"></label>
             <label>ฝั่ง<select name="side"><option value="BUY">Buy</option><option value="SELL">Sell</option></select></label>
@@ -501,17 +501,17 @@
             <label>SL<input name="sl" type="number" step="0.01" min="0"></label>
             <label>TP<input name="tp" type="number" step="0.01" min="0"></label>
             <label>ราคาออก <small>(ว่าง = ยังถือ)</small><input name="exit" type="number" step="0.01" min="0"></label>
-            <label>ขนาดไม้ (lot)<input name="lots" type="number" step="0.01" min="0.01" max="100" placeholder="0.01"></label>
+            <label>ขนาดการซื้อขาย (lot)<input name="lots" type="number" step="0.01" min="0.01" max="100" placeholder="0.01"></label>
             <label>ผลจริง USD <small>(ว่าง = คิดให้)</small><input name="result" type="number" step="0.01"></label>
             <label>อารมณ์ตอนเข้า<select name="mood"><option value="">—</option><option value="calm">😌 สงบ</option><option value="fear">😨 กลัว</option><option value="greed">🤑 โลภ</option><option value="revenge">😤 อยากเอาคืน</option><option value="tired">😵 เหนื่อย</option><option value="fomo">🏃 กลัวตกรถ</option></select></label>
             <label class="jr-check"><input name="system" type="checkbox"> เข้าตามสัญญาณ Gold Signal</label>
             <label class="jr-wide">โน้ต<textarea name="note" rows="2" maxlength="1000" placeholder="ทำไมถึงเข้า เห็นอะไรบนกราฟ"></textarea></label>
             <label class="jr-wide">บทเรียน<textarea name="lesson" rows="2" maxlength="500" placeholder="ครั้งหน้าจะทำอะไรต่างไป"></textarea></label>
-            <div class="jr-wide jr-btns"><button class="btn gold" type="submit" id="jrSave">บันทึกไม้นี้</button><button class="btn" type="button" id="jrCancel" hidden>ยกเลิกแก้ไข</button></div>
+            <div class="jr-wide jr-btns"><button class="btn gold" type="submit" id="jrSave">บันทึกรายการนี้</button><button class="btn" type="button" id="jrCancel" hidden>ยกเลิกแก้ไข</button></div>
           </form>
         </section>
         <section class="card">
-          <div class="jr-title"><h3>📋 ไม้ของฉัน</h3><span class="jr-tools"><a class="btn act" href="/api/journal?format=csv" download>⬇️ CSV</a><button class="btn act danger" type="button" id="jrWipe">ลบทั้งหมด</button></span></div>
+          <div class="jr-title"><h3>📋 รายการของฉัน</h3><span class="jr-tools"><a class="btn act" href="/api/journal?format=csv" download>⬇️ CSV</a><button class="btn act danger" type="button" id="jrWipe">ลบทั้งหมด</button></span></div>
           <ul class="jr-list" id="jrList"><li class="muted center">กำลังโหลด…</li></ul>
         </section>
       </section>
@@ -570,13 +570,13 @@
         </section>
 
         <section class="card">
-          <h3>ตั้งค่าการเทรดของฉัน ⚙️</h3>
-          <p class="muted small">ใช้คำนวณขนาดไม้ (lot) ในทุกสัญญาณ และหักสเปรดในผลทดสอบ — บันทึกไว้กับบัญชีของคุณ</p>
+          <h3>ตั้งค่าการซื้อขายของฉัน ⚙️</h3>
+          <p class="muted small">ใช้คำนวณขนาดการซื้อขาย (lot) ในทุกสัญญาณ และหักสเปรดในผลทดสอบ — บันทึกไว้กับบัญชีของคุณ</p>
           <div class="settings">
-            <label>ทุนในบัญชีเทรด
+            <label>ทุนในบัญชีซื้อขาย
               <span class="row"><input id="setCap" type="number" min="0" step="100" placeholder="เช่น 1000"><select id="setCur"><option value="USD">ดอลลาร์ (USD)</option><option value="THB">บาท (THB)</option></select></span>
             </label>
-            <label>ยอมเสียต่อไม้ (% ของทุน)
+            <label>ยอมเสียต่อรายการ (% ของทุน)
               <select id="setRisk"><option value="0.5">0.5%</option><option value="1">1% (แนะนำ)</option><option value="1.5">1.5%</option><option value="2">2%</option></select>
             </label>
             <label>สเปรด XAUUSD ของโบรก (ดอลลาร์)
@@ -589,7 +589,7 @@
 
         <section class="card">
           <h3>รับสัญญาณทาง LINE 📩</h3>
-          <p class="muted">ส่ง <b>สัญญาณ 1 ชม. (ระบบหลัก)</b> และสัญญาณกราฟ 5 ชม. · 1 วัน เฉพาะตอนมีจุดเข้า (พร้อม SL / TP) · เตือนก่อนข่าวแรง 30 นาที — ไม่ส่งผลปิดไม้ · ถ้าโควตา LINE เดือนนั้นใกล้หมด เตือนข่าวจะมาเป็น<b>แจ้งเตือนบนเครื่อง</b>แทน (LINE เก็บไว้ส่งสัญญาณเข้าไม้) — กด "เปิดแจ้งเตือน" ด้านบนไว้</p>
+          <p class="muted">ส่ง <b>สัญญาณ 1 ชม. (ระบบหลัก)</b> และสัญญาณกราฟ 5 ชม. · 1 วัน เฉพาะตอนมีจุดเข้า (พร้อม SL / TP) · เตือนก่อนข่าวแรง 30 นาที — ไม่ส่งผลปิดรายการ · ถ้าโควตา LINE เดือนนั้นใกล้หมด เตือนข่าวจะมาเป็น<b>แจ้งเตือนบนเครื่อง</b>แทน (LINE เก็บไว้ส่งสัญญาณเปิดรายการ) — กด "เปิดแจ้งเตือน" ด้านบนไว้</p>
           <p class="muted small" id="lineQuota"></p>
           <a class="btn line" id="lineAdd" target="_blank" rel="noopener" hidden>เพิ่มเพื่อน LINE เพื่อรับสัญญาณ</a>
           <p class="muted small" id="lineSoon">กำลังเตรียมบัญชี LINE — เร็ว ๆ นี้</p>
@@ -608,7 +608,7 @@
         <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
         <p class="muted small center"><button class="btn" type="button" onclick="window.gsTour && gsTour()">ดูทัวร์แนะนำอีกครั้ง</button></p>
-        <p class="muted small center">เวอร์ชัน 202610180100 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610180200 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
@@ -616,25 +616,25 @@
   <div class="toast" id="toast" hidden></div>
 
   <script src="config.js?v=202610121500"></script>
-  <script src="pro.js?v=202610171600"></script>
+  <script src="pro.js?v=202610180200"></script>
   <script src="auth.js?v=202610180100"></script>
   <script src="splashfx.js?v=202610152000"></script>
   <script src="indicators.js?v=202610121500"></script>
   <script src="investing.js?v=202610121500"></script>
-  <script src="explain.js?v=202610121500"></script>
+  <script src="explain.js?v=202610180200"></script>
   <script src="dailyplan.js?v=202610121500"></script>
   <script src="signals.js?v=202610121500"></script>
-  <script src="intraday.js?v=202610171200"></script>
-  <script src="pwa.js?v=202610121500"></script>
-  <script src="ui.js?v=202610180100"></script>
-  <script src="chartsys.js?v=202610171200"></script>
-  <script src="main.js?v=202610180100"></script>
-  <script src="tradeplan.js?v=202610121500"></script>
-  <script src="chartzones.js?v=202610171600"></script>
-  <script src="newsstats.js?v=202610170000"></script>
-  <script src="chartchat.js?v=202610171600"></script>
-  <script src="easy.js?v=202610171500"></script>
-  <script src="journal.js?v=202610171600"></script>
+  <script src="intraday.js?v=202610180200"></script>
+  <script src="pwa.js?v=202610180200"></script>
+  <script src="ui.js?v=202610180200"></script>
+  <script src="chartsys.js?v=202610180200"></script>
+  <script src="main.js?v=202610180200"></script>
+  <script src="tradeplan.js?v=202610180200"></script>
+  <script src="chartzones.js?v=202610180200"></script>
+  <script src="newsstats.js?v=202610180200"></script>
+  <script src="chartchat.js?v=202610180200"></script>
+  <script src="easy.js?v=202610180200"></script>
+  <script src="journal.js?v=202610180200"></script>
   <script src="pricealerts.js?v=202610170100"></script>
   <script src="motion.js?v=202610180100"></script>
 </body>

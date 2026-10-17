@@ -10,8 +10,8 @@
   const SESS = [
     { from: 7, to: 14, name: '🌏 เอเชีย', tip: 'แกว่งแคบ มักวิ่งในกรอบ — เหมาะซื้อแนวรับ/ขายแนวต้าน ไม่ไล่ราคา' },
     { from: 14, to: 19, name: '🇬🇧 ลอนดอน', tip: 'เริ่มมีแรง มักเลือกทางของวัน — ระวังหลอกช่วงเปิด 14:00–15:00' },
-    { from: 19, to: 23, name: '🔥 ลอนดอน+นิวยอร์ก', tip: 'แกว่งแรงที่สุดของวัน + ข่าวสหรัฐ — ใช้ SL เสมอ ลดขนาดไม้ได้' },
-    { from: 23, to: 27, name: '🇺🇸 นิวยอร์กช่วงท้าย', tip: 'แรงค่อย ๆ ลด — ใกล้ปิดตลาดไม่ควรเปิดไม้ใหม่ช่วงชั่วโมงสุดท้าย' },
+    { from: 19, to: 23, name: '🔥 ลอนดอน+นิวยอร์ก', tip: 'แกว่งแรงที่สุดของวัน + ข่าวสหรัฐ — ใช้ SL เสมอ ลดขนาดการซื้อขายได้' },
+    { from: 23, to: 27, name: '🇺🇸 นิวยอร์กช่วงท้าย', tip: 'แรงค่อย ๆ ลด — ใกล้ปิดตลาดไม่ควรเปิดรายการใหม่ช่วงชั่วโมงสุดท้าย' },
   ];
   function session(now) {
     const shift = SIG.marketShift(now), d = new Date(now - shift + 7 * 3600e3);
@@ -90,7 +90,7 @@
         <table><tr><th>วิธีเข้า</th><th>ต.ค.67–เม.ย.68</th><th>–ต.ค.68</th><th>–เม.ย.69</th><th>–ต.ค.69</th><th>ชนะ</th></tr>
         ${LEVEL_BT.map(([n, v, w]) => `<tr><td>${n}</td>${v.map((x) => `<td class="mono ${x >= 0 ? 'up' : 'down'}">${usd(x)}</td>`).join('')}<td class="mono">${w}</td></tr>`).join('')}</table>
         <p class="muted small">ต่อ 1 ออนซ์ หลังหักสเปรด $0.4 · จำลองทุกชั่วโมง ตั้งคำสั่งรอ 60 นาที SL เลยแนว TP ที่แนวถัดไป — <b>จุดเข้าให้ใช้สัญญาณ 30/15 นาทีด้านบน</b> (ผ่านการทดสอบ) แล้วใช้แนวเหล่านี้ดูว่าเป้า/SL มีอะไรขวาง</p></div>
-      <button type="button" class="btn" id="tpUseSys">🧮 คำนวณไม้ตามระบบ (SL $${S} · TP $${T})</button>`;
+      <button type="button" class="btn" id="tpUseSys">🧮 คำนวณรายการตามระบบ (SL $${S} · TP $${T})</button>`;
     if (body !== renderZones.last) {
       renderZones.last = body; $('tpZones').innerHTML = body;
       $('tpUseSys').addEventListener('click', () => { const p = nowPrice(); if (p == null) return; calc.fill(1, r2(p), r2(p - S), r2(p + T)); $('tpCalc').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
@@ -122,7 +122,7 @@
       ${tile('แกว่ง 15 นาทีล่าสุด', `$${f2(rng)}`, `เฉลี่ยต่อนาที $${f2(atr1)}`)}
       ${tile('ระยะถึงแนวใกล้สุด', `${up ? '↑ ' + sgn(up.price - price) : '—'}`, `${dn ? '↓ ' + sgn(dn.price - price) : ''}${up ? ` · ต้าน ${f2(up.price)}` : ''}`)}
     </div><p class="rd-verdict ${cls}">${verdict}</p>
-      <p class="muted small rd-bt">❌ ทดสอบ 2 ปีแล้ว: เข้าไม้สั้นตามโมเมนตัม 1 นาที (SL ~$4 · TP ~$6) ~10,000 ไม้ ชนะ 40–43% <b>ขาดทุน −$1,811/ออนซ์ หลังหักสเปรด</b> — สเปรดกินกำไรสายสั้นเกือบหมด ส่วนนี้จึงเป็นข้อมูลประกอบ ไม่ใช่สัญญาณเข้า</p>`;
+      <p class="muted small rd-bt">❌ ทดสอบ 2 ปีแล้ว: เปิดรายการสั้นตามโมเมนตัม 1 นาที (SL ~$4 · TP ~$6) ~10,000 รายการ ชนะ 40–43% <b>ขาดทุน −$1,811/ออนซ์ หลังหักสเปรด</b> — สเปรดกินกำไรสายสั้นเกือบหมด ส่วนนี้จึงเป็นข้อมูลประกอบ ไม่ใช่สัญญาณเข้า</p>`;
   }
 
   // ----- Position calculator -----
@@ -143,10 +143,10 @@
       $('cOut').innerHTML = `<div><span>ระยะ SL</span><b class="mono">$${f2(risk)}</b></div>
         <div><span>ระยะ TP</span><b class="mono ${gain != null && gain <= 0 ? 'down' : ''}">${gain != null ? '$' + f2(gain) : '—'}</b></div>
         <div><span>R:R</span><b class="mono">${gain > 0 ? '1:' + (gain / risk).toFixed(2) : '—'}</b></div>
-        <div><span>ขนาดไม้</span><b class="mono">${lot.toFixed(2)} lot</b></div>
+        <div><span>ขนาดการซื้อขาย</span><b class="mono">${lot.toFixed(2)} lot</b></div>
         <div><span>ถ้าโดน SL</span><b class="mono down">−$${f2(lot * 100 * risk)}</b></div>
         <div><span>ถ้าถึง TP</span><b class="mono up">${gain > 0 ? '+$' + f2(lot * 100 * gain) : '—'}</b></div>
-        <p class="small muted">${l ? l.text : '0.01 lot = 1 ออนซ์ ($1 ต่อการขยับ $1) · <a href="#account">ใส่ทุน</a> เพื่อคำนวณขนาดไม้ตามความเสี่ยง'}${gain > 0 && gain / risk < 1 ? ' · ⚠️ R:R ต่ำกว่า 1 — ได้น้อยกว่าเสีย ต้องชนะเกินครึ่งถึงจะคุ้ม' : ''}</p>`;
+        <p class="small muted">${l ? l.text : '0.01 lot = 1 ออนซ์ ($1 ต่อการขยับ $1) · <a href="#account">ใส่ทุน</a> เพื่อคำนวณขนาดการซื้อขายตามความเสี่ยง'}${gain > 0 && gain / risk < 1 ? ' · ⚠️ R:R ต่ำกว่า 1 — ได้น้อยกว่าเสีย ต้องชนะเกินครึ่งถึงจะคุ้ม' : ''}</p>`;
     },
   };
   $('tpCalc').querySelectorAll('[data-side]').forEach((b) => b.addEventListener('click', () => {

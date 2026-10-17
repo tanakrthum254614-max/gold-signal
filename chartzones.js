@@ -200,7 +200,7 @@ function ago(ms) {
     // off sides (chartsys.js `off`, 16 Oct 2026): no entries — the timeframe is for reading direction only
     const Bon = CHARTSYS.on(B), Son = CHARTSYS.on(S), noEntry = !Bon && !Son;
     const sellNo = !Son && !noEntry && d && B && d.score <= -B.th;
-    if (open) { const sell = open.side === 'SELL'; head = `📌 อยู่ในไม้${sell ? 'ขาย (SELL)' : 'ซื้อ (BUY)'} ตั้งแต่ ${when(sys, open.createdAt)} — เข้า ${f2(open.entry)} · SL ${f2(open.hit ? open.entry : open.sl)}${open.hit ? ' (ที่ทุน)' : ''} · ${open.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}`; cls = sell ? 'hold sell' : 'hold'; calcArgs = [sell ? -1 : 1, open.entry, open.hit ? open.entry : open.sl, open.tps[0]]; }
+    if (open) { const sell = open.side === 'SELL'; head = `📌 อยู่ในรายการ${sell ? 'ขาย (SELL)' : 'ซื้อ (BUY)'} ตั้งแต่ ${when(sys, open.createdAt)} — เข้า ${f2(open.entry)} · SL ${f2(open.hit ? open.entry : open.sl)}${open.hit ? ' (ที่ทุน)' : ''} · ${open.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}`; cls = sell ? 'hold sell' : 'hold'; calcArgs = [sell ? -1 : 1, open.entry, open.hit ? open.entry : open.sl, open.tps[0]]; }
     else if (!d) { head = 'กำลังคำนวณ… (รอกราฟกรอบใหญ่)'; cls = 'wait'; }
     else if (!sys.long && d.stale) { head = '🌙 ตลาดปิด — ไม่มีจุดเข้า'; cls = 'wait'; }
     else if (dir) {
@@ -208,21 +208,21 @@ function ago(ms) {
       head = `${c.risky ? '⚠️ ' : ''}${dir > 0 ? '🟢 สัญญาณ BUY (ซื้อ)' : '🔴 สัญญาณ SELL (ขาย)'}${c.risky ? ' · เสี่ยง' : ''} — ถ้าแท่งนี้ปิดแล้วยังได้ ${signedScore(d.score)} เข้าที่ ~${f2(price)} · SL ${f2(L.sl)} · ${L.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}`;
       cls = dir > 0 ? 'go' : 'no sell';
       calcArgs = [dir, price, L.sl, L.tps[0]];
-      if (c.risky) { head += `<br>${CHARTSYS.riskText(c)} — ถ้าเข้า ใช้ไม้เล็กกว่าปกติ`; cls = 'near'; }
+      if (c.risky) { head += `<br>${CHARTSYS.riskText(c)} — ถ้าเข้า ใช้ขนาดเล็กกว่าปกติ`; cls = 'near'; }
       if (br) { head = `⛔ (พักอยู่ — ไม่แนะนำเข้า) ${head}`; cls = 'wait'; calcArgs = null; }
     }
     else if (noEntry) { head = `⏸ กรอบ ${TF_LABEL[tf]} ใช้ดูกราฟอย่างเดียว — ไม่มีจุดเข้า (ผลทดสอบช่วงล่าสุด/ผลจริงไม่ผ่าน) · จุดเข้าอยู่ที่ <a href="#" data-tf="1h">1 ชม.</a> · <a href="#" data-tf="5h">5 ชม.</a> · <a href="#" data-tf="1d">1 วัน</a>`; cls = 'no'; waitOnly = false; }
     else if (stretched(sys, d)) { head = `⏸ คะแนนถึง ${signedScore(d.score)} แต่ราคายืดเกินขอบ${d.score > 0 ? 'บน' : 'ล่าง'} Bollinger — รอราคากลับเข้ากรอบก่อน`; cls = 'near'; }
     else if (CHARTSYS.unconfirmed(sys, d)) { const c = CHARTSYS.CONFIRM[(d.score > 0 ? B : S).confirm]; head = `⏸ คะแนนถึง ${signedScore(d.score)} แต่ ${c.name} ยังไม่ยืนยัน${d.score > 0 ? 'ขาขึ้น' : 'ขาลง'} — รอ${c.wait}`; cls = 'near'; }
     else if (!sys.long && d.news) { head = '⏸ ช่วงข่าวแรง — งดเข้า (พื้นหลังเหลือง)'; cls = 'wait'; }
-    else if (!sys.long && d.lastHour) { head = '⏸ ใกล้ตลาดปิด — งดเปิดไม้ใหม่'; cls = 'wait'; }
+    else if (!sys.long && d.lastHour) { head = '⏸ ใกล้ตลาดปิด — งดเปิดรายการใหม่'; cls = 'wait'; }
     else if (sellNo) { head = `⚠️ แนวโน้มลง ${signedScore(d.score)} แต่กรอบนี้ไม่ให้สัญญาณ SELL — ฝั่งขายทดสอบไม่ผ่าน · ใช้ดูทิศเท่านั้น (SELL มีแค่ <a href="#" data-tf="5m">กรอบ 5 นาที</a> — ติดป้ายเสี่ยง)`; cls = 'no'; waitOnly = true; }
     else if (Bon && d.score > 0 && d.score >= B.th - 2) { head = `⏳ ใกล้สัญญาณ BUY — คะแนน ${signedScore(d.score)} ขาดอีก ${B.th - d.score}`; cls = 'near'; waitOnly = true; }
     else if (Son && d.score < 0 && d.score <= -(S.th - 2)) { head = `⏳ ใกล้สัญญาณ SELL — คะแนน ${signedScore(d.score)} ขาดอีก ${S.th + d.score}`; cls = 'near'; waitOnly = true; }
     else { head = `⏸ รอก่อน — คะแนน ${signedScore(d.score)} · BUY ต้อง +${B.th}${Son ? ` · SELL ต้อง −${S.th}` : ''}`; cls = 'wait'; waitOnly = true; }
     const note = $('sigNote');
     if (note) note.innerHTML = open
-      ? `📌 <b>ระบบบนกราฟถือไม้${open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}อยู่</b> ตั้งแต่ ${when(sys, open.createdAt)} — ไม่ต้องเปิดไม้ใหม่`
+      ? `📌 <b>ระบบบนกราฟถือสถานะ${open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}อยู่</b> ตั้งแต่ ${when(sys, open.createdAt)} — ไม่ต้องเปิดรายการใหม่`
       : 'ตัวเลขเดียวกับช่อง Buy | Sell ทางซ้าย';
     const acc = (name, c, q) => {
       if (c && c.off) return `<i class="cz-warn">⏸ ${name}: ปิดจุดเข้า — ${c.off} · ทดสอบชนะ ${c.win}% (${c.q.map(usd).join(' / ')})</i>`;
@@ -231,7 +231,7 @@ function ago(ms) {
       return `<i class="${pos === 4 ? 'cz-ok' : 'cz-warn'}">${pos === 4 ? '✅' : '⚠️'} ${name}: ชนะ ${c.win}% · กำไร ${pos}/4 ช่วง (${c.q.map(usd).join(' / ')})</i>`;
     };
     const fin = s.trades.filter((r) => SIG.isFinal(r)), pnl = fin.reduce((a, r) => a + r.pnl, 0);
-    if (br && !noEntry) head = `<span class="cz-brake">⛔ พักสัญญาณกรอบนี้: ${br.why} — ${br.until ? `ถึง ${when(SYS['1d'], br.until)}` : 'จนกว่าผล 20 ไม้ล่าสุดจะดีขึ้น'} · ระบบยังบันทึกต่อ</span><br>${head}`;
+    if (br && !noEntry) head = `<span class="cz-brake">⛔ พักสัญญาณกรอบนี้: ${br.why} — ${br.until ? `ถึง ${when(SYS['1d'], br.until)}` : 'จนกว่าผล 20 รายการล่าสุดจะดีขึ้น'} · ระบบยังบันทึกต่อ</span><br>${head}`;
     // BOTH sides, each in its own column with its own % and verdict (user, 8 Oct: "อยากให้มี 2 ตัว Buy และ Sell คนละช่อง
     // และบอกเปอร์เซ็นต์ของแต่ละอันว่าควรเข้าไหม"). % = how far the score has come toward that side's threshold
     // (100 = signal). A side that failed its backtest uses the Buy threshold mirrored, is labelled ⚠️ and is never
@@ -247,7 +247,7 @@ function ago(ms) {
     const fresh = !!d && (sys.long || !d.stale), showPlans = !open && fresh && !noEntry;
     const mini = (x) => `<div class="cz-prog ${x.side > 0 ? 'buy' : 'sell'}${x.go ? ' live' : ''}${x.tested ? '' : ' untested'}"><span>${x.side > 0 ? 'Buy' : 'Sell'} <b>${x.pct}%</b> · ${x.verdict}</span><i><em style="width:${x.pct}%"></em></i></div>`;
     // While a trade is held the Buy / Sell % stay visible too (user, 15 Oct: "พวกเปอร์เซ็นต์หายไปไหน") — for reference only
-    const holdPct = open && fresh ? `<div class="cz-holdpct"><small>ความพร้อมเข้าตอนนี้ (ดูประกอบ — ถือไม้อยู่ ไม่ต้องเปิดไม้ใหม่)</small>${sides.map(mini).join('')}</div>` : '';
+    const holdPct = open && fresh ? `<div class="cz-holdpct"><small>ความพร้อมเข้าตอนนี้ (ดูประกอบ — ถือสถานะอยู่ ไม่ต้องเปิดรายการใหม่)</small>${sides.map(mini).join('')}</div>` : '';
     const plan = showPlans ? `<div class="cz-two">${sides.map(col).join('')}</div>` : holdPct;
     if (note) note.innerHTML = showPlans ? `${sides.map(mini).join('')}<small>ตัวเลขเดียวกับช่อง Buy | Sell ทางซ้าย${tf === CHARTSYS.MAIN_TF ? ' และหน้าสัญญาณ (ระบบหลัก)' : ''}</small>`
       : open ? `${note.innerHTML.split('<div class="cz-holdpct">')[0]}${holdPct}` : note.innerHTML;
@@ -269,8 +269,8 @@ function ago(ms) {
       <span class="cz-more-now">${pillFull}${waitOnly ? ` · ${head}` : ''}</span>
       ${acc('BUY', B, null)} ${acc('SELL', S, sys.sellQ)}
       <span>ระบบกรอบ ${TF_LABEL[tf]}: ${sys.frames.map((f) => f[3]).join(' + ')} · BUY ≥ +${B.th} (${sideText(B)})${S ? ` · SELL ≤ −${S.th} (${sideText(S)})` : ''}
-      · ทดสอบย้อนหลัง ${sys.span} แบ่ง 4 ช่วงเท่ากัน เก่า→ใหม่ หลังสเปรด ต่อ 1 ออนซ์${sys.few ? ` · ตัวอย่างน้อย (${sys.few} ไม้)` : ''}${sys.long ? ' · ช่วงทดสอบทองเป็นขาขึ้นเกือบตลอด ไม่รับประกันอนาคต' : ''}
-      · บนกราฟนี้ ${fin.length} ไม้ปิดแล้ว${fin.length ? ` รวม ${usd(SIG.round(pnl))}` : ''}${open ? ' + 1 ไม้ที่ถืออยู่' : ''}
+      · ทดสอบย้อนหลัง ${sys.span} แบ่ง 4 ช่วงเท่ากัน เก่า→ใหม่ หลังสเปรด ต่อ 1 ออนซ์${sys.few ? ` · ตัวอย่างน้อย (${sys.few} รายการ)` : ''}${sys.long ? ' · ช่วงทดสอบทองเป็นขาขึ้นเกือบตลอด ไม่รับประกันอนาคต' : ''}
+      · บนกราฟนี้ ${fin.length} รายการปิดแล้ว${fin.length ? ` รวม ${usd(SIG.round(pnl))}` : ''}${open ? ' + 1 รายการที่ถืออยู่' : ''}
       · <b>ลูกศรเล็ก</b> = ทิศทุกแท่ง ใช้ดูทิศเท่านั้น${sys.every ? ` (เข้าทุกลูกศร 2 ปี ${usd(sys.every)} ชนะ ~50%)` : ''} · <b>ป้าย Buy / Sell</b> = สัญญาณเข้า · เส้นโค้งสีทอง = กรอบราคา (ดูประกอบ — ทดสอบแล้วการเข้าเมื่อแตะขอบขาดทุนเกือบทุกกรอบ) · แถบแดง/เขียว = แนวต้าน/แนวรับจากจุดกลับตัวที่ยังไม่ถูกทะลุ</span></details>`);
   };
 })();

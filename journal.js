@@ -28,10 +28,10 @@
     const sys = done.filter((e) => e.system), own = done.filter((e) => !e.system);
     const wr = (a) => (a.length ? `${Math.round((a.filter((e) => e.result > 0).length / a.length) * 100)}%` : '—');
     const net = (a) => money(a.reduce((s, e) => s + e.result, 0));
-    const moodRows = Object.keys(MOODS).map((k) => { const a = done.filter((e) => e.mood === k); return a.length ? `<li><span>${MOODS[k]}</span><b>${a.length} ไม้ · ชนะ ${wr(a)} · <span class="${a.reduce((s, e) => s + e.result, 0) >= 0 ? 'up' : 'down'}">${net(a)}</span></b></li>` : ''; }).join('');
+    const moodRows = Object.keys(MOODS).map((k) => { const a = done.filter((e) => e.mood === k); return a.length ? `<li><span>${MOODS[k]}</span><b>${a.length} รายการ · ชนะ ${wr(a)} · <span class="${a.reduce((s, e) => s + e.result, 0) >= 0 ? 'up' : 'down'}">${net(a)}</span></b></li>` : ''; }).join('');
     $('jrSum').innerHTML = `
       <div class="jr-kpis">
-        <div><small>ไม้ทั้งหมด</small><b>${entries.length}</b></div>
+        <div><small>รายการทั้งหมด</small><b>${entries.length}</b></div>
         <div><small>ชนะ</small><b>${done.length ? Math.round((wins / done.length) * 100) : 0}%</b></div>
         <div><small>กำไร/ขาดทุนรวม (USD)</small><b class="${sum >= 0 ? 'up' : 'down'}">${money(sum)}</b></div>
         <div><small>ตามระบบ vs เข้าเอง</small><b>${wr(sys)} <span class="muted">/</span> ${wr(own)}</b></div>
@@ -48,7 +48,7 @@
         <div class="muted small">${e.system ? '🎯 ตามสัญญาณ' : '🙋 เข้าเอง'}${e.mood ? ` · ${MOODS[e.mood]}` : ''}${e.sl == null ? ' · ⚠️ ไม่มี SL' : ` · SL ${esc(e.sl)}`}${e.tp != null ? ` · TP ${esc(e.tp)}` : ''}</div>
         ${e.note ? `<p class="jr-note">${esc(e.note)}</p>` : ''}${e.lesson ? `<p class="jr-note jr-lesson">💡 ${esc(e.lesson)}</p>` : ''}
         <div class="jr-acts"><button type="button" class="btn act" data-act="edit">แก้ไข</button><button type="button" class="btn act danger" data-act="del">ลบ</button></div>
-      </li>`).join('') : '<li class="muted center jr-empty">ยังไม่มีบันทึก — เริ่มจดไม้แรกด้านบน แล้วโค้ช AI จะช่วยดูนิสัยการเทรดให้</li>';
+      </li>`).join('') : '<li class="muted center jr-empty">ยังไม่มีบันทึก — เริ่มจดรายการแรกด้านบน แล้วโค้ช AI จะช่วยดูนิสัยการซื้อขายให้</li>';
   }
   function render() { stats(); list(); }
   async function load() {
@@ -72,7 +72,7 @@
       f.elements.result.value = '';
       f.elements.system.checked = !!e.system;
     }
-    $('jrSave').textContent = e ? 'บันทึกการแก้ไข' : 'บันทึกไม้นี้';
+    $('jrSave').textContent = e ? 'บันทึกการแก้ไข' : 'บันทึกรายการนี้';
     $('jrCancel').hidden = !e;
   }
   if (tab) {
@@ -107,17 +107,17 @@
       const id = b.closest('[data-id]').dataset.id;
       const e = entries.find((x) => x.id === id);
       if (b.dataset.act === 'edit') { fill(e); $('jrForm').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
-      if (!confirm('ลบไม้นี้ออกจากสมุด?')) return;
+      if (!confirm('ลบรายการนี้ออกจากสมุด?')) return;
       try { entries = (await api(`/api/journal?id=${encodeURIComponent(id)}`, { method: 'DELETE' })).entries; render(); } catch (err) { toast(err.message); }
     });
     $('jrWipe').addEventListener('click', async () => {
       if (!entries.length) return;
-      if (!confirm(`ลบสมุดบันทึกทั้งหมด ${entries.length} ไม้? ลบแล้วกู้คืนไม่ได้`)) return;
+      if (!confirm(`ลบสมุดบันทึกทั้งหมด ${entries.length} รายการ? ลบแล้วกู้คืนไม่ได้`)) return;
       try { entries = (await api('/api/journal?all=1', { method: 'DELETE' })).entries; render(); toast('ลบสมุดบันทึกแล้ว'); } catch (err) { toast(err.message); }
     });
     $('jrCoach').addEventListener('click', () => {
       location.hash = '#chart';
-      setTimeout(() => window.CC_COACH && CC_COACH('ช่วยดูสมุดบันทึกเทรดของผมหน่อย ผมควรปรับอะไรก่อน'), 400);
+      setTimeout(() => window.CC_COACH && CC_COACH('ช่วยดูสมุดบันทึกซื้อขายของผมหน่อย ผมควรปรับอะไรก่อน'), 400);
     });
     fill(null);
     if (window.UI) UI.on('tab:journal', () => { if (!loaded) load(); });
@@ -162,7 +162,7 @@
     let s;
     try { s = await api('/api/pro'); } catch (e) { card.hidden = true; return; }
     window.GS_PRO = s;
-    const feats = s.features.map((f) => ({ ai: '🤖 โค้ช AI ส่วนตัว (อ่านสัญญาณทุกกรอบ + สมุดเทรดของคุณ)', dashboard: '📊 หุ้นสหรัฐ Nasdaq 100 · S&P 500 · ปันผล + พอร์ตกูรู 28 คน + แจ้งเตือนกูรูซื้อขาย', signals: '📈 สัญญาณ Buy/Sell ทุกกรอบเวลา 5 นาที – 1 สัปดาห์ + แชทถามจุดเข้าทุกกรอบ', alerts: '🔔 แจ้งเตือนราคาทอง 10 รายการ' }[f] || f));
+    const feats = s.features.map((f) => ({ ai: '🤖 โค้ช AI ส่วนตัว (อ่านสัญญาณทุกกรอบ + บันทึกการซื้อขายของคุณ)', dashboard: '📊 หุ้นสหรัฐ Nasdaq 100 · S&P 500 · ปันผล + พอร์ตกูรู 28 คน + แจ้งเตือนกูรูซื้อขาย', signals: '📈 สัญญาณ Buy/Sell ทุกกรอบเวลา 5 นาที – 1 สัปดาห์ + แชทถามจุดเข้าทุกกรอบ', alerts: '🔔 แจ้งเตือนราคาทอง 10 รายการ' }[f] || f));
     const p = s.prices || {};
     const status = s.admin ? '⭐ แอดมิน — ใช้ได้ทุกอย่าง'
       : s.pro ? `⭐ สมาชิก PRO ถึง ${new Date(s.until).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}${s.sub ? ' · ต่ออายุอัตโนมัติ' : ''}`
@@ -203,7 +203,7 @@
     card.innerHTML = `<h3>🤝 ชวนเพื่อน ได้ใช้ฟรีเพิ่ม</h3>
       <p class="muted small">เพื่อนสมัครผ่านลิงก์นี้แล้วจ่ายครั้งแรก — คุณได้สมาชิกเพิ่ม <b>${r.days} วัน</b> ต่อเพื่อน 1 คน</p>
       <div class="ref-row"><input class="mono" id="refLink" readonly value="${esc(r.link)}"><button class="btn gold" type="button" id="refCopy">คัดลอก</button>
-      <a class="btn" href="https://line.me/R/msg/text/?${encodeURIComponent(`ลองดูเว็บสัญญาณทองตัวนี้ มีผลจริงทุกไม้ให้ดู ${r.link}`)}" target="_blank" rel="noopener">ส่งทาง LINE</a></div>
+      <a class="btn" href="https://line.me/R/msg/text/?${encodeURIComponent(`ลองดูเว็บสัญญาณทองตัวนี้ มีผลจริงทุกรายการให้ดู ${r.link}`)}" target="_blank" rel="noopener">ส่งทาง LINE</a></div>
       <p class="muted small">ชวนแล้ว ${r.invited} คน · จ่ายแล้ว ${r.paid} คน</p>`;
     $('refCopy').onclick = () => { const i = $('refLink'); i.select(); (navigator.clipboard ? navigator.clipboard.writeText(i.value) : Promise.reject()).catch(() => document.execCommand('copy')); toast('คัดลอกลิงก์แล้ว'); };
   }
