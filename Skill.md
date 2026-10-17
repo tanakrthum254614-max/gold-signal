@@ -316,6 +316,7 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 ## 17 ต.ค. 2569 — 🐙 GitHub สวยขึ้น (README + repo)
 - ผู้ใช้: "ช่วยทำใน Git ให้สวยหน่อย ออกแบบให้สวยหน่อยใน Git" → README.md ใหม่ทั้งไฟล์: `docs/img/banner.svg` (ดำ–ทอง), badge shields.io (**ข้อความ badge ต้องเป็นอังกฤษ** — ฟอนต์ไทยแตก), ภาพ docs/img/{landing,signals,chart,results,pricing,login,marketing}.png (ใช้ภาพจาก compare/), ตารางความสามารถ, Mermaid สถาปัตยกรรม (**ห้ามใช้อีโมจิ/▲ และลูกศรสองทางต่อกันยาว — GitHub ขึ้น "Unable to render rich display"**; แบบเรียบผ่าน), โครงสร้าง, รัน/Deploy, คำเตือนความเสี่ยง
 - `gh repo edit`: description ไทย+อังกฤษ, homepage **gold-signal-ten.vercel.app** (เดิมผิดเป็น gold-signal-ruby), topics 12 อัน · ภาพปก docs/img/social.png 1280×640 (สำเนา Downloads/gold-signal-github-cover.png) — **social preview อัปโหลดผ่าน API ไม่ได้ ผู้ใช้ต้องทำที่ Settings → General → Social preview**
+- โปรไฟล์ GitHub (17 ต.ค.): ผู้ใช้อัปโหลด social preview แล้ว · `gh auth refresh -s user` (ผู้ใช้ยืนยันรหัสในเว็บ) → `gh api user -X PATCH` bio "Building Gold Signal — real-time XAU/USD gold trading signals 🇹🇭", blog gold-signal-ten.vercel.app, location Thailand · ชื่อ/รูปโปรไฟล์ผู้ใช้ตั้งเอง
 - ตรวจ: render ผ่าน `gh api markdown` + github-markdown-css, หน้า github.com จริง (ภาพ 200 ครบ, Mermaid วาดแล้ว)
 
 ## 17 ต.ค. 2569 — ✂️ ตัดส่วนที่ไม่สำคัญ
