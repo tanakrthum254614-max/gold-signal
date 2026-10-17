@@ -67,7 +67,7 @@
     .pm .trust { gap: 10px; }
     .pm .trust span { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--pm-line); background: rgba(20, 20, 23, .85); color: var(--pm-text); font-size: 13px; }
     @media (max-width: 400px) { .faq details p { padding-left: 18px; } .faq summary { font-size: 14.5px; } }
-    body.mode-in .steps, body.mode-in .signup-only { display: none; }
+    body.mode-in .steps, body.mode-in .signup-only, body.mode-in .lead { display: none; } /* sign-in: the box says it already */
     /* ✨ "สด + มีชีวิต" (user, 17 Oct 2026: "ขอให้ดีกว่านี้ได้ไหมมันดูธรรมดาไป") — faint gold candles drifting behind,
        the live gold price, the tested/real record and a gold light running round the sign-up box */
     #bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: .4;
@@ -201,10 +201,11 @@
     };
     const THAI = {
       signIn: { start: {
-        title: 'เข้าสู่ระบบ Gold Signal', subtitle: 'ใช้อีเมลหรือบัญชี Google ที่สมัครไว้',
-        titleCombined: 'เข้าสู่ระบบ Gold Signal', subtitleCombined: 'ใช้อีเมลหรือบัญชี Google ที่สมัครไว้',
+        title: 'เข้าสู่ระบบ Gold Signal', subtitle: 'ใช้อีเมลหรือบัญชี Google ที่ลงทะเบียนไว้',
+        titleCombined: 'เข้าสู่ระบบ Gold Signal', subtitleCombined: 'ใช้อีเมลหรือบัญชี Google ที่ลงทะเบียนไว้',
       } },
-      signUp: { start: { title: 'สมัครสมาชิก Gold Signal', subtitle: 'สมัครด้วยอีเมลหรือ Google แล้วเลือกแพ็กเกจ 149 บาท/เดือน · 1,290 บาท/ปี' } },
+      signUp: { start: { title: 'สมัครสมาชิก Gold Signal', subtitle: 'สร้างบัญชีด้วยอีเมลหรือ Google จากนั้นเลือกแพ็กเกจ 149 บาท/เดือน หรือ 1,290 บาท/ปี' } },
+      formFieldInputPlaceholder__password: 'กรอกรหัสผ่าน', formFieldInputPlaceholder__signUpPassword: 'ตั้งรหัสผ่าน', formFieldInputPlaceholder__emailAddress: 'กรอกอีเมล',
     };
     function merge(base, extra) {
       const out = { ...base };
