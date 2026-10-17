@@ -17,7 +17,8 @@
     .lead { margin: 0; color: var(--pm-muted); font-size: 14.5px; text-align: center; }
     .lead b { color: var(--pm-ivory); }
     .headline { margin: 4px 0 0; font-size: 26px; text-align: center; line-height: 1.45; }
-    #status { color: var(--pm-muted); font-size: 15px; min-height: 1.5em; text-align: center; margin: 0; }
+    #status { color: var(--pm-muted); font-size: 15px; text-align: center; margin: 0; }
+    #status:empty { display: none; }
     #status.err { color: var(--pm-down); }
     #signIn { display: block; }
     .glow { width: fit-content; }
@@ -79,11 +80,33 @@
     @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
     @media (prefers-reduced-motion: reduce) { .glow, .rise, .dot.on { animation: none; } }
     @media (max-width: 400px) { .rec .tile .pc { font-size: 22px; } .headline { font-size: 23px; } }
+    /* 📐 the sign-up box shows on opening (user, 17 Oct 2026: "เวลาเปิดเข้ามามันไม่เห็นปุ่มสมัครสมาชิกเลย ต้องเลื่อนลงอย่างเดียว")
+       phone: one column, the box right under the headline and steps, record tiles + Demo after it ·
+       computer: two columns — info on the left, tabs + box on the right, FAQ underneath */
+    .info, .form { display: contents; }
+    .pm-brand { order: 1; } .livepx { order: 2; } .headline { order: 3; } .steps { order: 4; } .lead { order: 5; } .tabs { order: 6; } #status { order: 7; } .glow { order: 8; }
+    .rec { order: 9; } .demo { order: 10; } .faq { order: 11; } .trust { order: 12; } .privacy { order: 13; }
+    @media (max-width: 979px) {
+      body { padding-top: 14px; } main { gap: 12px; }
+      .pm-brand img { width: 34px; height: 34px; } .pm-brand b { font-size: 19px; }
+      .livepx { padding: 5px 14px; } .livepx small#lsrc { display: none; }
+      .headline { font-size: 21px; margin: 0; line-height: 1.4; }
+      .steps li { font-size: 0; padding-top: 4px; } .steps li b { font-size: 13px; } .steps li::before { width: 26px; height: 26px; font-size: 13px; margin-bottom: 4px; } .steps li + li::after { top: 17px; }
+      body:not(.mode-in) .lead { display: none; } .lead { font-size: 13.5px; }
+    }
+    @media (min-width: 980px) {
+      body { place-items: start center; padding-top: 32px; }
+      main { max-width: 1060px; grid-template-columns: minmax(0, 1fr) 440px; column-gap: 56px; row-gap: 28px; align-items: start; }
+      .info, .form { display: grid; justify-items: center; gap: 16px; align-content: start; }
+      .info { padding-top: 8px; } .form { position: sticky; top: 20px; }
+      .faq, .trust, .privacy { grid-column: 1 / -1; justify-self: center; }
+    }
   </style>
 </head>
 <body class="pm">
   <canvas id="bg" aria-hidden="true"></canvas>
   <main>
+    <div class="info">
     <a class="pm-brand" href="/"><img src="logo.svg" alt=""><span><b>GOLD SIGNAL</b><small>XAU/USD · Thailand</small></span></a>
     <div class="livepx rise" id="livepx"><i class="dot"></i><small>XAU/USD</small><b id="lpx">—</b><span id="lchg"></span><small id="lsrc">กำลังเชื่อมต่อราคาสด…</small></div>
     <h1 class="headline rise d1">สัญญาณทองคำ<br><span class="gold-text">ที่ตรวจสอบได้ทุกไม้</span></h1>
@@ -95,18 +118,19 @@
       </div>
       <p class="cap" id="reccap">% = ชนะในการทดสอบย้อนหลัง · ตัวเลขล่าง = ผลจริงที่ระบบบันทึก ทั้งชนะและแพ้</p>
     </section>
-    <hr class="rule">
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
       <li class="on"><b>สมัครบัญชี</b>อีเมลหรือ Google</li>
       <li><b>เลือกแพ็กเกจ</b>149 ฿/เดือน · 1,290 ฿/ปี</li>
       <li><b>เริ่มใช้งาน</b>ได้ทุกฟีเจอร์ทันที</li>
     </ol>
     <p class="lead" id="lead">ยังไม่มีบัญชี? กดแท็บ <b>“สมัครสมาชิก”</b> — สมัครก่อน แล้วค่อยเลือกแพ็กเกจในขั้นถัดไป</p>
+    <a class="demo" href="/demo.html">👀 ยังไม่สมัคร? <b>ทดลองดูก่อน (Demo)</b> — กราฟทองแบบไม่มีสัญญาณ</a>
+    </div>
+    <div class="form">
     <div class="tabs" id="tabs" hidden><button type="button" class="on" data-mode="in">เข้าสู่ระบบ</button><button type="button" data-mode="up">สมัครสมาชิก</button></div>
     <p id="status">กำลังโหลด…</p>
-    <!-- Demo (16 Oct 2026): visitors from the LINE QR can look first — plain candles only, signals stay members-only -->
-    <a class="demo" href="/demo.html">👀 ยังไม่สมัคร? <b>ทดลองดูก่อน (Demo)</b> — กราฟทองแบบไม่มีสัญญาณ</a>
     <div class="glow rise d3" id="glow" hidden><div id="signIn"></div></div>
+    </div>
     <div class="faq">
       <h2>คำถามที่พบบ่อย</h2>
       <details><summary>สมัครแล้วต้องจ่ายเงินทันทีไหม?</summary><p>ขั้นแรกสมัครบัญชีก่อน (ยังไม่มีค่าใช้จ่าย) จากนั้นระบบจะพาไปหน้าเลือกแพ็กเกจ เข้าใช้เว็บได้หลังชำระเงินเรียบร้อย</p></details>
