@@ -313,6 +313,10 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 17 ต.ค. 2569 — 📒 หน้าแรกแสดงผลจริงครบ
+- ผู้ใช้: "มาจากไหนตัวเลข" → อธิบาย: 57/65/64% = test-stats.json (monthly-research, PAXG 2 ปี/5 ปี หลังสเปรด, 258/93/94 ไม้) · ผลจริง = chart-signals.json ตั้งแต่ 7 ต.ค. (1h: 9 ต.ค. +6.49 eod, 12 ต.ค. −30 sl) · แจ้งว่าหน้านี้ไม่โชว์กรอบเสี่ยง → "ทำมา"
+- lib/blog.mjs statsJSON เพิ่ม `others` (ไม้ที่ปิดนอก 1h/5h/1d BUY ไม่ risky) + `all` · welcome.html กล่อง `#others` ใต้การ์ด · production: others 36 ไม้ ชนะ 14 −79.66 · all 38 ชนะ 15 −103.17
+
 ## 17 ต.ค. 2569 — ✦ ดำ–ทอง พรีเมียม + หน้าแรก Landing
 - ผู้ใช้: "ขอแบบให้พรีเมียมและระดับทางการให้คนน่าเชื่อถือในการเข้ามาใช้" → ถามก่อน (มีตัวอย่าง) → เลือก หน้าคนนอก + Landing ใหม่ + เว็บสมาชิก · โทน **"ดำ–ทอง หรูหรา"**
 - **premium.css** (PUBLIC): ดำ #0a0a0c, ทองไล่เฉด `--pm-grad`, หัวข้อ **Noto Serif Thai** สีงาช้าง, การ์ดกรอบทองบาง, `.pm-btn.gold/.ghost`, `.trust`, `.rule`, `.pm-brand` (GOLD SIGNAL + XAU/USD · THAILAND) · ใช้กับ `<html class="pm-page"><body class="pm">` · ใช้แบบมืดเสมอ
