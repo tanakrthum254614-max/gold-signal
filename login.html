@@ -29,6 +29,22 @@
     .demo { display: block; width: 100%; max-width: 420px; text-align: center; padding: 12px 14px; border-radius: 12px; text-decoration: none; font-size: 14.5px; color: var(--pm-text); border: 1px solid var(--pm-line); background: rgba(212, 175, 95, .06); }
     .demo b { color: var(--pm-gold-hi); }
     .rule { width: 100%; max-width: 420px; }
+    /* ① ② ③ how joining works (17 Oct 2026, user: "ทำให้เข้าใจมากขึ้นตอนหน้าสมัครสมาชิก") — same bar on pay.html */
+    .steps { list-style: none; margin: 0; padding: 0; width: 100%; max-width: 460px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; counter-reset: st; }
+    .steps li { position: relative; text-align: center; padding: 10px 4px 0; font-size: 13px; color: var(--pm-muted); line-height: 1.4; counter-increment: st; }
+    .steps li::before { content: counter(st); display: grid; place-items: center; width: 30px; height: 30px; margin: 0 auto 6px; border-radius: 50%; border: 1px solid var(--pm-line); color: var(--pm-gold); font-weight: 700; background: var(--pm-panel); position: relative; z-index: 1; }
+    .steps li + li::after { content: ""; position: absolute; top: 25px; right: 50%; width: 100%; height: 1px; background: var(--pm-line); }
+    .steps li b { display: block; color: var(--pm-ivory); font-size: 14px; }
+    .steps li.on::before { background: var(--pm-grad); color: #1b1407; border-color: transparent; box-shadow: 0 0 0 4px rgba(212, 175, 95, .15); }
+    .steps li.on b { color: var(--pm-gold-hi); }
+    .steps li.done::before { content: "✓"; background: rgba(60, 207, 145, .15); color: var(--pm-up); border-color: rgba(60, 207, 145, .4); }
+    .faq { width: 100%; max-width: 420px; display: grid; gap: 8px; }
+    .faq details { background: var(--pm-panel); border: 1px solid var(--pm-line2); border-radius: 12px; padding: 0 16px; }
+    .faq summary { cursor: pointer; list-style: none; padding: 12px 0; font-size: 14.5px; font-weight: 600; color: var(--pm-ivory); display: flex; justify-content: space-between; gap: 10px; }
+    .faq summary::-webkit-details-marker { display: none; } .faq summary::after { content: "+"; color: var(--pm-gold); }
+    .faq details[open] summary::after { content: "−"; } .faq p { margin: 0 0 12px; font-size: 13.5px; color: var(--pm-muted); line-height: 1.7; }
+    .faq h2 { font-size: 15px; margin: 4px 0 2px; text-align: center; }
+    body.mode-in .steps, body.mode-in .signup-only { display: none; }
   </style>
 </head>
 <body class="pm">
@@ -36,12 +52,25 @@
     <a class="pm-brand" href="/"><img src="logo.svg" alt=""><span><b>GOLD SIGNAL</b><small>XAU/USD · Thailand</small></span></a>
     <h1 class="headline">สัญญาณทองคำ<br><span class="gold-text">ที่ตรวจสอบได้ทุกไม้</span></h1>
     <hr class="rule">
-    <p class="lead">🔒 สำหรับสมาชิกเท่านั้น — ยังไม่มีบัญชี กดแท็บ <b>“สมัครสมาชิก”</b> แล้วเลือกแพ็กเกจ <b>รายเดือน 149 บาท</b> หรือ <b>รายปี 1,290 บาท</b></p>
+    <ol class="steps" aria-label="ขั้นตอนการสมัคร">
+      <li class="on"><b>สมัครบัญชี</b>อีเมลหรือ Google</li>
+      <li><b>เลือกแพ็กเกจ</b>149 ฿/เดือน · 1,290 ฿/ปี</li>
+      <li><b>เริ่มใช้งาน</b>ได้ทุกฟีเจอร์ทันที</li>
+    </ol>
+    <p class="lead" id="lead">ยังไม่มีบัญชี? กดแท็บ <b>“สมัครสมาชิก”</b> — สมัครก่อน แล้วค่อยเลือกแพ็กเกจในขั้นถัดไป</p>
     <div class="tabs" id="tabs" hidden><button type="button" class="on" data-mode="in">เข้าสู่ระบบ</button><button type="button" data-mode="up">สมัครสมาชิก</button></div>
     <p id="status">กำลังโหลด…</p>
     <!-- Demo (16 Oct 2026): visitors from the LINE QR can look first — plain candles only, signals stay members-only -->
     <a class="demo" href="/demo.html">👀 ยังไม่สมัคร? <b>ทดลองดูก่อน (Demo)</b> — กราฟทองแบบไม่มีสัญญาณ</a>
     <div id="signIn"></div>
+    <div class="faq">
+      <h2>คำถามที่พบบ่อย</h2>
+      <details><summary>สมัครแล้วต้องจ่ายเงินทันทีไหม?</summary><p>ขั้นแรกสมัครบัญชีก่อน (ยังไม่มีค่าใช้จ่าย) จากนั้นระบบจะพาไปหน้าเลือกแพ็กเกจ เข้าใช้เว็บได้หลังชำระเงินเรียบร้อย</p></details>
+      <details><summary>ทำไมมีรหัสส่งมาทางอีเมล?</summary><p>เป็นรหัส 6 หลักสำหรับยืนยันว่าเป็นอีเมลของคุณจริง หากไม่พบ ให้ตรวจในโฟลเดอร์สแปม/โปรโมชัน · สมัครด้วยปุ่ม Google ไม่ต้องใช้รหัส</p></details>
+      <details><summary>ชำระเงินด้วยอะไรได้บ้าง?</summary><p>บัตรเครดิต/เดบิต (ต่ออายุอัตโนมัติ) หรือ PromptPay (ชำระครั้งเดียว) ผ่าน Stripe — เว็บไซต์ไม่เห็นและไม่เก็บเลขบัตร</p></details>
+      <details><summary>ยกเลิกหรือขอคืนเงินได้ไหม?</summary><p>ยกเลิกการต่ออายุได้ทุกเมื่อในแท็บบัญชี และขอคืนเงินเต็มจำนวนได้ภายใน 7 วันหลังชำระครั้งแรก · <a href="/terms.html">อ่านเงื่อนไข</a></p></details>
+      <details><summary>ลืมรหัสผ่าน?</summary><p>กดแท็บ "เข้าสู่ระบบ" ใส่อีเมล แล้วเลือก "Forgot password?" ระบบจะส่งรหัสตั้งรหัสผ่านใหม่ไปทางอีเมล</p></details>
+    </div>
     <div class="trust"><span><i>🔒</i> ชำระผ่าน Stripe</span><span><i>✦</i> ผลจริงทุกไม้</span><span><i>↩</i> คืนเงินใน 7 วัน</span><span><i>✕</i> ยกเลิกได้ทุกเมื่อ</span></div>
     <p class="privacy">การสมัครและเข้าใช้งาน ถือว่ายอมรับการเก็บอีเมล บันทึกการเข้าใช้ (เวลา อุปกรณ์ เมืองโดยประมาณ) เพื่อดูแลระบบ · <a href="/terms.html">เงื่อนไขการใช้บริการ</a> · <a href="/privacy.html">นโยบายความเป็นส่วนตัว</a></p>
   </main>
@@ -139,6 +168,8 @@
         if (mode === 'in') Clerk.unmountSignIn($('signIn')); else if (mode === 'up') Clerk.unmountSignUp($('signIn'));
         mode = m;
         document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
+        document.body.classList.toggle('mode-in', m === 'in'); // the 1-2-3 steps only while signing up
+        $('lead').innerHTML = m === 'in' ? 'สมาชิกเข้าสู่ระบบด้วยอีเมลหรือ Google ที่สมัครไว้ · ยังไม่มีบัญชี? กดแท็บ <b>“สมัครสมาชิก”</b>' : 'ขั้นที่ 1 — สร้างบัญชีด้วยอีเมลหรือ Google (ยังไม่มีค่าใช้จ่าย) แล้วไปเลือกแพ็กเกจในขั้นที่ 2';
         if (m === 'in') Clerk.mountSignIn($('signIn'), { ...opts, withSignUp: true }); else Clerk.mountSignUp($('signIn'), opts);
       };
       $('tabs').hidden = false;

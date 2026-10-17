@@ -313,6 +313,11 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 17 ต.ค. 2569 — ① ② ③ หน้าสมัครสมาชิกเข้าใจง่ายขึ้น
+- ผู้ใช้: "ทำให้เข้าใจมากขึ้นตอนหน้าสมัครสมาชิก" → ถามแบบ (มีตัวอย่าง) → เลือก "ขั้นตอน 3 ขั้นด้านบน + กล่องสมัคร"
+- login.html: `ol.steps` (สมัครบัญชี → เลือกแพ็กเกจ → เริ่มใช้งาน, ขั้น 1 `.on`) แสดงเฉพาะแท็บสมัคร (`body.mode-in` ซ่อน) · `#lead` เปลี่ยนตามแท็บ · `.faq` 5 ข้อ (ต้องจ่ายทันทีไหม / รหัสทางอีเมล / ช่องทางชำระ / ยกเลิก-คืนเงิน / ลืมรหัสผ่าน) · pay.html: แถบเดียวกัน (ขั้น 1 `.done` ✓, ขั้น 2 `.on`; จ่ายสำเร็จ → ขั้น 3 `.on`)
+- ทดสอบ: แท็บสมัคร/เข้าสู่ระบบ/หน้าจ่าย × 1280 + 390 ไม่ล้น ไม่มี error · deploy ด้านล่าง
+
 ## 17 ต.ค. 2569 — 🐙 GitHub สวยขึ้น (README + repo)
 - ผู้ใช้: "ช่วยทำใน Git ให้สวยหน่อย ออกแบบให้สวยหน่อยใน Git" → README.md ใหม่ทั้งไฟล์: `docs/img/banner.svg` (ดำ–ทอง), badge shields.io (**ข้อความ badge ต้องเป็นอังกฤษ** — ฟอนต์ไทยแตก), ภาพ docs/img/{landing,signals,chart,results,pricing,login,marketing}.png (ใช้ภาพจาก compare/), ตารางความสามารถ, Mermaid สถาปัตยกรรม (**ห้ามใช้อีโมจิ/▲ และลูกศรสองทางต่อกันยาว — GitHub ขึ้น "Unable to render rich display"**; แบบเรียบผ่าน), โครงสร้าง, รัน/Deploy, คำเตือนความเสี่ยง
 - `gh repo edit`: description ไทย+อังกฤษ, homepage **gold-signal-ten.vercel.app** (เดิมผิดเป็น gold-signal-ruby), topics 12 อัน · ภาพปก docs/img/social.png 1280×640 (สำเนา Downloads/gold-signal-github-cover.png) — **social preview อัปโหลดผ่าน API ไม่ได้ ผู้ใช้ต้องทำที่ Settings → General → Social preview**
