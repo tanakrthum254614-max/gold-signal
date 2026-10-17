@@ -314,6 +314,18 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 17 ต.ค. 2569 — ⚡ ลื่นและเบาขึ้น (ภาระเครื่องตอนเปิดทิ้งไว้ 83% → ~17%)
+- ผู้ใช้: "ทุกอย่างสเถียรแล้วใช่ไหม" → "ขอเสถียรมากกว่านี้ ให้มันสมดุลและสมูทไหลลื่นในการใช้งาน" → วัดก่อนแก้ (gold-signal-tools: perf.cjs โหลด/คำขอ/long task/สลับแท็บ · busy.cjs ภาระ main thread ตอนเปิดทิ้งไว้ 10 วิ ต่อแท็บ บนมือถือแนวนอน CPU ×4 [โหมด info/noanim/open] · idleprof.cjs trace ว่าเวลาไปที่ callback ไหน · idle.cjs คำขอ/KB ต่อนาทีต่อแท็บ · cls.cjs layout shift · zfpause.cjs · halo.cjs)
+- เจอ 5 จุด แก้แล้ว (หน้าตาไม่เปลี่ยน):
+  1. **splash** จางหายแล้วยังอยู่ (visibility:hidden) แอนิเมชัน ~40 ตัววิ่งตลอด → auth.js MutationObserver: มี `.gone` → 600 ms แล้ว `display:none` (ถอด gone → แสดงคืน) + live.css `.splash.gone *` pause · ยังเล่นครั้งเดียวต่อแท็บ/รีเฟรชข้าม (reload.cjs ผ่าน)
+  2. **motion.js** ฝุ่นทอง: ธีมมืด return แต่ rAF ยังวิ่ง 60/วิ → ธีมมืดหยุดลูปจริง, MutationObserver class ของ html สลับธีมแล้วเริ่ม/หยุด
+  3. **จุดกะพริบข้างราคา** `#lvDot` (SVG + drop-shadow scale ทุกเฟรม ≈20% CPU) → `.lv-dot { animation:none }` + main.js `placeHalo()` สร้าง `#lvHalo` (HTML ซ้อนตำแหน่งเดียวกัน สีจาก fill ของจุด, ResizeObserver) กะพริบด้วย `dsDot` transform
+  4. **จุด LIVE แบบ box-shadow** (`pulse`, `stPulse`, `nlPulse`, `pentryPulse`) ทำให้ restyle ทั้งแท็บทุกเฟรม (แท็บผลงาน 63%) → terminal.css ประกาศ keyframes ใหม่ท้ายไฟล์ = opacity + scale
+  5. **iframe หุ้นสหรัฐ** ออกจากแท็บแล้ว socket/poll ยังวิ่ง (allMids ~60 KB ทุก 1 วิตอนสตรีมเงียบ) → ui.js `zfTell()` postMessage `{zf:'pause'|'resume'}` ตอนสลับแท็บ + ตอน iframe load · site-live.js `sitePause/siteResume` (+ document hidden) · frames2/site-cards/gurus เช็ก `window.zfPaused` · poll allMids ตอนเงียบ ≤ ทุก 5 วิ
+- ผล busy.cjs: หน้าสัญญาณ 83→17–19% · กราฟ 84→16% · ผลงาน 87→14% · บันทึก 82→19% · บัญชี 83→21% · จำลองตลาดเปิด 21% · iframe ออกจากแท็บ 30 วิ = 0 คำขอ · layout shift หลังโหลด 0.004 · regression: reload/easyui/soak/fold/tabclick ผ่าน
+- หมายเหตุทดสอบ: headless วัด animation แบบ composited ไม่ได้แม่น (ไม่มี GPU) — ใช้ busy.cjs เทียบก่อน/หลังพอ · มือถือแนวตั้งมีหน้า "หมุนเป็นแนวนอน" ทับ (ตั้งใจ) → ทดสอบมือถือใช้ 844×390 · เว็บจริงทดสอบหน้าสมาชิกไม่ได้ (ต้องล็อกอิน; ACCESS_SECRET จาก env pull ใช้ไม่ได้ — ไม่ต้องพยายามต่อ)
+- commit 7e986c2 · เวอร์ชัน 202610180100
+
 ## 17 ต.ค. 2569 — ✍️ ภาษาทางการ: หน้าแรก · หน้าชำระเงิน · กล่อง Clerk
 - ผู้ใช้: "อยากปรับอะไรไหม" → ผมเสนอ 4 ข้อ (1 ป้าย Development mode = รอโดเมน · 2 คำในกล่อง Clerk · 3 หน้าอื่นยังใช้ "ไม้" · 4 Buy → ซื้อ ไม่จำเป็น) → "ปรับมา" → ทำข้อ 2 + 3
 - login.html: THAI localization subtitle "ใช้อีเมลหรือบัญชี Google ที่ลงทะเบียนไว้" / "สร้างบัญชีด้วยอีเมลหรือ Google จากนั้นเลือกแพ็กเกจ 149 บาท/เดือน หรือ 1,290 บาท/ปี" · `formFieldInputPlaceholder__password` "กรอกรหัสผ่าน", `__signUpPassword` "ตั้งรหัสผ่าน", `__emailAddress` "กรอกอีเมล" · `body.mode-in .lead` ซ่อน (ซ้ำกับกล่อง) · มือถือแท็บสมัครก็ซ่อน lead เหมือนเดิม
