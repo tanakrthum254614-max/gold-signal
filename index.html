@@ -46,7 +46,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=202610141600">
-  <link rel="stylesheet" href="live.css?v=202610171300">
+  <link rel="stylesheet" href="live.css?v=202610171500">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
   <link rel="stylesheet" href="terminal.css?v=202610171400">
@@ -136,6 +136,7 @@
       <a class="brand" href="#home"><img class="logo" src="logo.svg" alt=""><b>Gold Signal</b></a>
       <div class="appbar-right">
         <span class="hdr-price mono" id="hdrPrice">—</span>
+        <button class="mode-btn" id="modeBtn" type="button" aria-pressed="true">โหมดง่าย</button>
         <button class="theme-btn" id="themeBtn" type="button" title="สลับโหมดสว่าง/มืด" aria-label="สลับโหมดสว่าง/มืด">🌙</button>
         <span class="conn" id="conn"><span class="dot"></span><span id="connText">กำลังเชื่อมต่อ…</span></span>
         <a href="#account" class="avatar-link" title="บัญชีของฉัน"><img id="hdrAvatar" class="avatar" alt=""></a>
@@ -165,6 +166,9 @@
       <!-- Live US-news strip on every tab (newsstats.js): countdown 15 min before a high-impact release, then actual vs forecast + gold since -->
       <div class="news-live" id="newsLive" hidden></div>
       <section id="tab-home" class="tab">
+
+        <!-- 💡 one-line answer on top (easy.js, 17 Oct 2026: "อยากปรับให้มันดูเข้าใจง่ายมากขึ้น") -->
+        <div class="card easy-sum" id="easySum" hidden></div>
 
         <!-- Live price -->
         <div class="card lv" id="liveHero">
@@ -198,7 +202,7 @@
           <div class="sig-top"><span class="muted"><i class="sm-dot" id="smDot"></i>แนวโน้มสด · ระบบหลัก 1 ชม.</span><span class="muted small" id="inNext"></span></div>
           <p class="small beat" id="inBeat" hidden></p>
           <!-- Trend strength: −6 … +6 as a segmented bar, plus the three timeframes that vote -->
-          <div class="sm" id="sm">
+          <div class="sm adv" id="sm">
             <div class="sm-head">
               <div class="sm-score"><b class="mono" id="gScore">0</b><span class="mono">/ ±6</span></div>
               <div class="sm-mood"><b id="smMood">กำลังวิเคราะห์…</b><small id="gScoreSub">คะแนนสด</small></div>
@@ -215,18 +219,18 @@
           <div class="intra-call" id="inCall">กำลังวิเคราะห์…</div>
           <p class="intra-why muted" id="inWhy"></p>
           <div class="in-flags" id="inFlags" hidden></div>
-          <details class="why-box" id="inDetail"><summary id="inDetailSum">🔍 ดูเหตุผลละเอียด</summary><div class="why-body" id="inDetailBody"></div></details>
+          <details class="why-box adv" id="inDetail"><summary id="inDetailSum">🔍 ดูเหตุผลละเอียด</summary><div class="why-body" id="inDetailBody"></div></details>
         </div>
 
         <div id="inTrade"></div>
 
         <!-- Odds for each side, as donuts -->
-        <h3 class="sec-title">🎯 ถ้าเข้าตอนนี้ — โอกาสแต่ละจุด <span class="lv-tag">สด</span></h3>
-        <div class="donuts">
+        <h3 class="sec-title adv">🎯 ถ้าเข้าตอนนี้ — โอกาสแต่ละจุด <span class="lv-tag">สด</span></h3>
+        <div class="donuts adv">
           <div class="card dn buy" id="dnBuy"></div>
           <div class="card dn sell" id="dnSell"></div>
         </div>
-        <p class="muted small dn-note" id="dnNote"></p>
+        <p class="muted small dn-note adv" id="dnNote"></p>
 
         <!-- 📒 Real results of every trade on the timeframes with entries (main.js renderRecord, 16 Oct 2026) -->
         <h3 class="sec-title">📒 ผลจริงทุกไม้ · กรอบที่ทดสอบผ่านทุกช่วง</h3>
@@ -605,7 +609,8 @@
 
         <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
-        <p class="muted small center">เวอร์ชัน 202610171400 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center"><button class="btn" type="button" onclick="window.gsTour && gsTour()">ดูทัวร์แนะนำอีกครั้ง</button></p>
+        <p class="muted small center">เวอร์ชัน 202610171500 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
@@ -625,11 +630,12 @@
   <script src="pwa.js?v=202610121500"></script>
   <script src="ui.js?v=202610171000"></script>
   <script src="chartsys.js?v=202610171200"></script>
-  <script src="main.js?v=202610171200"></script>
+  <script src="main.js?v=202610171500"></script>
   <script src="tradeplan.js?v=202610121500"></script>
   <script src="chartzones.js?v=202610170700"></script>
   <script src="newsstats.js?v=202610170000"></script>
   <script src="chartchat.js?v=202610170700"></script>
+  <script src="easy.js?v=202610171500"></script>
   <script src="journal.js?v=202610171300"></script>
   <script src="pricealerts.js?v=202610170100"></script>
   <script src="motion.js?v=202610141800"></script>

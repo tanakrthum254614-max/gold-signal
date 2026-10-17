@@ -1301,6 +1301,10 @@ function renderIntra() {
   }
   $('intraCard').className = `card intra ${cls}`;
   $('inCall').textContent = call;
+  // the same answer in plain words for the summary box on top (easy.js, 17 Oct 2026)
+  state.easy = { cls, open, pause, go: offDir, near: !!(dec && off === '' && CHARTSYS.dirOf(sys, dec)), news: !!(dec && dec.news), closed: off === 'closed', late: off === 'late' || !dec,
+    nextOpen: off === 'closed' ? INTRA.nextOpen(now) : 0, sides, price, sys, next };
+  if (window.renderEasy) window.renderEasy();
 
   if (pause && !open) {
     $('inWhy').textContent = `ไม่แนะนำเปิดไม้ใหม่${pause.until ? ` จนถึง ${thaiTime(pause.until)} น.` : ' จนกว่าผล 20 ไม้ล่าสุดจะกลับมาใกล้ผลทดสอบ'} — ระบบยังบันทึกต่อ`;

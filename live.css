@@ -714,3 +714,25 @@ html.light .exp-bar { background: #fff4d6; color: #6b4a00; }
 /* 🤝 referral card (journal.js loadRef, 17 Oct 2026) */
 .ref-card .ref-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
 .ref-card .ref-row input { flex: 1; min-width: 220px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 13px; }
+
+/* 💡 easier to understand (easy.js, 17 Oct 2026) */
+.easy-sum { padding: 16px 18px; border-left: 4px solid var(--muted, #8a93a3); }
+.easy-sum.buy { border-left-color: var(--up, #0ecb81); } .easy-sum.sell { border-left-color: var(--down, #f6465d); }
+.easy-sum .es-k { font-size: 12.5px; color: var(--muted); letter-spacing: .3px; margin-bottom: 4px; }
+.easy-sum .es-t { display: flex; gap: 10px; align-items: baseline; font-size: 20px; font-weight: 700; line-height: 1.45; }
+.easy-sum .es-i { font-size: 22px; } .easy-sum .es-l { margin-top: 6px; font-size: 15px; line-height: 1.6; }
+.easy-sum .up { color: var(--up, #0ecb81); } .easy-sum .down { color: var(--down, #f6465d); }
+html.easy .adv, html.easy #sm { display: none !important; } /* #sm: main.js rewrites its className every draw */
+html.easy #tab-chart .cz-box details { display: none; }
+.mode-btn { font: inherit; font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(212, 175, 95, .45); background: rgba(212, 175, 95, .1); color: inherit; cursor: pointer; white-space: nowrap; }
+html:not(.easy) .mode-btn { background: transparent; opacity: .85; }
+.gl { border-bottom: 1px dotted currentColor; cursor: help; }
+.gl::after { content: "ⓘ"; font-size: .72em; margin-left: 2px; vertical-align: super; opacity: .7; }
+.gl-pop { position: fixed; z-index: 300; background: var(--panel, #161a1e); color: var(--text, #eaecef); border: 1px solid rgba(212, 175, 95, .5); border-radius: 14px; padding: 14px 16px; box-shadow: 0 18px 50px rgba(0, 0, 0, .5); font-size: 14px; line-height: 1.6; }
+.gl-pop b { display: block; margin-bottom: 4px; } .gl-pop p { margin: 0 0 10px; } .gl-pop .btn { padding: 6px 14px; min-height: 0; }
+.tour { position: fixed; inset: 0; z-index: 250; }
+.tour-hole { position: fixed; border-radius: 14px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, .66); border: 2px solid #d4af5f; transition: all .25s ease; pointer-events: none; }
+.tour-tip { position: fixed; background: var(--panel, #161a1e); color: var(--text, #eaecef); border: 1px solid rgba(212, 175, 95, .55); border-radius: 16px; padding: 14px 16px; box-shadow: 0 18px 50px rgba(0, 0, 0, .55); transition: top .25s ease, left .25s ease; }
+.tour-tip small { color: var(--muted); } .tour-tip b { display: block; font-size: 16px; margin: 2px 0 4px; } .tour-tip p { margin: 0 0 12px; font-size: 14.5px; line-height: 1.6; }
+.tour-tip div { display: flex; gap: 8px; justify-content: flex-end; } .tour-tip .btn { min-height: 0; padding: 7px 16px; }
+@media (max-width: 600px) { .easy-sum .es-t { font-size: 17px; } .mode-btn { font-size: 12px; padding: 5px 10px; } }
