@@ -4,53 +4,55 @@
 
 <br>
 
-<a href="https://gold-signal-ten.vercel.app"><img src="https://img.shields.io/badge/LIVE-gold--signal--ten.vercel.app-d4af5f?style=for-the-badge&labelColor=0a0a0c" alt="Live site"></a> <a href="https://gold-signal-ten.vercel.app/demo.html"><img src="https://img.shields.io/badge/TRY-DEMO-f4ecda?style=for-the-badge&labelColor=0a0a0c" alt="Demo"></a>
-
-<img src="https://img.shields.io/badge/Vercel-deployed-000?logo=vercel&logoColor=white" alt="Vercel"> <img src="https://img.shields.io/badge/Node.js-24-3c873a?logo=nodedotjs&logoColor=white" alt="Node.js"> <img src="https://img.shields.io/badge/GitHub%20Actions-every%205%20min-2088ff?logo=githubactions&logoColor=white" alt="GitHub Actions"> <img src="https://img.shields.io/badge/Stripe-THB%20%C2%B7%20PromptPay-635bff?logo=stripe&logoColor=white" alt="Stripe"> <img src="https://img.shields.io/badge/LINE-alerts-06c755?logo=line&logoColor=white" alt="LINE">
-
-**เว็บสัญญาณเทรดทองคำ XAU/USD แบบเรียลไทม์ — จุดเข้า · ตัดขาดทุน · เป้ากำไร ที่ทดสอบย้อนหลังหลายปี และเปิดผลจริงทุกไม้ ทั้งชนะและแพ้**
-
-<sub>Real-time gold (XAU/USD) trading signals for Thai traders — backtested entries, stop-loss and targets, with every live trade published, wins and losses alike.</sub>
+<a href="https://gold-signal-ten.vercel.app"><img src="https://img.shields.io/badge/Website-gold--signal--ten.vercel.app-d4af5f?style=flat-square&labelColor=0a0a0c" alt="Website"></a>
+<a href="https://gold-signal-ten.vercel.app/demo.html"><img src="https://img.shields.io/badge/Demo-available-f4ecda?style=flat-square&labelColor=0a0a0c" alt="Demo"></a>
+<img src="https://img.shields.io/badge/Vercel-000?style=flat-square&logo=vercel&logoColor=white" alt="Vercel">
+<img src="https://img.shields.io/badge/Node.js-24-3c873a?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js">
+<img src="https://img.shields.io/badge/GitHub%20Actions-2088ff?style=flat-square&logo=githubactions&logoColor=white" alt="GitHub Actions">
+<img src="https://img.shields.io/badge/Stripe-635bff?style=flat-square&logo=stripe&logoColor=white" alt="Stripe">
+<img src="https://img.shields.io/badge/LINE%20API-06c755?style=flat-square&logo=line&logoColor=white" alt="LINE API">
 
 </div>
 
----
+## Overview
 
-## ✦ ภาพรวม
+**Gold Signal** คือแพลตฟอร์มสัญญาณการซื้อขายทองคำ (XAU/USD) แบบเรียลไทม์สำหรับนักลงทุนชาวไทย ระบุจุดเข้าซื้อขาย จุดตัดขาดทุน และเป้าหมายกำไร จากกติกาที่ผ่านการทดสอบย้อนหลังด้วยข้อมูลหลายปี และเปิดเผยผลการซื้อขายจริงทุกรายการ ทั้งรายการที่มีกำไรและขาดทุน
 
-<p align="center"><img src="docs/img/landing.png" alt="หน้าแรก" width="100%"><br><sub>✦ <b>หน้าแรก</b> — ดีไซน์ดำ–ทอง · ราคาทองสด · ผลจริง · ราคา · คำถามที่พบบ่อย</sub></p>
+*A real-time gold (XAU/USD) trading signal platform for Thai traders: backtested entry, stop-loss and target levels, with every live trade published — profitable and losing alike.*
+
+<p align="center"><img src="docs/img/landing.png" alt="Landing page" width="100%"><br><sub>หน้าแรกของเว็บไซต์</sub></p>
 
 <table>
 <tr>
-<td width="50%"><img src="docs/img/signals.png" alt="หน้าสัญญาณ"><br><sub>💡 <b>หน้าสัญญาณ</b> — "ตอนนี้ควรทำอะไร?" คำตอบเดียวบนสุด (โหมดง่าย)</sub></td>
-<td width="50%"><img src="docs/img/chart.png" alt="หน้ากราฟ"><br><sub>📈 <b>หน้ากราฟ</b> — จุดเข้า Buy / Sell · SL · TP ทุกกรอบเวลา</sub></td>
+<td width="50%"><img src="docs/img/signals.png" alt="Signals"><br><sub><b>หน้าสัญญาณ</b> — สรุปคำแนะนำปัจจุบันของระบบหลักในประโยคเดียว</sub></td>
+<td width="50%"><img src="docs/img/chart.png" alt="Chart"><br><sub><b>หน้ากราฟ</b> — จุดเข้า Buy / Sell พร้อม SL และ TP ทุกกรอบเวลา</sub></td>
 </tr>
 <tr>
-<td><img src="docs/img/results.png" alt="ผลจริง"><br><sub>📒 <b>ตัวเลขจริง ไม่ตกแต่ง</b> — ผลทดสอบ + ผลจริงทุกไม้ อัปเดตเอง</sub></td>
-<td><img src="docs/img/pricing.png" alt="แพ็กเกจ"><br><sub>💳 <b>แพ็กเกจ</b> — 149 บาท/เดือน · 1,290 บาท/ปี ผ่าน Stripe (บัตร / PromptPay)</sub></td>
+<td><img src="docs/img/results.png" alt="Results"><br><sub><b>ผลการดำเนินงาน</b> — ผลทดสอบย้อนหลังและผลจริงทุกรายการ</sub></td>
+<td><img src="docs/img/pricing.png" alt="Pricing"><br><sub><b>แพ็กเกจสมาชิก</b> — ชำระผ่าน Stripe (บัตร / PromptPay)</sub></td>
 </tr>
 <tr>
-<td><img src="docs/img/login.png" alt="เข้าสู่ระบบ"><br><sub>🔐 <b>สมัคร / เข้าสู่ระบบ</b> — อีเมลหรือ Google (Clerk)</sub></td>
-<td><img src="docs/img/marketing.png" alt="ผู้ช่วยการตลาด"><br><sub>📣 <b>หลังบ้าน · ผู้ช่วยการตลาด AI</b> — ร่างโพสต์จากตัวเลขจริงให้กดอนุมัติ</sub></td>
+<td><img src="docs/img/login.png" alt="Sign in"><br><sub><b>การสมัครและเข้าสู่ระบบ</b> — อีเมลหรือบัญชี Google</sub></td>
+<td><img src="docs/img/marketing.png" alt="Back office"><br><sub><b>ระบบหลังบ้าน</b> — ผู้ช่วยร่างประกาศการตลาดจากข้อมูลจริง</sub></td>
 </tr>
 </table>
 
-## ✦ ความสามารถ
+## Key Features
 
-| | |
+| Area | Description |
 |---|---|
-| 🎯 **สัญญาณทุกกรอบเวลา** | 5 นาที – 1 สัปดาห์ · กรอบที่ผ่านการทดสอบทุกช่วง (1 ชม. · 5 ชม. · 1 วัน) ส่ง LINE · กรอบอื่นติดป้าย ⚠️ เสี่ยง |
-| 🧪 **ทดสอบย้อนหลัง** | ข้อมูล 2–5 ปี แบ่ง 4 ช่วง หักสเปรด · ทดสอบซ้ำอัตโนมัติทุกเดือน (`test-stats.json`) |
-| 📒 **ผลจริงโปร่งใส** | ตัวบันทึกเปิด/ปิดไม้เองทุก 5 นาที (`chart-signals.json`, branch `data`) — แสดงทั้งไม้ชนะและแพ้ |
-| 🛑 **ป้องกันความเสี่ยง** | พักสัญญาณเองเมื่อแพ้ติดกัน · งดเข้าช่วงข่าวแรงสหรัฐ ±30 นาที · เครื่องคำนวณขนาดไม้ |
-| ⚡ **เรียลไทม์** | ราคาสดจากสตรีม investing.com (~1 วินาที) พร้อมแหล่งสำรอง · ตัวเฝ้าสตรีมต่อใหม่เอง |
-| 💬 **แจ้งเตือน** | LINE Official Account + Web Push · แจ้งเตือนราคาที่ตั้งเอง 10 รายการ · เตือนก่อนสมาชิกหมดอายุ |
-| 🤖 **โค้ช AI** | อ่านสัญญาณทุกกรอบ + สมุดเทรดของสมาชิกก่อนตอบ (Vercel AI Gateway) |
-| 📊 **หุ้นสหรัฐ + พอร์ตกูรู** | Nasdaq 100 · S&P 500 · หุ้นปันผล · พอร์ต 28 นักลงทุนจากรายงาน 13F ของ SEC |
-| 💳 **สมาชิกแบบชำระเงิน** | Stripe Checkout (บัตรต่ออายุ / PromptPay) · webhook เปิด–ปิดสิทธิ์ · คืนเงินแล้วปิดสิทธิ์เอง · ชวนเพื่อน +7 วัน |
-| 🛠️ **หลังบ้าน** | สมาชิก · บันทึกการเข้าใช้ · บทความ · สถานะระบบ · รายได้ · 📣 ผู้ช่วยการตลาด AI (ร่างโพสต์ LINE / Facebook / SEO ให้อนุมัติ) |
+| **Signals** | สัญญาณทุกกรอบเวลาตั้งแต่ 5 นาทีถึง 1 สัปดาห์ · กรอบที่ผ่านการทดสอบทุกช่วง (1 ชั่วโมง, 5 ชั่วโมง, 1 วัน) ส่งแจ้งเตือน · กรอบอื่นระบุสถานะ "สัญญาณเสี่ยง" |
+| **Backtesting** | ทดสอบย้อนหลังด้วยข้อมูล 2–5 ปี แบ่ง 4 ช่วงเวลา หักต้นทุนสเปรด และทดสอบซ้ำอัตโนมัติทุกเดือน |
+| **Transparency** | ระบบบันทึกการเปิด–ปิดรายการอัตโนมัติทุก 5 นาที และแสดงผลจริงทั้งกำไรและขาดทุน |
+| **Risk Controls** | หยุดให้สัญญาณอัตโนมัติเมื่อขาดทุนต่อเนื่อง · งดเข้าซื้อขายช่วงประกาศข่าวเศรษฐกิจสำคัญ · เครื่องคำนวณขนาดการซื้อขาย |
+| **Real-time Data** | ราคาสดจากสตรีมข้อมูล (~1 วินาที) พร้อมแหล่งข้อมูลสำรองและการเชื่อมต่อใหม่อัตโนมัติ |
+| **Notifications** | LINE Official Account และ Web Push · การแจ้งเตือนราคาที่กำหนดเอง · การแจ้งเตือนก่อนสมาชิกภาพหมดอายุ |
+| **AI Coach** | ผู้ช่วย AI วิเคราะห์สัญญาณทุกกรอบเวลาและบันทึกการซื้อขายของสมาชิกก่อนให้คำแนะนำ |
+| **US Equities** | แดชบอร์ด Nasdaq 100, S&P 500, หุ้นปันผล และพอร์ตการลงทุนของนักลงทุนสถาบัน 28 รายจากรายงาน 13F |
+| **Membership & Billing** | Stripe Checkout (บัตรต่ออายุอัตโนมัติ / PromptPay) · การเปิด–ปิดสิทธิ์ผ่าน webhook · การคืนเงิน · โปรแกรมแนะนำเพื่อน |
+| **Back Office** | การจัดการสมาชิก บันทึกการเข้าใช้งาน บทความ สถานะระบบ รายงานรายได้ และผู้ช่วยร่างประกาศการตลาด |
 
-## ✦ สถาปัตยกรรม
+## Architecture
 
 ```mermaid
 flowchart LR
@@ -79,45 +81,40 @@ flowchart LR
   API --> CLERK["Clerk"]
 ```
 
-## ✦ โครงสร้างโปรเจกต์
+## Tech Stack
+
+- **Frontend** — HTML, CSS, JavaScript (ไม่ใช้ framework) · TradingView Lightweight Charts
+- **Backend** — Vercel Serverless Functions, Edge Middleware, Vercel Blob, Vercel Cron
+- **Automation** — GitHub Actions (ตรวจสอบสัญญาณทุก 5 นาที, งานรายวัน / รายสัปดาห์ / รายเดือน)
+- **Integrations** — Stripe, Clerk, LINE Messaging API, Web Push, Vercel AI Gateway, SEC EDGAR
+- **Research** — Node.js และ Python สำหรับการทดสอบย้อนหลัง (`research/`)
+
+## Project Structure
 
 ```
-├── index.html · main.js · chartzones.js · chartchat.js · easy.js   เว็บสมาชิก
-├── chartsys.js · intraday.js · indicators.js · signals.js          กติกาสัญญาณ (ใช้ร่วมเว็บ + ตัวบันทึก)
-├── welcome.html · login.html · pay.html · demo.html · terms.html   หน้าสาธารณะ (premium.css ดำ–ทอง)
-├── middleware.js                                                   ล็อกอิน · สิทธิ์ · ข้อมูลจาก branch data
-├── api/            pro · pay/{checkout,portal,webhook} · golive · coach · journal · articles · market · news · candles
+├── index.html · main.js · chartzones.js · chartchat.js · easy.js   เว็บไซต์สำหรับสมาชิก
+├── chartsys.js · intraday.js · indicators.js · signals.js          กติกาสัญญาณ (ใช้ร่วมกับระบบบันทึก)
+├── welcome.html · login.html · pay.html · demo.html · terms.html   หน้าสาธารณะ
+├── middleware.js                                                   การยืนยันตัวตนและสิทธิ์สมาชิก
+├── api/            pro · pay · golive · coach · journal · articles · market · news · candles
 ├── lib/            gs · stripe · blog · ref
-├── scripts/        chart-run · news-warn · price-alerts-user · pro-expiry · backup-blob · market-send · morning-plan · weekly
-├── research/       ชุดทดสอบย้อนหลัง (qualtest · exitlab · selltest · monthly …)
-└── zframes/        แดชบอร์ดหุ้นสหรัฐ + พอร์ตกูรู
+├── scripts/        chart-run · news-warn · price-alerts-user · pro-expiry · backup-blob · market-send
+├── research/       ชุดทดสอบย้อนหลัง
+└── zframes/        แดชบอร์ดหุ้นสหรัฐ
 ```
 
-## ✦ รันในเครื่อง
+## Development
 
 ```bash
-PORT=3000 node dev-server.js     # ไม่ต้อง npm install — /api/* เป็นข้อมูลจำลอง
-# เปิด http://localhost:3000
+PORT=3000 node dev-server.js     # ไม่ต้องติดตั้ง dependency — /api/* ใช้ข้อมูลจำลอง
 ```
 
-ตัวบันทึกสัญญาณ (ไม่บันทึกจริงถ้าไม่ใส่ `RECORD=true`):
+การ push ไปยัง branch `main` จะ deploy ไปยัง Vercel โดยอัตโนมัติ ข้อมูลการซื้อขายจัดเก็บใน branch `data` ซึ่งไม่ถูก deploy และค่าลับทั้งหมดจัดเก็บใน Vercel / GitHub Secrets
 
-```bash
-python scripts/fetch_data.py data.json && node scripts/chart-run.js data.json
-```
+## Disclaimer
 
-## ✦ Deploy
-
-- **push ขึ้น `main` = deploy อัตโนมัติ** (Vercel) · ข้อมูลไม้อยู่ branch `data` ซึ่งไม่ deploy
-- ค่าลับทั้งหมดอยู่ใน Vercel / GitHub Secrets (ไม่มีใน repo) — เช่น `CLERK_SECRET_KEY`, `STRIPE_LIVE_SECRET_KEY`, `BLOB_READ_WRITE_TOKEN`, `LINE_CHANNEL_ACCESS_TOKEN`
-- Vercel Hobby: ฟังก์ชันได้ไม่เกิน 12 ตัวต่อ deploy (ตอนนี้ใช้ 11)
+การซื้อขายทองคำมีความเสี่ยงสูง ผู้ลงทุนอาจสูญเสียเงินลงทุนบางส่วนหรือทั้งหมด ข้อมูลและสัญญาณในโปรเจกต์นี้มีวัตถุประสงค์เพื่อประกอบการตัดสินใจเท่านั้น **มิใช่คำแนะนำการลงทุน** และผลการดำเนินงานในอดีตมิได้เป็นสิ่งยืนยันผลการดำเนินงานในอนาคต
 
 ---
 
-<div align="center">
-
-> ⚠️ **คำเตือนความเสี่ยง** — การเทรดทองคำมีความเสี่ยงสูง อาจสูญเสียเงินลงทุนบางส่วนหรือทั้งหมด ข้อมูลและสัญญาณเป็นข้อมูลประกอบการตัดสินใจ **ไม่ใช่คำแนะนำการลงทุน** ผลในอดีตไม่รับประกันผลในอนาคต
-
-<sub>© 2569 Gold Signal · สร้างในประเทศไทย 🇹🇭 · ติดต่อ LINE <a href="https://line.me/R/ti/p/@279arudw">@279arudw</a></sub>
-
-</div>
+<div align="center"><sub>© 2569 Gold Signal · Developed by <a href="https://github.com/tanakrthum254614-max">Tan Akrthum</a> · Bangkok, Thailand</sub></div>
