@@ -57,7 +57,7 @@ function whyLines(a) {
   const lines = [];
   if (a.votes) lines.push(`investing.com วิเคราะห์ ${a.votes.total} ช่วงเวลา: บอก “ลง” ${a.votes.down} · “ขึ้น” ${a.votes.up}`);
   lines.push(`แนวโน้ม ระยะสั้น ${TREND_TH[a.bias.short]} · ระยะกลาง ${TREND_TH[a.bias.mid]} · ระยะยาว ${TREND_TH[a.bias.long]}`);
-  if (!SIG.RULE.advisory) lines.push(`เทรดสั้น: TP ${SIG.RULE.tpUsd.map((u) => `$${u}`).join(' / ')} · SL $${SIG.RULE.slUsd} · ให้สัญญาณทุกวันทำการ`);
+  if (!SIG.RULE.advisory) lines.push(`ซื้อขายสั้น: TP ${SIG.RULE.tpUsd.map((u) => `$${u}`).join(' / ')} · SL $${SIG.RULE.slUsd} · ให้สัญญาณทุกวันทำการ`);
   if (a.atr) lines.push(`ทองแกว่งเฉลี่ยวันละ ~$${money(a.atr)}`);
   return lines;
 }
@@ -76,7 +76,7 @@ const thaiTime = (ms) => new Date(ms).toLocaleString('th-TH', { weekday: 'short'
 
 function resultText(s) {
   if (s.status === 'skip') return '⏸ ไม่มีสัญญาณ (ตลาดไม่ชัด)';
-  if (s.status === 'expired') return '⏹ ราคาไม่ถึงจุดเข้า (ไม่ได้เทรด)';
+  if (s.status === 'expired') return '⏹ ราคาไม่ถึงจุดเข้า (ไม่ได้ซื้อขาย)';
   const how = s.tps
     ? (s.hit ? `ถึง TP${s.hit}` : s.closedBy === 'sl' ? 'โดนตัดขาดทุน' : 'ปิดสิ้นวัน')
     : s.closedBy === 'tp' ? 'ถึงเป้า' : s.closedBy === 'sl' ? 'โดนตัดขาดทุน' : 'ปิดสิ้นวัน';
@@ -104,11 +104,11 @@ function flexMessage(a, sig, prev, sum, bt, news, intra, now) {
   const signalRows = advisory ? [
     txt(`🧭 แนวโน้มวันนี้: เอียง${buy ? 'ขึ้น' : 'ลง'}`, { size: 'xxl', weight: 'bold', color, margin: 'lg' }),
     txt(`ความชัดของแนวโน้ม ${'★'.repeat(sig.stars)}${'☆'.repeat(5 - sig.stars)}`, { size: 'xs', color: C.muted }),
-    txt('⚠️ ข้อมูลประกอบ ไม่ใช่สัญญาณให้เข้าไม้ — สูตรรายวันทดสอบย้อนหลังแล้วขาดทุน จึงใช้ระบบหลัก 1 ชม. เป็นหลัก (ส่งแยกเมื่อถึงจุดเข้า)', { size: 'xs', color: C.wait, margin: 'md' }),
+    txt('⚠️ ข้อมูลประกอบ ไม่ใช่สัญญาณให้เปิดรายการ — สูตรรายวันทดสอบย้อนหลังแล้วขาดทุน จึงใช้ระบบหลัก 1 ชม. เป็นหลัก (ส่งแยกเมื่อถึงจุดเข้า)', { size: 'xs', color: C.wait, margin: 'md' }),
     txt(`ระบบบันทึกผลสมมติไว้ติดตาม: ${buy ? 'ซื้อ' : 'ขาย'} ${money(sig.entry)} · SL ${money(sig.sl)} · TP ${sig.tps.map(money).join(' / ')}`, { size: 'xxs', color: C.muted }),
   ] : sig.status === 'skip' ? [
     txt('⏸ วันนี้ไม่มีสัญญาณ', { size: 'xl', weight: 'bold', color: C.wait, margin: 'lg' }),
-    txt(`ตลาดยังไม่ชัดพอ — ไม่เทรดดีกว่า รอสัญญาณใหม่ ${thaiTime(sig.expiresAt + 15 * 60e3)}`, { size: 'xs', color: C.muted }),
+    txt(`ตลาดยังไม่ชัดพอ — ไม่ซื้อขายดีกว่า รอสัญญาณใหม่ ${thaiTime(sig.expiresAt + 15 * 60e3)}`, { size: 'xs', color: C.muted }),
   ] : [
     txt(`${buy ? '🟢 ซื้อตอนนี้' : '🔴 ขายตอนนี้'} (${buy ? 'BUY' : 'SELL'})`, { size: 'xxl', weight: 'bold', color, margin: 'lg' }),
     txt(`ความมั่นใจ ${'★'.repeat(sig.stars)}${'☆'.repeat(5 - sig.stars)}`, { size: 'xs', color: C.muted }),
@@ -137,7 +137,7 @@ function flexMessage(a, sig, prev, sum, bt, news, intra, now) {
   ];
   return {
     type: 'flex',
-    altText: advisory ? `🧭 ภาพรวมทองวันนี้: แนวโน้มเอียง${buy ? 'ขึ้น' : 'ลง'} · ข้อมูลประกอบ ไม่ใช่สัญญาณเข้าไม้`
+    altText: advisory ? `🧭 ภาพรวมทองวันนี้: แนวโน้มเอียง${buy ? 'ขึ้น' : 'ลง'} · ข้อมูลประกอบ ไม่ใช่สัญญาณเปิดรายการ`
       : sig.status === 'skip' ? '⏸ สัญญาณทองวันนี้: ไม่มีสัญญาณ (ตลาดไม่ชัด)' : `🎯 สัญญาณทอง: ${SIDE_TH[sig.side]} ตอนนี้ที่ ${money(sig.entry)} · SL ${money(sig.sl)} · TP ${(sig.tps || [sig.tp]).map(money).join(' / ')}`,
     contents: {
       type: 'bubble', size: 'mega',

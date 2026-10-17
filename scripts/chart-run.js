@@ -114,7 +114,7 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
     // recorded (the website shows ⛔) but not sent — LINE is entry signals and news warnings only
     console.log(b
       ? `⛔ พักสัญญาณกราฟ ${TF_TH[tf]}: ${b.why}
-หยุดแจ้ง${b.until ? `ถึง ${when('1d', b.until)}` : 'จนกว่าผล 20 ไม้ล่าสุดจะกลับมาใกล้ผลทดสอบ'} · ระบบยังบันทึกต่อแบบไม่แจ้ง`
+หยุดแจ้ง${b.until ? `ถึง ${when('1d', b.until)}` : 'จนกว่าผล 20 รายการล่าสุดจะกลับมาใกล้ผลทดสอบ'} · ระบบยังบันทึกต่อแบบไม่แจ้ง`
       : `✅ กลับมาแจ้งสัญญาณกราฟ ${TF_TH[tf]} แล้ว`);
   }
   const brakesChanged = JSON.stringify(brakes) !== JSON.stringify(store.brakes || {});

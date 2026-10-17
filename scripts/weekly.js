@@ -31,8 +31,8 @@ function weekStart(now) {
 
 function section(name, trades) {
   const s = SIG.summary(trades, SPREAD);
-  if (!s.traded) return { s, lines: [`${name}: ไม่มีไม้ในสัปดาห์นี้`] };
-  const lines = [`${name}: ${s.traded} ไม้ · ชนะ ${s.wins} แพ้ ${s.losses} (${s.winRate}%) · ${signed(s.pnl)}/ออนซ์`];
+  if (!s.traded) return { s, lines: [`${name}: ไม่มีรายการในสัปดาห์นี้`] };
+  const lines = [`${name}: ${s.traded} รายการ · ชนะ ${s.wins} แพ้ ${s.losses} (${s.winRate}%) · ${signed(s.pnl)}/ออนซ์`];
   if (s.tp3) lines.push(`   ถึง TP1 ${s.tp1} · TP2 ${s.tp2} · TP3 ${s.tp3} ครั้ง`);
   return { s, lines };
 }
@@ -62,7 +62,7 @@ function section(name, trades) {
   const main = chart.trades.filter((t) => t.tf === CS.MAIN_TF);
   const i30 = section(`⏱️ สัญญาณ ${MAIN_TH} (ระบบหลัก)`, inWeek(main, from, now));
   const oldWeek = inWeek(intra.trades, from, now);
-  if (oldWeek.length) { const o = SIG.summary(oldWeek, SPREAD); i30.lines.push(`   (ระบบ 30 นาทีแบบเดิม ก่อนรวมระบบ: ${o.traded} ไม้ · ${signed(o.pnl)} — ไม่นับรวม)`); }
+  if (oldWeek.length) { const o = SIG.summary(oldWeek, SPREAD); i30.lines.push(`   (ระบบ 30 นาทีแบบเดิม ก่อนรวมระบบ: ${o.traded} รายการ · ${signed(o.pnl)} — ไม่นับรวม)`); }
   // Advisory daily calls (overview only, SIG.RULE.advisory) are reported but not counted in the total
   const real = (list) => list.filter((t) => !t.advisory);
   const weekDaily = inWeek(daily.signals, from, now);
@@ -87,15 +87,15 @@ function section(name, trades) {
     const all = chart.trades.filter((t) => t.tf === tf);
     const s = SIG.summary(inWeek(all, from, now), SPREAD), b = CS.brake(sys, all, now);
     if (!s.traded && !b) return;
-    chartLines.push(`• ${TF_TH[tf]}: ${s.traded ? `${s.traded} ไม้ · ชนะ ${s.wins} แพ้ ${s.losses} · ${signed(s.pnl)}` : 'ไม่มีไม้'}${b ? ` · ⛔ พัก (${b.why})` : ''}`);
+    chartLines.push(`• ${TF_TH[tf]}: ${s.traded ? `${s.traded} รายการ · ชนะ ${s.wins} แพ้ ${s.losses} · ${signed(s.pnl)}` : 'ไม่มีรายการ'}${b ? ` · ⛔ พัก (${b.why})` : ''}`);
   });
   if (chartLines.length) chartLines.unshift('📈 สัญญาณบนกราฟกรอบอื่น (ผลจริง หักสเปรดแล้ว · ไม่รวมในยอดด้านล่าง)');
-  else chartLines.push('📈 สัญญาณบนกราฟกรอบอื่น: ไม่มีไม้ในสัปดาห์นี้');
+  else chartLines.push('📈 สัญญาณบนกราฟกรอบอื่น: ไม่มีรายการในสัปดาห์นี้');
 
   const lines = [`📊 สรุปผลสัปดาห์ ${day(from)} – ${day(now - DAY)}`, '', ...i30.lines, ...d1.lines, '', ...chartLines, '',
-    `รวมทั้งสัปดาห์: ${signed(total)}/ออนซ์ (หักสเปรด $${SPREAD}/ไม้แล้ว)`,
-    `= ถ้าเทรดไม้ละ 0.01 lot ได้ ${signed(total)} · 0.10 lot ได้ ${signed(total * 10)}`];
-  if (best && all.length > 1) lines.push(`ไม้ดีที่สุด: ${label(best)}`, `ไม้แย่ที่สุด: ${label(worst)}`);
+    `รวมทั้งสัปดาห์: ${signed(total)}/ออนซ์ (หักสเปรด $${SPREAD}/รายการแล้ว)`,
+    `= ถ้าซื้อขายรายการละ 0.01 lot ได้ ${signed(total)} · 0.10 lot ได้ ${signed(total * 10)}`];
+  if (best && all.length > 1) lines.push(`รายการดีที่สุด: ${label(best)}`, `รายการแย่ที่สุด: ${label(worst)}`);
   lines.push(`เทียบสัปดาห์ก่อน: ${signed(prevTotal)} → ${total >= prevTotal ? 'ดีขึ้น ▲' : 'แย่ลง ▼'}`, '', `ดูสัญญาณ: ${SITE_URL}/#chart`);
   const text = lines.join('\n');
   console.log(text);

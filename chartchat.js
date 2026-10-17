@@ -69,8 +69,8 @@
     mode = m;
     $('ccMode').querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
     panel.classList.toggle('cc-ai', m === 'ai');
-    $('ccTitle').textContent = m === 'ai' ? '🤖 พี่โค้ช AI' : '💬 ถามจุดเข้า Buy / Sell';
-    $('ccIn').placeholder = m === 'ai' ? 'เล่าให้พี่โค้ชฟัง เช่น ขาดทุนติดต่อกัน 3 รายการ ควรทำยังไง' : 'เช่น ซื้อที่ 4150 ได้ไหม · Buy 1 ชม. เมื่อไร';
+    $('ccTitle').textContent = m === 'ai' ? '🤖 โค้ช AI' : '💬 ถามจุดเข้า Buy / Sell';
+    $('ccIn').placeholder = m === 'ai' ? 'เล่าให้โค้ช AI ฟัง เช่น ขาดทุนติดต่อกัน 3 รายการ ควรทำยังไง' : 'เช่น ซื้อที่ 4150 ได้ไหม · Buy 1 ชม. เมื่อไร';
     $('ccFoot').textContent = m === 'ai' ? 'AI อ่านสัญญาณตอนนี้ + บันทึกการซื้อขายของคุณ · อาจผิดพลาดได้ · ไม่ใช่คำแนะนำการลงทุน' : 'ตอบจากระบบที่ทดสอบแล้ว · ไม่ใช่คำแนะนำการลงทุน';
   }
   // the coach's reply is plain text: escape, then keep line breaks and **bold**
@@ -79,7 +79,7 @@
     if (busy) return;
     busy = true;
     say('me', esc(text));
-    say('bot', '<span class="cc-typing">พี่โค้ชกำลังคิด…</span>');
+    say('bot', '<span class="cc-typing">โค้ช AI กำลังวิเคราะห์…</span>');
     const wait = log.lastElementChild;
     let signals = [];
     try { signals = await window.GS_SIGNALS(); } catch (e) { /* send without */ }
