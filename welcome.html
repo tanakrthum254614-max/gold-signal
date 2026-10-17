@@ -60,6 +60,7 @@
     .faq details { padding: 4px 22px; } .faq summary { cursor: pointer; padding: 16px 0; font-weight: 600; color: var(--pm-ivory); list-style: none; display: flex; justify-content: space-between; gap: 12px; }
     .faq summary::-webkit-details-marker { display: none; } .faq summary::after { content: "+"; color: var(--pm-gold); font-size: 20px; line-height: 1; }
     .faq details[open] summary::after { content: "−"; } .faq details p { margin: 0 0 18px; color: var(--pm-muted); font-size: 14.5px; }
+    .others { max-width: 900px; margin: 16px auto 0; padding: 16px 22px; text-align: center; font-size: 14px; line-height: 1.8; }
     .risk { max-width: 900px; margin: 0 auto; padding: 20px 24px; font-size: 13.5px; color: var(--pm-muted); }
     .risk b { color: var(--pm-ivory); }
     footer { border-top: 1px solid var(--pm-line2); padding: 34px 0 calc(34px + env(safe-area-inset-bottom)); color: var(--pm-muted); font-size: 13.5px; }
@@ -109,6 +110,7 @@
         <div class="card stat"><div class="k">Buy · 5 ชั่วโมง</div><div class="big gold-text mono">—</div><div class="muted">ชนะในการทดสอบย้อนหลัง</div><div class="live muted">กำลังโหลด…</div></div>
         <div class="card stat"><div class="k">Buy · 1 วัน</div><div class="big gold-text mono">—</div><div class="muted">ชนะในการทดสอบย้อนหลัง</div><div class="live muted">กำลังโหลด…</div></div>
       </div>
+      <div class="card others" id="others" hidden></div>
       <p class="fine" style="text-align:center;margin-top:18px">ทดสอบหลังหักสเปรด $0.4 · ผลจริงต่อทอง 1 ออนซ์ ก่อนหักสเปรด · ผลในอดีตไม่รับประกันผลในอนาคต</p>
     </div></section>
 
@@ -177,6 +179,13 @@
             : 'ผลจริง: ยังไม่มีไม้ที่ปิด (ระบบกรอบใหญ่ออกสัญญาณไม่บ่อย)';
           c.querySelector('.live').classList.remove('muted');
         });
+        // the rest of the record too — risky timeframes included (user, 17 Oct 2026: "ทำมา")
+        const o = j.others, a = j.all, box = document.getElementById('others');
+        if (o && o.live) {
+          box.hidden = false;
+          box.innerHTML = `<b>กรอบอื่นที่ติดป้าย ⚠️ สัญญาณเสี่ยง</b> (5–30 นาที · 1 สัปดาห์ · Sell): ผลจริง <b>${o.live}</b> ไม้ · ชนะ <b>${o.wins}</b> · <b class="${o.pnl >= 0 ? 'up' : 'down'}">${money(o.pnl)}</b>/ออนซ์`
+            + `<br><span class="muted">รวมทุกไม้ที่ระบบบันทึก: ${a.live} ไม้ · ชนะ ${a.wins} (${Math.round((a.wins / a.live) * 100)}%) · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b>/ออนซ์ — กรอบเสี่ยงไม่ส่งแจ้งเตือน LINE และระบบแนะนำให้ใช้ไม้เล็ก</span>`;
+        }
         if (j.since) document.getElementById('since').textContent = `(${new Date(j.since).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })})`;
       }).catch(() => document.querySelectorAll('#stats .live').forEach((x) => { x.textContent = 'ดูผลจริงได้หลังเข้าสู่ระบบ'; }));
     })();
