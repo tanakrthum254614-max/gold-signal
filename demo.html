@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="th">
+<html lang="th" class="pm-page">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,7 +10,7 @@
   <title>Gold Signal · ทดลองดู (Demo)</title>
   <meta name="theme-color" content="#0b0e11">
   <link rel="icon" href="icons/icon-192.png">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     :root { --bg: #0b0e11; --panel: #161a1e; --panel2: #1e2329; --line: #2b3139; --text: #eaecef; --muted: #848e9c; --gold: #f0b90b; --up: #0ecb81; --down: #f6465d; }
@@ -51,9 +51,19 @@
     @media (max-width: 900px) { .lock-row { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 600px) { .lock-row { grid-template-columns: 1fr; } #chart { height: 340px; } .bar .login { display: none; } .live b { font-size: 22px; } }
     @media (orientation: landscape) and (max-height: 500px) { #chart { height: 300px; } }
+      /* ✦ black & gold (premium.css, 17 Oct 2026) */
+:root, :root:not(.x) { --bg: var(--pm-bg); --panel: var(--pm-panel); --panel2: var(--pm-panel2); --line: var(--pm-line); --text: var(--pm-text); --muted: var(--pm-muted); --gold: var(--pm-gold-hi); --up: var(--pm-up); --down: var(--pm-down); --btn: var(--pm-gold); }
+    body { background: radial-gradient(1100px 520px at 50% -8%, rgba(212,175,95,.13), transparent 62%), var(--pm-bg) !important; }
+    .bar { background: rgba(10,10,12,.85) !important; border-bottom-color: var(--pm-line2) !important; backdrop-filter: blur(10px); }
+    .brand { font-family: var(--pm-serif); letter-spacing: 1px; color: var(--pm-ivory); } .tag { background: var(--pm-grad) !important; }
+    .btn.gold { background: var(--pm-grad) !important; border: 0 !important; color: #1b1407 !important; box-shadow: 0 8px 22px rgba(212,175,95,.25); }
+    .card { border-color: var(--pm-line) !important; border-radius: 14px !important; box-shadow: 0 20px 50px rgba(0,0,0,.45); }
+    .hero { background: linear-gradient(110deg, rgba(212,175,95,.14), var(--pm-panel) 60%) !important; }
+    .hero h1, .cta h2, .lock h3 { font-family: var(--pm-serif); color: var(--pm-ivory); }
   </style>
+  <link rel="stylesheet" href="premium.css?v=202610171410">
 </head>
-<body>
+<body class="pm">
   <header class="bar">
     <a class="brand" href="/demo.html"><img src="icons/icon-192.png" alt="">Gold Signal <span class="tag">DEMO</span></a>
     <span class="px mono" id="px">—</span>

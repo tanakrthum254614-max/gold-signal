@@ -42,7 +42,7 @@ const SUBS = 'access/push-subs.json';
 // Served to everyone: the login page and what it shows / the browser asks for on its own
 // demo.html (16 Oct 2026): plain candles for visitors — loads none of the members-only scripts
 // terms.html (17 Oct 2026): prices, terms, cancel / refund policy, contact — Stripe's business verification needs it public
-const PUBLIC = /^\/(login\.html|demo\.html|terms\.html|privacy\.html|logo\.svg|favicon\.ico|manifest\.webmanifest|robots\.txt|icons\/.*|blog(\/[a-z0-9-]*)?|sitemap\.xml)$/; // blog = SEO articles (lib/blog.mjs via api/market.mjs, 404 until marketing is live)
+const PUBLIC = /^\/(login\.html|demo\.html|terms\.html|privacy\.html|logo\.svg|premium\.css|welcome\.html|favicon\.ico|manifest\.webmanifest|robots\.txt|icons\/.*|blog(\/[a-z0-9-]*)?|sitemap\.xml)$/; // blog = SEO articles (lib/blog.mjs via api/market.mjs, 404 until marketing is live)
 // Stripe calls this one itself (no cookie) — api/pay/webhook.mjs refuses anything without a valid Stripe signature
 const WEBHOOK = '/api/pay/webhook';
 
@@ -249,7 +249,8 @@ export default async function middleware(request) {
   }
   if (!who) {
     const page = path === '/' || path.endsWith('.html') || (request.headers.get('accept') || '').includes('text/html');
-    if (page) return new Response(null, { status: 302, headers: { location: '/login.html', 'cache-control': 'no-store' } });
+    // the site's address for visitors = the landing page (17 Oct 2026); anything else → sign in
+    if (page) return new Response(null, { status: 302, headers: { location: path === '/' ? '/welcome.html' : '/login.html', 'cache-control': 'no-store' } });
     return new Response('ต้องเข้าสู่ระบบก่อน', { status: 401, headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' } });
   }
   if (path === '/api/me') {

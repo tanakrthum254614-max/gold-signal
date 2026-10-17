@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="th">
+<html lang="th" class="pm-page">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -9,10 +9,9 @@
   <title>เลือกแพ็กเกจ · Gold Signal</title>
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root { --bg: #f3f5f9; --panel: #fff; --line: #e2e7ef; --text: #1c2433; --muted: #697386; --gold: #b9800c; --btn: #f0b90b; --down: #e0424f; }
-    @media (prefers-color-scheme: dark) { :root { --bg: #0d1016; --panel: #151a23; --line: #262e3b; --text: #e6e9ef; --muted: #8a93a3; --gold: #e8b64c; } }
     * { box-sizing: border-box; } [hidden] { display: none !important; }
     body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px calc(24px + env(safe-area-inset-bottom)); background: var(--bg); color: var(--text);
       font-family: "IBM Plex Sans Thai", system-ui, sans-serif; line-height: 1.6; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -34,9 +33,20 @@
     .muted { color: var(--muted); font-size: 13.5px; } a { color: var(--gold); }
     #status { margin: 0; text-align: center; font-size: 15px; } #status:empty { display: none; } .foot { margin: 0; } #status.err { color: var(--down); }
     .foot { text-align: center; }
+      /* ✦ black & gold (premium.css, 17 Oct 2026) */
+:root, :root:not(.x) { --bg: var(--pm-bg); --panel: var(--pm-panel); --panel2: var(--pm-panel2); --line: var(--pm-line); --text: var(--pm-text); --muted: var(--pm-muted); --gold: var(--pm-gold-hi); --up: var(--pm-up); --down: var(--pm-down); --btn: var(--pm-gold); }
+    body { background: radial-gradient(1100px 520px at 50% -8%, rgba(212,175,95,.13), transparent 62%), var(--pm-bg) !important; }
+    .plan { background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0) 40%), var(--pm-panel); box-shadow: 0 24px 60px rgba(0,0,0,.5); }
+    .plan.best { border-color: rgba(243,214,140,.6); box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(243,214,140,.35), 0 0 60px rgba(212,175,95,.12); }
+    .tag { background: var(--pm-grad); color: #1b1407; }
+    .price span { background: var(--pm-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .plan b { font-family: var(--pm-serif); color: var(--pm-ivory); font-size: 18px; }
+    button { border-color: var(--pm-line); } button.gold { background: var(--pm-grad); color: #1b1407; border: 0; box-shadow: 0 8px 22px rgba(212,175,95,.25); }
+    .brand b { font-family: var(--pm-serif); letter-spacing: 1.5px; color: var(--pm-ivory); }
   </style>
+  <link rel="stylesheet" href="premium.css?v=202610171410">
 </head>
-<body>
+<body class="pm">
   <main>
     <div class="brand"><img src="logo.svg" alt=""><b>Gold Signal</b></div>
     <h1 id="title">เลือกแพ็กเกจเพื่อเริ่มใช้งาน</h1>

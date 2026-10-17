@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="th" class="pm-page">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- ✦ Landing page for visitors (user, 17 Oct 2026: "ขอแบบให้พรีเมียมและระดับทางการให้คนน่าเชื่อถือ" → "ดำ–ทอง หรูหรา",
+       + a new landing page). Public (middleware.js PUBLIC); a signed-out visit to / lands here. Numbers come live from
+       /api/market?blog=1&stats=1 (the recorder's real trades, wins and losses) — nothing on this page is made up. -->
+  <title>Gold Signal · สัญญาณทองคำที่ตรวจสอบได้ทุกไม้</title>
+  <meta name="description" content="Gold Signal — สัญญาณเทรดทองคำ XAU/USD พร้อมจุดเข้า SL TP ผลทดสอบย้อนหลัง และผลจริงทุกไม้ทั้งชนะและแพ้ · รายเดือน 149 บาท · รายปี 1,290 บาท">
+  <meta name="theme-color" content="#0a0a0c">
+  <meta property="og:title" content="Gold Signal · สัญญาณทองคำที่ตรวจสอบได้ทุกไม้">
+  <meta property="og:description" content="จุดเข้า SL TP ทุกกรอบเวลา · แจ้งเตือน LINE · ผลจริงทุกไม้ทั้งชนะและแพ้">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="premium.css?v=202610171410">
+  <style>
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+    .mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+    header.top { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(10, 10, 12, .78); border-bottom: 1px solid var(--pm-line2); }
+    header.top .wrap { display: flex; align-items: center; gap: 18px; min-height: 68px; padding-top: env(safe-area-inset-top); }
+    header nav { margin-left: auto; display: flex; gap: 22px; align-items: center; }
+    header nav a.l { color: var(--pm-text); text-decoration: none; font-size: 14.5px; opacity: .85; }
+    header nav a.l:hover { color: var(--pm-gold-hi); opacity: 1; }
+    header .pm-btn { min-height: 40px; padding: 0 18px; font-size: 14.5px; }
+    .hero { padding: 84px 0 56px; text-align: center; }
+    .hero h1 { font-size: clamp(32px, 5.2vw, 58px); line-height: 1.3; margin: 14px 0 18px; }
+    .hero p.sub { max-width: 680px; margin: 0 auto 30px; font-size: 18px; color: var(--pm-muted); }
+    .hero .ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 26px; }
+    .hero .pm-btn { min-height: 54px; padding: 0 30px; font-size: 16.5px; }
+    section.blk { padding: 64px 0; }
+    .blk h2 { font-size: clamp(26px, 3.4vw, 36px); text-align: center; margin: 10px 0 10px; }
+    .blk .intro { text-align: center; max-width: 680px; margin: 0 auto 34px; color: var(--pm-muted); }
+    .head-c { text-align: center; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .feat { padding: 26px; }
+    .feat .ic { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; background: rgba(212, 175, 95, .1); border: 1px solid var(--pm-line); margin-bottom: 14px; }
+    .feat h3 { margin: 0 0 6px; font-size: 17.5px; color: var(--pm-ivory); }
+    .feat p { margin: 0; color: var(--pm-muted); font-size: 14.5px; }
+    .stat { padding: 26px; text-align: center; }
+    .stat .k { color: var(--pm-gold); font-size: 13px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; }
+    .stat .big { font-size: 46px; font-weight: 700; line-height: 1.15; margin: 8px 0 2px; }
+    .stat .live { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--pm-line2); font-size: 14px; }
+    .up { color: var(--pm-up); } .down { color: var(--pm-down); }
+    .plans { display: grid; grid-template-columns: repeat(2, minmax(0, 340px)); gap: 18px; justify-content: center; }
+    .plan { padding: 30px; position: relative; text-align: center; }
+    .plan.best { border-color: rgba(243, 214, 140, .6); box-shadow: 0 24px 60px rgba(0, 0, 0, .5), 0 0 0 1px rgba(243, 214, 140, .35), 0 0 60px rgba(212, 175, 95, .12); }
+    .plan .tag { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--pm-grad); color: #1b1407; font-size: 12.5px; font-weight: 700; padding: 3px 14px; border-radius: 999px; white-space: nowrap; }
+    .plan .name { font-family: var(--pm-serif); font-size: 20px; color: var(--pm-ivory); }
+    .plan .price { font-size: 46px; font-weight: 700; margin: 6px 0 0; line-height: 1.2; }
+    .plan .per { color: var(--pm-muted); margin-bottom: 18px; }
+    .plan ul { list-style: none; padding: 0; margin: 0 0 22px; text-align: left; display: grid; gap: 8px; font-size: 14.5px; }
+    .plan li::before { content: "✦"; color: var(--pm-gold); margin-right: 10px; }
+    .plan .pm-btn { width: 100%; }
+    .steps { counter-reset: s; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .step { padding: 26px; } .step::before { counter-increment: s; content: counter(s); display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--pm-grad); color: #1b1407; font-weight: 700; margin-bottom: 12px; }
+    .step h3 { margin: 0 0 6px; font-size: 17px; color: var(--pm-ivory); } .step p { margin: 0; color: var(--pm-muted); font-size: 14.5px; }
+    .faq { max-width: 820px; margin: 0 auto; display: grid; gap: 10px; }
+    .faq details { padding: 4px 22px; } .faq summary { cursor: pointer; padding: 16px 0; font-weight: 600; color: var(--pm-ivory); list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+    .faq summary::-webkit-details-marker { display: none; } .faq summary::after { content: "+"; color: var(--pm-gold); font-size: 20px; line-height: 1; }
+    .faq details[open] summary::after { content: "−"; } .faq details p { margin: 0 0 18px; color: var(--pm-muted); font-size: 14.5px; }
+    .risk { max-width: 900px; margin: 0 auto; padding: 20px 24px; font-size: 13.5px; color: var(--pm-muted); }
+    .risk b { color: var(--pm-ivory); }
+    footer { border-top: 1px solid var(--pm-line2); padding: 34px 0 calc(34px + env(safe-area-inset-bottom)); color: var(--pm-muted); font-size: 13.5px; }
+    footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; }
+    footer nav { display: flex; gap: 18px; flex-wrap: wrap; } footer a { color: var(--pm-text); text-decoration: none; } footer a:hover { color: var(--pm-gold-hi); }
+    @media (max-width: 900px) { .grid3, .steps { grid-template-columns: 1fr; } header nav a.l { display: none; } .plans { grid-template-columns: minmax(0, 420px); } }
+    @media (max-width: 520px) { .hero { padding: 54px 0 40px; } .hero p.sub { font-size: 16px; } section.blk { padding: 46px 0; } .stat .big, .plan .price { font-size: 40px; } header .pm-brand b { font-size: 18px; } header .pm-brand img { width: 34px; height: 34px; } }
+  </style>
+</head>
+<body class="pm">
+  <header class="top"><div class="wrap">
+    <a class="pm-brand" href="/welcome.html"><img src="logo.svg" alt=""><span><b>GOLD SIGNAL</b><small>XAU/USD · Thailand</small></span></a>
+    <nav><a class="l" href="#features">บริการ</a><a class="l" href="#results">ผลจริง</a><a class="l" href="#pricing">ราคา</a><a class="l" href="#faq">คำถาม</a>
+      <a class="pm-btn ghost" href="/login.html">เข้าสู่ระบบ</a></nav>
+  </div></header>
+
+  <main>
+    <section class="hero"><div class="wrap">
+      <div class="eyebrow">Gold Trading Signals · ตั้งแต่ 2569</div>
+      <h1>สัญญาณเทรดทองคำ<br><span class="gold-text">ที่ตรวจสอบได้ทุกไม้</span></h1>
+      <p class="sub">จุดเข้า จุดตัดขาดทุน และเป้าหมายกำไร ที่ทดสอบย้อนหลังหลายปี — และเปิดผลจริงทุกไม้ให้ดู ทั้งไม้ที่ชนะและไม้ที่แพ้</p>
+      <div class="ctas"><a class="pm-btn gold" href="/login.html#signup">สมัครสมาชิก</a><a class="pm-btn ghost" href="/demo.html">ดูกราฟทดลอง</a></div>
+      <div class="trust"><span><i>🔒</i> ชำระผ่าน Stripe มาตรฐานสากล</span><span><i>✦</i> เปิดผลจริงทุกไม้</span><span><i>↩</i> คืนเงินภายใน 7 วัน</span><span><i>✕</i> ยกเลิกการต่ออายุได้ทุกเมื่อ</span></div>
+    </div></section>
+    <div class="wrap"><hr class="rule"></div>
+
+    <section class="blk" id="features"><div class="wrap">
+      <div class="head-c"><span class="eyebrow">บริการ</span></div>
+      <h2>ทุกอย่างที่ต้องใช้ในการเทรดทอง</h2>
+      <p class="intro">ระบบทำงานอัตโนมัติตลอดเวลาตลาดเปิด อ่านกราฟหลายกรอบเวลาพร้อมกัน แล้วบอกเป็นภาษาไทยที่เข้าใจง่าย</p>
+      <div class="grid3">
+        <div class="card feat"><div class="ic">🎯</div><h3>จุดเข้า · SL · TP ชัดเจน</h3><p>ทุกสัญญาณบอกราคาเข้า จุดตัดขาดทุน และเป้าหมาย 1–3 จุด พร้อมเปอร์เซ็นต์ความพร้อมเข้า</p></div>
+        <div class="card feat"><div class="ic">🧪</div><h3>ทดสอบย้อนหลังหลายปี</h3><p>กติกาผ่านการทดสอบข้อมูล 2–5 ปี แบ่งเป็นช่วงเวลา และทดสอบซ้ำอัตโนมัติทุกเดือน</p></div>
+        <div class="card feat"><div class="ic">📒</div><h3>ผลจริงโปร่งใส</h3><p>ระบบบันทึกทุกไม้อัตโนมัติ ไม่คัดเฉพาะไม้ที่ชนะ สมาชิกเห็นผลจริงทั้งหมด</p></div>
+        <div class="card feat"><div class="ic">💬</div><h3>แจ้งเตือน LINE ทันที</h3><p>มีจุดเข้าเมื่อไร แจ้งเตือนผ่าน LINE และบนมือถือ ไม่ต้องเฝ้าจอทั้งวัน</p></div>
+        <div class="card feat"><div class="ic">🛑</div><h3>ระบบป้องกันความเสี่ยง</h3><p>หยุดพักสัญญาณเองเมื่อแพ้ติดกัน งดเข้าช่วงข่าวเศรษฐกิจสหรัฐแรง และคำนวณขนาดไม้จากทุน</p></div>
+        <div class="card feat"><div class="ic">🤖</div><h3>โค้ช AI และหุ้นสหรัฐ</h3><p>ถามโค้ช AI ได้ทุกเรื่องการเทรด พร้อมแดชบอร์ดหุ้นสหรัฐและพอร์ตนักลงทุนระดับโลก</p></div>
+      </div>
+    </div></section>
+
+    <section class="blk" id="results"><div class="wrap">
+      <div class="head-c"><span class="eyebrow">ผลลัพธ์</span></div>
+      <h2>ตัวเลขจริง ไม่ตกแต่ง</h2>
+      <p class="intro">ผลทดสอบย้อนหลังของแต่ละระบบ และผลจริงที่บันทึกตั้งแต่เริ่มใช้งาน <span id="since"></span> — อัปเดตอัตโนมัติ</p>
+      <div class="grid3" id="stats">
+        <div class="card stat"><div class="k">Buy · 1 ชั่วโมง</div><div class="big gold-text mono">—</div><div class="muted">ชนะในการทดสอบย้อนหลัง</div><div class="live muted">กำลังโหลด…</div></div>
+        <div class="card stat"><div class="k">Buy · 5 ชั่วโมง</div><div class="big gold-text mono">—</div><div class="muted">ชนะในการทดสอบย้อนหลัง</div><div class="live muted">กำลังโหลด…</div></div>
+        <div class="card stat"><div class="k">Buy · 1 วัน</div><div class="big gold-text mono">—</div><div class="muted">ชนะในการทดสอบย้อนหลัง</div><div class="live muted">กำลังโหลด…</div></div>
+      </div>
+      <p class="fine" style="text-align:center;margin-top:18px">ทดสอบหลังหักสเปรด $0.4 · ผลจริงต่อทอง 1 ออนซ์ ก่อนหักสเปรด · ผลในอดีตไม่รับประกันผลในอนาคต</p>
+    </div></section>
+
+    <section class="blk" id="how"><div class="wrap">
+      <div class="head-c"><span class="eyebrow">เริ่มต้น</span></div>
+      <h2>เริ่มใช้ใน 3 ขั้นตอน</h2>
+      <p class="intro">สมัครเสร็จใช้งานได้ทันที บนคอมพิวเตอร์และมือถือ</p>
+      <div class="steps">
+        <div class="card step"><h3>สมัครสมาชิก</h3><p>ใช้อีเมลหรือบัญชี Google แล้วเลือกแพ็กเกจ ชำระด้วยบัตรหรือ PromptPay</p></div>
+        <div class="card step"><h3>เปิดรับแจ้งเตือน</h3><p>เพิ่มเพื่อน LINE และเปิดแจ้งเตือนบนเครื่อง เพื่อรู้ทันทีเมื่อมีจุดเข้า</p></div>
+        <div class="card step"><h3>เทรดอย่างมีวินัย</h3><p>เข้าเมื่อระบบขึ้น ✅ ควรเข้า วาง SL ทุกไม้ และเสี่ยงไม่เกิน 1–2% ของทุน</p></div>
+      </div>
+    </div></section>
+
+    <section class="blk" id="pricing"><div class="wrap">
+      <div class="head-c"><span class="eyebrow">ราคา</span></div>
+      <h2>แพ็กเกจสมาชิก</h2>
+      <p class="intro">ทุกแพ็กเกจได้ทุกฟีเจอร์ · ราคารวมภาษีแล้ว (ถ้ามี)</p>
+      <div class="plans">
+        <div class="card plan"><div class="name">รายเดือน</div><div class="price gold-text mono" id="pMonth">149 ฿</div><div class="per">ต่อ 30 วัน</div>
+          <ul><li>สัญญาณทุกกรอบเวลา + แจ้งเตือน LINE</li><li>ผลจริงทุกไม้ · หยุดพักอัตโนมัติ</li><li>โค้ช AI · หุ้นสหรัฐ · พอร์ตกูรู</li><li>ยกเลิกได้ทุกเมื่อ</li></ul>
+          <a class="pm-btn ghost" href="/login.html#signup">เลือกรายเดือน</a></div>
+        <div class="card plan best"><span class="tag">คุ้มที่สุด · ประหยัด ~3 เดือน</span><div class="name">รายปี</div><div class="price gold-text mono" id="pYear">1,290 ฿</div><div class="per">ต่อ 365 วัน</div>
+          <ul><li>ทุกอย่างในรายเดือน</li><li>จ่ายครั้งเดียวใช้ได้ทั้งปี</li><li>เท่ากับเดือนละ ~108 บาท</li><li>คืนเงินได้ภายใน 7 วัน</li></ul>
+          <a class="pm-btn gold" href="/login.html#signup">เลือกรายปี</a></div>
+      </div>
+      <div class="trust" style="margin-top:22px"><span><i>💳</i> บัตรเครดิต/เดบิต</span><span><i>📱</i> PromptPay</span><span><i>🔒</i> เว็บไม่เห็นและไม่เก็บเลขบัตร</span></div>
+    </div></section>
+
+    <section class="blk" id="faq"><div class="wrap">
+      <div class="head-c"><span class="eyebrow">คำถามที่พบบ่อย</span></div>
+      <h2>สิ่งที่ควรรู้ก่อนสมัคร</h2>
+      <div class="faq" style="margin-top:28px">
+        <details class="card"><summary>สัญญาณแม่นแค่ไหน?</summary><p>ไม่มีระบบไหนชนะทุกไม้ ผลทดสอบย้อนหลังของระบบหลักชนะราว 57–65% และเราเปิดผลจริงทุกไม้ทั้งชนะและแพ้ให้สมาชิกตรวจสอบเอง</p></details>
+        <details class="card"><summary>ต้องมีความรู้การเทรดมาก่อนไหม?</summary><p>ไม่จำเป็น หน้าเว็บบอกเป็นภาษาไทยว่าควรเข้าหรือรอ พร้อมราคาเข้า SL TP แต่ควรเข้าใจความเสี่ยงและใช้เงินที่เสียได้เท่านั้น</p></details>
+        <details class="card"><summary>ใช้กับโบรกเกอร์ไหนได้บ้าง?</summary><p>ใช้ได้กับทุกโบรกเกอร์ที่เทรดทองคำ XAU/USD เราเป็นผู้ให้ข้อมูลประกอบการตัดสินใจ ไม่ใช่โบรกเกอร์ ไม่รับฝากเงิน และไม่ส่งคำสั่งซื้อขายแทนคุณ</p></details>
+        <details class="card"><summary>ยกเลิกหรือขอคืนเงินได้ไหม?</summary><p>ยกเลิกการต่ออายุได้ทุกเมื่อในแท็บบัญชี ใช้ต่อได้จนจบรอบ และขอคืนเงินเต็มจำนวนได้ภายใน 7 วันหลังชำระครั้งแรก</p></details>
+        <details class="card"><summary>ติดต่อทีมงานได้ทางไหน?</summary><p>LINE <a href="https://line.me/R/ti/p/@279arudw">@279arudw</a> หรืออีเมล <a href="mailto:tanakrthum254614@gmail.com">tanakrthum254614@gmail.com</a> ตอบภายใน 2 วันทำการ</p></details>
+      </div>
+    </div></section>
+
+    <section class="blk" style="padding-top:0"><div class="wrap" style="text-align:center">
+      <h2>พร้อมเทรดทองอย่างมีระบบหรือยัง?</h2>
+      <p class="intro">เริ่มต้นเพียง 149 บาท · ยกเลิกได้ทุกเมื่อ</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><a class="pm-btn gold" href="/login.html#signup">สมัครสมาชิก</a><a class="pm-btn ghost" href="/demo.html">ดูกราฟทดลอง</a></div>
+    </div></section>
+
+    <div class="wrap"><div class="card risk"><b>คำเตือนความเสี่ยง:</b> การเทรดทองคำและตราสารที่มีความผันผวนสูงมีความเสี่ยง อาจสูญเสียเงินลงทุนบางส่วนหรือทั้งหมด ข้อมูลและสัญญาณบนเว็บนี้เป็นข้อมูลประกอบการตัดสินใจ ไม่ใช่คำแนะนำการลงทุน ผลในอดีตไม่รับประกันผลในอนาคต ผู้ใช้ควรศึกษาและตัดสินใจด้วยตนเอง</div></div>
+  </main>
+
+  <footer><div class="wrap">
+    <span>© 2569 Gold Signal · สัญญาณเทรดทองคำ XAU/USD</span>
+    <nav><a href="/demo.html">ทดลองดู</a><a href="/terms.html">เงื่อนไขและราคา</a><a href="/privacy.html">ความเป็นส่วนตัว</a><a href="https://line.me/R/ti/p/@279arudw">LINE</a><a href="/login.html">เข้าสู่ระบบ</a></nav>
+  </div></footer>
+
+  <script>
+    // Live numbers (real trades — wins and losses — of the 3 timeframes that passed every test period)
+    (function () {
+      const money = (v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+      fetch('/api/market?blog=1&stats=1').then((r) => r.json()).then((j) => {
+        const cards = document.querySelectorAll('#stats .stat');
+        j.tfs.forEach((t, i) => {
+          const c = cards[i]; if (!c) return;
+          c.querySelector('.big').textContent = t.tested != null ? `${t.tested}%` : '—';
+          c.querySelector('.live').innerHTML = t.live ? `ผลจริง <b>${t.live}</b> ไม้ · ชนะ <b>${t.wins}</b> · <b class="${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl)}</b>/ออนซ์`
+            : 'ผลจริง: ยังไม่มีไม้ที่ปิด (ระบบกรอบใหญ่ออกสัญญาณไม่บ่อย)';
+          c.querySelector('.live').classList.remove('muted');
+        });
+        if (j.since) document.getElementById('since').textContent = `(${new Date(j.since).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })})`;
+      }).catch(() => document.querySelectorAll('#stats .live').forEach((x) => { x.textContent = 'ดูผลจริงได้หลังเข้าสู่ระบบ'; }));
+    })();
+  </script>
+</body>
+</html>

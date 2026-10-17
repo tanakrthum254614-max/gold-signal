@@ -1,0 +1,55 @@
+/* ✦ Premium black & gold for the public pages (user, 17 Oct 2026: "ขอแบบให้พรีเมียมและระดับทางการให้คนน่าเชื่อถือ" →
+   chose "ดำ–ทอง หรูหรา": deep black, metallic gold gradient, serif headings in ivory, thin gold rules, gold-framed cards).
+   Used by welcome.html (landing), login, pay, demo, terms, privacy and the /blog pages (lib/blog.mjs). Always dark. */
+:root {
+  --pm-bg: #0a0a0c; --pm-bg2: #101013; --pm-panel: #141417; --pm-panel2: #1a1a1e;
+  --pm-line: rgba(212, 175, 95, .24); --pm-line2: rgba(255, 255, 255, .07);
+  --pm-ivory: #f4ecda; --pm-text: #e6e1d5; --pm-muted: #9d9682; --pm-gold: #d4af5f; --pm-gold-hi: #f3d68c; --pm-gold-lo: #a37a2e;
+  --pm-grad: linear-gradient(135deg, #f7e2a1 0%, #d9b465 38%, #b8892f 70%, #8c6524 100%);
+  --pm-up: #3ccf91; --pm-down: #ef6a72;
+  --pm-serif: "Noto Serif Thai", "Playfair Display", Georgia, serif;
+  --pm-sans: "IBM Plex Sans Thai", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html.pm-page { background: var(--pm-bg); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body.pm {
+  margin: 0; color: var(--pm-text); font-family: var(--pm-sans); line-height: 1.7;
+  background: radial-gradient(1100px 520px at 50% -8%, rgba(212, 175, 95, .13), transparent 62%), radial-gradient(800px 400px at 100% 100%, rgba(212, 175, 95, .05), transparent 60%), var(--pm-bg);
+  background-attachment: fixed;
+}
+.pm *, .pm *::before, .pm *::after { box-sizing: border-box; }
+.pm h1, .pm h2, .pm h3.serif, .pm .serif { font-family: var(--pm-serif); color: var(--pm-ivory); font-weight: 600; letter-spacing: .2px; }
+.pm a { color: var(--pm-gold-hi); text-decoration-color: rgba(243, 214, 140, .4); text-underline-offset: 3px; }
+.pm .gold-text { background: var(--pm-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.pm .muted { color: var(--pm-muted); }
+.pm .eyebrow { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--pm-gold); font-weight: 600; }
+.pm .rule { height: 1px; border: 0; margin: 0; background: linear-gradient(90deg, transparent, var(--pm-gold), transparent); opacity: .55; }
+.pm .card, .pm .pm-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, 0) 40%), var(--pm-panel);
+  border: 1px solid var(--pm-line); border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .05);
+}
+/* brand mark */
+.pm .pm-brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: var(--pm-ivory); }
+.pm .pm-brand img { width: 40px; height: 40px; filter: drop-shadow(0 4px 14px rgba(212, 175, 95, .35)); }
+.pm .pm-brand b { font-family: var(--pm-serif); font-size: 22px; font-weight: 700; letter-spacing: 1.5px; }
+.pm .pm-brand small { display: block; font-family: var(--pm-sans); font-size: 10.5px; letter-spacing: 3px; color: var(--pm-gold); font-weight: 600; text-transform: uppercase; margin-top: -2px; }
+/* buttons */
+.pm .pm-btn, .pm button.pm-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 24px; border-radius: 12px;
+  font: inherit; font-weight: 700; font-size: 15.5px; text-decoration: none; cursor: pointer; white-space: nowrap; transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+}
+.pm .pm-btn.gold { background: var(--pm-grad); color: #1b1407; border: 0; box-shadow: 0 10px 28px rgba(212, 175, 95, .28), inset 0 1px 0 rgba(255, 255, 255, .45); }
+.pm .pm-btn.gold:hover { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 14px 34px rgba(212, 175, 95, .36), inset 0 1px 0 rgba(255, 255, 255, .5); }
+.pm .pm-btn.ghost { background: rgba(255, 255, 255, .02); color: var(--pm-ivory); border: 1px solid var(--pm-line); }
+.pm .pm-btn.ghost:hover { border-color: var(--pm-gold); }
+.pm .pm-btn:disabled { opacity: .55; cursor: wait; transform: none; }
+/* trust strip */
+.pm .trust { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; color: var(--pm-muted); font-size: 13px; }
+.pm .trust span { display: inline-flex; align-items: center; gap: 6px; }
+.pm .trust i { font-style: normal; color: var(--pm-gold); }
+/* tables / small print */
+.pm table { width: 100%; border-collapse: collapse; } .pm td, .pm th { border-bottom: 1px solid var(--pm-line2); }
+.pm .fine { font-size: 12.5px; color: var(--pm-muted); }
+.pm .pm-brand b, .pm .pm-brand small { white-space: nowrap; }
+@media (max-width: 420px) { .pm header .pm-brand b { font-size: 16px; letter-spacing: 1px; } .pm header .pm-brand small { letter-spacing: 1.5px; font-size: 9.5px; } }
