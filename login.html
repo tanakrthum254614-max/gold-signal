@@ -141,6 +141,8 @@
       $('tabs').addEventListener('click', (e) => e.target.dataset.mode && show(e.target.dataset.mode));
       show(location.hash === '#signup' ? 'up' : 'in');
       if (/^#(home|stats|chart|zframes|journal|account)$/.test(location.hash)) { try { sessionStorage.setItem('gs-back', location.hash); } catch (e) { /* ok */ } }
+      // 🤝 came through a member's referral link (?ref=code): remember it 30 days, the server credits it at sign-up
+      { const ref = new URLSearchParams(location.search).get('ref'); if (ref && /^[a-z0-9]{6,12}$/.test(ref)) document.cookie = `gs_ref=${ref}; path=/; max-age=${30 * 86400}; SameSite=Lax; Secure`; }
       Clerk.addListener(({ user }) => { if (user) enter(); });
     })().catch((e) => { console.error(e); status(e.message || 'ระบบเข้าสู่ระบบมีปัญหา ลองรีเฟรชหน้าอีกครั้ง', true); });
   </script>

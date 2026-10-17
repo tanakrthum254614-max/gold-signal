@@ -78,6 +78,11 @@
     .art-row b { flex: 1; min-width: 200px; }
     .preview { border: 1px dashed var(--line); border-radius: 12px; padding: 10px 14px; }
     .preview h4 { margin: 10px 0 4px; } .preview p { margin: 6px 0; }
+    .mk-d { border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin: 12px 0; }
+    .mk-h { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; } .mk-h .btn { margin-left: auto; } .mk-h .btn + .btn { margin-left: 0; }
+    .mk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+    .mk-grid label { display: grid; gap: 6px; align-content: start; font-weight: 600; font-size: 14px; }
+    .mk-grid textarea, .mk-grid input { width: 100%; font: inherit; font-weight: 400; font-size: 13.5px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); }
     .golive { border: 1px solid var(--gold-bg); border-radius: 14px; padding: 12px 14px; margin-bottom: 16px; }
     .btn:disabled { opacity: .45; cursor: not-allowed; }
     .gl-checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font-size: 14px; }
@@ -93,7 +98,7 @@
   </header>
   <main>
     <div class="tiles" id="tiles"></div>
-    <div class="tabs" id="tabs"><button type="button" class="on" data-tab="members">👥 สมาชิก</button><button type="button" data-tab="log">📋 บันทึกการเข้าใช้</button><button type="button" data-tab="articles">📝 บทความ</button><button type="button" data-tab="status">🩺 สถานะระบบ</button><button type="button" data-tab="pro">⭐ PRO</button></div>
+    <div class="tabs" id="tabs"><button type="button" class="on" data-tab="members">👥 สมาชิก</button><button type="button" data-tab="log">📋 บันทึกการเข้าใช้</button><button type="button" data-tab="articles">📝 บทความ</button><button type="button" data-tab="status">🩺 สถานะระบบ</button><button type="button" data-tab="pro">⭐ PRO</button><button type="button" data-tab="mk">📣 การตลาด</button></div>
 
     <section class="card" id="membersPane">
       <div class="filters">
@@ -154,6 +159,29 @@
       <p class="note">บทความขึ้นแท็บ “ข่าวสหรัฐ” ของสมาชิกทันทีที่บันทึก (ไม่ต้อง deploy) · บทความล่าสุด 2 เรื่องที่เผยแพร่ ถูกส่งให้โค้ช AI ใช้ประกอบคำตอบด้วย</p>
     </section>
 
+    <!-- 📣 Marketing agent (api/market.mjs, 17 Oct 2026): AI drafts from real numbers → admin approves per channel.
+         Posting stays off until the .com domain ("สร้างไว้ก่อน ค่อยโพสต์หลังจากเราซื้อโดเมน .com แล้ว"). -->
+    <section class="card" id="mkPane" hidden>
+      <div class="golive">
+        <h3 style="margin:0 0 6px;font-size:16px">📣 ผู้ช่วยการตลาด AI</h3>
+        <p class="note" id="mkState">กำลังโหลด…</p>
+        <div class="ed" style="margin:8px 0 0"><div class="row">
+          <button class="btn gold" type="button" id="mkGen">✨ สร้างร่างโพสต์ตอนนี้</button>
+          <button class="btn" type="button" id="mkLive">🚀 เปิดใช้การตลาด</button>
+          <button class="btn" type="button" id="mkReload">↻ โหลดใหม่</button>
+        </div></div>
+        <p class="note">AI เขียนจาก<b>ตัวเลขจริงเท่านั้น</b> (ผลจริงทั้งชนะและแพ้ · ผลทดสอบ · ราคาทอง) · ห้ามสัญญากำไร — ร่างที่มีคำต้องห้ามจะกดอนุมัติไม่ได้ · ท้ายทุกโพสต์มีคำเตือนความเสี่ยงอัตโนมัติ · แก้ข้อความในกล่องได้ก่อนกดอนุมัติ</p>
+      </div>
+      <div id="mkList"></div>
+      <details class="note"><summary>วิธีเชื่อมเพจ Facebook (ทำหลังซื้อโดเมน)</summary>
+        <ol>
+          <li>มีเพจ Facebook ของ Gold Signal (สร้างฟรีที่ facebook.com/pages/create)</li>
+          <li>developers.facebook.com → สร้างแอป (Business) → เพิ่มสิทธิ์ <code>pages_manage_posts</code>, <code>pages_read_engagement</code></li>
+          <li>Graph API Explorer → เลือกเพจ → สร้าง Page access token แบบอายุยาว → คัดลอก Page ID และ token</li>
+          <li>ใส่ใน Vercel (ทีม thander1 → gold-signal → Settings → Environment Variables, Production, Sensitive): <code>FB_PAGE_ID</code> และ <code>FB_PAGE_TOKEN</code> แล้วบอกผมให้ redeploy — อย่าวาง token ในแชท</li>
+        </ol>
+      </details>
+    </section>
     <section class="card" id="proPane" hidden>
       <div class="golive" id="goLive">
         <h3 style="margin:0 0 6px;font-size:16px">🚀 เปิดรับเงินจริง</h3>
@@ -272,10 +300,11 @@
     function tab(t) {
       document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
       $('membersPane').hidden = t !== 'members'; $('logPane').hidden = t !== 'log';
-      $('articlesPane').hidden = t !== 'articles'; $('statusPane').hidden = t !== 'status'; $('proPane').hidden = t !== 'pro';
+      $('articlesPane').hidden = t !== 'articles'; $('statusPane').hidden = t !== 'status'; $('proPane').hidden = t !== 'pro'; $('mkPane').hidden = t !== 'mk';
       if (t === 'articles') loadArticles();
       if (t === 'status') loadStatus();
       if (t === 'pro') loadPro();
+      if (t === 'mk') loadMk();
     }
     $('tabs').addEventListener('click', (e) => e.target.dataset.tab && tab(e.target.dataset.tab));
     // ---- 🩺 system status ----
@@ -328,6 +357,53 @@
       if (!r.ok || j.ok === false) throw new Error(j.error || `ผิดพลาด ${r.status}`);
       return j;
     }
+
+    // ---------- 📣 Marketing agent (api/market.mjs) ----------
+    let mk = null;
+    const CH = { line: '💬 LINE', facebook: '📘 Facebook', seo: '📰 บทความ (Google)' };
+    const SENT = (s) => !s ? '' : s.status === 'queued' ? '⏳ รอส่ง' : s.slug ? `✅ เผยแพร่ /blog/${esc(s.slug)}` : s.id ? '✅ โพสต์แล้ว' : '✅ ส่งแล้ว';
+    async function loadMk() {
+      try { mk = await api('/api/market'); } catch (e) { $('mkState').textContent = e.message; return; }
+      const c = mk.config;
+      $('mkState').innerHTML = `${c.live ? '🟢 <b>เปิดโพสต์อยู่</b>' : '⚪ <b>ปิดการโพสต์</b> — สร้างร่างดูได้ แต่ยังไม่ส่งออกไปไหน (เปิดหลังซื้อโดเมน .com)'}
+        · ลิงก์ในโพสต์: <code>${esc(mk.site)}</code>${mk.siteFinal ? '' : ' (ยังเป็น vercel.app)'}
+        · Facebook: ${mk.fb ? '✅ เชื่อมแล้ว' : '⬜ ยังไม่เชื่อม'} · ร่างอัตโนมัติทุกเช้าวันทำการ: ${mk.cron ? (c.live ? '✅' : 'รอเปิดโพสต์') : '⬜ ยังไม่ตั้ง CRON_SECRET'}`
+        + (mk.queue.length ? `<br>คิว LINE: ${mk.queue.slice(0, 3).map((x) => `${when(x.at)} ${x.status === 'sent' ? '✅ ส่งแล้ว' : x.status === 'waiting' ? '⏳ รอโควตา' : x.status === 'failed' ? '❌ ' + esc(x.why || '') : '⏳ รอส่ง'}`).join(' · ')}` : '');
+      $('mkLive').textContent = c.live ? '⏸ ปิดการโพสต์' : '🚀 เปิดใช้การตลาด';
+      $('mkList').innerHTML = mk.drafts.length ? mk.drafts.map((d) => `<div class="mk-d" data-id="${esc(d.id)}">
+        <div class="mk-h"><b>${when(d.at)}</b> <small>เขียนโดย ${esc(d.writer === 'template' ? 'แม่แบบ (AI ไม่พร้อม)' : d.writer)}</small>${d.blocked ? `<span class="err"> · ⛔ ${esc(d.blocked)}</span>` : ''}
+          <button class="btn act" type="button" data-mk="save">💾 บันทึกที่แก้</button><button class="btn act danger" type="button" data-mk="discard">🗑️ ทิ้ง</button></div>
+        <div class="mk-grid">
+          <label>${CH.line} ${SENT(d.sent.line)}<textarea data-f="line" rows="9">${esc(d.line)}</textarea>
+            <button class="btn act gold" type="button" data-mk="approve" data-ch="line" ${d.sent.line ? 'disabled' : ''}>✅ อนุมัติ → LINE</button></label>
+          <label>${CH.facebook} ${SENT(d.sent.facebook)}<textarea data-f="facebook" rows="9">${esc(d.facebook)}</textarea>
+            <button class="btn act gold" type="button" data-mk="approve" data-ch="facebook" ${d.sent.facebook ? 'disabled' : ''}>✅ อนุมัติ → Facebook</button></label>
+          <label>${CH.seo} ${SENT(d.sent.seo)}<input data-f="title" value="${esc(d.seo.title)}"><input data-f="description" value="${esc(d.seo.description)}"><textarea data-f="body" rows="7">${esc(d.seo.body)}</textarea>
+            <button class="btn act gold" type="button" data-mk="approve" data-ch="seo" ${d.sent.seo ? 'disabled' : ''}>✅ อนุมัติ → เผยแพร่บทความ</button></label>
+        </div></div>`).join('') : '<p class="empty">ยังไม่มีร่าง — กด ✨ สร้างร่างโพสต์ตอนนี้</p>';
+    }
+    $('mkReload').addEventListener('click', loadMk);
+    $('mkGen').addEventListener('click', async () => {
+      $('mkGen').disabled = true; $('mkGen').textContent = '⏳ AI กำลังเขียน… (~30 วินาที)';
+      try { await api('/api/market', { method: 'POST', body: JSON.stringify({ action: 'generate' }) }); } catch (e) { alert(e.message); }
+      $('mkGen').disabled = false; $('mkGen').textContent = '✨ สร้างร่างโพสต์ตอนนี้'; loadMk();
+    });
+    $('mkLive').addEventListener('click', async () => {
+      const on = !(mk && mk.config.live);
+      if (on && !confirm('เปิดใช้การตลาด?\n\n• ปุ่มอนุมัติจะส่งโพสต์ออกจริง (LINE / Facebook / บทความสาธารณะ)\n• หน้า /blog และลิงก์ชวนเพื่อนจะเปิด\n• ร่างอัตโนมัติทุกเช้าวันทำการ')) return;
+      try { await api('/api/market', { method: 'POST', body: JSON.stringify({ action: 'live', on }) }); } catch (e) { alert(e.message); }
+      loadMk();
+    });
+    $('mkList').addEventListener('click', async (e) => {
+      const b = e.target.closest('button[data-mk]'); if (!b) return;
+      const box = b.closest('.mk-d'), id = box.dataset.id, v = (f) => box.querySelector(`[data-f="${f}"]`).value;
+      const act = b.dataset.mk, payload = { action: act, id, line: v('line'), facebook: v('facebook'), seo: { title: v('title'), description: v('description'), body: v('body') } };
+      if (act === 'approve') { payload.channel = b.dataset.ch; if (!confirm(`ส่ง "${CH[b.dataset.ch]}" ออกไปจริง?`)) return; }
+      if (act === 'discard' && !confirm('ทิ้งร่างนี้?')) return;
+      b.disabled = true;
+      try { await api('/api/market', { method: 'POST', body: JSON.stringify(payload) }); } catch (err) { alert(err.message); }
+      loadMk();
+    });
 
     // ---------- 📝 Articles (api/articles.mjs) ----------
     let articles = [], editId = null;

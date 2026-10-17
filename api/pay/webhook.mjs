@@ -3,7 +3,7 @@
 // carry a valid Stripe-Signature for STRIPE_WEBHOOK_SECRET or it is refused. Each event id is handled once.
 // checkout.session.completed / async_payment_succeeded → PromptPay: +30 / +365 days · card: until the subscription's
 // period end · invoice.paid → renewal · customer.subscription.updated / deleted → follow the subscription.
-import { json, fail } from '../../lib/gs.mjs';
+import { json, fail, readJson, writeJson } from '../../lib/gs.mjs';
 import { stripe, verify, loadPro, savePro, extend, periodEnd } from '../../lib/stripe.mjs';
 
 function fromSub(all, sub, why) {
@@ -18,6 +18,18 @@ function fromSub(all, sub, why) {
   return uid;
 }
 
+// 🤝 First payment of an account that came through a referral link → the referrer gets REF_DAYS of membership (once)
+async function rewardReferrer(all, uid) {
+  const refs = await readJson('access/referrals.json', { codes: {}, byUser: {} }).catch(() => null);
+  const r = refs && refs.byUser && refs.byUser[uid];
+  if (!r || r.paidAt) return;
+  const days = Math.max(1, Math.min(60, +process.env.REF_DAYS || 7));
+  extend(all, r.from, days, { source: (all.users[r.from] || {}).source || 'referral' });
+  all.history.push({ at: Date.now(), uid: r.from, type: 'referral', days, friend: uid });
+  r.paidAt = Date.now();
+  await writeJson('access/referrals.json', refs);
+}
+
 export async function handle(event, all) {
   const o = event.data.object;
   if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
@@ -27,12 +39,14 @@ export async function handle(event, all) {
       const sub = await stripe(`subscriptions/${o.subscription}`);
       sub.metadata = { ...(o.metadata || {}), ...(sub.metadata || {}) };
       fromSub(all, sub, 'subscribe');
+      await rewardReferrer(all, uid).catch((e) => console.error('referral', e.message));
       return 'subscription';
     }
     if (o.payment_status !== 'paid') return 'unpaid'; // PromptPay can confirm later: async_payment_succeeded
     const days = Math.min(400, +(o.metadata || {}).days || 30);
     extend(all, uid, days, { source: 'promptpay', plan: (o.metadata || {}).plan, customer: o.customer || (all.users[uid] || {}).customer });
     all.history.push({ at: Date.now(), uid, type: 'promptpay', days, amount: o.amount_total, currency: o.currency, session: o.id });
+    await rewardReferrer(all, uid).catch((e) => console.error('referral', e.message));
     return 'paid';
   }
   if (event.type === 'invoice.paid') {

@@ -192,9 +192,25 @@
       location.href = j.url;
     } catch (e) { toast(e.message); b.disabled = false; }
   });
+  // 🤝 Invite friends (api/ref.mjs, 17 Oct 2026) — shown only once marketing is live (after the .com domain)
+  async function loadRef() {
+    const card = $('refCard');
+    if (!card) return;
+    let r;
+    try { r = await api('/api/ref'); } catch (e) { card.hidden = true; return; }
+    if (!r.live) { card.hidden = true; return; }
+    card.hidden = false;
+    card.innerHTML = `<h3>🤝 ชวนเพื่อน ได้ใช้ฟรีเพิ่ม</h3>
+      <p class="muted small">เพื่อนสมัครผ่านลิงก์นี้แล้วจ่ายครั้งแรก — คุณได้สมาชิกเพิ่ม <b>${r.days} วัน</b> ต่อเพื่อน 1 คน</p>
+      <div class="ref-row"><input class="mono" id="refLink" readonly value="${esc(r.link)}"><button class="btn gold" type="button" id="refCopy">คัดลอก</button>
+      <a class="btn" href="https://line.me/R/msg/text/?${encodeURIComponent(`ลองดูเว็บสัญญาณทองตัวนี้ มีผลจริงทุกไม้ให้ดู ${r.link}`)}" target="_blank" rel="noopener">ส่งทาง LINE</a></div>
+      <p class="muted small">ชวนแล้ว ${r.invited} คน · จ่ายแล้ว ${r.paid} คน</p>`;
+    $('refCopy').onclick = () => { const i = $('refLink'); i.select(); (navigator.clipboard ? navigator.clipboard.writeText(i.value) : Promise.reject()).catch(() => document.execCommand('copy')); toast('คัดลอกลิงก์แล้ว'); };
+  }
   if (window.UI) UI.on('tab:account', loadPro);
+  if (window.UI) UI.on('tab:account', loadRef);
   // If the app already opened on one of these tabs before this file loaded
-  setTimeout(() => { const t = location.hash.slice(1); if (t === 'journal' && !loaded && tab) load(); if (t === 'stats') loadArticles(); if (t === 'account') loadPro(); }, 0);
+  setTimeout(() => { const t = location.hash.slice(1); if (t === 'journal' && !loaded && tab) load(); if (t === 'stats') loadArticles(); if (t === 'account') { loadPro(); loadRef(); } }, 0);
   const pay = new URLSearchParams(location.search).get('pay');
   if (pay) {
     setTimeout(() => toast(pay === 'ok' ? '✅ ชำระเงินสำเร็จ — เปิดสิทธิ์ PRO ภายในไม่กี่วินาที' : 'ยกเลิกการชำระเงินแล้ว'), 1500);

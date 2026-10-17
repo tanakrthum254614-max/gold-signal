@@ -117,5 +117,25 @@
     "deploymentEnabled": {
       "data": false
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/blog",
+      "destination": "/api/blog"
+    },
+    {
+      "source": "/blog/:slug",
+      "destination": "/api/blog?slug=:slug"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/blog?sitemap=1"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/market?cron=1",
+      "schedule": "30 1 * * 1-5"
+    }
+  ]
 }

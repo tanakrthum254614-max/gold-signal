@@ -27,6 +27,7 @@ check() {
   node scripts/price-alerts-user.js data.json   # members' own price alerts → web push (never fails the check)
   node scripts/pro-expiry.js                     # ⏰ membership ends in ≤ 3 days → web push to that member (never fails the check)
   node scripts/backup-blob.js                    # 🗄️ once a day: copy private Blob data to backup/<date>/ (30 days kept, never fails the check)
+  node scripts/market-send.js                    # 📣 one approved marketing post → LINE (quota-guarded, off until the .com; never fails the check)
   node scripts/flush.js   # everything from this check as one LINE request
   # Save results onto the data branch (no website deployment)
   if data_save "Signal update $(TZ=Asia/Bangkok date '+%F %H:%M')"; then savefails=0; else

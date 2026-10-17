@@ -1,0 +1,9 @@
+# Gold Signal — the members' site is private (server-side login); public: demo, sign-up, terms, privacy, articles
+User-agent: *
+Allow: /blog
+Allow: /demo.html
+Allow: /login.html
+Allow: /terms.html
+Allow: /privacy.html
+Disallow: /
+Sitemap: https://gold-signal-ten.vercel.app/sitemap.xml

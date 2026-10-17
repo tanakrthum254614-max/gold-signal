@@ -42,7 +42,7 @@ const SUBS = 'access/push-subs.json';
 // Served to everyone: the login page and what it shows / the browser asks for on its own
 // demo.html (16 Oct 2026): plain candles for visitors — loads none of the members-only scripts
 // terms.html (17 Oct 2026): prices, terms, cancel / refund policy, contact — Stripe's business verification needs it public
-const PUBLIC = /^\/(login\.html|demo\.html|terms\.html|privacy\.html|logo\.svg|favicon\.ico|manifest\.webmanifest|robots\.txt|icons\/.*)$/;
+const PUBLIC = /^\/(login\.html|demo\.html|terms\.html|privacy\.html|logo\.svg|favicon\.ico|manifest\.webmanifest|robots\.txt|icons\/.*|blog(\/[a-z0-9-]*)?|sitemap\.xml|api\/blog)$/; // blog = SEO articles (api/blog.mjs, 404 until marketing is live)
 // Stripe calls this one itself (no cookie) — api/pay/webhook.mjs refuses anything without a valid Stripe signature
 const WEBHOOK = '/api/pay/webhook';
 
@@ -140,6 +140,9 @@ async function session(request) {
   await logEvent(request, { id, name, email }, 'login').catch(() => {});
   // Just signed up (account under 15 minutes old): queue a "new member" message for the admins (scripts/new-members.js)
   if (created && Date.now() - created < 15 * 60e3 && !isAdmin({ email })) await queueNewMember(request, { id, name, email, method }).catch(() => {});
+  // 🤝 Referral (17 Oct 2026): a new account that arrived through someone's link (login.html stores ?ref= in the gs_ref
+  // cookie) is credited to that member — the reward (+days) is given when this account first pays (api/pay/webhook.mjs)
+  if (created && Date.now() - created < 15 * 60e3) await noteReferral(request, id).catch(() => {});
   return json({ ok: true }, 200, { 'set-cookie': cookieOut(`${data}.${exp}.${await sign(`${data}.${exp}`)}`, DAYS * 86400) });
 }
 
@@ -232,6 +235,7 @@ export default async function middleware(request) {
   const path = url.pathname;
   if (PUBLIC.test(path)) return next();
   if (path === WEBHOOK && request.method === 'POST') return next();
+  if (path === '/api/market' && url.searchParams.get('cron') === '1') return next(); // Vercel cron: api/market.mjs checks CRON_SECRET
   if (path.startsWith('/lib/')) return new Response('Not found', { status: 404 }); // server code for api/ — not a page
   if (path === '/api/session' && request.method === 'POST') return session(request);
   if (path === '/api/logout') {
@@ -345,6 +349,15 @@ async function logEvent(request, m, type) {
 // Actions, every 15 min) sends it as a push notification to the admins' devices (and to the owner's LINE if LINE_OWNER_ID
 // is set) and empties the queue. Admin devices are marked admin: true (when switched on, or on the admin's next visit).
 const NEWQ = 'access/new-members.json';
+async function noteReferral(request, id) {
+  const code = ((request.headers.get('cookie') || '').match(/(?:^|;\s*)gs_ref=([a-z0-9]{6,12})/) || [])[1];
+  if (!code) return;
+  const all = await readJson('access/referrals.json', { codes: {}, byUser: {} });
+  const from = (all.codes || {})[code];
+  if (!from || from === id || (all.byUser || {})[id]) return;
+  all.byUser = { ...(all.byUser || {}), [id]: { from, at: Date.now() } };
+  await writeJson('access/referrals.json', all);
+}
 async function queueNewMember(request, m) {
   const h = request.headers;
   let city = h.get('x-vercel-ip-city') || '';

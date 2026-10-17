@@ -710,3 +710,7 @@ html.light .exp-bar { background: #fff4d6; color: #6b4a00; }
 .welcome h2 { margin: 0 0 2px; font-size: 20px; }
 .welcome .wl-steps { margin: 14px 0; padding-left: 22px; display: grid; gap: 12px; }
 .welcome .wl-steps li b { display: block; margin-bottom: 2px; } .welcome .wl-steps li span { font-size: 14px; line-height: 1.6; }
+
+/* 🤝 referral card (journal.js loadRef, 17 Oct 2026) */
+.ref-card .ref-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+.ref-card .ref-row input { flex: 1; min-width: 220px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 13px; }
