@@ -313,6 +313,11 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 17 ต.ค. 2569 — 🐙 GitHub สวยขึ้น (README + repo)
+- ผู้ใช้: "ช่วยทำใน Git ให้สวยหน่อย ออกแบบให้สวยหน่อยใน Git" → README.md ใหม่ทั้งไฟล์: `docs/img/banner.svg` (ดำ–ทอง), badge shields.io (**ข้อความ badge ต้องเป็นอังกฤษ** — ฟอนต์ไทยแตก), ภาพ docs/img/{landing,signals,chart,results,pricing,login,marketing}.png (ใช้ภาพจาก compare/), ตารางความสามารถ, Mermaid สถาปัตยกรรม (**ห้ามใช้อีโมจิ/▲ และลูกศรสองทางต่อกันยาว — GitHub ขึ้น "Unable to render rich display"**; แบบเรียบผ่าน), โครงสร้าง, รัน/Deploy, คำเตือนความเสี่ยง
+- `gh repo edit`: description ไทย+อังกฤษ, homepage **gold-signal-ten.vercel.app** (เดิมผิดเป็น gold-signal-ruby), topics 12 อัน · ภาพปก docs/img/social.png 1280×640 (สำเนา Downloads/gold-signal-github-cover.png) — **social preview อัปโหลดผ่าน API ไม่ได้ ผู้ใช้ต้องทำที่ Settings → General → Social preview**
+- ตรวจ: render ผ่าน `gh api markdown` + github-markdown-css, หน้า github.com จริง (ภาพ 200 ครบ, Mermaid วาดแล้ว)
+
 ## 17 ต.ค. 2569 — ✂️ ตัดส่วนที่ไม่สำคัญ
 - ผู้ใช้: "มีอะไรต้องปรับหรือลดไหมในเว็บนี้ที่ไม่สำคัญ" → เสนอ 7 ข้อ แนะนำ 1, 2, 3, 6 → "ทำมา"
 - (1) **morning-plan.js ไม่ส่ง LINE ภาพรวม 07:05 แล้ว** (สูตรรายวันทดสอบ −$217 หลังสเปรด, ซ่อนบนเว็บแล้ว) — ยังบันทึก signals.json เหมือนเดิม · เปิดคืน env `MORNING_LINE=on` · ข้อความแท็บบัญชีเรื่อง LINE แก้แล้ว · **ข้อความทักทาย/ตอบกลับอัตโนมัติใน LINE OA ที่ผู้ใช้ตั้งเอง อาจยังพูดถึง 07:05 → ผู้ใช้ต้องแก้เองใน LINE OA Manager**
