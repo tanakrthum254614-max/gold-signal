@@ -7,6 +7,7 @@
   transition: opacity .55s ease, visibility .55s, transform .55s ease;
 }
 .splash.gone { opacity: 0; visibility: hidden; transform: scale(1.04); }
+.splash.gone, .splash.gone * { animation-play-state: paused !important; } /* fading out: stop the loops (auth.js then removes it) */
 .splash p { margin: 0; }
 .sp-glow { position: absolute; width: 520px; height: 520px; border-radius: 50%; top: 50%; left: 50%; margin: -330px 0 0 -260px;
   background: radial-gradient(circle, rgba(232,182,76,.18), transparent 65%); animation: glow 3.2s ease-in-out infinite; pointer-events: none; }

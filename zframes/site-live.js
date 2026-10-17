@@ -100,8 +100,9 @@ async function siteSpark(run, symbols) {
   }catch{}finally{if(siteSparkBusy===run)siteSparkBusy=0;}
 }
 connectLive = function(id) {
+  siteLastId=id;if(window.zfPaused)return; // paused while the member site shows another tab / is in the background
   siteRun++;const run=siteRun;
-  let hlLast=0;
+  let hlLast=0,midsAt=0;
   siteTimers.forEach(clearInterval);siteTimers=[];
   siteSockets.forEach(s=>{try{s.close()}catch{}});siteSockets=[];
   LIVESTAT.ticks=0;LIVESTAT.last=0;LIVESTAT.since=Date.now();LIVESTAT.ok=false;
@@ -121,6 +122,16 @@ connectLive = function(id) {
   siteTimers.push(setInterval(()=>{if(run!==siteRun)return;const g=siteGold();if(!g)return;for(const k of GOLD_KEYS)if(QS[k]?.px!==g.px||Date.now()-(QS[k]?.t||0)>5000)setSiteQuote(k,{px:g.px,t:Date.now(),src:'site',...(g.prev?{prev:g.prev}:{})});},250));
   siteContext(run);siteMids(run);if(id==='gold')siteSpot(run);
   siteTimers.push(setInterval(()=>siteContext(run),5000));
-  siteTimers.push(setInterval(()=>{if(hl.readyState!==WebSocket.OPEN||Date.now()-hlLast>10000)siteMids(run);},1000));
+  // stream quiet → poll, but at most every 5 s (each poll is ~60 KB; it used to run every second)
+  siteTimers.push(setInterval(()=>{if((hl.readyState!==WebSocket.OPEN||Date.now()-hlLast>10000)&&Date.now()-midsAt>5000){midsAt=Date.now();siteMids(run);}},1000));
   if(id==='gold')siteTimers.push(setInterval(()=>siteSpot(run),15000));
 };
+
+// ⏸ Pause / resume (17 Oct 2026, user: "ขอเสถียรมากกว่านี้ ให้มันสมดุลและสมูทไหลลื่น"): inside the member site this dashboard
+// lives in an iframe that stays loaded after you leave the tab — its sockets and polls used to keep running (≈60 KB every
+// second on a quiet stream). The site posts {zf:'pause'|'resume'} on tab switches; a hidden browser tab pauses too.
+let siteLastId=null,zfTabOn=true;
+function sitePause(){if(window.zfPaused)return;window.zfPaused=true;siteRun++;siteTimers.forEach(clearInterval);siteTimers=[];siteSockets.forEach(s=>{try{s.close()}catch{}});siteSockets=[];}
+function siteResume(){if(!window.zfPaused||!zfTabOn||document.hidden)return;window.zfPaused=false;if(siteLastId)connectLive(siteLastId);for(const el of document.querySelectorAll('.card[data-type="candles"]'))el._load?.();}
+addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||!e.data.zf)return;zfTabOn=e.data.zf==='resume';zfTabOn?siteResume():sitePause();});
+document.addEventListener('visibilitychange',()=>{document.hidden?sitePause():siteResume();});

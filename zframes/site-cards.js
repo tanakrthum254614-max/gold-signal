@@ -101,7 +101,7 @@
       const rec = () => { const rows = recordRows(); if (rows) paint('record', { rows }); };
       let busy = false;
       const sig = async () => {
-        if (busy || !document.querySelector('#app .zone:not([hidden]) .card[data-type="gs-signals"]')) return;
+        if (busy || window.zfPaused || !document.querySelector('#app .zone:not([hidden]) .card[data-type="gs-signals"]')) return;
         busy = true;
         try { paint('gs-signals', { rows: await hook('GS_SIGNALS')() }); } catch (err) { /* the chart tab is still loading */ } finally { busy = false; }
       };

@@ -46,10 +46,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=202610141600">
-  <link rel="stylesheet" href="live.css?v=202610171500">
+  <link rel="stylesheet" href="live.css?v=202610180100">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
-  <link rel="stylesheet" href="terminal.css?v=202610171600">
+  <link rel="stylesheet" href="terminal.css?v=202610180100">
   <link rel="stylesheet" href="splash.css?v=202610171000">
   <script>/* refresh = stay where you were, no loading screen (user, 16 Oct 2026: "กดรีเฟรชแล้วอยู่ที่เดิม ไม่ต้องไปเริ่มที่หน้าตอนโหลดใหม่ทุกครั้ง"): the splash plays once per tab; a reload or a later visit in the same tab skips it */ try { var gsNav = performance.getEntriesByType("navigation")[0]; if ((gsNav && gsNav.type === "reload") || sessionStorage.getItem("gs-splash-seen") === "1") document.documentElement.classList.add("no-splash"); } catch (e) {}</script>
   <script>/* apply the saved theme before the first paint */ var gsT = "dark"; try { gsT = localStorage.getItem("gs-theme") === "light" ? "light" : "dark"; } catch (e) {} /* dark trading terminal = default since 14 Oct 2026 */ if (gsT === "dark") { document.getElementById("themeLight").disabled = true; document.documentElement.classList.add("dark"); document.querySelector("meta[name=theme-color]").content = "#0b0e11"; }</script>
@@ -481,7 +481,7 @@
       </section>
 
       <section id="tab-zframes" class="tab" hidden>
-        <iframe id="zframesFrame" class="zframes-shell" title="หุ้นสหรัฐ — Nasdaq 100 · S&amp;P 500 · หุ้นปันผล" data-src="/zframes/index.html?d=ndx&amp;embed=1&amp;v=202610170100"></iframe>
+        <iframe id="zframesFrame" class="zframes-shell" title="หุ้นสหรัฐ — Nasdaq 100 · S&amp;P 500 · หุ้นปันผล" data-src="/zframes/index.html?d=ndx&amp;embed=1&amp;v=202610180100"></iframe>
       </section>
 
       <!-- 📓 Private trade journal (journal.js ← api/journal.mjs) — only the owner can read it -->
@@ -608,7 +608,7 @@
         <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
         <p class="muted small center"><button class="btn" type="button" onclick="window.gsTour && gsTour()">ดูทัวร์แนะนำอีกครั้ง</button></p>
-        <p class="muted small center">เวอร์ชัน 202610180000 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610180100 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
@@ -617,7 +617,7 @@
 
   <script src="config.js?v=202610121500"></script>
   <script src="pro.js?v=202610171600"></script>
-  <script src="auth.js?v=202610171000"></script>
+  <script src="auth.js?v=202610180100"></script>
   <script src="splashfx.js?v=202610152000"></script>
   <script src="indicators.js?v=202610121500"></script>
   <script src="investing.js?v=202610121500"></script>
@@ -626,9 +626,9 @@
   <script src="signals.js?v=202610121500"></script>
   <script src="intraday.js?v=202610171200"></script>
   <script src="pwa.js?v=202610121500"></script>
-  <script src="ui.js?v=202610171000"></script>
+  <script src="ui.js?v=202610180100"></script>
   <script src="chartsys.js?v=202610171200"></script>
-  <script src="main.js?v=202610171500"></script>
+  <script src="main.js?v=202610180100"></script>
   <script src="tradeplan.js?v=202610121500"></script>
   <script src="chartzones.js?v=202610171600"></script>
   <script src="newsstats.js?v=202610170000"></script>
@@ -636,6 +636,6 @@
   <script src="easy.js?v=202610171500"></script>
   <script src="journal.js?v=202610171600"></script>
   <script src="pricealerts.js?v=202610170100"></script>
-  <script src="motion.js?v=202610141800"></script>
+  <script src="motion.js?v=202610180100"></script>
 </body>
 </html>

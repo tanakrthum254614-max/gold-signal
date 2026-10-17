@@ -178,7 +178,7 @@
   async function loadLive() {
     try { const r = await fetch('./dashboards/gurus-live.json', { cache: 'no-store' }); if (r.ok) { LV = await r.json(); paintLive(); } } catch (err) { /* keep the last copy */ }
   }
-  setInterval(() => { if (!document.hidden) loadLive(); }, 120e3);
+  setInterval(() => { if (!document.hidden && !window.zfPaused) loadLive(); }, 120e3);
   setInterval(() => { if (!document.hidden && document.getElementById('gurus')?.hidden === false) paintLive(); }, 30e3); // "x นาทีที่แล้ว" + live price
   FRAMES.guruLive = () => `<div class="chips"><button type="button" data-glive="all" class="on">ทั้งหมด</button><button type="button" data-glive="fol">⭐ เฉพาะที่ติดตาม</button></div>
     <div id="guLive"><p class="muted">กำลังโหลด…</p></div><p class="gu-credit" id="guLiveAt"></p>

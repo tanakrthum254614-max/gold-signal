@@ -226,6 +226,7 @@ const LIVE = {
     for (const el of document.querySelectorAll('.card[data-type="candles"]')) {
       const f = FRAME_DATA[el.dataset.i];
       const load = async () => {
+        if (window.zfPaused) return; // dashboard not on screen (site-live.js)
         const iv = el.querySelector('.civ.on')?.dataset.iv || '5m';
         const seq = el._loadSeq = (el._loadSeq || 0) + 1, started = Date.now();
         const rows = await siteCandles(f.coin, iv).catch(() => null);

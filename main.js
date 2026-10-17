@@ -944,7 +944,30 @@ function renderLive() {
   const [lx, ly] = xy[xy.length - 1];
   $('lvDot').setAttribute('cx', lx);
   $('lvDot').setAttribute('cy', ly);
+  placeHalo(ly);
   renderLiveStatus();
+}
+
+// ⚡ The pulsing live dot (17 Oct 2026, user: "ขอเสถียรมากกว่านี้ … สมูทไหลลื่น"): scaling the SVG circle every frame made
+// the phone redraw the sparkline 60× a second (~20% CPU while idle). The SVG dot now stands still and an HTML twin on top
+// of it does the pulse with transform only (GPU) — same look, almost no work.
+let haloY = null;
+function placeHalo(ly) {
+  const svg = $('lvSpark'), par = svg && svg.parentElement;
+  if (!par) return;
+  let h = $('lvHalo');
+  if (!h) {
+    h = document.createElement('i'); h.id = 'lvHalo'; h.className = 'lv-halo'; h.setAttribute('aria-hidden', 'true');
+    if (getComputedStyle(par).position === 'static') par.style.position = 'relative';
+    par.appendChild(h);
+    new ResizeObserver(() => { if (haloY != null) placeHalo(haloY); }).observe(svg);
+  }
+  haloY = ly;
+  const r = svg.getBoundingClientRect(), pr = par.getBoundingClientRect();
+  if (!r.width) return;
+  h.style.background = getComputedStyle($('lvDot')).fill;
+  h.style.left = `${r.right - pr.left}px`;
+  h.style.top = `${r.top - pr.top + (ly / 80) * r.height}px`;
 }
 
 // Market pill + clock + "updated N s ago" (also runs every second)

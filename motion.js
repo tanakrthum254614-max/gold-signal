@@ -31,8 +31,8 @@
   }
   const dark = () => document.documentElement.classList.contains('dark'); // terminal look: no dust, no tilt
   function frame(now) {
+    if (dark()) { raf = 0; ctx.clearRect(0, 0, W, H); return; } // dark look: stop the loop (it used to spin 60×/s doing nothing)
     raf = requestAnimationFrame(frame);
-    if (dark()) return;
     const dt = Math.min(0.05, (now - last) / 1000 || 0);
     if (now - last < 33) return; // ~30 fps is plenty for slow dust
     last = now;
@@ -48,8 +48,9 @@
       ctx.beginPath(); ctx.arc(d.x, d.y, d.r * 4, 0, Math.PI * 2); ctx.fill();
     }
   }
-  const run = () => { cancelAnimationFrame(raf); if (!document.hidden) { last = performance.now(); raf = requestAnimationFrame(frame); } };
+  const run = () => { cancelAnimationFrame(raf); raf = 0; if (!document.hidden && !dark()) { last = performance.now(); raf = requestAnimationFrame(frame); } };
   size(); run();
+  new MutationObserver(() => { if (!raf !== dark()) run(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] }); // theme switched
   let rs; addEventListener('resize', () => { clearTimeout(rs); rs = setTimeout(size, 200); });
   document.addEventListener('visibilitychange', run);
 

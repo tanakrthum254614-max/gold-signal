@@ -408,3 +408,17 @@ html.dark .btn.gold, html.dark a.btn.gold { background: linear-gradient(135deg, 
 html.dark .btn.gold:hover { filter: brightness(1.05); }
 html.dark .card { box-shadow: inset 0 1px 0 rgba(212, 175, 95, .10); }
 html.dark .sec-title { border-left-color: transparent; border-image: linear-gradient(#f7e2a1, #b8892f) 1; }
+
+/* ⚡ Smooth on phones (17 Oct 2026, user: "ขอเสถียรมากกว่านี้ ให้มันสมดุลและสมูทไหลลื่น"): the pulsing dot beside the live
+   price is an SVG circle with a glow filter — animating it every frame made the phone redraw the whole sparkline 60× a
+   second (≈20% CPU while idle). An HTML twin pulses on top with transform only. */
+.lv-dot { animation: none !important; } /* the pulse moved to .lv-halo (main.js placeHalo) */
+.lv-halo { position: absolute; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%; pointer-events: none; z-index: 1;
+  box-shadow: 0 0 6px rgba(240, 185, 11, .8); will-change: transform; animation: dsDot 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .lv-halo { animation: none; } }
+/* The small "live" dots pulsed with an expanding box-shadow — that repaints and re-styles the whole tab every frame
+   (the results tab sat at ~60% CPU on a phone). Same rhythm now with opacity + scale only (GPU), nothing else changes. */
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.78); } }
+@keyframes stPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.78); } }
+@keyframes nlPulse { 0%, 100% { opacity: 1; } 50% { opacity: .72; } }
+@keyframes pentryPulse { 0%, 100% { opacity: 1; } 50% { opacity: .6; } }

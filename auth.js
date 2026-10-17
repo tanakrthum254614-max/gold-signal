@@ -9,6 +9,11 @@
     } catch (e) { return false; }
   })();
   if (skipSplash) $('splash').classList.add('gone');
+  // Once faded out, take the splash out of the page (17 Oct 2026, user: "ขอเสถียรมากกว่านี้ … สมูทไหลลื่น"): hidden with
+  // visibility only, its ~40 looping animations kept the phone redrawing every frame for as long as the site was open.
+  { const sp = $('splash'); let t = 0;
+    const sync = () => { clearTimeout(t); if (sp.classList.contains('gone')) t = setTimeout(() => { sp.style.display = 'none'; }, 600); else sp.style.display = ''; };
+    new MutationObserver(sync).observe(sp, { attributes: true, attributeFilter: ['class'] }); sync(); }
 
   // Progress ring (r = 72) + a counting percentage — no step texts (user, 12 Oct: too many words on the loading screen)
   const RING = 2 * Math.PI * 72;

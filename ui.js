@@ -19,9 +19,13 @@
     document.querySelectorAll('#tabbar a').forEach((a) => a.classList.toggle('on', a.dataset.tab === tab));
     document.querySelector('.content').classList.toggle('zframes-view', tab === 'zframes');
     if (tab === 'zframes' && !$('zframesFrame').hasAttribute('src')) $('zframesFrame').src = $('zframesFrame').dataset.src;
+    zfTell(tab === 'zframes');
     window.scrollTo(0, 0);
     emit(`tab:${tab}`);
   }
+  // the US-stocks iframe stays loaded after you leave its tab: tell it to pause its live prices (zframes/site-live.js)
+  function zfTell(on) { const f = $('zframesFrame'); if (f && f.hasAttribute('src') && f.contentWindow) f.contentWindow.postMessage({ zf: on ? 'resume' : 'pause' }, location.origin); }
+  $('zframesFrame') && $('zframesFrame').addEventListener('load', () => zfTell(currentTab() === 'zframes'));
   window.addEventListener('hashchange', () => showTab(currentTab()));
   // Right away (before the data has loaded) show the tab from the #hash, so a refresh doesn't flash the signals tab first;
   // start() shows it again properly (events, zframes iframe) once main.js is ready
