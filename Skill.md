@@ -118,7 +118,7 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 ```
 หน้าเว็บ
 index.html      แอปหลัก (6 แท็บ) — asset ทุกตัวมี ?v=<เวอร์ชันของไฟล์นั้น> · "เวอร์ชัน N" ในหน้าบัญชี
-login.html      เข้าสู่ระบบ / สมัคร (Clerk clerk-js@6 + @clerk/ui@1) · privacy.html (สาธารณะ) · admin.html (หลังบ้าน)
+login.html      เข้าสู่ระบบ / สมัคร (Clerk clerk-js@6 + @clerk/ui@1; ราคาสด + ผลทดสอบ/ผลจริง + ขอบทองแสงวิ่ง) · privacy.html (สาธารณะ) · admin.html (หลังบ้าน)
 CSS (ลำดับโหลด)  style.css (โครงเดิม) → live.css (ราคาสด, แถบคะแนน, กล่อง position, จอกว้าง/เมนูซ้าย) → theme.css (#themeLight ธีมสว่าง)
                 → design.css (ระยะ/อนิเมชั่น ทั้ง 2 ธีม) → terminal.css (ธีมมืดแบบจอเทรด — ทุกกฎขึ้นต้น html.dark) → splash.css (หน้าโหลด)
                 ค่าเริ่มต้น = **โหมดมืด** (head script ใน index.html + ui.js theme(); สว่างเมื่อ localStorage gs-theme = 'light')
@@ -314,6 +314,11 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 17 ต.ค. 2569 — ✨ หน้าสมัครสมาชิกแบบ "สด + มีชีวิต"
+- ผู้ใช้: "ขอให้ดีกว่านี้ได้ไหมมันดูธรรมดาไป" → ถามแบบ (มีตัวอย่าง 3 แบบ) → เลือก "สด + มีชีวิต"
+- login.html (ไม่แตะ Clerk flow / แท็บ / ขั้นตอน 1-2-3 / FAQ): `#livepx` ราคาทองสด (stream investing.com pid 68 → gold-api.com สำรองทุก 10 วิ, ตลาดปิด = "ราคาล่าสุด") · `.rec` 3 ช่อง Buy 1 ชม./5 ชม./1 วัน = % ชนะทดสอบย้อนหลัง + ผลจริง (ไม้/ชนะ/$) จาก `/api/market?blog=1&stats=1` ทุก 60 วิ + บรรทัด**ยอดรวมทุกไม้รวมกรอบเสี่ยง** (ห้ามเลือกโชว์เฉพาะตัวเลขดี) + ลิงก์ welcome.html#stats · `.glow` ขอบทองแสงวิ่ง (conic-gradient + @property --spin) ครอบ `#signIn` (Clerk cardBox border 0) · `canvas#bg` แท่งเทียนทองจาง ๆ สุ่มเลื่อนซ้ายช้า ๆ (ตกแต่ง ไม่ใช่ราคาจริง, z-index 0 + main z-index 1) · prefers-reduced-motion = นิ่ง
+- ทดสอบ: gold-signal-tools/signupui.cjs <base> <out-prefix> (1440 + 390, local ดึงสถิติจากเว็บจริงผ่าน request interception) ไม่มี error ไม่ล้น · เว็บจริงตรวจแล้ว · commit a518a9c
+
 ## 17 ต.ค. 2569 — ① ② ③ หน้าสมัครสมาชิกเข้าใจง่ายขึ้น
 - ผู้ใช้: "ทำให้เข้าใจมากขึ้นตอนหน้าสมัครสมาชิก" → ถามแบบ (มีตัวอย่าง) → เลือก "ขั้นตอน 3 ขั้นด้านบน + กล่องสมัคร"
 - login.html: `ol.steps` (สมัครบัญชี → เลือกแพ็กเกจ → เริ่มใช้งาน, ขั้น 1 `.on`) แสดงเฉพาะแท็บสมัคร (`body.mode-in` ซ่อน) · `#lead` เปลี่ยนตามแท็บ · `.faq` 5 ข้อ (ต้องจ่ายทันทีไหม / รหัสทางอีเมล / ช่องทางชำระ / ยกเลิก-คืนเงิน / ลืมรหัสผ่าน) · pay.html: แถบเดียวกัน (ขั้น 1 `.done` ✓, ขั้น 2 `.on`; จ่ายสำเร็จ → ขั้น 3 `.on`)
@@ -351,7 +356,7 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 - ผู้ใช้: "ขอแบบให้พรีเมียมและระดับทางการให้คนน่าเชื่อถือในการเข้ามาใช้" → ถามก่อน (มีตัวอย่าง) → เลือก หน้าคนนอก + Landing ใหม่ + เว็บสมาชิก · โทน **"ดำ–ทอง หรูหรา"**
 - **premium.css** (PUBLIC): ดำ #0a0a0c, ทองไล่เฉด `--pm-grad`, หัวข้อ **Noto Serif Thai** สีงาช้าง, การ์ดกรอบทองบาง, `.pm-btn.gold/.ghost`, `.trust`, `.rule`, `.pm-brand` (GOLD SIGNAL + XAU/USD · THAILAND) · ใช้กับ `<html class="pm-page"><body class="pm">` · ใช้แบบมืดเสมอ
 - **welcome.html** (ใหม่, PUBLIC): hero "สัญญาณเทรดทองคำ ที่ตรวจสอบได้ทุกไม้" · ความน่าเชื่อถือ (Stripe/ผลจริง/คืนเงิน 7 วัน/ยกเลิกได้) · บริการ 6 การ์ด · **ผลจริงสด** จาก `/api/market?blog=1&stats=1` (lib/blog.mjs `statsJSON`: 1h/5h/1d BUY ไม่ risky + test-stats, สาธารณะเสมอ แม้การตลาดปิด) · 3 ขั้นตอน · ราคา 2 แพ็กเกจ · FAQ 5 ข้อ · คำเตือนความเสี่ยง · ท้ายหน้า · **middleware: ไม่ล็อกอิน + path "/" → 302 /welcome.html** (หน้าอื่นยังไป login)
-- login.html (Clerk ธีมดำทอง: ปุ่มทอง, หัวข้อ serif, การ์ดกรอบทอง + headline + trust) · pay/demo/terms/privacy: map ตัวแปรสีเดิม → --pm-* + serif + ปุ่มทอง · lib/blog.mjs ใช้ premium.css · เว็บสมาชิก (terminal.css ท้ายไฟล์): ชื่อแบรนด์ serif ทองไล่เฉด, .btn.gold ไล่เฉด, การ์ดเส้นทองบาง, แถบ sec-title ทอง — **ไม่แตะ layout / splash**
+- login.html (Clerk ธีมดำทอง: ปุ่มทอง, หัวข้อ serif, การ์ดกรอบทอง + headline + trust; 17 ต.ค. เพิ่มราคาสด/ผล 3 กรอบ/ขอบทองแสงวิ่ง/แท่งเทียนพื้นหลัง) · pay/demo/terms/privacy: map ตัวแปรสีเดิม → --pm-* + serif + ปุ่มทอง · lib/blog.mjs ใช้ premium.css · เว็บสมาชิก (terminal.css ท้ายไฟล์): ชื่อแบรนด์ serif ทองไล่เฉด, .btn.gold ไล่เฉด, การ์ดเส้นทองบาง, แถบ sec-title ทอง — **ไม่แตะ layout / splash**
 - ทดสอบ gold-signal-tools/pm.cjs (6 หน้า × 1440/390 ไม่ล้น ไม่มี error, serif ทำงาน) · มือถือ: ชื่อแบรนด์บนแถบหัวขึ้นสองบรรทัด → nowrap + เล็กลง ≤ 420px · entries.cjs เว็บสมาชิกไม่ล้น · production 84d4768: / → /welcome.html, stats 200 (1h 57% · ผลจริง 2 ไม้ ชนะ 1 −$23.51)
 - หมายเหตุ: กล่องล็อกอินยังขึ้น "Development mode" ของ Clerk จนกว่าจะย้าย Clerk เป็นโหมดจริง (ต้องมีโดเมน)
 
