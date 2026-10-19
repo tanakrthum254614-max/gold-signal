@@ -1164,7 +1164,7 @@
    "limit": true,
    "tf": "15m",
    "risky": true,
-   "pnl": 14.15,
+   "pnl": 13.96,
    "hit": 2,
    "hitAt": [
     1792409400000,
@@ -1172,7 +1172,7 @@
    ],
    "stop": 4172.52,
    "realized": 6.25,
-   "last": 4148.81
+   "last": 4149.38
   },
   {
    "id": "30m-1792404000000",
@@ -1195,7 +1195,7 @@
    "limit": true,
    "tf": "30m",
    "risky": true,
-   "pnl": 14.15,
+   "pnl": 13.96,
    "hit": 2,
    "hitAt": [
     1792409400000,
@@ -1203,7 +1203,7 @@
    ],
    "stop": 4172.52,
    "realized": 6.25,
-   "last": 4148.81
+   "last": 4149.38
   },
   {
    "id": "5m-1792407300000",
@@ -1325,14 +1325,14 @@
    "limit": true,
    "tf": "1h",
    "risky": true,
-   "pnl": 14.9,
+   "pnl": 14.52,
    "hit": 1,
    "hitAt": [
     1792415700000
    ],
    "stop": 4167.41,
    "realized": 2.5,
-   "last": 4148.81
+   "last": 4149.38
   },
   {
    "id": "30m-1792411200000",
@@ -1361,7 +1361,7 @@
    "id": "30m-1792413000000",
    "createdAt": 1792413000000,
    "expiresAt": 1792439100000,
-   "status": "pending",
+   "status": "expired",
    "entryAt": 1792413000000,
    "side": "SELL",
    "entry": 4170.26,
@@ -1453,8 +1453,8 @@
    "id": "15m-1792421100000",
    "createdAt": 1792421100000,
    "expiresAt": 1792439100000,
-   "status": "pending",
-   "entryAt": 1792421100000,
+   "status": "active",
+   "entryAt": 1792423500000,
    "side": "SELL",
    "entry": 4150.7,
    "sl": 4165.7,
@@ -1470,9 +1470,36 @@
    "limit": true,
    "tf": "15m",
    "risky": true,
-   "pnl": 0
+   "pnl": 1.32,
+   "hit": 0,
+   "hitAt": [],
+   "stop": 4165.7,
+   "realized": 0,
+   "last": 4149.38
+  },
+  {
+   "id": "30m-1792423800000",
+   "createdAt": 1792423800000,
+   "expiresAt": 1792439100000,
+   "status": "pending",
+   "entryAt": 1792423800000,
+   "side": "SELL",
+   "entry": 4151.08,
+   "sl": 4166.08,
+   "tps": [
+    4147.33,
+    4136.08,
+    4121.08
+   ],
+   "tp": 4147.33,
+   "score": -4,
+   "priceAtSignal": 4146.08,
+   "fillBy": 1792434600000,
+   "limit": true,
+   "tf": "30m",
+   "risky": true
   }
  ],
  "brakes": {},
- "updatedAt": 1792423522157
+ "updatedAt": 1792423821535
 }
