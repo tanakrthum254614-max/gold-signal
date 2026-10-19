@@ -208,12 +208,12 @@
     <h1 class="headline rise d1">สัญญาณทองคำ</h1>
     <section class="rec rise d2" aria-label="ผลทดสอบและผลจริง">
       <div class="tiles" id="tiles">
-        <div class="tile" data-tf="5m"><span class="tf">5 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><small class="cnt"></small><span class="ent"></span></div>
-        <div class="tile" data-tf="15m"><span class="tf">15 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><small class="cnt"></small><span class="ent"></span></div>
-        <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><small class="cnt"></small><span class="ent"></span></div>
-        <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><small class="cnt"></small><span class="ent"></span></div>
+        <div class="tile" data-tf="5m"><span class="tf">5 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
+        <div class="tile" data-tf="15m"><span class="tf">15 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
+        <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
+        <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
       </div>
-      <p class="tcap">% ตัวใหญ่ = อัตราชนะรวม Buy + Sell จากการทดสอบย้อนหลัง 2 ปี (ไม่รับประกันผลในอนาคต) · จุดเข้า = จำนวนครั้งในการทดสอบ · ราคาด้านล่าง = จุดเข้าล่าสุดของระบบ · ⚠ = สัญญาณเสี่ยง</p>
+      <p class="tcap">% ตัวใหญ่ = อัตราชนะรวม Buy + Sell จากการทดสอบย้อนหลัง 2 ปี (ไม่รับประกันผลในอนาคต) · ราคาด้านล่าง = จุดเข้าล่าสุดของระบบ · ⚠ = สัญญาณเสี่ยง</p>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
       <li class="on"><b>สร้างบัญชี</b>อีเมลหรือ Google</li>
@@ -421,7 +421,6 @@
             pc.textContent = al ? `${al.tested}%` : '—'; pc.classList.toggle('na', !al);
             const sd = (k, x) => (x ? `<span class="${k === 'Buy' ? 'b' : 's'}">${k} ${x.tested}%${x.risky ? '<i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}</span>` : `<span class="na">${k} —</span>`);
             c.querySelector('.bs').innerHTML = `${sd('Buy', t.buy)} · ${sd('Sell', t.sell)}`;
-            c.querySelector('.cnt').textContent = al ? `${al.n.toLocaleString('en-US')} จุดเข้า` : '';
             const L = t.last, e = c.querySelector('.ent'), sn = L && (L.side === 'SELL' ? 'Sell' : 'Buy');
             e.className = `ent${L ? ` ${L.state}` : ''}`;
             e.innerHTML = !L ? '<span class="na">ยังไม่มีจุดเข้า</span>'
