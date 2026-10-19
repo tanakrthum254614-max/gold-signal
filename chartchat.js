@@ -187,7 +187,7 @@
     let t = `<b>ทำไมกรอบ ${nameOf(n.tf)} ยังไม่เข้า</b><br>คะแนนรวม <b>${signedScore(d.score)}</b> จาก ${fr}`;
     t += `<br>• Buy ต้องได้ +${B.th}${B.confirm ? ` และ ${CHARTSYS.CONFIRM[B.confirm].name} ยืนยันขาขึ้น` : ''} → ${side(n, 1).go ? '✅ ถึงแล้ว' : `ขาดอีก ${need(n, side(n, 1))} คะแนน`}`;
     t += S ? `<br>• Sell ต้องได้ −${S.th}${S.confirm ? ` และ ${CHARTSYS.CONFIRM[S.confirm].name} ยืนยันขาลง` : ''} → ${side(n, -1).go ? '✅ ถึงแล้ว' : `ขาดอีก ${need(n, side(n, -1))} คะแนน`}`
-      : `<br>• Sell: กรอบนี้ไม่มีสัญญาณขาย (ทดสอบย้อนหลังขาดทุน) — ตอนนี้ไม่มีกรอบไหนให้สัญญาณ Sell`;
+      : `<br>• Sell: กรอบนี้ไม่มีสัญญาณขาย (ทดสอบย้อนหลังขาดทุน) — Sell มีแค่กรอบ 5 นาที (⚠️ สัญญาณเสี่ยง)`;
     const bl = blockers(n);
     if (bl.length) t += `<br>${bl.join('<br>')}`;
     t += `<br><small>คะแนนแต่ละกรอบ: ขาขึ้นแรง +2 · ขาขึ้น +1 · แกว่ง 0 · ขาลง −1 · ขาลงแรง −2 — ระบบเข้าเมื่อหลายกรอบเห็นตรงกัน</small>`;
@@ -201,7 +201,7 @@
     const risk = x.risky ? `<br>${CHARTSYS.riskText(x.c)} — Buy ที่กำไรครบทุกช่วงทดสอบ: กรอบ 1 ชม. · 5 ชม. · 1 วัน` : '';
     if (x.go) return `${t}<br>${x.risky ? '⚠️ มีสัญญาณ' : '✅ เข้าได้ตอนนี้'}ที่ ~<b>${p2(n.price)}</b> · ${levelsTxt(c, n.price, s)}${risk}`;
     t += risk;
-    if (!x.tested) t += `<br>⚠️ ฝั่ง${name}ของกรอบนี้ ${CHARTSYS.whyNo(x.c)}${s < 0 && n.tf !== '5m' ? ' — ตอนนี้ไม่มีกรอบไหนให้สัญญาณ Sell' : ''}`;
+    if (!x.tested) t += `<br>⚠️ ฝั่ง${name}ของกรอบนี้ ${CHARTSYS.whyNo(x.c)}${s < 0 && n.tf !== '5m' ? ' — Sell มีแค่กรอบ 5 นาที (⚠️ เสี่ยง)' : ''}`;
     else if (!n.br) t += `<br>ขาดอีก ${need(n, x)} คะแนน${c.confirm ? ` และต้องมี ${CHARTSYS.CONFIRM[c.confirm].name} ยืนยัน` : ''}`;
     const zone = s > 0 ? z.buy : z.sell, spots = [];
     if (zone) spots.push(`โซน${s > 0 ? 'ซื้อ (แนวรับ)' : 'ขาย (แนวต้าน)'} <b>${zTxt(zone)}</b> — ห่างจากราคาตอนนี้ ${p2(Math.abs((s > 0 ? zone.top : zone.bottom) - n.price))} ดอลลาร์`);
@@ -306,7 +306,7 @@
     }
     if (hold.length) rec += `<br>📌 ถือสถานะอยู่: ${hold.map(({ n }) => `กรอบ ${nameOf(n.tf)} ${n.open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}`).join(' · ')}`;
     const ups = ok.filter(({ n }) => (window.CZ_FDIR ? CZ_FDIR(n.d) : 0) > 0).length, downs = ok.filter(({ n }) => (window.CZ_FDIR ? CZ_FDIR(n.d) : 0) < 0).length;
-    const mood = ups === ok.length ? 'ทุกกรอบชี้ขึ้น — ฝั่งซื้อได้เปรียบ' : downs === ok.length ? 'ทุกกรอบชี้ลง — ฝั่งขายได้เปรียบ (ตอนนี้ไม่มีสัญญาณ Sell)' : 'กรอบเล็กกับกรอบใหญ่ไม่ตรงกัน — ระวังสวนทาง รอให้ตรงกันก่อน';
+    const mood = ups === ok.length ? 'ทุกกรอบชี้ขึ้น — ฝั่งซื้อได้เปรียบ' : downs === ok.length ? 'ทุกกรอบชี้ลง — ฝั่งขายได้เปรียบ (Sell มีแค่กรอบ 5 นาที — ⚠️ สัญญาณเสี่ยง)' : 'กรอบเล็กกับกรอบใหญ่ไม่ตรงกัน — ระวังสวนทาง รอให้ตรงกันก่อน';
     return `<b>สรุป 4 กรอบ</b> (ราคา ${p2(nowPrice())})<br>${rows.join('<br>')}<br>${rec}<br>🧭 ${mood}<br><small>% = ความพร้อมเข้า (100% = ถึงจุดเข้า) · ⚠️ = ฝั่งที่ทดสอบไม่ผ่าน ไม่ให้สัญญาณ</small>`;
   }
   async function ansBest(s) {
@@ -323,7 +323,7 @@
     if (go) t += `<br>✅ <b>เข้า ${name} กรอบ ${nameOf(go.n.tf)} ได้ตอนนี้</b> ที่ ~${p2(go.n.price)} · ${levelsTxt(go.x.c, go.n.price, s)}`;
     else if (tested.length) { const b = tested.filter((r) => !r.n.open && !r.n.br)[0]; t += b ? `<br>⏸ ยังไม่มีกรอบไหนถึงจุดเข้า — ใกล้สุดคือ ${nameOf(b.n.tf)} (${b.x.pct}%, ขาดอีก ${need(b.n, b.x)} คะแนน)` : ''; }
     else t += `<br>⚠️ ไม่มีกรอบไหนที่ ${name} ทดสอบผ่าน`;
-    if (s < 0) t += `<br><small>ตอนนี้ไม่มีสัญญาณ Sell (ฝั่งขายหยุดให้จุดเข้าแล้ว 19 ต.ค.) · จุดเข้าที่ผ่านการทดสอบทุกช่วง: Buy กรอบ 1 ชม. / 5 ชม. / 1 วัน</small>`;
+    if (s < 0) t += `<br><small>Sell มีแค่กรอบ 5 นาที ซึ่งติดป้าย ⚠️ เสี่ยง (ผลจริงชนะ 4 จาก 14) · จุดเข้าที่ผ่านการทดสอบทุกช่วง: Buy กรอบ 1 ชม. / 5 ชม. / 1 วัน</small>`;
     return t;
   }
   function ansNews() {

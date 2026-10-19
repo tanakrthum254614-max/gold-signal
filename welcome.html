@@ -272,8 +272,8 @@
         const o = j.others, a = j.all, box = document.getElementById('others');
         if (o && o.live) {
           box.hidden = false;
-          box.innerHTML = `<b>กรอบเสี่ยง</b> (5–30 นาที · 1 สัปดาห์ · Sell) <b>หยุดให้จุดเข้าแล้ว</b> ตั้งแต่ 19 ต.ค. · ผลจริงเดิม <b>${o.live}</b> รายการ · ชนะ <b>${o.wins}</b> · <b class="${o.pnl >= 0 ? 'up' : 'down'}">${money(o.pnl)}</b> ต่อออนซ์`
-            + `<br><span class="muted">ผลรวมทุกรายการที่ระบบบันทึก: ${a.live} รายการ · ชนะ ${a.wins} (${Math.round((a.wins / a.live) * 100)}%) · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ — จากนี้ให้จุดเข้า บันทึก และแจ้ง LINE เฉพาะกรอบ 1 ชม. / 5 ชม. / 1 วัน ที่ทดสอบผ่านทุกช่วง</span>`;
+          box.innerHTML = `<b>กรอบเสี่ยง</b> (5–30 นาที · 1 สัปดาห์ · Sell · ติดป้าย ⚠️ ไม่ส่ง LINE): ผลจริง <b>${o.live}</b> รายการ · ชนะ <b>${o.wins}</b> · <b class="${o.pnl >= 0 ? 'up' : 'down'}">${money(o.pnl)}</b> ต่อออนซ์`
+            + `<br><span class="muted">ผลรวมทุกรายการที่ระบบบันทึก: ${a.live} รายการ · ชนะ ${a.wins} (${Math.round((a.wins / a.live) * 100)}%) · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ — LINE ส่งเฉพาะกรอบ 1 ชม. / 5 ชม. / 1 วัน ที่ทดสอบผ่านทุกช่วง</span>`;
         }
         if (j.since) document.getElementById('since').textContent = `(${new Date(j.since).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })})`;
       }).catch(() => document.querySelectorAll('#stats .live').forEach((x) => { if (/กำลังโหลด/.test(x.textContent)) x.textContent = 'ดูผลจริงได้หลังเข้าสู่ระบบ'; }));
