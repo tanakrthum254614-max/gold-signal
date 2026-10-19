@@ -316,6 +316,15 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 19 ต.ค. 2569 — 📋 สัญญาณวันนี้ทุกกรอบ (สด) + 🔔 LINE 15 นาที
+- ผู้ใช้: "15 นาทีส่งไลน์ด้วย อยากให้เอาเรียลไทม์ของแต่ละวันในการเข้าทุกสัญญาณ" → ถามที่แสดง → "ทั้งสองที่"
+- chart-run.js `CHART_NOTIFY` default = `5m,15m,30m,1h,5h,1d` (1w ยังไม่ส่ง)
+- lib/blog.mjs `today = {day, list}`: ทุกไม้ของวัน (กรุงเทพฯ) ทุกกรอบ ไม่รวม skip · ถ้าวันนี้ยังไม่มี = วันทำการล่าสุด · fields tf/side/entry/at/risky/paused/state(wait|open|closed|cancel)/pnl/exit/by/hit/n/realized/until — ไม่มี SL/TP (หน้าสาธารณะ)
+- login.html `#today` ใต้ช่อง 4 กรอบ: `renderToday()` ทุก tick ราคา — ถือ = realized + ส่วนที่เหลือ × (ราคาสด − เข้า) เหมือน evaluator · รอเข้า "อีก $x" · ปิด ✅/❌ ±$ · ยกเลิก · รวมทั้งวัน
+- index.html หน้าแรก การ์ด `#todayCard` (ก่อน 📒 ผลจริง) · main.js `renderToday(price)` เรียกท้าย renderIntra (ทุก tick) · มี SL (→ ทุนหลัง TP1) / TP ทุกตัว, "TPn แล้ว", ไม้พัก "(พัก · ไม่ส่ง LINE)" · live.css `.today-card` (+ .up/.down ในการ์ด)
+- แก้: refreshBeat (main.js) / admin.html สถานะงาน — ข้ามรอบ `cancelled` (chain: รอบที่รอคิวถูกแทนด้วยรอบใหม่ = ไม่ใช่ล้มเหลว) เดิมขึ้น "⚠️ ระบบเช็กรอบล่าสุดล้มเหลว" · watchdog.js ข้าม cancelled อยู่แล้ว
+- ทดสอบ: tilelive.mjs · todayshot.cjs (ใหม่ — ต้องตั้ง localStorage gs-tour=1 และกด "ดูแนวตั้งชั่วคราว" บนมือถือ · dev server อ่าน chart-signals.json ในเครื่อง → `git show origin/data:chart-signals.json > chart-signals.json` แล้ว `git checkout -- chart-signals.json` คืน) · errscan.cjs ไม่มี error · commit e136240
+
 ## 19 ต.ค. 2569 — 🔴 ฝั่ง Sell: 15m / 30m ใหม่ + 1h รอเด้งแล้วค่อยขาย
 - ผู้ใช้: "มีฝั่ง Sell บ้างไหม" → ตอบ (5m Sell พักอยู่ ⛔, 1h Sell ยังไม่เคยออก, 15m/30m ไม่มี) เสนอ 2 ทาง → "ทำมาเลย" (ทั้งคู่)
 - research/indicators/sellnew.js (ใหม่): replay คะแนน CS.decide ทุกแท่ง 2 ปี (cache score-<tf>.json ใน DATA_DIR) → ลอง th 3–7 × ตัวยืนยัน × SL mult × TP × เข้าทันที/รอเด้ง $d ภายใน W (ต้องผ่าน $0.3) · เลือกจากช่วง 1–3 (กำไรทุกช่วง ชนะ ≥ 60% ≥ 30 ไม้) แล้วดูช่วง 4 · รายงาน report-2026-10-19-sell.txt
