@@ -1461,7 +1461,7 @@
    "id": "15m-1792421100000",
    "createdAt": 1792421100000,
    "expiresAt": 1792439100000,
-   "status": "pending",
+   "status": "expired",
    "entryAt": 1792423500000,
    "side": "SELL",
    "entry": 4150.7,
@@ -1533,5 +1533,5 @@
   }
  ],
  "brakes": {},
- "updatedAt": 1792425681434
+ "updatedAt": 1792428321880
 }
