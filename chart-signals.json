@@ -1316,7 +1316,7 @@
    "id": "1h-1792411200000",
    "createdAt": 1792411200000,
    "expiresAt": 1792439100000,
-   "status": "pending",
+   "status": "expired",
    "entryAt": 1792411500000,
    "side": "SELL",
    "entry": 4167.41,
@@ -1552,14 +1552,14 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": -0.79,
+   "pnl": -2.13,
    "hit": 0,
    "hitAt": [],
    "stop": 4160.21,
    "realized": 0,
-   "last": 4146
+   "last": 4147.34
   }
  ],
  "brakes": {},
- "updatedAt": 1792432521772
+ "updatedAt": 1792432821940
 }
