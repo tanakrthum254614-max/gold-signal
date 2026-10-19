@@ -10,6 +10,10 @@ on:
         description: "Send to LINE"
         type: boolean
         default: false
+      week_of:
+        description: "Report a past week: a time in it, e.g. 2026-10-17T07:30:00+07:00 (empty = now)"
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -23,10 +27,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      # The weekly results message is no longer sent (user, 9 Oct 2026: LINE = entry signals and news warnings only);
-      # the run still scores Friday's daily signal. A manual run can still send it (send = true).
-      SEND: ${{ inputs.send || false }}
-      RECORD: "true"
+      # Saturday LINE summary of Mon–Fri: off 9–19 Oct 2026, back on 19 Oct (user: "ไม่เห็นสรุปของวันเสาร์เลย ที่จะสรุป
+      # ตั้งแต่จันถึงศุกร์ ว่าเป็นยังไงสัปดาห์นี้" · "เอาแบบเดิมกลับมา"). Scheduled runs send; manual runs only with send = true.
+      SEND: ${{ github.event_name == 'schedule' || inputs.send == true }}
+      # manual runs (a past week, a resend) don't score / save anything again
+      RECORD: ${{ github.event_name == 'schedule' && 'true' || 'false' }}
+      WEEKLY_AT: ${{ inputs.week_of || '' }}
       STATE_DIR: state
       SPREAD_USD: ${{ vars.SPREAD_USD || '0.4' }}
       LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
@@ -55,6 +61,7 @@ jobs:
       - name: Weekly report
         run: node scripts/weekly.js data.json
       - name: Save results
+        if: github.event_name == 'schedule'
         run: |
           git config user.name "tanakrthum254614-max"
           git config user.email "$(gh api users/tanakrthum254614-max --jq '"\(.id)+\(.login)@users.noreply.github.com"')"

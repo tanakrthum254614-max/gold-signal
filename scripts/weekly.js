@@ -38,7 +38,9 @@ function section(name, trades) {
 }
 
 (async function main() {
-  const now = Date.now();
+  // WEEKLY_AT: a manual run can report a past week (e.g. 2026-10-17T07:30:00+07:00 = the week that ended that Saturday)
+  const now = process.env.WEEKLY_AT ? Date.parse(process.env.WEEKLY_AT) : Date.now();
+  if (!Number.isFinite(now)) throw new Error(`bad WEEKLY_AT: ${process.env.WEEKLY_AT}`);
   const data = JSON.parse(fs.readFileSync(path.resolve(process.argv[2] || 'data.json'), 'utf8'));
   const daily = read('signals.json', { signals: [] });
   const intra = read('intraday.json', { trades: [] });
