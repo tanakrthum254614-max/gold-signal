@@ -171,10 +171,6 @@
         <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 5 ชั่วโมง</span><span class="rl">กำลังโหลด…</span></div>
         <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 1 วัน</span><span class="rl">กำลังโหลด…</span></div>
       </div>
-      <div class="rhead">รายการล่าสุด · ระบบหลัก 1 ชม. / 5 ชม. / 1 วัน<small><i class="dot on"></i> อัปเดตสด · ทั้งกำไรและขาดทุน</small></div>
-      <ul class="rlist" id="rlist"><li><span></span><span class="w">กำลังโหลด…</span></li></ul>
-      <p class="cap" id="rnote"></p>
-      <p class="cap" id="reccap">ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง</p>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
       <li class="on"><b>สร้างบัญชี</b>อีเมลหรือ Google</li>
@@ -380,7 +376,7 @@
             c.querySelector('.rl').innerHTML = t.live ? `ผลจริง ${t.live} รายการ · ชนะ ${t.wins}<br><b class="${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl)}</b> ต่อออนซ์` : 'ผลจริง: ยังไม่มีรายการที่ปิด'; });
           // the whole record too, risky timeframes included — public numbers are never cherry-picked
           const a = j.all;
-          if (a && a.live) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;
+          if (a && a.live && $('reccap')) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;
         }).catch(() => document.querySelectorAll('#tiles .rl').forEach((x) => { x.textContent = 'แสดงผลจริงหลังเข้าสู่ระบบ'; }));
       }
       loadStats(); setInterval(loadStats, 60e3);
