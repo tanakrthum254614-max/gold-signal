@@ -173,7 +173,9 @@ function ago(ms) {
     // The recorded live trade (chart-signals.json — what LINE and the signals tab show) wins over this chart's own replay,
     // so every part of the site agrees on whether the system is holding a trade
     const rec = ((state.chartSig && state.chartSig.trades) || []).find((r) => r.tf === tf && !SIG.isFinal(r) && (r.expiresAt || Infinity) > Date.now());
-    const open = rec || s.trades.find((r) => r.status === 'active');
+    // No "holding" state on the chart (19 Oct 2026, user: "เอาระบบเข้าซื้อออก ให้บอกแค่จุดเข้าซื้อตรงที่สัญญาณบอกในกราฟ"): every
+    // view shows the signal and its entry / SL / TP; past and open trades stay drawn as tags / boxes on the chart
+    const open = null; void rec;
     window.CZ_OPEN = open || null;
     if (window.drawPositionBoxes) drawPositionBoxes();
     const line = (price, color, title, style) => each((v) => v.lines.push(v.series.createPriceLine({ price, color, title, lineStyle: style, lineWidth: 2, axisLabelVisible: true })));

@@ -1330,7 +1330,8 @@ function renderOpenTrade(open, price) {
 function renderIntra() {
   const now = Date.now();
   const trades = intraTrades();
-  const open = trades.find((t) => t.status === 'active'), wait = trades.find((t) => t.status === 'pending');
+  // no "holding" state (19 Oct 2026, same request): only the signal / a limit entry waiting for its price
+  const open = null, wait = trades.filter((t) => t.status === 'pending').pop();
   // the main system skips high-impact news only if its timeframe does (1h: yes — chartsys.js `news`)
   const nw = mainSys().news ? state.news : null;
   const dec = homeDecide(now, nw, true); // live: includes the forming candles

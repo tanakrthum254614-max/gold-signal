@@ -85,11 +85,15 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
     const t = fast[fast.length - 1].time + dur;
     if (now - t > (sys.long ? 2 * H : Math.min(dur, 10 * 60e3))) continue; // missed this candle: never enter late
     const mine = store.trades.filter((x) => x.tf === tf);
-    if (mine.some((x) => x.createdAt >= t || !SIG.isFinal(x) || (x.exitAt || x.expiresAt) + dur > t)) continue; // one at a time
+    // Every NEW signal is recorded and sent, also while an earlier trade is still open (19 Oct 2026, user: "เอาระบบเข้าซื้อออก
+    // ให้บอกแค่จุดเข้าซื้อตรงที่สัญญาณบอกในกราฟ" → "หน้าเว็บ + LINE"; was one trade at a time per timeframe). "New" = this candle
+    // gives the entry and the candle before did not (same side), so a signal that stays on isn't sent every candle.
+    if (mine.some((x) => x.createdAt >= t)) continue; // this candle is done
     const data2 = Object.fromEntries(sys.frames.map(([k]) => [k, C[k]]));
     const dec = CS.decide(sys, data2, t, data.news || []);
     const dir = CS.dirOf(sys, dec);
     if (!dir) continue;
+    if (CS.dirOf(sys, CS.decide(sys, data2, t - dur, data.news || [])) === dir) continue; // not new: the signal was already on
     // While the safety brake is on, keep recording (so it can lift by itself) but don't announce
     const paused = !!CS.brake(sys, mine, now);
     // risky sides (chartsys.js, 15 Oct 2026) are recorded too, flagged ⚠️ — since 19 Oct 2026 also in LINE (labelled) for
