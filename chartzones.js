@@ -255,6 +255,8 @@ function ago(ms) {
     const plan = showPlans ? `<div class="cz-two">${sides.map(col).join('')}</div>` : holdPct;
     if (note) note.innerHTML = showPlans ? `${sides.map(mini).join('')}<small>ตัวเลขเดียวกับช่อง Buy | Sell ทางซ้าย${tf === CHARTSYS.MAIN_TF ? ' และหน้าสัญญาณ (ระบบหลัก)' : ''}</small>`
       : open ? `${note.innerHTML.split('<div class="cz-holdpct">')[0]}${holdPct}` : note.innerHTML;
+    // the "📌 holding — don't open a new trade" box goes on every timeframe (19 Oct 2026, user: "เอาออกทุกทามเฟรม")
+    if (note) note.hidden = !!open;
     const goSide = sides.find((x) => x.go);
     window.CZ_GO = open ? { side: open.side === 'SELL' ? -1 : 1, open: true } : goSide ? { side: goSide.side } : null;
     window.CZ_SIDES = fresh ? sides.map(({ side, pct, verdict, go, tested, risky }) => ({ side, pct, verdict, go, tested, risky })) : null; // side card (main.js)
