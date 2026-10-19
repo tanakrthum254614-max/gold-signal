@@ -1072,7 +1072,13 @@
    "score": 5,
    "tf": "5m",
    "paused": true,
-   "risky": true
+   "risky": true,
+   "hit": 0,
+   "hitAt": [],
+   "stop": 4162.56,
+   "realized": 0,
+   "pnl": 0.57,
+   "last": 4178.130000000001
   }
  ],
  "brakes": {
@@ -1081,5 +1087,5 @@
    "until": null
   }
  },
- "updatedAt": 1792379721847
+ "updatedAt": 1792380645480
 }
