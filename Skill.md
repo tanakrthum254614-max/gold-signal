@@ -316,8 +316,12 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 19 ต.ค. 2569 — ↩️ ช่อง 4 กรอบกลับมา: แสดงแค่ % Buy / Sell
+- ผู้ใช้: "เอากลับมาแบบเดิม ให้แสดงแค่เปอร์เซ็นจุดเข้าในการซื้อ ฝั่ง Buy Sell" → คืน login.html จาก 7c8e876^ แล้วตัด: `.rl` (จริง x% / ชนะ W/L), `.hold` + renderHolds (ถือ / รอเข้า), แฟลช · เหลือ ชื่อกรอบ · Buy % · Sell % (⚠ ถ้า risky, "—" ถ้าฝั่งไม่มีจุดเข้า) · คำอธิบาย `.tcap` "% = อัตราชนะของจุดเข้าจากการทดสอบย้อนหลัง 2 ปี (ไม่รับประกันผลในอนาคต) · ⚠ = สัญญาณเสี่ยง" · loadStats ครั้งเดียว (+ ตอนกลับมาที่แท็บ) ไม่ poll 30 วิ
+- ทดสอบ tilelive.mjs (ตัวเลขจริงจาก blogGET: 84/53 · 56/— · 87/— · 80/65) คอม + มือถือ ไม่มี error · commit e551490
+
 ## 19 ต.ค. 2569 — ✂️ หน้าสมัคร: เอาช่องผลงาน 4 กรอบออก
-- ผู้ใช้ (ภาพช่อง 5m/15m/30m/1h): "เอาออกไปเลย ไม่เอาแล้ว" → login.html ลบ `<section class="rec">` (#tiles + .tcap), CSS `.rec*` ทั้งหมด, JS loadStats / renderRecent / renderHolds / REC / TILE_TF / money (ไม่ fetch `/api/market?blog=1&stats=1` ทุก 30 วิแล้ว) · `lib/blog.mjs` tiles/openTiles ยังอยู่ (ไม่มีหน้าไหนใช้แล้ว — welcome ใช้ tfs/recent/others/all) · **อย่าใส่ช่องผลงานกลับมาที่หน้าสมัครถ้าผู้ใช้ไม่สั่ง**
+- ผู้ใช้ (ภาพช่อง 5m/15m/30m/1h): "เอาออกไปเลย ไม่เอาแล้ว" → login.html ลบ `<section class="rec">` (#tiles + .tcap), CSS `.rec*` ทั้งหมด, JS loadStats / renderRecent / renderHolds / REC / TILE_TF / money (ไม่ fetch `/api/market?blog=1&stats=1` ทุก 30 วิแล้ว) · `lib/blog.mjs` tiles/openTiles ยังอยู่ (ไม่มีหน้าไหนใช้แล้ว — welcome ใช้ tfs/recent/others/all) · (ผู้ใช้สั่งคืนแล้ว — ดูหัวข้อถัดขึ้นไป)
 - ทดสอบ gold-signal-tools/loginshot.cjs (ใหม่: คอม + มือถือ ไม่มี error) · commit 7c8e876
 
 ## 19 ต.ค. 2569 — 📥 จุดเข้าแม่นขึ้น: รอราคาย่อแล้วค่อยเข้า (Buy 5m · 30m · 1h)
