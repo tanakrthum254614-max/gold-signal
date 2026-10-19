@@ -870,8 +870,10 @@ function onStreamTick(p) {
   // The heavier panels (indicators, gauge, donuts, signal cards) at most once a second
   if (now - (onStreamTick.heavy || 0) >= 1000) {
     onStreamTick.heavy = now;
-    if (patched) render();
-    else { renderIntra(); renderSignalHome(); }
+    // the full redraw (indicators over every candle + chart panels) only while the chart tab is on screen — elsewhere
+    // just the home-tab numbers (19 Oct 2026: market-hours load on the signals tab 43% → see Skill.md); tab:chart catches up
+    if (patched && location.hash === '#chart') render();
+    else { if (patched) renderMarket(price); renderIntra(); renderSignalHome(); }
     // Panels below the fold only while visible (saves battery on phones); they catch up as soon as they scroll in
     if (onScreen('s15Card')) renderS15();
     if (window.renderPlan && onScreen('calcCard')) renderPlan();
@@ -1835,6 +1837,7 @@ applyChartTheme();
 UI.on('tab:stats', () => setTimeout(renderStats, 50));
 UI.on('settings', () => { renderSignalHome(); renderIntra(); renderStats(); });
 UI.on('tab:chart', () => setTimeout(() => {
+  render(); // ticks skipped the full redraw while another tab was shown
   simpleChart.timeScale().fitContent();
   const n = state.bars.length;
   if (n) mainChart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 120), to: n + 6 });

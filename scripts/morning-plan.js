@@ -197,9 +197,9 @@ function flexMessage(a, sig, prev, sum, bt, news, intra, now) {
   console.log(`news today: ${news.length}`);
   const chartFile = path.join(__dirname, '..', 'chart-signals.json');
   const intra = fs.existsSync(chartFile) ? JSON.parse(fs.readFileSync(chartFile, 'utf8')).trades.filter((t) => t.tf === CS.MAIN_TF) : null;
-  // LINE overview switched off 17 Oct 2026 (user: "ทำมา" — trim what isn't important): this daily formula tested at a loss
-  // (−$217 after spread) and is hidden on the site; the message used LINE quota the signals need. The record above stays.
-  // To bring it back: MORNING_LINE=on.
-  if (process.env.MORNING_LINE === 'on') await sendFlex(flexMessage(a, sig, prev, sum, bt, news, intra, now), { kind: 'extra' });
-  else console.log('morning LINE overview: off (MORNING_LINE=on to send)');
+  // LINE overview: off 17–19 Oct 2026, back on 19 Oct (user: "ถ้าคนสมัครเข้ามาแล้วไม่มีแจ้งเตือนจะไม่เป็นไปตามที่เราตั้งเป้าไว้
+  // … เอาแบบเดิมกลับมาที่แจ้งเตือนในไลน์"). It stays an advisory overview (not an entry); kind 'extra' moves to web push when
+  // the LINE quota runs low (line-quota.js). MORNING_LINE=off silences it again.
+  if (process.env.MORNING_LINE !== 'off') await sendFlex(flexMessage(a, sig, prev, sum, bt, news, intra, now), { kind: 'extra' });
+  else console.log('morning LINE overview: off (MORNING_LINE=off)');
 })().catch((e) => { console.error(e); process.exit(1); });
