@@ -103,6 +103,7 @@
     .rec .tile .ent b { font-size: 12.5px; color: var(--pm-ivory); font-variant-numeric: tabular-nums; }
     .rec .tile .ent.wait { border-color: rgba(242, 169, 59, .45); } .rec .tile .ent.open { border-color: rgba(60, 207, 145, .45); }
     .rec .tile .ent:empty { display: none; }
+    .rec .tile .ent b.up { color: var(--pm-up); } .rec .tile .ent b.down { color: var(--pm-down); }
     .rec .tcap { margin: 6px 0 0; font-size: 11px; color: var(--pm-muted); text-align: left; }
     @media (max-width: 979px) { .rec .tcap { text-align: center; } }
     /* Buy | Sell side by side in each tile (19 Oct 2026) */
@@ -213,7 +214,7 @@
         <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
         <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
       </div>
-      <p class="tcap">% ตัวใหญ่ = อัตราชนะรวม Buy + Sell จากการทดสอบย้อนหลัง 2 ปี (ไม่รับประกันผลในอนาคต) · ราคาด้านล่าง = จุดเข้าล่าสุดของระบบ · ⚠ = สัญญาณเสี่ยง</p>
+      <p class="tcap">% ตัวใหญ่ = อัตราชนะรวม Buy + Sell จากการทดสอบย้อนหลัง 2 ปี (ไม่รับประกันผลในอนาคต) · ด้านล่าง = จุดเข้าล่าสุดของระบบ กำไร/ขาดทุนต่อออนซ์ตามราคาสด · ⚠ = สัญญาณเสี่ยง</p>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
       <li class="on"><b>สร้างบัญชี</b>อีเมลหรือ Google</li>
@@ -370,6 +371,7 @@
         document.querySelector('#livepx .dot').classList.add('on');
         $('lsrc').textContent = src;
         if (REC.open.length) { renderRecent(); } // the held trade's profit / loss moves with the price
+        renderEnt();
       }
       function stream() {
         let ws; try { ws = new WebSocket(`wss://streaming.forexpros.com/echo/${Math.floor(Math.random() * 1000)}/${Math.random().toString(36).slice(2, 10)}/websocket`); } catch (e) { return; }
@@ -408,6 +410,19 @@
         if (rows.length < 5) rows.push('<li><span></span><span class="w" style="color:var(--pm-muted)">ระบบหลักออกสัญญาณไม่บ่อย (1 ชม. ~2–3 ครั้ง/สัปดาห์ · 5 ชม. ~1 · 1 วัน ~1 ต่อ 3 สัปดาห์)</span></li>');
         box.innerHTML = rows.join('');
       }
+      // each tile's latest entry, priced with the live gold price on every tick (19 Oct 2026, user: "ขอแบบเรียลไทม์ทุกอย่าง"):
+      // held = profit / loss now · waiting = how far the price still is from the entry
+      const LAST = {};
+      function renderEnt() {
+        document.querySelectorAll('#tiles .tile').forEach((c) => { const L = LAST[c.dataset.tf], e = c.querySelector('.ent'); if (!e) return;
+          const sn = L && (L.side === 'SELL' ? 'Sell' : 'Buy'), d = L && L.side === 'SELL' ? -1 : 1;
+          const pl = L && px ? Math.round(d * (px - L.entry) * 100) / 100 : null, cls = (v) => (v == null ? '' : v >= 0 ? 'up' : 'down');
+          const cn = `ent${L ? ` ${L.state}` : ''}`; if (e.className !== cn) e.className = cn;
+          e.innerHTML = !L ? '<span class="na">ยังไม่มีจุดเข้า</span>'
+            : L.state === 'wait' ? `<span class="nw">📥 รอเข้า ${sn} ${f2(L.entry)}</span><b>${px ? `อีก $${Math.max(0, d * (px - L.entry)).toFixed(2)}` : '—'}</b>`
+            : L.state === 'open' ? `<span class="nw"><i class="dot on"></i> ถือ ${sn} ${f2(L.entry)}</span><b class="${cls(pl)}">${pl == null ? '—' : money(pl)}</b>`
+            : `<span class="nw">ล่าสุด ${sn} · ${when(L.at)}</span><b>${f2(L.entry)}</b>`; });
+      }
       function loadStats() {
         fetch('/api/market?blog=1&stats=1', { cache: 'no-store' }).then((r) => r.json()).then((j) => {
           REC = { open: j.open || [], openTiles: j.openTiles || [], recent: (j.recent || []).slice(0, 5) }; renderRecent();
@@ -421,18 +436,16 @@
             pc.textContent = al ? `${al.tested}%` : '—'; pc.classList.toggle('na', !al);
             const sd = (k, x) => (x ? `<span class="${k === 'Buy' ? 'b' : 's'}">${k} ${x.tested}%${x.risky ? '<i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}</span>` : `<span class="na">${k} —</span>`);
             c.querySelector('.bs').innerHTML = `${sd('Buy', t.buy)} · ${sd('Sell', t.sell)}`;
-            const L = t.last, e = c.querySelector('.ent'), sn = L && (L.side === 'SELL' ? 'Sell' : 'Buy');
-            e.className = `ent${L ? ` ${L.state}` : ''}`;
-            e.innerHTML = !L ? '<span class="na">ยังไม่มีจุดเข้า</span>'
-              : L.state === 'wait' ? `<span class="nw">📥 รอเข้า ${sn}</span><b>${f2(L.entry)}</b>`
-              : L.state === 'open' ? `<span class="nw"><i class="dot on"></i> ถือ ${sn}</span><b>${f2(L.entry)}</b>`
-              : `<span class="nw">ล่าสุด ${sn} · ${when(L.at)}</span><b>${f2(L.entry)}</b>`; });
+            // a closed → new entry flashes the tile
+            const k = t.last ? `${t.last.at}:${t.last.state}` : ''; if (c.dataset.k != null && c.dataset.k !== k) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.k = k;
+            LAST[t.tf] = t.last; });
+          renderEnt();
           // the whole record too, risky timeframes included — public numbers are never cherry-picked
           const a = j.all;
           if (a && a.live && $('reccap')) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;
         }).catch(() => {});
       }
-      loadStats(); setInterval(loadStats, 60e3); // each tile's latest entry follows the recorder (runs every few minutes)
+      loadStats(); setInterval(loadStats, 20e3); // each tile's latest entry follows the recorder (checks every 5 minutes)
       stream(); setTimeout(fallback, 4000); setInterval(fallback, 10e3);
       document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { loadStats(); fallback(); } });
 

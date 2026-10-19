@@ -13,9 +13,14 @@ on:
         description: "Send alerts to LINE"
         type: boolean
         default: false
+      chain:
+        description: "Chained run (queued by the previous run): full 28-minute loop"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
+  actions: write # queue the next run (chain)
 
 # Own lock: one run at a time, one waiting (a newer waiting run replaces an older one). Never cancels
 # the morning or weekly jobs. signals.json is left to the morning job between 07:00 and 07:30 Thai time.
@@ -28,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      SEND: ${{ github.event_name == 'schedule' || inputs.send }}
+      SEND: ${{ github.event_name == 'schedule' || inputs.send || inputs.chain }}
       RECORD: "true"
       STATE_DIR: state
       SPREAD_USD: ${{ vars.SPREAD_USD || '0.4' }}
@@ -40,6 +45,15 @@ jobs:
       SITE_URL: https://gold-signal-ten.vercel.app
     steps:
       - uses: actions/checkout@v4
+      # Real time with no gaps (19 Oct 2026, user: "ขอแบบเรียลไทม์ทุกอย่าง"): cron runs started 15–40 minutes apart, so
+      # nothing was checked between them. Each looping run now queues the next one right away (concurrency keeps it
+      # waiting until this one ends). Mon–Fri UTC only, like the cron; the cron stays as the backup that restarts the chain.
+      - name: Queue the next run
+        if: github.event_name == 'schedule' || inputs.chain
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ "$(date -u +%u)" -le 5 ] && gh workflow run price-alerts.yml --ref "${{ github.ref_name }}" -f send=true -f chain=true || echo "weekend: chain stops"
       # What was already announced (✅ updates, news warnings, failure notices) — restored first so
       # the failure notice can throttle itself even when an early step fails
       - name: Restore notify state
@@ -63,7 +77,7 @@ jobs:
         # then commits signals.json / intraday.json
         env:
           OUTBOX: outbox.json
-          LOOP_MINUTES: ${{ github.event_name == 'schedule' && '28' || '0' }}
+          LOOP_MINUTES: ${{ (github.event_name == 'schedule' || inputs.chain) && '28' || '0' }}
           GH_TOKEN: ${{ github.token }}
         run: bash scripts/check-loop.sh
       - name: Tell the owner if this failed
