@@ -19,7 +19,7 @@ try { CS.applyStats(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'test-
 const ROOT = path.join(__dirname, '..');
 const FILE = process.env.CHART_FILE || path.join(ROOT, 'chart-signals.json'); // CHART_FILE / CHART_NOW: tests only
 const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
-const NOTIFY = (process.env.CHART_NOTIFY || '5m,30m,1h,5h,1d') /* + 5m, 30m since 19 Oct 2026 */.split(',').map((s) => s.trim()).filter(Boolean);
+const NOTIFY = (process.env.CHART_NOTIFY || '5m,15m,30m,1h,5h,1d') /* + 5m, 30m since 19 Oct 2026 · + 15m (user: "15 นาทีส่งไลน์ด้วย") */.split(',').map((s) => s.trim()).filter(Boolean);
 const TF_TH = { '5m': '5 นาที', '15m': '15 นาที', '30m': '30 นาที', '1h': '1 ชม.', '5h': '5 ชม.', '1d': '1 วัน', '1w': '1 สัปดาห์' };
 const API = 'https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT';
 const H = 3600e3;

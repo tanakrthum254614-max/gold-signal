@@ -445,6 +445,33 @@ async function refreshSignals() {
 // wins and losses alike, straight from chart-signals.json, so members judge the system by what really happened.
 // Per timeframe: tested win %, how often it trades, live record; then the last closed trades. Off timeframes' old
 // results stay in the total at the bottom (not hidden).
+// 📋 Every entry of the day, all timeframes (19 Oct 2026, user: "อยากให้เอาเรียลไทม์ของแต่ละวันในการเข้าทุกสัญญาณ") — waiting /
+// held (priced with the live price: parts closed at a target count at that target) / closed / cancelled, with SL and TP.
+// The latest trading day when today has none yet.
+function renderToday(price) {
+  const box = $('todayCard'); if (!box) return;
+  const all = ((state.chartSig && state.chartSig.trades) || []).filter((t) => t.status !== 'skip');
+  const day0 = (ms) => Date.parse(`${SIG.thaiDate(ms)}T00:00:00+07:00`), t0 = day0(Date.now());
+  const from = all.some((t) => t.createdAt >= t0) ? t0 : all.length ? day0(Math.max(...all.map((t) => t.createdAt))) : t0;
+  const list = all.filter((t) => t.createdAt >= from && t.createdAt < from + 864e5).sort((a, b) => b.createdAt - a.createdAt);
+  const px = price != null ? price : nowPrice();
+  let sum = 0, any = false;
+  const rows = list.map((t) => {
+    const d = t.side === 'SELL' ? -1 : 1, n = (t.tps || [1]).length;
+    let r;
+    if (t.status === 'pending') r = `<span class="muted">📥 รอเข้า${px != null ? ` · อีก $${Math.max(0, d * (px - t.entry)).toFixed(2)}` : ''}</span>`;
+    else if (t.status === 'expired') r = '<span class="muted">ราคาไม่ถึง · ยกเลิก</span>';
+    else if (t.status === 'active') { const pl = px == null ? null : SIG.round((t.realized || 0) + (1 - (t.hit || 0) / n) * d * (px - t.entry)); if (pl != null) { sum += pl; any = true; }
+      r = `<i class="dot on"></i> <b class="mono ${pl == null ? '' : pl >= 0 ? 'up' : 'down'}">${pl == null ? '—' : money(pl)}</b>${t.hit ? ` <small class="muted">TP${t.hit} แล้ว</small>` : ''}`; }
+    else { sum += t.pnl || 0; any = true; r = `${t.pnl > 0 ? '✅' : '❌'} <b class="mono ${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl || 0)}</b>`; }
+    return `<li><span class="mono muted">${hhmm(t.createdAt)}</span><span>${TF_LABEL[t.tf] || t.tf}</span>
+      <span><b class="${d > 0 ? 'up' : 'down'}">${d > 0 ? 'Buy' : 'Sell'}</b> <b class="mono">${f2(t.entry)}</b>${t.risky ? ' ⚠️' : ''}${t.paused ? ' <small class="muted">(พัก · ไม่ส่ง LINE)</small>' : ''}<br>
+      <small class="muted mono">SL ${f2(t.hit ? t.entry : t.sl)} · ${(t.tps || []).map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}</small></span><span class="r">${r}</span></li>`; });
+  const head = from === t0 ? '' : `<p class="muted small">วันนี้ยังไม่มีสัญญาณ — แสดงวันทำการล่าสุด ${new Date(from + 12 * 3600e3).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' })}</p>`;
+  box.innerHTML = `${head}${rows.length ? `<ul class="today-list">${rows.join('')}</ul>` : '<p class="muted">วันนี้ยังไม่มีสัญญาณ — ระบบเช็กทุก 5 นาที</p>'}
+    <p class="today-sum">${rows.length} สัญญาณ${any ? ` · รวม <b class="mono ${sum >= 0 ? 'up' : 'down'}">${money(SIG.round(sum))}</b> ต่อออนซ์ (รวมรายการที่ถืออยู่ตามราคาสด)` : ''}</p>`;
+}
+
 function renderRecord() {
   const box = $('recCard');
   if (!box) return;
@@ -476,12 +503,12 @@ function renderRecord() {
 
 // Is the 30-minute system actually checking? intraday.json only changes when a trade changes, so ask
 // GitHub (public repo, no key) when the price-alerts run last started/finished. Each run checks every 5 min for ~28 min.
-const RUNS_URL = 'https://api.github.com/repos/tanakrthum254614-max/gold-signal/actions/workflows/price-alerts.yml/runs?per_page=3';
+const RUNS_URL = 'https://api.github.com/repos/tanakrthum254614-max/gold-signal/actions/workflows/price-alerts.yml/runs?per_page=6';
 async function refreshBeat() {
   try {
     const r = await fetch(RUNS_URL, { cache: 'no-store' });
     if (!r.ok) return;
-    const run = ((await r.json()).workflow_runs || []).find((w) => w.status === 'in_progress' || w.status === 'completed');
+    const run = ((await r.json()).workflow_runs || []).find((w) => w.status === 'in_progress' || (w.status === 'completed' && w.conclusion !== 'cancelled')); // chained runs (19 Oct 2026): a queued run replaced by a newer one ends 'cancelled' — not a failure
     if (run) state.beat = { running: run.status === 'in_progress', ok: run.status === 'in_progress' || run.conclusion === 'success', at: Date.parse(run.status === 'in_progress' ? run.run_started_at : run.updated_at) };
   } catch (e) { /* GitHub unreachable: say nothing rather than guess */ }
   renderIntra();
@@ -1368,6 +1395,7 @@ function renderIntra() {
   }
 
   renderOpenTrade(open, price);
+  renderToday(price);
 
   // Donuts: each side's readiness and verdict from the main system (same as the chart tab's Buy | Sell columns)
   sides.forEach((x) => {

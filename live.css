@@ -686,6 +686,14 @@ body.cz-clean .charts > .legend { display: none; }
 .cc-ai .cc-log:empty::before { content: "เล่าให้พี่โค้ชฟังได้เลย — ขาดทุน หัวร้อน หรืออยากให้ช่วยดูสมุดเทรด"; }
 
 /* 📒 Real results of every trade (main.js renderRecord, 16 Oct 2026) */
+/* 📋 today's entries (main.js renderToday, 19 Oct 2026) */
+.today-card .today-list { list-style: none; margin: 0; padding: 0; display: grid; max-height: 420px; overflow-y: auto; }
+.today-card .today-list li { display: grid; grid-template-columns: 48px 70px 1fr auto; gap: 8px; align-items: center; padding: 7px 0; border-top: 1px solid var(--line); font-size: 13px; }
+.today-card .today-list li:first-child { border-top: 0; }
+.today-card .today-list .r { text-align: right; white-space: nowrap; }
+.today-card .today-sum { margin: 8px 0 0; font-size: 13px; }
+.today-card .up { color: var(--up); } .today-card .down { color: var(--down); }
+@media (max-width: 600px) { .today-card .today-list li { grid-template-columns: 42px 56px 1fr; } .today-card .today-list .r { grid-column: 3; text-align: left; } }
 .rec .rc-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .rec .rc-tile { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 2px; align-content: start; }
 .rec .rc-tile b small { font-weight: 600; font-size: 11px; color: var(--gold); margin-left: 4px; }

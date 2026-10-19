@@ -131,6 +131,18 @@
     @media (prefers-reduced-motion: reduce) { .rec .tile.flash { animation: none; } }
     .rec .cap { margin: 0; text-align: center; font-size: 12px; color: var(--pm-muted); line-height: 1.6; }
     .rec .cap a { color: var(--pm-gold-hi); }
+    /* 📋 today's entries, live (19 Oct 2026) */
+    .rec .today { margin-top: 10px; border: 1px solid var(--pm-line); border-radius: 14px; padding: 10px 12px; background: rgba(255, 255, 255, .02); }
+    .rec .today .th { display: flex; align-items: baseline; gap: 8px; font-size: 13px; color: var(--pm-ivory); }
+    .rec .today .th .lv { font-size: 10px; color: #3ccf91; border: 1px solid rgba(60, 207, 145, .45); border-radius: 6px; padding: 0 5px; }
+    .rec .today .th .sum { margin-left: auto; font-variant-numeric: tabular-nums; }
+    .rec .today ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 2px; max-height: 236px; overflow-y: auto; }
+    .rec .today li { display: grid; grid-template-columns: 40px 50px 1fr auto; gap: 6px; align-items: baseline; font-size: 12px; padding: 4px 0; border-top: 1px solid var(--pm-line2); color: var(--pm-text); font-variant-numeric: tabular-nums; }
+    .rec .today li:first-child { border-top: 0; }
+    .rec .today li .t, .rec .today li .f { color: var(--pm-muted); }
+    .rec .today li .sB { color: #8fe0bd; } .rec .today li .sS { color: #f0a0a7; }
+    .rec .today li .r { text-align: right; white-space: nowrap; } .rec .today li .na { color: var(--pm-muted); }
+    .rec .today .empty { color: var(--pm-muted); font-size: 12px; padding: 4px 0; }
     .up { color: var(--pm-up); } .down { color: var(--pm-down); }
     /* 🧾 latest trades, one by one, live (19 Oct 2026, user: "อยากให้เรียลไทม์แต่ละไม้ที่ให้เข้า") */
     .rlist { list-style: none; margin: 0; padding: 0; width: 100%; display: grid; gap: 0; border: 1px solid var(--pm-line2); border-radius: 12px; background: rgba(20, 20, 23, .85); overflow: hidden; }
@@ -214,6 +226,7 @@
         <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
         <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
       </div>
+      <div class="today" id="today"><div class="th"><b id="tdHead">สัญญาณวันนี้ · ทุกกรอบ</b><span class="lv">สด</span><span class="sum" id="tdSum"></span></div><ul id="tdList"><li class="empty">กำลังโหลด…</li></ul></div>
       <p class="tcap">% ตัวใหญ่ = อัตราชนะรวม Buy + Sell จากการทดสอบย้อนหลัง 2 ปี (ไม่รับประกันผลในอนาคต) · ด้านล่าง = จุดเข้าล่าสุดของระบบ กำไร/ขาดทุนต่อออนซ์ตามราคาสด · ⚠ = สัญญาณเสี่ยง</p>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
@@ -371,7 +384,7 @@
         document.querySelector('#livepx .dot').classList.add('on');
         $('lsrc').textContent = src;
         if (REC.open.length) { renderRecent(); } // the held trade's profit / loss moves with the price
-        renderEnt();
+        renderEnt(); renderToday();
       }
       function stream() {
         let ws; try { ws = new WebSocket(`wss://streaming.forexpros.com/echo/${Math.floor(Math.random() * 1000)}/${Math.random().toString(36).slice(2, 10)}/websocket`); } catch (e) { return; }
@@ -413,6 +426,28 @@
       // each tile's latest entry, priced with the live gold price on every tick (19 Oct 2026, user: "ขอแบบเรียลไทม์ทุกอย่าง"):
       // held = profit / loss now · waiting = how far the price still is from the entry
       const LAST = {};
+      // 📋 every entry of the day (19 Oct 2026) — held ones priced with the live price, as the site's evaluator does (parts closed at
+      // a target are counted at that target, the rest at the price now)
+      let TODAY = null;
+      const TFS3 = { '5m': '5 น.', '15m': '15 น.', '30m': '30 น.', '1h': '1 ชม.', '5h': '5 ชม.', '1d': '1 วัน', '1w': '1 สป.' };
+      const livePL = (x) => { const d = x.side === 'SELL' ? -1 : 1; return px == null ? null : Math.round((x.realized + (1 - x.hit / x.n) * d * (px - x.entry)) * 100) / 100; };
+      function renderToday() {
+        const ul = document.getElementById('tdList'); if (!ul || !TODAY) return;
+        const hm = (ms) => new Date(ms).toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
+        const isToday = new Date(TODAY.day + 7 * 3600e3).toISOString().slice(0, 10) === new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);
+        document.getElementById('tdHead').textContent = isToday ? 'สัญญาณวันนี้ · ทุกกรอบ' : `สัญญาณวันทำการล่าสุด · ${new Date(TODAY.day + 12 * 3600e3).toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short' })}`;
+        let sum = 0, any = false;
+        ul.innerHTML = TODAY.list.length ? TODAY.list.map((x) => {
+          const sd = x.side === 'SELL' ? 'Sell' : 'Buy', d = x.side === 'SELL' ? -1 : 1;
+          let r;
+          if (x.state === 'wait') r = `<span class="na">📥 รอเข้า${px != null ? ` อีก $${Math.max(0, d * (px - x.entry)).toFixed(2)}` : ''}</span>`;
+          else if (x.state === 'cancel') r = '<span class="na">ราคาไม่ถึง · ยกเลิก</span>';
+          else if (x.state === 'open') { const pl = livePL(x); if (pl != null) { sum += pl; any = true; } r = `<i class="dot on"></i> <b class="${pl == null ? '' : pl >= 0 ? 'up' : 'down'}">${pl == null ? '—' : money(pl)}</b>`; }
+          else { sum += x.pnl || 0; any = true; r = `${x.pnl > 0 ? '✅' : '❌'} <b class="${x.pnl >= 0 ? 'up' : 'down'}">${money(x.pnl || 0)}</b>`; }
+          return `<li><span class="t">${hm(x.at)}</span><span class="f">${TFS3[x.tf] || x.tf}</span><span><b class="s${sd[0]}">${sd}</b> ${f2(x.entry)}${x.risky ? ' <i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}</span><span class="r">${r}</span></li>`; }).join('')
+          : '<li class="empty">วันนี้ยังไม่มีสัญญาณ — ระบบเช็กทุก 5 นาที</li>';
+        document.getElementById('tdSum').innerHTML = any ? `รวม <b class="${sum >= 0 ? 'up' : 'down'}">${money(Math.round(sum * 100) / 100)}</b>/ออนซ์` : '';
+      }
       function renderEnt() {
         document.querySelectorAll('#tiles .tile').forEach((c) => { const L = LAST[c.dataset.tf], e = c.querySelector('.ent'); if (!e) return;
           const sn = L && (L.side === 'SELL' ? 'Sell' : 'Buy'), d = L && L.side === 'SELL' ? -1 : 1;
@@ -440,6 +475,7 @@
             const k = t.last ? `${t.last.at}:${t.last.state}` : ''; if (c.dataset.k != null && c.dataset.k !== k) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.k = k;
             LAST[t.tf] = t.last; });
           renderEnt();
+          TODAY = j.today || null; renderToday();
           // the whole record too, risky timeframes included — public numbers are never cherry-picked
           const a = j.all;
           if (a && a.live && $('reccap')) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;

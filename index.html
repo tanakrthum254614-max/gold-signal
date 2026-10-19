@@ -46,7 +46,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=202610141600">
-  <link rel="stylesheet" href="live.css?v=202610180100">
+  <link rel="stylesheet" href="live.css?v=202610202100">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
   <link rel="stylesheet" href="terminal.css?v=202610180100">
@@ -231,6 +231,10 @@
           <div class="card dn sell" id="dnSell"></div>
         </div>
         <p class="muted small dn-note adv" id="dnNote"></p>
+
+        <!-- 📋 Every entry of the day on every timeframe, live (main.js renderToday, 19 Oct 2026) -->
+        <h3 class="sec-title">📋 สัญญาณวันนี้ · ทุกกรอบ <span class="lv-tag">สด</span></h3>
+        <div class="card today-card" id="todayCard"><p class="muted">กำลังโหลด…</p></div>
 
         <!-- 📒 Real results of every trade on the timeframes with entries (main.js renderRecord, 16 Oct 2026) -->
         <h3 class="sec-title">📒 ผลจริงทุกรายการ · กรอบที่ทดสอบผ่านทุกช่วง</h3>
@@ -608,7 +612,7 @@
         <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
         <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
         <p class="muted small center"><button class="btn" type="button" onclick="window.gsTour && gsTour()">ดูทัวร์แนะนำอีกครั้ง</button></p>
-        <p class="muted small center">เวอร์ชัน 202610202000 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202610202100 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
@@ -628,7 +632,7 @@
   <script src="pwa.js?v=202610180200"></script>
   <script src="ui.js?v=202610180200"></script>
   <script src="chartsys.js?v=202610202000"></script>
-  <script src="main.js?v=202610202000"></script>
+  <script src="main.js?v=202610202100"></script>
   <script src="tradeplan.js?v=202610180200"></script>
   <script src="chartzones.js?v=202610202000"></script>
   <script src="newsstats.js?v=202610180200"></script>

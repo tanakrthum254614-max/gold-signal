@@ -324,8 +324,8 @@
       $('stAt').textContent = 'กำลังโหลด…';
       const rows = await Promise.all(JOBS.map(async ([file, name, every, note]) => {
         try {
-          const r = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${file}/runs?per_page=1`, { cache: 'no-store' });
-          const run = (await r.json()).workflow_runs?.[0];
+          const r = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${file}/runs?per_page=6`, { cache: 'no-store' });
+          const run = ((await r.json()).workflow_runs || []).find((w) => w.status === 'in_progress' || (w.status === 'completed' && w.conclusion !== 'cancelled')); // skip waiting runs and queued ones replaced by a newer one (chain, 19 Oct 2026)
           if (!run) return [name, note, null, 'ไม่มีข้อมูล', '🟡', null];
           const t = Date.parse(run.updated_at || run.created_at), late = (Date.now() - t) / 60e3 > every && (file !== 'price-alerts.yml' || weekday());
           const ok = run.conclusion === 'success', busy = run.status !== 'completed';
