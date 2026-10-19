@@ -1077,8 +1077,8 @@
    "hitAt": [],
    "stop": 4162.56,
    "realized": 0,
-   "pnl": -7.74,
-   "last": 4169.82
+   "pnl": -7.73,
+   "last": 4169.83
   },
   {
    "id": "30m-1792386000000",
@@ -1206,9 +1206,10 @@
    "fillBy": 1792410900000,
    "limit": true,
    "tf": "5m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1792407321156
+ "updatedAt": 1792407353235
 }
