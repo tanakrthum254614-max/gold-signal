@@ -137,5 +137,10 @@
       "path": "/api/market?cron=1",
       "schedule": "30 1 * * 1-5"
     }
-  ]
+  ],
+  "functions": {
+    "api/market.mjs": {
+      "includeFiles": "{chartsys,intraday,indicators,signals}.js"
+    }
+  }
 }
