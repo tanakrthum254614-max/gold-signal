@@ -316,6 +316,9 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 19 ต.ค. 2569 — 🔢 การ์ด "ถือ Buy": % ความพร้อมเข้า Buy / Sell ตัวใหญ่
+- ผู้ใช้: "ไหนเปอร์เซ็น อยากให้แสดงแบบเมื่อก่อน" → ถาม (เปิดภาพให้ดู) → "% ใหญ่ในการ์ด ถือ Buy" → main.js renderSignalHead: ถือไม้ (CZ_GO.open) + CZ_SIDES → #actionSub = `.as-pct` Buy % / Sell % ตัวใหญ่ + `.as-note` (แทนบรรทัด "ระบบถือสถานะอยู่ — …") · live.css `#actionSub .as-pct` · อัปเดตทุกครั้งที่ chartzones คำนวณ (เรียก renderSignalHead) · ไม่ถือ = บรรทัดเดิม · notecheck.cjs ไม่มี error
+
 ## 19 ต.ค. 2569 — 🔄 #sigNote ตอนถือไม้ = % ความพร้อมเข้า Buy/Sell (ไม่มีข้อความ 📌)
 - ผู้ใช้ (ภาพกล่อง 📌): "เอาออก แล้วแสดงเป็นเปอร์เซ็นในการเข้า ทั้งฝั่ง Buy หรือ Sell" → chartzones.js `note.innerHTML = showPlans || (open && fresh) ? mini bars : …` (ข้อความ 📌 + holdPct ไม่ใช้แล้ว) · บรรทัด actionSub "ระบบถือสถานะอยู่ — …" ยังอยู่ · notecheck.cjs: 5m/30m ถือ → "Buy 20% · Sell 0%" · ไม่มี error
 

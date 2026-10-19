@@ -374,6 +374,10 @@ function renderSignalHead(plan = state.lastPlan) {
   $('action').textContent = g ? `${g.open ? 'ถือ ' : ''}${g.side > 0 ? 'Buy' : 'Sell'}` : 'รอก่อน';
   const main = g ? (g.open ? `ระบบถือสถานะอยู่ — ไม่ต้องเปิดรายการใหม่${S ? ` · ตอนนี้ Buy ${S[0].pct}% · Sell ${S[1].pct}%` : ''}` : 'ระบบถึงจุดเข้า 100%')
     : S ? `ยังไม่ถึงจุดเข้า · Buy ${S[0].pct}% · Sell ${S[1].pct}%` : 'กำลังคำนวณ…';
+  // holding: the Buy / Sell ready-to-enter % big, instead of the "ระบบถือสถานะอยู่ — …" line (19 Oct 2026, user: "ไหนเปอร์เซ็น อยากให้แสดง
+  // แบบเมื่อก่อน" → "% ใหญ่ในการ์ด ถือ Buy")
+  if (g && g.open && S) { $('actionSub').innerHTML = `<span class="as-pct"><span class="b"><small>Buy</small>${S[0].pct}%</span><span class="s"><small>Sell</small>${S[1].pct}%</span></span>`
+    + `<span class="as-note">ความพร้อมเข้าตอนนี้ · ความเห็นภายนอก (investing.com): ${inv[0]}</span>`; return; }
   $('actionSub').textContent = `${main} · ความเห็นภายนอก (investing.com): ${inv[0]}`;
 }
 window.renderSignalHead = renderSignalHead;
