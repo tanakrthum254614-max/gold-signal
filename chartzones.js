@@ -254,8 +254,9 @@ function ago(ms) {
     // While a trade is held the Buy / Sell % stay visible too (user, 15 Oct: "พวกเปอร์เซ็นต์หายไปไหน") — for reference only
     const holdPct = open && fresh ? `<div class="cz-holdpct"><small>ความพร้อมเข้าตอนนี้ (ดูประกอบ — ถือสถานะอยู่ ไม่ต้องเปิดรายการใหม่)</small>${sides.map(mini).join('')}</div>` : '';
     const plan = showPlans ? `<div class="cz-two">${sides.map(col).join('')}</div>` : holdPct;
-    if (note) note.innerHTML = open ? `${note.innerHTML.split('<div class="cz-holdpct">')[0]}${holdPct}` : showPlans ? `${sides.map(mini).join('')}<small>ตัวเลขเดียวกับช่อง Buy | Sell ทางซ้าย${tf === CHARTSYS.MAIN_TF ? ' และหน้าสัญญาณ (ระบบหลัก)' : ''}</small>`
-      : note.innerHTML; // holding: 📌 + the Buy / Sell % stay (the plans are in the card too since 19 Oct 2026)
+    // holding too: just the Buy / Sell ready-to-enter % (19 Oct 2026, user: "เอาออก แล้วแสดงเป็นเปอร์เซ็นในการเข้า ทั้งฝั่ง Buy หรือ Sell" — the 📌 text went)
+    if (note) note.innerHTML = showPlans || (open && fresh) ? `${sides.map(mini).join('')}<small>ตัวเลขเดียวกับช่อง Buy | Sell ทางซ้าย${tf === CHARTSYS.MAIN_TF ? ' และหน้าสัญญาณ (ระบบหลัก)' : ''}</small>`
+      : note.innerHTML;
     const goSide = sides.find((x) => x.go);
     window.CZ_GO = open ? { side: open.side === 'SELL' ? -1 : 1, open: true } : goSide ? { side: goSide.side } : null;
     window.CZ_SIDES = fresh ? sides.map(({ side, pct, verdict, go, tested, risky }) => ({ side, pct, verdict, go, tested, risky })) : null; // side card (main.js)
