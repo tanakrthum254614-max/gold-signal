@@ -27,7 +27,7 @@ function run(entries, holdMs) {                  // entries: { t, dir, price, sl
   let busy = 0; const trs = [];
   for (const e of entries) {
     if (e.t < busy || e.t < start) continue;
-    Object.assign(INTRA.RULE, { slUsd: e.sl, tpUsd: [e.tp] });
+    Object.assign(INTRA.RULE, { slUsd: e.sl, tpUsd: e.tps || [e.tp] });
     const t0 = INTRA.makeTrade({ dir: e.dir, score: 0, keys: {}, frames: [] }, e.price, e.t); if (holdMs) t0.expiresAt = e.t + holdMs;
     const i = lb(FB, e.t), j = lb(FB, t0.expiresAt + 1); const r = SIG.evaluate(t0, FB.slice(i, Math.min(j, i + 6000)), now);
     const s = SIG.summary([r], SPREAD); if (!s.traded) continue;
@@ -41,6 +41,28 @@ const fmt = (r) => `${String(r.n).padStart(4)} ไม้  ชนะ ${String(r.w
 const verdict = (r) => (r.n < 30 ? '·' : r.q.slice(0, 3).every((x) => x > 0) ? (r.q[3] > 0 ? '✅' : '❌') : ' ');
 const out = [];
 const say = (s) => { console.log(s); out.push(s); };
+
+// ---------- C (PARTIAL=1): scale out — TP1 near (hit often), then SL to entry, the rest runs to TP2 / TP3 ----------
+// user, 19 Oct 2026: "ขอมากกว่า 70 ก็ได้ 50 เปอร์เซ็นต์ดูน้อยไป". The site's evaluator splits the position equally over the
+// targets and moves the stop to entry after TP1, so a trade that reaches TP1 can't end as a loss.
+if (process.env.PARTIAL) {
+  say('C — แบ่งปิดกำไร: TP1 ใกล้ (ถึงบ่อย) → เลื่อน SL มาที่ทุน → ส่วนที่เหลือวิ่งไป TP2 / TP3 · จุดเข้าเดิมของเว็บ · SL เดิม');
+  for (const tf of ['5m', '30m', '1h', '5h', '1d']) {
+    const sys = CS.SYS[tf], f = path.join(DIR, `qual-${tf}.json`); if (!fs.existsSync(f)) continue;
+    const ents = JSON.parse(fs.readFileSync(f, 'utf8'));
+    for (const [dir, c] of [[1, sys.buy], [-1, sys.sell]]) {
+      if (!c) continue; const list = ents.filter((e) => e.dir === dir); if (!list.length) continue;
+      const sl = 15 * c.mult;
+      say(`\n  ${tf} ${dir > 0 ? 'BUY' : 'SELL'} (SL $${sl}) — เว็บตอนนี้ ${c.tp1 ? 'TP1 เดียว' : '3 TP'} ชนะ ${c.win}%`);
+      for (const ladder of [[0.25, 0.5, 1], [0.25, 1, 2], [0.33, 0.67, 1], [0.33, 1, 2], [0.5, 1, 1.5], [0.5, 1, 2]]) {
+        const r = run(list.map((e) => ({ t: e.t, dir, price: e.price, sl, tps: ladder.map((k) => +(sl * k).toFixed(2)) })), sys.hold || 0);
+        say(`  ${verdict(r)} TP ${ladder.map((k) => `$${(sl * k).toFixed(1)}`).join(' / ').padEnd(22)} ${fmt(r)}${r.win >= 70 ? '  ← ชนะ ≥ 70%' : ''}`);
+      }
+    }
+  }
+  if (process.env.OUT) fs.writeFileSync(process.env.OUT, out.join('\n') + '\n');
+  process.exit(0);
+}
 
 // ---------- A: pullback in a trend ----------
 const PLAN = [['5m', '5m', '1h', 5 * M, 0], ['30m', '30m', '4h', 30 * M, 0], ['1h', '1h', '4h', H, 0]];

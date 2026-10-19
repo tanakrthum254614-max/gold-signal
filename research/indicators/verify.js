@@ -11,7 +11,7 @@ const H = 3600e3, DAY = 864e5, now = D.now;
 const B = { m5: D['5m'], m15: D['15m'], m30: D['30m'], h1: D['1h'], h4: D['4h'], h5: group(D['1h'], 5 * H), d1: L.d1, w1: L.w1 };
 for (const [tf, follow, days] of [['5h', 'h1', 700], ['15m', 'm5', 730]]) {
   const sys = CS.SYS[tf], dur = sys.frames[0][1], start = now - days * DAY, FB = B[follow], c = sys.buy;
-  Object.assign(INTRA.RULE, { slUsd: 15 * c.mult, tpUsd: (c.tp1 ? [15] : [15, 20, 30]).map((u) => u * c.mult) });
+  Object.assign(INTRA.RULE, { slUsd: 15 * c.mult, tpUsd: c.tps || (c.tp1 ? [15] : [15, 20, 30]).map((u) => u * c.mult) });
   let busy = 0, blocked = 0; const trs = [];
   for (let t = Math.floor(start / dur) * dur + dur; t < now - dur; t += dur) {
     if (t < busy) continue;

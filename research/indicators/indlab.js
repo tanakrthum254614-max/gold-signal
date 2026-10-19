@@ -50,7 +50,7 @@ for (const tf of only) {
   const FB = B[follow];
   // one trade at a time; c = side settings (th, tp1, mult)
   function sim(entries, side, c) {
-    Object.assign(INTRA.RULE, { slUsd: 15 * c.mult, tpUsd: (c.tp1 ? [15] : [15, 20, 30]).map((u) => u * c.mult) });
+    Object.assign(INTRA.RULE, { slUsd: 15 * c.mult, tpUsd: c.tps || (c.tp1 ? [15] : [15, 20, 30]).map((u) => u * c.mult) });
     let busy = 0; const trs = [];
     for (const e of entries) {
       if (e.t < busy) continue;

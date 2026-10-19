@@ -36,7 +36,10 @@
     '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดกำไรน้อยมาก', th: 6, tp1: true, mult: 1.5, confirm: 'ema921', since: '2026-10-09T09:40:00+07:00', win: 56, q: [261, 72, 84, 48] }, sellQ: [115, -233, -72, 204] },
     '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 57, q: [264, 462, 239, -7] }, sellQ: [129, -174, -58, 113] },
     '1h': { news: true, frames: [['h1', H, 60, '1 ชม.'], ['h4', 4 * H, 60, '4 ชม.'], ['h5', 5 * H, 40, '5 ชม.']], span: '2 ปี',
-      buy: { th: 5, tp1: false, mult: 2, win: 57, q: [192, 209, 359, 32] },
+      // scale out (19 Oct 2026, user: "ขอมากกว่า 70 ก็ได้ 50 เปอร์เซ็นต์ดูน้อยไป" → chose "ใช้กับ 1 ชม."): TP1 $7.5 near, then SL to
+      // entry, the rest to $30 / $60 — research/indicators/newidea.js PARTIAL=1: 399 trades, 77% win, +$522, profit in all 4
+      // periods (old 3 TP $30/40/60: 57%, +$804). The only scale-out ladder that also made money in the latest period.
+      buy: { th: 5, tp1: false, mult: 2, tps: [7.5, 30, 60], since: '2026-10-19T12:00:00+07:00', win: 77, q: [234, 245, 34, 9] },
       // SELL (17 Oct 2026, user: "ทำมาหมดเลย" — no tested Sell left for falling markets): selltest.js 12 Oct best 1h Sell,
       // score −4 + Bollinger reversal, SL $30, TP 30/40/60 — profitable in all 4 periods but one of ~680 tried, so ⚠️ risky
       // (shown + recorded, no LINE) until 20 live trades say otherwise. Old score-only Sell: −62 / 4 / −112 / 8. Replayed with the site code 17 Oct: 74 trades, 65%, +$593.
@@ -52,7 +55,7 @@
   // TP $ before × mult: TP1 only, or TP $15/20/30 — the targets the tests used (indlab / monthly / qualtest). Not
   // INTRA.RULE.tpUsd: that became [15] on 9 Oct 2026 (old 30m system → TP1) and had silently cut 1h, 5h and 5m SELL to
   // TP1 only until 15 Oct 2026.
-  const usdList = (c) => (c.tp1 ? [15] : [15, 20, 30]).map((u) => Math.round(u * c.mult));
+  const usdList = (c) => (c.tps ? c.tps.slice() : (c.tp1 ? [15] : [15, 20, 30]).map((u) => Math.round(u * c.mult))); // c.tps: $ targets set directly
   const levelsFor = (c, price, d) => ({ sl: price - d * Math.round(15 * c.mult), tps: usdList(c).map((u) => price + d * u) });
   const maxScore = (sys) => sys.frames.length * 2;
   // Confirmation indicators (dec.conf from INTRA.decideWith, fast frame)
