@@ -88,15 +88,12 @@
     .rec .tile .pc { display: block; font-family: var(--pm-serif); font-size: 26px; font-weight: 700; line-height: 1.2; }
     .rec .tile .tf { display: block; font-size: 12.5px; color: var(--pm-ivory); font-weight: 600; }
     .rec .tile .nw { white-space: nowrap; } /* words stay whole in the narrow 4-up tiles (19 Oct 2026, user: "คำในกรอบตก") */
-    /* simple tiles (19 Oct 2026, "ช่องเรียบง่าย") */
-    .rec .tile .tf { font-size: 13px; } .rec .tile .wr { font-style: normal; color: #f2a93b; font-size: 11px; margin-left: 4px; vertical-align: 1px; }
-    .rec .tile .bs { display: grid; grid-template-columns: 1fr 1fr; margin: 6px 0 2px; }
-    .rec .tile .bs > span { display: grid; justify-items: center; line-height: 1.15; }
-    .rec .tile .bs small { font-size: 10.5px; font-weight: 700; letter-spacing: .4px; } .rec .tile .bs .b small { color: #8fe0bd; } .rec .tile .bs .s small { color: #f0a0a7; }
-    .rec .tile .bs .pc, .info .rec .tile .bs .pc { font-family: var(--pm-serif); font-size: 23px; font-weight: 700; color: var(--pm-gold-hi); }
-    .rec .tile .bs .pc.na { color: var(--pm-muted); font-weight: 400; }
-    .rec .tile .rl { margin-top: 2px; } .rec .tile .rl b.lw { font-size: 12px; color: var(--pm-ivory); }
-    .rec .tile .hold { margin-top: 5px; padding: 3px 4px; font-size: 11px; }
+    /* easier to read (19 Oct 2026, user: "เอาแบบเดิมกลับมา" → Buy | Sell detailed + "ปรับให้มันดูง่ายขึ้น") */
+    .rec .tile .wr { font-style: normal; color: #f2a93b; font-size: 10.5px; margin-left: 2px; }
+    .rec .tile .rl .na { color: var(--pm-muted); font-size: 10.5px; }
+    .rec .tile .sides .rl small { color: var(--pm-muted); }
+    .rec .tile .hold { margin-top: 6px; padding: 3px 4px; font-size: 11px; }
+    .rec .tile .tf { font-size: 13px; margin-bottom: 2px; }
     .rec .tcap { margin: 6px 0 0; font-size: 11px; color: var(--pm-muted); text-align: left; }
     @media (max-width: 979px) { .rec .tcap { text-align: center; } }
     /* Buy | Sell side by side in each tile (19 Oct 2026) */
@@ -202,12 +199,12 @@
     <h1 class="headline rise d1">สัญญาณทองคำ</h1>
     <section class="rec rise d2" aria-label="ผลทดสอบและผลจริง">
       <div class="tiles" id="tiles">
-        <div class="tile" data-tf="5m"><span class="tf">5 นาที<i class="wr" hidden title="สัญญาณเสี่ยง">⚠</i></span><div class="bs"><span class="b"><small>Buy</small><b class="pc">—</b></span><span class="s"><small>Sell</small><b class="pc">—</b></span></div><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
-        <div class="tile" data-tf="15m"><span class="tf">15 นาที<i class="wr" hidden title="สัญญาณเสี่ยง">⚠</i></span><div class="bs"><span class="b"><small>Buy</small><b class="pc">—</b></span><span class="s"><small>Sell</small><b class="pc">—</b></span></div><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
-        <div class="tile" data-tf="30m"><span class="tf">30 นาที<i class="wr" hidden title="สัญญาณเสี่ยง">⚠</i></span><div class="bs"><span class="b"><small>Buy</small><b class="pc">—</b></span><span class="s"><small>Sell</small><b class="pc">—</b></span></div><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
-        <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง<i class="wr" hidden title="สัญญาณเสี่ยง">⚠</i></span><div class="bs"><span class="b"><small>Buy</small><b class="pc">—</b></span><span class="s"><small>Sell</small><b class="pc">—</b></span></div><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
+        <div class="tile" data-tf="5m"><span class="tf">5 นาที</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b><span class="rl">กำลังโหลด…</span></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b><span class="rl"></span></div></div><span class="hold" hidden></span></div>
+        <div class="tile" data-tf="15m"><span class="tf">15 นาที</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b><span class="rl">กำลังโหลด…</span></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b><span class="rl"></span></div></div><span class="hold" hidden></span></div>
+        <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b><span class="rl">กำลังโหลด…</span></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b><span class="rl"></span></div></div><span class="hold" hidden></span></div>
+        <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b><span class="rl">กำลังโหลด…</span></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b><span class="rl"></span></div></div><span class="hold" hidden></span></div>
       </div>
-      <p class="tcap">% = ชนะจากการทดสอบย้อนหลัง 2 ปี · จริง = ผลที่ระบบบันทึก (Buy · Sell) · ⚠ = สัญญาณเสี่ยง</p>
+      <p class="tcap">% ตัวใหญ่ = ชนะจากการทดสอบย้อนหลัง 2 ปี · จริง = ผลที่ระบบบันทึก (ชนะ/ทั้งหมด) · ⚠ = สัญญาณเสี่ยง</p>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
       <li class="on"><b>สร้างบัญชี</b>อีเมลหรือ Google</li>
@@ -411,12 +408,12 @@
           (j.tiles || []).forEach((t, i) => { const c = tiles[i]; if (!c) return; // 5m / 30m / 1h
             // a trade closed (win or loss) since the last look → the tile flashes gold
             const sig = JSON.stringify([t.buy, t.sell]); if (c.dataset.sig && c.dataset.sig !== sig) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.sig = sig;
-            // simple tile (19 Oct 2026, user: "มันดูยุ่งเหยิงไป ออกแบบใหม่" → "ช่องเรียบง่าย"): Buy % · Sell % · one live line
-            const sd = (sel, x) => { const e = c.querySelector(sel); e.textContent = x ? `${x.tested}%` : '—'; e.classList.toggle('na', !x); };
-            sd('.bs .b .pc', t.buy); sd('.bs .s .pc', t.sell);
-            c.querySelector('.wr').hidden = !((t.buy && t.buy.risky) || (t.sell && t.sell.risky));
-            const lv = (x) => (!x ? '—' : x.live ? `${Math.round((x.wins / x.live) * 100)}%` : 'ยังไม่มี');
-            c.querySelector('.rl').innerHTML = `<span class="nw">จริง <b class="lw">${lv(t.buy)}</b> · <b class="lw">${lv(t.sell)}</b></span>`; });
+            const one = (box, x) => { if (!box) return; const pc = box.querySelector('.pc'), rl = box.querySelector('.rl'), lab = box.querySelector('small');
+              lab.innerHTML = `${box.classList.contains('s') ? 'Sell' : 'Buy'}${x && x.risky ? ' <i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}`;
+              if (!x) { pc.textContent = '—'; pc.classList.add('na'); rl.innerHTML = '<span class="nw na">ไม่มีสัญญาณ</span>'; return; }
+              pc.classList.remove('na'); pc.textContent = `${x.tested}%`;
+              rl.innerHTML = x.live ? `<span class="nw">จริง <b class="lw">${Math.round((x.wins / x.live) * 100)}%</b></span><br><small class="nw">ชนะ ${x.wins}/${x.live}</small>` : '<span class="nw na">ยังไม่มีผลจริง</span>'; };
+            one(c.querySelector('.sd.b'), t.buy || (t.tested != null ? t : null)); one(c.querySelector('.sd.s'), t.sell || null); });
           // the whole record too, risky timeframes included — public numbers are never cherry-picked
           const a = j.all;
           if (a && a.live && $('reccap')) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;
