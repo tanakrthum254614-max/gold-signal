@@ -19,7 +19,7 @@ try { CS.applyStats(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'test-
 const ROOT = path.join(__dirname, '..');
 const FILE = process.env.CHART_FILE || path.join(ROOT, 'chart-signals.json'); // CHART_FILE / CHART_NOW: tests only
 const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
-const NOTIFY = (process.env.CHART_NOTIFY || '5m,30m,1h,5h,1d') // + 5m, 30m since 19 Oct 2026.split(',').map((s) => s.trim()).filter(Boolean);
+const NOTIFY = (process.env.CHART_NOTIFY || '5m,30m,1h,5h,1d') /* + 5m, 30m since 19 Oct 2026 */.split(',').map((s) => s.trim()).filter(Boolean);
 const TF_TH = { '5m': '5 นาที', '15m': '15 นาที', '30m': '30 นาที', '1h': '1 ชม.', '5h': '5 ชม.', '1d': '1 วัน', '1w': '1 สัปดาห์' };
 const API = 'https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT';
 const H = 3600e3;
@@ -72,7 +72,8 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
     if (SIG.isFinal(t)) return t;
     const r = keep(SIG.evaluate(t, (follow[t.tf] || C.m5).filter((b) => b.time >= t.createdAt), now));
     // Exits are recorded but not sent: LINE carries only entry signals and news warnings (user, 9 Oct 2026)
-    if (SIG.isFinal(r)) console.log(`${r.tf}: closed ${r.side} ${f2(r.entry)} ${r.closedBy || ''} ${signed(r.pnl)}`);
+    if (t.status === 'pending' && r.status !== 'pending') console.log(`${r.tf}: limit ${r.side} ${f2(r.entry)} ${r.status === 'expired' ? 'never reached — cancelled' : 'filled'}`);
+    if (SIG.isFinal(r) && r.status !== 'expired') console.log(`${r.tf}: closed ${r.side} ${f2(r.entry)} ${r.closedBy || ''} ${signed(r.pnl)}`);
     return r;
   });
 
@@ -100,7 +101,11 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
     if (NOTIFY.includes(tf) && !paused) {
       const c = dir > 0 ? sys.buy : sys.sell;
       texts.push(`${tf === CS.MAIN_TF ? `⏱️ สัญญาณ ${TF_TH[tf]} (ระบบหลัก)` : `🎯 สัญญาณกราฟ ${TF_TH[tf]}`} · ${dir > 0 ? '🟢 ซื้อ (BUY)' : '🔴 ขาย (SELL)'}\n`
-        + `เข้า ~${f2(tr.entry)} · SL ${f2(tr.sl)} · ${tr.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}\n`
+        // limit entry (19 Oct 2026): "wait for the dip" — the member sets a Buy Limit; never reached in time = cancelled
+        + (tr.limit
+          ? `📥 รอเข้าที่ ${f2(tr.entry)} (ราคาตอนนี้ ${f2(tr.priceAtSignal)} · รอย่อ $${c.dip}) ภายใน ${c.dipH} ชม. — ตั้ง Buy Limit ได้เลย · ราคาไม่ถึง = ยกเลิก\n`
+          : `เข้า ~${f2(tr.entry)}\n`)
+        + `SL ${f2(tr.sl)} · ${tr.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}\n`
         + `แท่ง ${when(tf, t - dur)} ปิดแล้ว · คะแนน ${dec.score > 0 ? '+' : ''}${dec.score} · ทดสอบชนะ ${c.win}% (ไม่รับประกัน)\n`
         + (risky ? `⚠️ สัญญาณเสี่ยง — ${c.risky} · ควรใช้ขนาดการซื้อขายเล็กกว่าปกติ\n` : '') + `${SITE_URL}/#chart`);
     }

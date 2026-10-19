@@ -178,7 +178,7 @@ function ago(ms) {
     if (window.drawPositionBoxes) drawPositionBoxes();
     const line = (price, color, title, style) => each((v) => v.lines.push(v.series.createPriceLine({ price, color, title, lineStyle: style, lineWidth: 2, axisLabelVisible: true })));
     if (open) {
-      line(open.entry, '#d99a10', open.side === 'SELL' ? 'เข้าขาย' : 'เข้าซื้อ', LC.LineStyle.Solid);
+      line(open.entry, '#d99a10', open.status === 'pending' ? 'รอเข้า' : open.side === 'SELL' ? 'เข้าขาย' : 'เข้าซื้อ', open.status === 'pending' ? LC.LineStyle.Dotted : LC.LineStyle.Solid);
       line(open.hit ? open.entry : open.sl, '#e0424f', open.hit ? 'SL→ทุน' : 'SL', LC.LineStyle.Dashed);
       open.tps.forEach((tp, k) => line(tp, '#0f9f6e', `TP${k + 1}`, LC.LineStyle.Dashed));
     }
@@ -200,7 +200,9 @@ function ago(ms) {
     // off sides (chartsys.js `off`, 16 Oct 2026): no entries — the timeframe is for reading direction only
     const Bon = CHARTSYS.on(B), Son = CHARTSYS.on(S), noEntry = !Bon && !Son;
     const sellNo = !Son && !noEntry && d && B && d.score <= -B.th;
-    if (open) { const sell = open.side === 'SELL'; head = `📌 อยู่ในรายการ${sell ? 'ขาย (SELL)' : 'ซื้อ (BUY)'} ตั้งแต่ ${when(sys, open.createdAt)} — เข้า ${f2(open.entry)} · SL ${f2(open.hit ? open.entry : open.sl)}${open.hit ? ' (ที่ทุน)' : ''} · ${open.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}`; cls = sell ? 'hold sell' : 'hold'; calcArgs = [sell ? -1 : 1, open.entry, open.hit ? open.entry : open.sl, open.tps[0]]; }
+    const waiting = !!(open && open.status === 'pending'); // limit entry waiting for its price (19 Oct 2026)
+    if (waiting) { const sell = open.side === 'SELL'; head = `📥 รอเข้า${sell ? 'ขาย (SELL)' : 'ซื้อ (BUY)'}ที่ ${f2(open.entry)} (ราคาตอนส่งสัญญาณ ${f2(open.priceAtSignal || open.entry)}) ภายใน ${when(sys, open.fillBy)} น. — ราคาไม่ถึง = ยกเลิก · SL ${f2(open.sl)} · ${open.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}`; cls = sell ? 'hold sell' : 'hold'; calcArgs = [sell ? -1 : 1, open.entry, open.sl, open.tps[0]]; }
+    else if (open) { const sell = open.side === 'SELL'; head = `📌 อยู่ในรายการ${sell ? 'ขาย (SELL)' : 'ซื้อ (BUY)'} ตั้งแต่ ${when(sys, open.createdAt)} — เข้า ${f2(open.entry)} · SL ${f2(open.hit ? open.entry : open.sl)}${open.hit ? ' (ที่ทุน)' : ''} · ${open.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}`; cls = sell ? 'hold sell' : 'hold'; calcArgs = [sell ? -1 : 1, open.entry, open.hit ? open.entry : open.sl, open.tps[0]]; }
     else if (!d) { head = 'กำลังคำนวณ… (รอกราฟกรอบใหญ่)'; cls = 'wait'; }
     else if (!sys.long && d.stale) { head = '🌙 ตลาดปิด — ไม่มีจุดเข้า'; cls = 'wait'; }
     else if (dir) {
@@ -221,7 +223,9 @@ function ago(ms) {
     else if (Son && d.score < 0 && d.score <= -(S.th - 2)) { head = `⏳ ใกล้สัญญาณ SELL — คะแนน ${signedScore(d.score)} ขาดอีก ${S.th + d.score}`; cls = 'near'; waitOnly = true; }
     else { head = `⏸ รอก่อน — คะแนน ${signedScore(d.score)} · BUY ต้อง +${B.th}${Son ? ` · SELL ต้อง −${S.th}` : ''}`; cls = 'wait'; waitOnly = true; }
     const note = $('sigNote');
-    if (note) note.innerHTML = open
+    if (note) note.innerHTML = waiting
+      ? `📥 <b>ระบบรอราคาย่อเพื่อเข้า${open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}ที่ ${f2(open.entry)}</b> ถึง ${when(sys, open.fillBy)} น. — ตั้งคำสั่ง Limit ได้ ไม่ต้องเปิดรายการใหม่`
+      : open
       ? `📌 <b>ระบบบนกราฟถือสถานะ${open.side === 'SELL' ? 'ขาย' : 'ซื้อ'}อยู่</b> ตั้งแต่ ${when(sys, open.createdAt)} — ไม่ต้องเปิดรายการใหม่`
       : 'ตัวเลขเดียวกับช่อง Buy | Sell ทางซ้าย';
     const acc = (name, c, q) => {
@@ -242,7 +246,7 @@ function ago(ms) {
     const col = (x) => `<div class="cz-col ${x.side > 0 ? 'buy' : 'sell'}${x.go ? ' go' : ''}${x.tested ? '' : ' untested'}">
       <div class="cz-col-h"><b>${x.side > 0 ? '🟢 Buy' : '🔴 Sell'}</b><span class="cz-verdict">${x.verdict}</span></div>
       <div class="cz-prog"><span>ความพร้อมเข้า <b>${x.pct}%</b></span><i><em style="width:${x.pct}%"></em></i></div>
-      ${x.tested ? `<div class="cz-col-px">เข้า ~<b>${f2(price)}</b> · SL <b>${f2(x.L.sl)}</b><br>${x.L.tps.map((v, k) => `TP${k + 1} <b>${f2(v)}</b>`).join(' · ')}</div>` : `<div class="cz-col-px muted">ไม่มีจุดเข้าฝั่งนี้ — ใช้ดูทิศเท่านั้น</div>`}
+      ${x.tested ? `<div class="cz-col-px">${x.L.dip ? `รอเข้า <b>${f2(x.L.entry)}</b> <small>(ย่อ $${x.L.dip} ภายใน ${x.L.dipH} ชม.)</small>` : `เข้า ~<b>${f2(price)}</b>`} · SL <b>${f2(x.L.sl)}</b><br>${x.L.tps.map((v, k) => `TP${k + 1} <b>${f2(v)}</b>`).join(' · ')}</div>` : `<div class="cz-col-px muted">ไม่มีจุดเข้าฝั่งนี้ — ใช้ดูทิศเท่านั้น</div>`}
       <small>${x.tested ? `ทดสอบชนะ ${x.c.win}% · ต้องได้คะแนน ${x.side > 0 ? '+' : '−'}${x.c.th}` : x.off ? `ปิดจุดเข้า — ${x.c.off}` : 'ฝั่งนี้ทดสอบย้อนหลังแล้วขาดทุน ระบบจึงไม่ให้สัญญาณ'}${x.risky ? `<br><b class="cz-risk">${CHARTSYS.riskText(x.c)}</b>` : ''}</small></div>`;
     const fresh = !!d && (sys.long || !d.stale), showPlans = !open && fresh && !noEntry;
     const mini = (x) => `<div class="cz-prog ${x.side > 0 ? 'buy' : 'sell'}${x.go ? ' live' : ''}${x.tested ? '' : ' untested'}"><span>${x.side > 0 ? 'Buy' : 'Sell'} <b>${x.pct}%</b> · ${x.verdict}</span><i><em style="width:${x.pct}%"></em></i></div>`;

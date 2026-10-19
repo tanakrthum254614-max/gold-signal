@@ -471,7 +471,7 @@ function renderRecord() {
   const since = state.chartSig && state.chartSig.startedAt ? new Date(state.chartSig.startedAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Bangkok' }) : '';
   box.innerHTML = `<div class="rc-tiles">${tiles}</div>
     <h4 class="rc-h">รายการล่าสุด (ทั้งชนะและแพ้) · กรอบ 1 ชม. / 5 ชม. / 1 วัน</h4><ul class="rc-list">${list}</ul>
-    <p class="muted small">ต่อทอง 1 ออนซ์ ก่อนหักสเปรด · บันทึกอัตโนมัติตั้งแต่ ${since}${old.length ? ` · กรอบอื่น (5 นาที – 30 นาที, 1 สัปดาห์) + Sell 1 ชม. = ⚠️ สัญญาณเสี่ยง ไม่ส่ง LINE: ผลจริง ${old.length} รายการ ชนะ ${ow} · ${money(sum(old))}` : ''} · ผลในอดีตไม่รับประกันอนาคต ไม่ใช่คำแนะนำการลงทุน</p>`;
+    <p class="muted small">ต่อทอง 1 ออนซ์ ก่อนหักสเปรด · บันทึกอัตโนมัติตั้งแต่ ${since}${old.length ? ` · กรอบอื่น (5 นาที – 30 นาที, 1 สัปดาห์) + Sell 1 ชม. = ⚠️ สัญญาณเสี่ยง: ผลจริง ${old.length} รายการ ชนะ ${ow} · ${money(sum(old))}` : ''} · ผลในอดีตไม่รับประกันอนาคต ไม่ใช่คำแนะนำการลงทุน</p>`;
 }
 
 // Is the 30-minute system actually checking? intraday.json only changes when a trade changes, so ask
@@ -1260,6 +1260,7 @@ function updateDonut(el, dir, x, v, price) {
   el.querySelector('[data-k="th"]').textContent = `คะแนน ${dir > 0 ? '+' : '−'}${cc.th}${c && c.confirm ? ` + ${CHARTSYS.CONFIRM[c.confirm].name}` : ''}`;
   const L = price != null ? CHARTSYS.levelsFor(cc, price, dir) : null, r = (n) => SIG.round(n);
   el.querySelector('[data-k="lv"]').innerHTML = L ? [
+    ...(L.dip ? [`<div class="tp"><label>📥 รอเข้า</label><b class="mono">${f2(r(L.entry))}</b><small>ย่อ $${L.dip} · ${L.dipH} ชม.</small></div>`] : []),
     `<div class="sl"><label>🛑 SL</label><b class="mono">${f2(r(L.sl))}</b><small>−$${Math.round(15 * cc.mult)}</small></div>`,
     ...L.tps.map((tp, k) => `<div class="tp"><label>TP${k + 1}</label><b class="mono">${f2(r(tp))}</b><small>+$${CHARTSYS.usdList(cc)[k]}</small></div>`),
   ].join('') : '';
@@ -1298,7 +1299,7 @@ function renderOpenTrade(open, price) {
 function renderIntra() {
   const now = Date.now();
   const trades = intraTrades();
-  const open = trades.find((t) => t.status === 'active');
+  const open = trades.find((t) => t.status === 'active'), wait = trades.find((t) => t.status === 'pending');
   // the main system skips high-impact news only if its timeframe does (1h: yes — chartsys.js `news`)
   const nw = mainSys().news ? state.news : null;
   const dec = homeDecide(now, nw, true); // live: includes the forming candles
@@ -1329,6 +1330,9 @@ function renderIntra() {
   } else if (open) {
     call = `📌 มีรายการ${open.side === 'BUY' ? 'ซื้อ' : 'ขาย'}เปิดอยู่ — ถือต่อตามแผน`;
     cls = open.side === 'BUY' ? 'buy' : 'sell';
+  } else if (wait) { // limit entry (19 Oct 2026): waits for the dip
+    call = `📥 รอเข้า${wait.side === 'BUY' ? 'ซื้อ' : 'ขาย'}ที่ ${f2(wait.entry)} (ถึง ${hhmm(wait.fillBy)} น.) — ราคาไม่ถึง = ยกเลิก`;
+    cls = wait.side === 'BUY' ? 'buy' : 'sell';
   } else if (!dec) {
     call = 'กำลังวิเคราะห์…'; cls = 'wait';
   } else if (off === 'closed') {

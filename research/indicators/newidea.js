@@ -42,6 +42,36 @@ const verdict = (r) => (r.n < 30 ? '·' : r.q.slice(0, 3).every((x) => x > 0) ? 
 const out = [];
 const say = (s) => { console.log(s); out.push(s); };
 
+// ---------- D (LIMIT=1): a better entry price — after the signal, wait up to W for the price to dip $d, enter there ----------
+// user, 19 Oct 2026: "ขอแม่นยำจุดในการเข้า". The site's entries (qual-<tf>.json) and its current exits (SL $ and tps from
+// chartsys.js, measured from the fill); a signal whose dip never comes is skipped. d = 0 = the site today.
+if (process.env.LIMIT) {
+  say('D — รอราคาย่อหลังสัญญาณ แล้วค่อยเข้า (ราคาเข้าดีขึ้น $d · ไม่ย่อภายในเวลา W = ข้าม) · ทางออกแบบที่เว็บใช้ตอนนี้');
+  const THR = +(process.env.THROUGH || 0); // THROUGH=0.3: the price must trade $0.3 beyond the limit to count as filled (stricter)
+  const W = { '5m': [30 * M, H], '15m': [H, 2 * H], '30m': [H, 3 * H], '1h': [2 * H, 6 * H], '5h': [5 * H, 15 * H], '1d': [DAY, 3 * DAY] };
+  for (const tf of (process.env.TFS || '5m,30m,1h').split(',')) {
+    const sys = CS.SYS[tf], f = path.join(DIR, `qual-${tf}.json`); if (!fs.existsSync(f)) continue;
+    const ents = JSON.parse(fs.readFileSync(f, 'utf8'));
+    for (const [dir, c] of [[1, sys.buy], [-1, sys.sell]]) {
+      if (!c) continue; const list = ents.filter((e) => e.dir === dir); if (!list.length) continue;
+      const sl = 15 * c.mult, tps = CS.usdList(c);
+      say(`\n  ${tf} ${dir > 0 ? 'BUY' : 'SELL'} (SL $${sl} · TP $${tps.join(' / ')})`);
+      for (const d of [0, 1, 2, 3, 5].map((x) => x * Math.max(1, c.mult / 2))) for (const w of d ? W[tf] : [0]) {
+        const fills = [];
+        for (const e of list) {
+          if (!d) { fills.push({ t: e.t, dir, price: e.price, sl, tps }); continue; }
+          const lim = e.price - dir * d, i0 = lb(FB, e.t), i1 = lb(FB, e.t + w);
+          for (let i = i0; i < i1 && i < FB.length; i++) { const b = FB[i]; if (dir > 0 ? b.low <= lim - THR : b.high >= lim + THR) { fills.push({ t: b.time, dir, price: lim, sl, tps }); break; } }
+        }
+        const r = run(fills, sys.hold || 0);
+        say(`  ${verdict(r)} ${d ? `ย่อ $${d.toFixed(1)} ภายใน ${Math.round(w / H * 10) / 10} ชม.` : 'เข้าทันที (เว็บตอนนี้)'}`.padEnd(36) + ` ${fmt(r)}  (เข้าได้ ${fills.length}/${list.length})`);
+      }
+    }
+  }
+  if (process.env.OUT) fs.writeFileSync(process.env.OUT, out.join('\n') + '\n');
+  process.exit(0);
+}
+
 // ---------- C (PARTIAL=1): scale out — TP1 near (hit often), then SL to entry, the rest runs to TP2 / TP3 ----------
 // user, 19 Oct 2026: "ขอมากกว่า 70 ก็ได้ 50 เปอร์เซ็นต์ดูน้อยไป". The site's evaluator splits the position equally over the
 // targets and moves the stop to entry after TP1, so a trade that reaches TP1 can't end as a loss.

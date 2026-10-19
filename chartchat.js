@@ -229,7 +229,7 @@
   function ansSLTP(n) {
     const h = holding(n); if (h) return h;
     const rows = n.sides.map((x) => { const c = x.c || sysOf(n).buy, L = CHARTSYS.levelsFor(c, n.price, x.side);
-      return `${sideName(x.side)} ถ้าเข้าที่ ${p2(n.price)} → SL <b>${p2(L.sl)}</b> (−$${Math.round(15 * c.mult)}) · ${L.tps.map((v, k) => `TP${k + 1} <b>${p2(v)}</b> (+$${CHARTSYS.usdList(c)[k]})`).join(' · ')}${x.tested ? '' : x.off ? ' ⏸ ฝั่งนี้ปิดจุดเข้า' : ' ⚠️ ฝั่งนี้ทดสอบไม่ผ่าน'}`; });
+      return `${sideName(x.side)} ${L.dip ? `รอเข้าที่ ${p2(L.entry)} (รอราคาย่อ $${L.dip} ภายใน ${L.dipH} ชม. · ไม่ถึง = ยกเลิก)` : `ถ้าเข้าที่ ${p2(n.price)}`} → SL <b>${p2(L.sl)}</b> (−$${Math.round(15 * c.mult)}) · ${L.tps.map((v, k) => `TP${k + 1} <b>${p2(v)}</b> (+$${CHARTSYS.usdList(c)[k]})`).join(' · ')}${x.tested ? '' : x.off ? ' ⏸ ฝั่งนี้ปิดจุดเข้า' : ' ⚠️ ฝั่งนี้ทดสอบไม่ผ่าน'}`; });
     return `<b>SL / TP ของระบบกรอบ ${nameOf(n.tf)}</b><br>${rows.join('<br>')}<br><small>ตัวเลขต่อทอง 1 ออนซ์ (0.01 lot) · ใช้ปุ่ม 🧮 บนการ์ดเพื่อคำนวณ lot ตามทุน</small>`;
   }
   function ansLevels(n) {

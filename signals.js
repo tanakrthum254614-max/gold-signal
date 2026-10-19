@@ -76,10 +76,20 @@
     const end = Math.min(now, sig.expiresAt);
     let stop = sig.sl, hit = 0, realized = 0, last = null;
     const hitAt = [];
-    const finish = (status, closedBy, exitPrice, at) => ({ ...sig, status, closedBy, exitPrice, exitAt: at, entryAt: sig.createdAt,
+    // Limit entry (19 Oct 2026, "รอราคาย่อแล้วค่อยเข้า"): sig.fillBy set → the trade waits for the price to trade $0.3 through
+    // sig.entry before sig.fillBy; never reached = 'expired' (not counted). The filling candle can only hit the stop.
+    let filled = sig.fillBy ? null : sig.createdAt;
+    const finish = (status, closedBy, exitPrice, at) => ({ ...sig, status, closedBy, exitPrice, exitAt: at, entryAt: filled || sig.createdAt,
       hit, hitAt, stop, pnl: round(realized) });
     for (const b of bars) {
       if (b.time < sig.createdAt || b.time >= end) continue;
+      if (!filled) {
+        if (b.time >= sig.fillBy) break;
+        if (!(buy ? b.low <= sig.entry - 0.3 : b.high >= sig.entry + 0.3)) continue;
+        filled = b.time; last = b;
+        if (buy ? b.low <= stop : b.high >= stop) return finish('loss', 'sl', stop, b.time);
+        continue;
+      }
       last = b;
       if (buy ? b.low <= stop : b.high >= stop) {
         realized += (n - hit) * part * d * (stop - sig.entry);
@@ -93,14 +103,15 @@
       }
       if (hit === n) return finish('win', 'tp', sig.tps[n - 1], b.time);
     }
-    if (!last) return { ...sig, status: 'active', hit, stop, pnl: 0 };
+    if (!filled) return { ...sig, status: now >= sig.fillBy ? 'expired' : 'pending', pnl: 0 };
+    if (!last) return { ...sig, status: 'active', entryAt: filled, hit, stop, pnl: 0 };
     const px = last.close;
     const open = (n - hit) * part * d * (px - sig.entry);
     if (now >= sig.expiresAt) {
       realized += open;
       return finish(hit || realized >= 0 ? 'win' : 'loss', 'eod', px, last.time);
     }
-    return { ...sig, status: 'active', hit, hitAt, stop, realized: round(realized), pnl: round(realized + open), last: px };
+    return { ...sig, status: 'active', entryAt: filled, hit, hitAt, stop, realized: round(realized), pnl: round(realized + open), last: px };
   }
 
   function evaluate(sig, bars, now = Date.now()) {
