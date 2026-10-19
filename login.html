@@ -88,6 +88,16 @@
     .rec .tile .pc { display: block; font-family: var(--pm-serif); font-size: 26px; font-weight: 700; line-height: 1.2; }
     .rec .tile .tf { display: block; font-size: 12.5px; color: var(--pm-ivory); font-weight: 600; }
     .rec .tile .nw { white-space: nowrap; } /* words stay whole in the narrow 4-up tiles (19 Oct 2026, user: "คำในกรอบตก") */
+    /* Buy | Sell side by side in each tile (19 Oct 2026) */
+    .rec .tile .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px; }
+    .rec .tile .sd { display: grid; justify-items: center; align-content: start; gap: 1px; padding: 2px 0; }
+    .rec .tile .sd + .sd { border-left: 1px solid var(--pm-line2); }
+    .rec .tile .sd > small { font-size: 11px; font-weight: 700; color: var(--pm-ivory); white-space: nowrap; }
+    .rec .tile .sd.s > small { color: #f0a0a7; } .rec .tile .sd.b > small { color: #8fe0bd; }
+    .rec .tile .sides .pc { font-size: 22px; } .rec .tile .pc.na { color: var(--pm-muted); background: none; -webkit-text-fill-color: currentColor; }
+    .rec .tile .sides .rl { margin-top: 0; font-size: 10.5px; line-height: 1.35; }
+    .rec .tile .sides .rl b.lw { font-size: 12.5px; }
+    .info .rec .tile .sides .pc { font-size: 24px; }
     .rec .tile .lbl { display: block; font-size: 10.5px; color: var(--pm-muted); letter-spacing: .3px; margin: -2px 0 3px; }
     .rec .tile .rl b.lw { font-size: 14px; color: var(--pm-ivory); font-variant-numeric: tabular-nums; } .rec .tile .rl small { font-size: 10.5px; }
     .rec .tile .rl { display: block; font-size: 11.5px; color: var(--pm-muted); margin-top: 4px; line-height: 1.45; }
@@ -181,10 +191,10 @@
     <h1 class="headline rise d1">สัญญาณทองคำ</h1>
     <section class="rec rise d2" aria-label="ผลทดสอบและผลจริง">
       <div class="tiles" id="tiles">
-        <div class="tile"><span class="pc gold-text">—</span><span class="lbl">ชนะ · ทดสอบ 2 ปี</span><span class="tf">Buy · 5 นาที <em class="rk">เสี่ยง</em></span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
-        <div class="tile"><span class="pc gold-text">—</span><span class="lbl">ชนะ · ทดสอบ 2 ปี</span><span class="tf">Buy · 15 นาที <em class="rk">เสี่ยง</em></span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
-        <div class="tile"><span class="pc gold-text">—</span><span class="lbl">ชนะ · ทดสอบ 2 ปี</span><span class="tf">Buy · 30 นาที <em class="rk">เสี่ยง</em></span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
-        <div class="tile"><span class="pc gold-text">—</span><span class="lbl">ชนะ · ทดสอบ 2 ปี</span><span class="tf">Buy · 1 ชั่วโมง</span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
+        <div class="tile" data-tf="5m"><span class="tf">5 นาที</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b><span class="rl">กำลังโหลด…</span></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b><span class="rl"></span></div></div><span class="lbl">% = ชนะ · ทดสอบ 2 ปี</span><span class="hold" hidden></span></div>
+        <div class="tile" data-tf="15m"><span class="tf">15 นาที</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b><span class="rl">กำลังโหลด…</span></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b><span class="rl"></span></div></div><span class="lbl">% = ชนะ · ทดสอบ 2 ปี</span><span class="hold" hidden></span></div>
+        <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b><span class="rl">กำลังโหลด…</span></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b><span class="rl"></span></div></div><span class="lbl">% = ชนะ · ทดสอบ 2 ปี</span><span class="hold" hidden></span></div>
+        <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b><span class="rl">กำลังโหลด…</span></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b><span class="rl"></span></div></div><span class="lbl">% = ชนะ · ทดสอบ 2 ปี</span><span class="hold" hidden></span></div>
       </div>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
@@ -388,9 +398,13 @@
           const tiles = document.querySelectorAll('#tiles .tile');
           (j.tiles || []).forEach((t, i) => { const c = tiles[i]; if (!c) return; // 5m / 30m / 1h
             // a trade closed (win or loss) since the last look → the tile flashes gold
-            const sig = `${t.live}|${t.wins}|${t.pnl}`; if (c.dataset.sig && c.dataset.sig !== sig) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.sig = sig;
-            c.querySelector('.pc').textContent = t.tested != null ? `${t.tested}%` : '—';
-            c.querySelector('.rl').innerHTML = t.live ? `<span class="nw">ผลจริง <b class="lw">${Math.round((t.wins / t.live) * 100)}%</b></span> <small class="nw">(ชนะ ${t.wins} จาก ${t.live})</small>` /* as a % beside the tested % (19 Oct 2026, user: "ยังไม่สมส่วนกับเปอร์เซ็นต์"); $ line removed earlier */ : '<span class="nw">ผลจริง:</span> <span class="nw">ยังไม่มีรายการ</span>'; });
+            const sig = JSON.stringify([t.buy, t.sell]); if (c.dataset.sig && c.dataset.sig !== sig) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.sig = sig;
+            const one = (box, x) => { if (!box) return; const pc = box.querySelector('.pc'), rl = box.querySelector('.rl'), lab = box.querySelector('small');
+              lab.innerHTML = `${box.classList.contains('s') ? 'Sell' : 'Buy'}${x && x.risky ? ' <em class="rk">เสี่ยง</em>' : ''}`;
+              if (!x) { pc.textContent = '—'; pc.classList.add('na'); rl.innerHTML = '<span class="nw">ไม่มีสัญญาณ</span>'; return; }
+              pc.classList.remove('na'); pc.textContent = `${x.tested}%`;
+              rl.innerHTML = x.live ? `<span class="nw">จริง <b class="lw">${Math.round((x.wins / x.live) * 100)}%</b></span><br><small class="nw">(${x.wins}/${x.live})</small>` : '<span class="nw">ยังไม่มี</span>'; };
+            one(c.querySelector('.sd.b'), t.buy || (t.tested != null ? t : null)); one(c.querySelector('.sd.s'), t.sell || null); });
           // the whole record too, risky timeframes included — public numbers are never cherry-picked
           const a = j.all;
           if (a && a.live && $('reccap')) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;
@@ -406,7 +420,7 @@
           if (!t) { if (!h.hidden) { h.hidden = true; h.innerHTML = ''; } return; }
           const d = t.side === 'SELL' ? -1 : 1, pl = px ? Math.round(d * (px - t.entry) * 100) / 100 : null;
           h.hidden = false;
-          h.innerHTML = `<span class="nw"><i class="dot on"></i> กำลังถือ</span> <span class="nw">เข้า ${f2(t.entry)}</span><br><b class="${pl == null ? '' : pl >= 0 ? 'up' : 'down'}">${pl == null ? '—' : money(pl)}</b> <span class="nw">ต่อออนซ์</span>`; });
+          h.innerHTML = `<span class="nw"><i class="dot on"></i> ถือ ${t.side === 'SELL' ? 'Sell' : 'Buy'}</span> <span class="nw">เข้า ${f2(t.entry)}</span><br><b class="${pl == null ? '' : pl >= 0 ? 'up' : 'down'}">${pl == null ? '—' : money(pl)}</b> <span class="nw">ต่อออนซ์</span>`; });
       }
       loadStats(); setInterval(loadStats, 30e3); // the recorder checks every ~5 minutes; 30 s keeps the tiles close to it
       stream(); setTimeout(fallback, 4000); setInterval(fallback, 10e3);

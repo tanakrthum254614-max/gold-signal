@@ -315,6 +315,9 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 19 ต.ค. 2569 — 🟢🔴 ช่องผลงาน Buy | Sell
+- ผู้ใช้: "จุดเข้า Buy และ Sell เห็นมีแต่ Buy" → lib/blog.mjs tiles[].buy / .sell (null = ไม่มีแถวทดสอบ = ไม่มีสัญญาณ) {tested, risky, live, wins, pnl} · openTiles รวม SELL · test-stats.json เพิ่ม 1h SELL {74, 65%, +593} · login.html ช่อง `data-tf` + `.sides` (`.sd.b` / `.sd.s`) แต่ละฝั่ง: ป้าย เสี่ยง · % ทดสอบ · "จริง N% (W/L)" หรือ "ไม่มีสัญญาณ" · hold "ถือ Buy/Sell" · flash เมื่อ JSON ของ buy/sell เปลี่ยน · tilelive.mjs ผ่าน
+
 ## 19 ต.ค. 2569 — 🔤 ช่อง 4 กรอบ: คำไม่ตัดกลาง
 - ผู้ใช้: "คำในกรอบตก" → login.html `.rec .tile .nw { white-space: nowrap }` ห่อท่อน "ผลจริง N%", "(ชนะ W จาก L)", "● กำลังถือ", "เข้า X", "ต่อออนซ์" · "ผลจริง: ยังไม่มีรายการ" (สั้นลง) · ตรวจ scrollWidth ช่อง 1024/1280/1366 ไม่ล้น
 
