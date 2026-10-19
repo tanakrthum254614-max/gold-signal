@@ -1077,8 +1077,8 @@
    "hitAt": [],
    "stop": 4162.56,
    "realized": 0,
-   "pnl": -8.96,
-   "last": 4168.6
+   "pnl": -8.42,
+   "last": 4169.14
   },
   {
    "id": "30m-1792386000000",
@@ -1160,7 +1160,8 @@
    "fillBy": 1792411200000,
    "limit": true,
    "tf": "15m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   },
   {
    "id": "30m-1792404000000",
@@ -1182,9 +1183,10 @@
    "fillBy": 1792414800000,
    "limit": true,
    "tf": "30m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1792404351690
+ "updatedAt": 1792404621359
 }
