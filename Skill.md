@@ -316,6 +316,12 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 19 ต.ค. 2569 — ⚡ ช่อง 4 กรอบ: ความพร้อมเข้าสด + ผลจริง
+- ผู้ใช้: "ขอแบบเรียลไทม์ให้ตัวเลขเรียลไทม์ในการเข้าและขยับเปอร์เซ็นต่างๆ" → ถาม → "ทั้งสองแบบ"
+- lib/blog.mjs `?blog=1&ready=1` (public): createRequire → chartsys.js (+ intraday/indicators/signals) · Binance PAXG klines 5m/15m/30m/1h(1000 → h5)/4h · `CS.decide(sys, frames, now, [], true)` (แท่งที่กำลังวิ่ง, ไม่ส่งข่าว) → `CS.sideInfo(...).pct` ต่อฝั่ง (null = ไม่มีฝั่งนั้น) · `closed` = dec.stale · cache 10 วิ ต่อ instance · **vercel.json `functions.api/market.mjs.includeFiles = "{chartsys,intraday,indicators,signals}.js"`** (ไม่มีแล้ว function หาไฟล์ไม่เจอ)
+- login.html ช่อง: `.lv` "ผลจริง x% (ชนะ w/n)" รวม Buy+Sell จาก tiles[].buy/sell.live/wins · `.rdy` แถบ Buy/Sell + % (loadReady ทุก 10 วิ, 100% = สีทอง, ตลาดปิด = "ปิด") · tcap อธิบายแถบ
+- ตรวจ: 1h Buy 40% ตรงกับเว็บสมาชิก · tilelive.mjs ตอบ ready=1 ด้วย blogGET จริง · เว็บจริงตอบ ok · commit a5a9a4e
+
 ## 19 ต.ค. 2569 — ✂️ หน้าสมัคร: เอา "สัญญาณวันนี้" ออก
 - ผู้ใช้ (ภาพรายการ): "เอาออกห้าตอนสมัครสมาชิก" → login.html ลบ `<div class="today">` (renderToday เหลือแต่ไม่มีที่แสดง → return) · การ์ด #todayCard ในเว็บสมาชิกยังอยู่ · API today ยังอยู่
 - ผู้ใช้ถาม "Sigzy คืออะไร" → ค้นแล้วเจอแอป iOS "Sig-Zy: Binary Signals" (สัญญาณ Forex/ไบนารีออปชัน กราฟ 1–4 ชม. อ้างชนะ 75% — ตรวจสอบไม่ได้) ไม่ได้เพิ่มอะไรในระบบ
