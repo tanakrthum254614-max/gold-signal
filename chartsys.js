@@ -31,10 +31,12 @@
     // 2026, research/indicators/newstest.js): it helps on 5m (BUY +$407 → +$554, 4/4 periods; SELL +$353 → +$451) and
     // 1h (+$774 → +$792), but hurts 15m (+$465 → +$377) and 30m (+$957 → +$828) — so only 5m and 1h skip the news.
     '5m': { news: true, frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', H, 60, '1 ชม.']], span: '2 ปี',
-      buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 54, q: [331, 551, 104, -433] }, sell: { risky: 'ผลจริงชนะต่ำกว่าทดสอบมาก (14 รายการ ชนะ 4)', th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T09:54:00+07:00', win: 53, q: [39, 84, 156, 172] },
+      // scale out (19 Oct 2026, user chose "ข้อ 1 + 3"): TP1 $5, SL to entry, then $10 / $15 — newidea.js PARTIAL: 1,702 trades, 75% win, +$137 (was TP1 $15: 54%, +$554)
+      buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: false, mult: 1, tps: [5, 10, 15], since: '2026-10-19T13:00:00+07:00', win: 75, q: [113, 462, 6, -445] }, sell: { risky: 'ผลจริงชนะต่ำกว่าทดสอบมาก (14 รายการ ชนะ 4)', th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T09:54:00+07:00', win: 53, q: [39, 84, 156, 172] },
       every: -1480 }, // taking every small arrow one at a time, SL / TP1 $15
     '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดกำไรน้อยมาก', th: 6, tp1: true, mult: 1.5, confirm: 'ema921', since: '2026-10-09T09:40:00+07:00', win: 56, q: [261, 72, 84, 48] }, sellQ: [115, -233, -72, 204] },
-    '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: true, mult: 1, win: 57, q: [264, 462, 239, -7] }, sellQ: [129, -174, -58, 113] },
+    // 30m scale out (19 Oct 2026, "ข้อ 1 + 3"): TP1 $3.75, SL to entry, then $15 / $30 — 1,054 trades, 81% win, +$355 (was TP1 $15: 57%, +$957)
+    '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: false, mult: 1, tps: [3.75, 15, 30], since: '2026-10-19T13:00:00+07:00', win: 81, q: [67, 244, 143, -99] }, sellQ: [129, -174, -58, 113] },
     '1h': { news: true, frames: [['h1', H, 60, '1 ชม.'], ['h4', 4 * H, 60, '4 ชม.'], ['h5', 5 * H, 40, '5 ชม.']], span: '2 ปี',
       // scale out (19 Oct 2026, user: "ขอมากกว่า 70 ก็ได้ 50 เปอร์เซ็นต์ดูน้อยไป" → chose "ใช้กับ 1 ชม."): TP1 $7.5 near, then SL to
       // entry, the rest to $30 / $60 — research/indicators/newidea.js PARTIAL=1: 399 trades, 77% win, +$522, profit in all 4

@@ -47,7 +47,7 @@ const say = (s) => { console.log(s); out.push(s); };
 // targets and moves the stop to entry after TP1, so a trade that reaches TP1 can't end as a loss.
 if (process.env.PARTIAL) {
   say('C — แบ่งปิดกำไร: TP1 ใกล้ (ถึงบ่อย) → เลื่อน SL มาที่ทุน → ส่วนที่เหลือวิ่งไป TP2 / TP3 · จุดเข้าเดิมของเว็บ · SL เดิม');
-  for (const tf of ['5m', '30m', '1h', '5h', '1d']) {
+  for (const tf of (process.env.TFS || '5m,30m,1h,5h,1d').split(',')) {
     const sys = CS.SYS[tf], f = path.join(DIR, `qual-${tf}.json`); if (!fs.existsSync(f)) continue;
     const ents = JSON.parse(fs.readFileSync(f, 'utf8'));
     for (const [dir, c] of [[1, sys.buy], [-1, sys.sell]]) {
@@ -100,7 +100,7 @@ for (const [name, fk, hk, dur, hold] of PLAN) {
 
 // ---------- B: the site's entries, nearer targets (high win rate) ----------
 say('\nB — จุดเข้าเดิมของเว็บ · SL เดิม · TP ใกล้ขึ้น (ชนะบ่อยขึ้น — ได้เงินไหม?)');
-for (const tf of ['5m', '30m', '1h', '5h', '1d']) {
+for (const tf of (process.env.TFS || '5m,30m,1h,5h,1d').split(',')) {
   const sys = CS.SYS[tf], f = path.join(DIR, `qual-${tf}.json`); if (!fs.existsSync(f)) continue;
   const ents = JSON.parse(fs.readFileSync(f, 'utf8'));
   for (const [dir, c] of [[1, sys.buy], [-1, sys.sell]]) {

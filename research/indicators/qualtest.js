@@ -12,6 +12,8 @@ const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(process.argv[2] || path.join(__dirname, '..', '..'));
 const SIG = require(path.join(ROOT, 'signals.js')); global.TA = require(path.join(ROOT, 'indicators.js'));
 const INTRA = require(path.join(ROOT, 'intraday.js')); global.INTRA = INTRA; const CS = require(path.join(ROOT, 'chartsys.js'));
+// TH_DELTA=-1 (19 Oct 2026, user wants more entries on 5m / 30m / 1h): every BUY / SELL threshold moved by that much (use a separate DATA_DIR — the qual-*.json caches depend on it)
+if (process.env.TH_DELTA) for (const s of Object.values(CS.SYS)) for (const k of ['buy', 'sell']) if (s[k]) s[k].th += +process.env.TH_DELTA;
 const DIR = process.env.DATA_DIR || __dirname;
 function group(bars, ms) { const out = []; for (const b of bars) { const t = Math.floor(b.time / ms) * ms, l = out[out.length - 1];
   if (l && l.time === t) { l.high = Math.max(l.high, b.high); l.low = Math.min(l.low, b.low); l.close = b.close; } else out.push({ ...b, time: t }); } return out; }
