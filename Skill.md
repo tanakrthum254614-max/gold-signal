@@ -315,6 +315,10 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 19 ต.ค. 2569 — 🔁 ช่องผลงานหน้าเข้าสู่ระบบ = 5m / 30m / 1h
+- ผู้ใช้: "เอาเป็น 5 นาที 30 นาที 1 ชั่วโมง ได้ไหม ที่แสดงอยู่คนละทามเฟรม" → lib/blog.mjs เพิ่ม `tiles` (5m/30m/1h BUY: tested จาก test-stats.json, live/wins/pnl ทุกรายการ BUY ของกรอบนั้นรวม risky, risky = tf ≠ 1h) + `openTiles` (active BUY ของ 3 กรอบ: tf side entry at — ไม่มี SL/TP) · `tfs` เดิม (1h/5h/1d) ยังใช้ที่ welcome.html
+- login.html: ป้าย `.rk` "เสี่ยง" ที่ 5m/30m · loadStats ใช้ `j.tiles` · `TILE_TF = ['5m','30m','1h']` · renderHolds ใช้ `REC.openTiles` · ทดสอบ tilelive.mjs (blogGET จริง + 5m ถือปลอม → ปิดชนะ +$15: 16 รายการ ชนะ 8 −$13.24 + flash)
+
 ## 19 ต.ค. 2569 — ⚡ ช่องผลงาน 3 กรอบ (หน้าเข้าสู่ระบบ) ขยับแบบเรียลไทม์
 - ผู้ใช้: "อยากให้ตัวเลขขยับด้วยแบบเรียลไทม์เวลาเข้าไม้ของทามเฟรมไหนแล้วชนะหรือแพ้" → login.html: แต่ละช่องมี `.hold` (ซ่อนจนมีรายการ) · `renderHolds()` จับ j.open ตาม tf (1h/5h/1d) → `.tile.holding` ขอบเขียว + "● กำลังถือ · เข้า X" + ±$ จาก px ทุก tick (เรียกใน showPrice) · `data-sig` = live|wins|pnl เปลี่ยน → `.flash` (tileFlash 1.6 s) · loadStats ทุก 30 วิ (เดิม 60) · ทดสอบ gold-signal-tools/tilelive.mjs (open ปลอม → ปิดชนะ +$30: ช่องเปลี่ยนเป็น 3 รายการ ชนะ 2 +$6.49 + flash) คอม/มือถือ ไม่มี error
 

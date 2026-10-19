@@ -91,6 +91,7 @@
     .rec .tile { position: relative; transition: border-color .4s, box-shadow .4s; }
     .rec .tile .hold { display: block; margin-top: 6px; padding: 4px 6px; border-radius: 8px; font-size: 11.5px; line-height: 1.4; color: var(--pm-text); background: rgba(60, 207, 145, .08); border: 1px solid rgba(60, 207, 145, .25); }
     .rec .tile .hold[hidden] { display: none; }
+    .rec .tile .rk { font-style: normal; font-size: 10px; font-weight: 600; color: #f2a93b; border: 1px solid rgba(242, 169, 59, .45); border-radius: 6px; padding: 0 5px; margin-left: 3px; vertical-align: 1px; }
     .rec .tile .hold b { font-variant-numeric: tabular-nums; }
     .rec .tile.holding { border-color: rgba(60, 207, 145, .45); }
     .rec .tile.flash { animation: tileFlash 1.6s ease-out; }
@@ -176,9 +177,9 @@
     <h1 class="headline rise d1">สัญญาณทองคำ</h1>
     <section class="rec rise d2" aria-label="ผลทดสอบและผลจริง">
       <div class="tiles" id="tiles">
+        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 5 นาที <em class="rk">เสี่ยง</em></span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
+        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 30 นาที <em class="rk">เสี่ยง</em></span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
         <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 1 ชั่วโมง</span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
-        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 5 ชั่วโมง</span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
-        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 1 วัน</span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
       </div>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
@@ -335,7 +336,7 @@
         if (prevClose) { const c = p - prevClose; $('lchg').innerHTML = `<span class="${c >= 0 ? 'up' : 'down'}">${c >= 0 ? '▲' : '▼'} ${((c / prevClose) * 100).toFixed(2)}%</span>`; }
         document.querySelector('#livepx .dot').classList.add('on');
         $('lsrc').textContent = src;
-        if (REC.open.length) { renderRecent(); renderHolds(); } // the held trade's profit / loss moves with the price
+        if (REC.open.length || (REC.openTiles || []).length) { renderRecent(); renderHolds(); } // the held trade's profit / loss moves with the price
       }
       function stream() {
         let ws; try { ws = new WebSocket(`wss://streaming.forexpros.com/echo/${Math.floor(Math.random() * 1000)}/${Math.random().toString(36).slice(2, 10)}/websocket`); } catch (e) { return; }
@@ -376,11 +377,11 @@
       }
       function loadStats() {
         fetch('/api/market?blog=1&stats=1', { cache: 'no-store' }).then((r) => r.json()).then((j) => {
-          REC = { open: j.open || [], recent: (j.recent || []).slice(0, 5) }; renderRecent(); renderHolds();
+          REC = { open: j.open || [], openTiles: j.openTiles || [], recent: (j.recent || []).slice(0, 5) }; renderRecent(); renderHolds();
         const o = j.others, rn = document.getElementById('rnote');
         if (rn && o && o.live) rn.innerHTML = `กรอบเสี่ยง (5–30 นาที · 1 สัปดาห์ · Sell): ผลจริง <b>${o.live}</b> รายการ · ชนะ ${o.wins} · <b class="${o.pnl >= 0 ? 'up' : 'down'}">${money(o.pnl)}</b>/ออนซ์ — ยังให้จุดเข้า ติดป้ายเสี่ยง ไม่ส่ง LINE`;
           const tiles = document.querySelectorAll('#tiles .tile');
-          (j.tfs || []).forEach((t, i) => { const c = tiles[i]; if (!c) return;
+          (j.tiles || []).forEach((t, i) => { const c = tiles[i]; if (!c) return; // 5m / 30m / 1h
             // a trade closed (win or loss) since the last look → the tile flashes gold
             const sig = `${t.live}|${t.wins}|${t.pnl}`; if (c.dataset.sig && c.dataset.sig !== sig) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.sig = sig;
             c.querySelector('.pc').textContent = t.tested != null ? `${t.tested}%` : '—';
@@ -391,11 +392,11 @@
         }).catch(() => document.querySelectorAll('#tiles .rl').forEach((x) => { x.textContent = 'แสดงผลจริงหลังเข้าสู่ระบบ'; }));
       }
       // the trade a tile's timeframe holds right now, priced with the live gold price every tick
-      const TILE_TF = ['1h', '5h', '1d'];
+      const TILE_TF = ['5m', '30m', '1h'];
       function renderHolds() {
         const tiles = document.querySelectorAll('#tiles .tile');
         TILE_TF.forEach((tf, i) => { const c = tiles[i]; if (!c) return; const h = c.querySelector('.hold'); if (!h) return;
-          const t = (REC.open || []).find((x) => x.tf === tf);
+          const t = (REC.openTiles || []).find((x) => x.tf === tf);
           c.classList.toggle('holding', !!t);
           if (!t) { if (!h.hidden) { h.hidden = true; h.innerHTML = ''; } return; }
           const d = t.side === 'SELL' ? -1 : 1, pl = px ? Math.round(d * (px - t.entry) * 100) / 100 : null;
