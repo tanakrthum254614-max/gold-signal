@@ -94,6 +94,15 @@
     .rec .tile .sides .rl small { color: var(--pm-muted); }
     .rec .tile .hold { margin-top: 6px; padding: 3px 4px; font-size: 11px; }
     .rec .tile .tf { font-size: 13px; margin-bottom: 2px; }
+    /* combined % + entries (19 Oct 2026) */
+    .rec .tile > .pc { margin: 4px 0 1px; }
+    .rec .tile .bs { display: block; font-size: 11px; color: var(--pm-muted); white-space: nowrap; }
+    .rec .tile .bs .b { color: #8fe0bd; } .rec .tile .bs .s { color: #f0a0a7; } .rec .tile .bs .na { color: var(--pm-muted); }
+    .rec .tile .cnt { display: block; font-size: 10.5px; color: var(--pm-muted); margin-top: 1px; }
+    .rec .tile .ent { display: grid; margin-top: 6px; padding: 4px 4px; border-radius: 8px; border: 1px solid var(--pm-line2); font-size: 10.5px; line-height: 1.35; color: var(--pm-muted); }
+    .rec .tile .ent b { font-size: 12.5px; color: var(--pm-ivory); font-variant-numeric: tabular-nums; }
+    .rec .tile .ent.wait { border-color: rgba(242, 169, 59, .45); } .rec .tile .ent.open { border-color: rgba(60, 207, 145, .45); }
+    .rec .tile .ent:empty { display: none; }
     .rec .tcap { margin: 6px 0 0; font-size: 11px; color: var(--pm-muted); text-align: left; }
     @media (max-width: 979px) { .rec .tcap { text-align: center; } }
     /* Buy | Sell side by side in each tile (19 Oct 2026) */
@@ -199,12 +208,12 @@
     <h1 class="headline rise d1">สัญญาณทองคำ</h1>
     <section class="rec rise d2" aria-label="ผลทดสอบและผลจริง">
       <div class="tiles" id="tiles">
-        <div class="tile" data-tf="5m"><span class="tf">5 นาที</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b></div></div></div>
-        <div class="tile" data-tf="15m"><span class="tf">15 นาที</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b></div></div></div>
-        <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b></div></div></div>
-        <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b></div></div></div>
+        <div class="tile" data-tf="5m"><span class="tf">5 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><small class="cnt"></small><span class="ent"></span></div>
+        <div class="tile" data-tf="15m"><span class="tf">15 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><small class="cnt"></small><span class="ent"></span></div>
+        <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><small class="cnt"></small><span class="ent"></span></div>
+        <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><small class="cnt"></small><span class="ent"></span></div>
       </div>
-      <p class="tcap">% = อัตราชนะของจุดเข้าจากการทดสอบย้อนหลัง 2 ปี (ไม่รับประกันผลในอนาคต) · ⚠ = สัญญาณเสี่ยง</p>
+      <p class="tcap">% ตัวใหญ่ = อัตราชนะรวม Buy + Sell จากการทดสอบย้อนหลัง 2 ปี (ไม่รับประกันผลในอนาคต) · จุดเข้า = จำนวนครั้งในการทดสอบ · ราคาด้านล่าง = จุดเข้าล่าสุดของระบบ · ⚠ = สัญญาณเสี่ยง</p>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
       <li class="on"><b>สร้างบัญชี</b>อีเมลหรือ Google</li>
@@ -407,16 +416,24 @@
           const tiles = document.querySelectorAll('#tiles .tile');
           // % only (19 Oct 2026, user: "เอากลับมาแบบเดิม ให้แสดงแค่เปอร์เซ็นจุดเข้าในการซื้อ ฝั่ง Buy Sell")
           (j.tiles || []).forEach((t, i) => { const c = tiles[i]; if (!c) return;
-            const one = (box, x) => { if (!box) return; const pc = box.querySelector('.pc'), lab = box.querySelector('small');
-              lab.innerHTML = `${box.classList.contains('s') ? 'Sell' : 'Buy'}${x && x.risky ? ' <i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}`;
-              pc.textContent = x ? `${x.tested}%` : '—'; pc.classList.toggle('na', !x); };
-            one(c.querySelector('.sd.b'), t.buy || (t.tested != null ? t : null)); one(c.querySelector('.sd.s'), t.sell || null); });
+            // combined % big · Buy / Sell small · entries tested · the latest entry (19 Oct 2026)
+            const pc = c.querySelector('.pc'), al = t.all;
+            pc.textContent = al ? `${al.tested}%` : '—'; pc.classList.toggle('na', !al);
+            const sd = (k, x) => (x ? `<span class="${k === 'Buy' ? 'b' : 's'}">${k} ${x.tested}%${x.risky ? '<i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}</span>` : `<span class="na">${k} —</span>`);
+            c.querySelector('.bs').innerHTML = `${sd('Buy', t.buy)} · ${sd('Sell', t.sell)}`;
+            c.querySelector('.cnt').textContent = al ? `${al.n.toLocaleString('en-US')} จุดเข้า` : '';
+            const L = t.last, e = c.querySelector('.ent'), sn = L && (L.side === 'SELL' ? 'Sell' : 'Buy');
+            e.className = `ent${L ? ` ${L.state}` : ''}`;
+            e.innerHTML = !L ? '<span class="na">ยังไม่มีจุดเข้า</span>'
+              : L.state === 'wait' ? `<span class="nw">📥 รอเข้า ${sn}</span><b>${f2(L.entry)}</b>`
+              : L.state === 'open' ? `<span class="nw"><i class="dot on"></i> ถือ ${sn}</span><b>${f2(L.entry)}</b>`
+              : `<span class="nw">ล่าสุด ${sn} · ${when(L.at)}</span><b>${f2(L.entry)}</b>`; });
           // the whole record too, risky timeframes included — public numbers are never cherry-picked
           const a = j.all;
           if (a && a.live && $('reccap')) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;
         }).catch(() => {});
       }
-      loadStats(); // tested % only — changes with the monthly study, no polling
+      loadStats(); setInterval(loadStats, 60e3); // each tile's latest entry follows the recorder (runs every few minutes)
       stream(); setTimeout(fallback, 4000); setInterval(fallback, 10e3);
       document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { loadStats(); fallback(); } });
 
