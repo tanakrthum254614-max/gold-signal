@@ -385,7 +385,7 @@
             // a trade closed (win or loss) since the last look → the tile flashes gold
             const sig = `${t.live}|${t.wins}|${t.pnl}`; if (c.dataset.sig && c.dataset.sig !== sig) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.sig = sig;
             c.querySelector('.pc').textContent = t.tested != null ? `${t.tested}%` : '—';
-            c.querySelector('.rl').innerHTML = t.live ? `ผลจริง ${t.live} รายการ · ชนะ ${t.wins}<br><b class="${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl)}</b> ต่อออนซ์` : 'ผลจริง: ยังไม่มีรายการที่ปิด'; });
+            c.querySelector('.rl').innerHTML = t.live ? `ผลจริง ${t.live} รายการ · ชนะ ${t.wins}` /* the $ line removed (19 Oct 2026, user: "เอาอันนี้ออก") */ : 'ผลจริง: ยังไม่มีรายการที่ปิด'; });
           // the whole record too, risky timeframes included — public numbers are never cherry-picked
           const a = j.all;
           if (a && a.live && $('reccap')) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;
