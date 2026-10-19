@@ -125,6 +125,7 @@
 
   // ---------- 4. first-visit tour ----------
   const STEPS = [
+    ['easySum', 'คำตอบเดียว', 'ดูกล่องนี้ก่อนเสมอ — บอกว่าตอนนี้ควรเข้า รอ หรือถือสถานะ พร้อมตัวเลขที่ต้องใช้'],
     ['liveHero', 'ราคาทองสด', 'ราคา XAU/USD เปลี่ยนตามตลาดจริงเกือบทุกวินาที'],
     ['recCard', 'ผลจริงทุกรายการ', 'ทั้งรายการชนะและแพ้ที่ระบบบันทึกเอง — ใช้ตัดสินใจว่าจะเชื่อระบบแค่ไหน'],
     ['nav:chart', 'หน้ากราฟ', 'ดูจุดเข้า Buy/Sell บนกราฟทุกกรอบเวลา และถามจุดเข้าในแชทได้'],
@@ -160,5 +161,5 @@
   }
   window.gsTour = () => tour(true);
   // once the page is ready (splash gone, first data drawn)
-  const ready = setInterval(() => { const s = $('splash'); if ((!s || s.classList.contains('gone')) && $('liveHero')) { /* was #easySum (removed 19 Oct 2026) */ clearInterval(ready); setTimeout(() => tour(false), 900); } }, 500);
+  const ready = setInterval(() => { const s = $('splash'); if ((!s || s.classList.contains('gone')) && $('easySum') && !$('easySum').hidden) { clearInterval(ready); setTimeout(() => tour(false), 900); } }, 500);
 })();

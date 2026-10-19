@@ -248,15 +248,14 @@ function ago(ms) {
       <div class="cz-prog"><span>ความพร้อมเข้า <b>${x.pct}%</b></span><i><em style="width:${x.pct}%"></em></i></div>
       ${x.tested ? `<div class="cz-col-px">${x.L.dip ? `รอเข้า <b>${f2(x.L.entry)}</b> <small>(${x.side > 0 ? 'ย่อ' : 'เด้ง'} $${x.L.dip} ภายใน ${x.L.dipH} ชม.)</small>` : `เข้า ~<b>${f2(price)}</b>`} · SL <b>${f2(x.L.sl)}</b><br>${x.L.tps.map((v, k) => `TP${k + 1} <b>${f2(v)}</b>`).join(' · ')}</div>` : `<div class="cz-col-px muted">ไม่มีจุดเข้าฝั่งนี้ — ใช้ดูทิศเท่านั้น</div>`}
       <small>${x.tested ? `ทดสอบชนะ ${x.c.win}% · ต้องได้คะแนน ${x.side > 0 ? '+' : '−'}${x.c.th}` : x.off ? `ปิดจุดเข้า — ${x.c.off}` : 'ฝั่งนี้ทดสอบย้อนหลังแล้วขาดทุน ระบบจึงไม่ให้สัญญาณ'}${x.risky ? `<br><b class="cz-risk">${CHARTSYS.riskText(x.c)}</b>` : ''}</small></div>`;
-    const fresh = !!d && (sys.long || !d.stale), showPlans = !open && fresh && !noEntry;
+    // Buy | Sell entry plans always shown, also while a trade is held (19 Oct 2026, user: "ขอให้แสดงจุดเข้าเสมอของสัญญาณ")
+    const fresh = !!d && (sys.long || !d.stale), showPlans = fresh && !noEntry;
     const mini = (x) => `<div class="cz-prog ${x.side > 0 ? 'buy' : 'sell'}${x.go ? ' live' : ''}${x.tested ? '' : ' untested'}"><span>${x.side > 0 ? 'Buy' : 'Sell'} <b>${x.pct}%</b> · ${x.verdict}</span><i><em style="width:${x.pct}%"></em></i></div>`;
     // While a trade is held the Buy / Sell % stay visible too (user, 15 Oct: "พวกเปอร์เซ็นต์หายไปไหน") — for reference only
     const holdPct = open && fresh ? `<div class="cz-holdpct"><small>ความพร้อมเข้าตอนนี้ (ดูประกอบ — ถือสถานะอยู่ ไม่ต้องเปิดรายการใหม่)</small>${sides.map(mini).join('')}</div>` : '';
     const plan = showPlans ? `<div class="cz-two">${sides.map(col).join('')}</div>` : holdPct;
-    if (note) note.innerHTML = showPlans ? `${sides.map(mini).join('')}<small>ตัวเลขเดียวกับช่อง Buy | Sell ทางซ้าย${tf === CHARTSYS.MAIN_TF ? ' และหน้าสัญญาณ (ระบบหลัก)' : ''}</small>`
-      : open ? `${note.innerHTML.split('<div class="cz-holdpct">')[0]}${holdPct}` : note.innerHTML;
-    // the "📌 holding — don't open a new trade" box goes on every timeframe (19 Oct 2026, user: "เอาออกทุกทามเฟรม")
-    if (note) note.hidden = !!open;
+    if (note) note.innerHTML = open ? `${note.innerHTML.split('<div class="cz-holdpct">')[0]}${holdPct}` : showPlans ? `${sides.map(mini).join('')}<small>ตัวเลขเดียวกับช่อง Buy | Sell ทางซ้าย${tf === CHARTSYS.MAIN_TF ? ' และหน้าสัญญาณ (ระบบหลัก)' : ''}</small>`
+      : note.innerHTML; // holding: 📌 + the Buy / Sell % stay (the plans are in the card too since 19 Oct 2026)
     const goSide = sides.find((x) => x.go);
     window.CZ_GO = open ? { side: open.side === 'SELL' ? -1 : 1, open: true } : goSide ? { side: goSide.side } : null;
     window.CZ_SIDES = fresh ? sides.map(({ side, pct, verdict, go, tested, risky }) => ({ side, pct, verdict, go, tested, risky })) : null; // side card (main.js)
@@ -493,8 +492,10 @@ function ago(ms) {
       const x = ts.timeToCoordinate(g.t), py = y(g.price); if (x == null || py == null || x < 0 || x > W) return '';
       return `<div class="cz-tag ${g.side}" style="left:${x}px;top:${g.side === 'buy' ? py + 26 : py - 26}px" title="${g.title}">${g.side === 'buy' ? 'Buy' : 'Sell'} ${f2(g.entry)}${riskyNow(g.side) ? ' ⚠' : ''}</div>`;
     }).join('');
-    // Entry (gold) / TP (green) / SL (red) segments from the entry candle to the exit, last 8 closed trades on screen
-    const seg = tags.filter((g) => !g.open && g.t1 != null).slice(-8).map((g) => {
+    // Entry (gold) / TP (green) / SL (red) segments from the entry candle to the exit — every closed trade on screen (up to 40;
+    // was the last 8 — 19 Oct 2026, user: "ให้แสดงหลายๆ ไม้")
+    const onScreen = (g) => { const a = ts.timeToCoordinate(g.t), b = ts.timeToCoordinate(g.t1); return a != null && b != null && b >= 0 && a <= W; };
+    const seg = tags.filter((g) => !g.open && g.t1 != null && onScreen(g)).slice(-40).map((g) => {
       let x0 = ts.timeToCoordinate(g.t), x1 = ts.timeToCoordinate(g.t1);
       if (x0 == null || x1 == null || x1 < 0 || x0 > W) return '';
       x0 = Math.max(0, x0); x1 = Math.min(W, Math.max(x1, x0 + 24));
