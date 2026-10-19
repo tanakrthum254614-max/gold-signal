@@ -1552,14 +1552,14 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": -0.44,
+   "pnl": -1.17,
    "hit": 0,
    "hitAt": [],
    "stop": 4160.21,
    "realized": 0,
-   "last": 4145.650000000001
+   "last": 4146.38
   }
  ],
  "brakes": {},
- "updatedAt": 1792435222442
+ "updatedAt": 1792435522103
 }
