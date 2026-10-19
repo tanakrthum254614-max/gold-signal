@@ -87,6 +87,15 @@
     .rec .tile .pc { display: block; font-family: var(--pm-serif); font-size: 26px; font-weight: 700; line-height: 1.2; }
     .rec .tile .tf { display: block; font-size: 12.5px; color: var(--pm-ivory); font-weight: 600; }
     .rec .tile .rl { display: block; font-size: 11.5px; color: var(--pm-muted); margin-top: 4px; line-height: 1.45; }
+    /* ⚡ tiles move in real time (19 Oct 2026, user: "อยากให้ตัวเลขขยับด้วยแบบเรียลไทม์เวลาเข้าไม้ของทามเฟรมไหนแล้วชนะหรือแพ้") */
+    .rec .tile { position: relative; transition: border-color .4s, box-shadow .4s; }
+    .rec .tile .hold { display: block; margin-top: 6px; padding: 4px 6px; border-radius: 8px; font-size: 11.5px; line-height: 1.4; color: var(--pm-text); background: rgba(60, 207, 145, .08); border: 1px solid rgba(60, 207, 145, .25); }
+    .rec .tile .hold[hidden] { display: none; }
+    .rec .tile .hold b { font-variant-numeric: tabular-nums; }
+    .rec .tile.holding { border-color: rgba(60, 207, 145, .45); }
+    .rec .tile.flash { animation: tileFlash 1.6s ease-out; }
+    @keyframes tileFlash { 0% { box-shadow: 0 0 0 0 rgba(243, 214, 140, .0); border-color: var(--pm-gold-hi); } 25% { box-shadow: 0 0 22px 2px rgba(243, 214, 140, .45); border-color: var(--pm-gold-hi); } 100% { box-shadow: 0 0 0 0 rgba(243, 214, 140, 0); } }
+    @media (prefers-reduced-motion: reduce) { .rec .tile.flash { animation: none; } }
     .rec .cap { margin: 0; text-align: center; font-size: 12px; color: var(--pm-muted); line-height: 1.6; }
     .rec .cap a { color: var(--pm-gold-hi); }
     .up { color: var(--pm-up); } .down { color: var(--pm-down); }
@@ -167,9 +176,9 @@
     <h1 class="headline rise d1">สัญญาณทองคำ</h1>
     <section class="rec rise d2" aria-label="ผลทดสอบและผลจริง">
       <div class="tiles" id="tiles">
-        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 1 ชั่วโมง</span><span class="rl">กำลังโหลด…</span></div>
-        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 5 ชั่วโมง</span><span class="rl">กำลังโหลด…</span></div>
-        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 1 วัน</span><span class="rl">กำลังโหลด…</span></div>
+        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 1 ชั่วโมง</span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
+        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 5 ชั่วโมง</span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
+        <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 1 วัน</span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
       </div>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
@@ -326,7 +335,7 @@
         if (prevClose) { const c = p - prevClose; $('lchg').innerHTML = `<span class="${c >= 0 ? 'up' : 'down'}">${c >= 0 ? '▲' : '▼'} ${((c / prevClose) * 100).toFixed(2)}%</span>`; }
         document.querySelector('#livepx .dot').classList.add('on');
         $('lsrc').textContent = src;
-        if (REC.open.length) renderRecent(); // the held trade's profit / loss moves with the price
+        if (REC.open.length) { renderRecent(); renderHolds(); } // the held trade's profit / loss moves with the price
       }
       function stream() {
         let ws; try { ws = new WebSocket(`wss://streaming.forexpros.com/echo/${Math.floor(Math.random() * 1000)}/${Math.random().toString(36).slice(2, 10)}/websocket`); } catch (e) { return; }
@@ -367,11 +376,13 @@
       }
       function loadStats() {
         fetch('/api/market?blog=1&stats=1', { cache: 'no-store' }).then((r) => r.json()).then((j) => {
-          REC = { open: j.open || [], recent: (j.recent || []).slice(0, 5) }; renderRecent();
+          REC = { open: j.open || [], recent: (j.recent || []).slice(0, 5) }; renderRecent(); renderHolds();
         const o = j.others, rn = document.getElementById('rnote');
         if (rn && o && o.live) rn.innerHTML = `กรอบเสี่ยง (5–30 นาที · 1 สัปดาห์ · Sell): ผลจริง <b>${o.live}</b> รายการ · ชนะ ${o.wins} · <b class="${o.pnl >= 0 ? 'up' : 'down'}">${money(o.pnl)}</b>/ออนซ์ — ยังให้จุดเข้า ติดป้ายเสี่ยง ไม่ส่ง LINE`;
           const tiles = document.querySelectorAll('#tiles .tile');
           (j.tfs || []).forEach((t, i) => { const c = tiles[i]; if (!c) return;
+            // a trade closed (win or loss) since the last look → the tile flashes gold
+            const sig = `${t.live}|${t.wins}|${t.pnl}`; if (c.dataset.sig && c.dataset.sig !== sig) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.sig = sig;
             c.querySelector('.pc').textContent = t.tested != null ? `${t.tested}%` : '—';
             c.querySelector('.rl').innerHTML = t.live ? `ผลจริง ${t.live} รายการ · ชนะ ${t.wins}<br><b class="${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl)}</b> ต่อออนซ์` : 'ผลจริง: ยังไม่มีรายการที่ปิด'; });
           // the whole record too, risky timeframes included — public numbers are never cherry-picked
@@ -379,7 +390,19 @@
           if (a && a.live && $('reccap')) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;
         }).catch(() => document.querySelectorAll('#tiles .rl').forEach((x) => { x.textContent = 'แสดงผลจริงหลังเข้าสู่ระบบ'; }));
       }
-      loadStats(); setInterval(loadStats, 60e3);
+      // the trade a tile's timeframe holds right now, priced with the live gold price every tick
+      const TILE_TF = ['1h', '5h', '1d'];
+      function renderHolds() {
+        const tiles = document.querySelectorAll('#tiles .tile');
+        TILE_TF.forEach((tf, i) => { const c = tiles[i]; if (!c) return; const h = c.querySelector('.hold'); if (!h) return;
+          const t = (REC.open || []).find((x) => x.tf === tf);
+          c.classList.toggle('holding', !!t);
+          if (!t) { if (!h.hidden) { h.hidden = true; h.innerHTML = ''; } return; }
+          const d = t.side === 'SELL' ? -1 : 1, pl = px ? Math.round(d * (px - t.entry) * 100) / 100 : null;
+          h.hidden = false;
+          h.innerHTML = `<i class="dot on"></i> กำลังถือ · เข้า ${f2(t.entry)}<br><b class="${pl == null ? '' : pl >= 0 ? 'up' : 'down'}">${pl == null ? '—' : money(pl)}</b> ต่อออนซ์`; });
+      }
+      loadStats(); setInterval(loadStats, 30e3); // the recorder checks every ~5 minutes; 30 s keeps the tiles close to it
       stream(); setTimeout(fallback, 4000); setInterval(fallback, 10e3);
       document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { loadStats(); fallback(); } });
 
