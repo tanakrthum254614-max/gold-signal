@@ -82,7 +82,8 @@
     .dot.on { background: var(--pm-up); box-shadow: 0 0 0 0 rgba(60, 207, 145, .6); animation: ping 1.6s infinite; }
     @keyframes ping { 70% { box-shadow: 0 0 0 8px rgba(60, 207, 145, 0); } 100% { box-shadow: 0 0 0 0 rgba(60, 207, 145, 0); } }
     .rec { width: 100%; max-width: 460px; display: grid; gap: 8px; }
-    .rec .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .rec .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; } /* 4 tiles since 19 Oct 2026 */
+    @media (max-width: 600px) { .rec .tiles { grid-template-columns: repeat(2, 1fr); } }
     .rec .tile { text-align: center; padding: 12px 6px 10px; border-radius: 14px; border: 1px solid var(--pm-line); background: linear-gradient(180deg, rgba(212, 175, 95, .09), rgba(20, 20, 23, .85)); }
     .rec .tile .pc { display: block; font-family: var(--pm-serif); font-size: 26px; font-weight: 700; line-height: 1.2; }
     .rec .tile .tf { display: block; font-size: 12.5px; color: var(--pm-ivory); font-weight: 600; }
@@ -180,6 +181,7 @@
     <section class="rec rise d2" aria-label="ผลทดสอบและผลจริง">
       <div class="tiles" id="tiles">
         <div class="tile"><span class="pc gold-text">—</span><span class="lbl">ชนะ · ทดสอบ 2 ปี</span><span class="tf">Buy · 5 นาที <em class="rk">เสี่ยง</em></span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
+        <div class="tile"><span class="pc gold-text">—</span><span class="lbl">ชนะ · ทดสอบ 2 ปี</span><span class="tf">Buy · 15 นาที <em class="rk">เสี่ยง</em></span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
         <div class="tile"><span class="pc gold-text">—</span><span class="lbl">ชนะ · ทดสอบ 2 ปี</span><span class="tf">Buy · 30 นาที <em class="rk">เสี่ยง</em></span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
         <div class="tile"><span class="pc gold-text">—</span><span class="lbl">ชนะ · ทดสอบ 2 ปี</span><span class="tf">Buy · 1 ชั่วโมง</span><span class="rl">กำลังโหลด…</span><span class="hold" hidden></span></div>
       </div>
@@ -394,7 +396,7 @@
         }).catch(() => document.querySelectorAll('#tiles .rl').forEach((x) => { x.textContent = 'แสดงผลจริงหลังเข้าสู่ระบบ'; }));
       }
       // the trade a tile's timeframe holds right now, priced with the live gold price every tick
-      const TILE_TF = ['5m', '30m', '1h'];
+      const TILE_TF = ['5m', '15m', '30m', '1h'];
       function renderHolds() {
         const tiles = document.querySelectorAll('#tiles .tile');
         TILE_TF.forEach((tf, i) => { const c = tiles[i]; if (!c) return; const h = c.querySelector('.hold'); if (!h) return;
