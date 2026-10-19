@@ -221,12 +221,12 @@
     <h1 class="headline rise d1">สัญญาณทองคำ</h1>
     <section class="rec rise d2" aria-label="ผลทดสอบและผลจริง">
       <div class="tiles" id="tiles">
-        <div class="tile" data-tf="5m"><span class="tf">5 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
-        <div class="tile" data-tf="15m"><span class="tf">15 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
-        <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
-        <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
+        <div class="tile" data-tf="5m"><span class="tf">5 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small></div>
+        <div class="tile" data-tf="15m"><span class="tf">15 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small></div>
+        <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small></div>
+        <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small></div>
       </div>
-      <p class="tcap">% ตัวใหญ่ = อัตราชนะรวม Buy + Sell จากการทดสอบย้อนหลัง 2 ปี (ไม่รับประกันผลในอนาคต) · ด้านล่าง = จุดเข้าล่าสุดของระบบ กำไร/ขาดทุนต่อออนซ์ตามราคาสด · ⚠ = สัญญาณเสี่ยง</p>
+      <p class="tcap">% ตัวใหญ่ = อัตราชนะรวม Buy + Sell จากการทดสอบย้อนหลัง 2 ปี (ไม่รับประกันผลในอนาคต) · ⚠ = สัญญาณเสี่ยง</p>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
       <li class="on"><b>สร้างบัญชี</b>อีเมลหรือ Google</li>
@@ -480,7 +480,7 @@
           if (a && a.live && $('reccap')) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;
         }).catch(() => {});
       }
-      loadStats(); setInterval(loadStats, 20e3); // each tile's latest entry follows the recorder (checks every 5 minutes)
+      loadStats(); // tested % only (changes with the monthly study) — the latest-entry box went 19 Oct 2026 (user: "เอาอันนี้ออก")
       stream(); setTimeout(fallback, 4000); setInterval(fallback, 10e3);
       document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { loadStats(); fallback(); } });
 
