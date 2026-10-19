@@ -32,7 +32,7 @@
 <td><img src="docs/img/pricing.png" alt="Pricing"><br><sub><b>แพ็กเกจสมาชิก</b> — ชำระผ่าน Stripe (บัตร / PromptPay)</sub></td>
 </tr>
 <tr>
-<td><img src="docs/img/login.png" alt="Sign up"><br><sub><b>การเข้าสู่ระบบและสมัครสมาชิก</b> — จัดวางสองส่วน: ข้อมูลด้านซ้าย แบบฟอร์มด้านขวา พร้อมราคาทองคำแบบเรียลไทม์ อัตราชนะรวมและแยกฝั่ง Buy / Sell จากการทดสอบย้อนหลัง และจุดเข้าล่าสุดของแต่ละกรอบเวลา ขั้นตอน 3 ขั้น และคำถามที่พบบ่อย</sub></td>
+<td><img src="docs/img/login.png" alt="Sign up"><br><sub><b>การเข้าสู่ระบบและสมัครสมาชิก</b> — จัดวางสองส่วน: ข้อมูลด้านซ้าย แบบฟอร์มด้านขวา พร้อมราคาทองคำแบบเรียลไทม์ อัตราชนะรวมและแยกฝั่ง Buy / Sell จากการทดสอบย้อนหลัง และจุดเข้าล่าสุดของแต่ละกรอบเวลาพร้อมกำไร/ขาดทุนตามราคาสด ขั้นตอน 3 ขั้น และคำถามที่พบบ่อย</sub></td>
 <td><img src="docs/img/marketing.png" alt="Back office"><br><sub><b>ระบบหลังบ้าน</b> — ผู้ช่วยร่างประกาศการตลาดจากข้อมูลจริง</sub></td>
 </tr>
 </table>
@@ -87,7 +87,7 @@ flowchart LR
 
 - **Frontend** — HTML, CSS, JavaScript (ไม่ใช้ framework) · TradingView Lightweight Charts
 - **Backend** — Vercel Serverless Functions, Edge Middleware, Vercel Blob, Vercel Cron
-- **Automation** — GitHub Actions (ตรวจสอบสัญญาณทุก 5 นาที, งานรายวัน / รายสัปดาห์ / รายเดือน)
+- **Automation** — GitHub Actions (ตรวจสอบสัญญาณทุก 5 นาทีต่อเนื่อง โดยแต่ละรอบจัดคิวรอบถัดไปเพื่อไม่ให้มีช่วงว่าง, งานรายวัน / รายสัปดาห์ / รายเดือน)
 - **Integrations** — Stripe, Clerk, LINE Messaging API, Web Push, Vercel AI Gateway, SEC EDGAR
 - **Research** — Node.js และ Python สำหรับการทดสอบย้อนหลัง (`research/`)
 

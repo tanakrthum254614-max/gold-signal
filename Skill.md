@@ -316,6 +316,12 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 19 ต.ค. 2569 — ⚡ เรียลไทม์ทุกอย่าง: รันบันทึกสัญญาณต่อกันไม่มีช่องว่าง + ช่องจุดเข้าขยับตามราคา
+- ผู้ใช้: "ขอแบบเรียลไทม์ทุกอย่าง" · ปัญหาเดิม: price-alerts.yml cron */15 แต่ GitHub เริ่มรอบช้า → รอบละ ~28 นาที ว่าง 15–40 นาที (เช่น จบ 14:05 เริ่มใหม่ 14:33) → จุดเข้า 5m/15m หลุด (เข้าเฉพาะภายใน 10 นาทีหลังแท่งปิด)
+- **chain**: price-alerts.yml มี input `chain` + `permissions: actions: write` · step แรก "Queue the next run" (เมื่อ schedule หรือ chain): `gh workflow run price-alerts.yml -f send=true -f chain=true` (จันทร์–ศุกร์ UTC เท่านั้น) → concurrency `price-alerts` ให้รอจนรอบนี้จบแล้วเริ่มต่อทันที · `SEND`/`LOOP_MINUTES=28` ใช้กับ chain ด้วย · cron ยังอยู่เป็นตัวสำรองเริ่ม chain ใหม่ (เช้าวันจันทร์ / ถ้า chain ขาด) · workflow_dispatch จาก GITHUB_TOKEN สร้างรอบใหม่ได้ (ข้อยกเว้นของ GitHub)
+- login.html ช่อง: `LAST[tf]` + `renderEnt()` เรียกทุก tick ราคา (showPrice) — ถือ = "● ถือ Buy ราคา" + ±$ ต่อออนซ์ (เขียว/แดง) · รอเข้า = "📥 รอเข้า Buy ราคา" + "อีก $x" · ไม้ใหม่ → ช่องกะพริบ · loadStats ทุก 20 วิ
+- ทดสอบ tilelive.mjs (+ช่อง 30m รอเข้าปลอม): +$0.58 → +$0.07 ใน 3 วิ, "อีก $8.70" · ไม่มี error · commit 55adbad · เริ่ม chain ด้วย dispatch มือ 07:55 UTC
+
 ## 19 ต.ค. 2569 — ✂️ ช่อง 4 กรอบ: เอา "N จุดเข้า" ออก
 - ผู้ใช้ (ภาพบรรทัด 1,957 / 230 / 765 / 435 จุดเข้า): "เอาออก" → login.html ลบ `.cnt` (markup + JS) และ " · จุดเข้า = จำนวนครั้งในการทดสอบ" ใน .tcap · `tiles[].all.n` ใน API ยังอยู่ (ใช้ถ่วง % รวม) · ทดสอบ tilelive.mjs คอม + มือถือ ไม่มี error
 
