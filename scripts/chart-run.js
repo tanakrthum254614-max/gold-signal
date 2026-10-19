@@ -101,9 +101,9 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
     if (NOTIFY.includes(tf) && !paused) {
       const c = dir > 0 ? sys.buy : sys.sell;
       texts.push(`${tf === CS.MAIN_TF ? `⏱️ สัญญาณ ${TF_TH[tf]} (ระบบหลัก)` : `🎯 สัญญาณกราฟ ${TF_TH[tf]}`} · ${dir > 0 ? '🟢 ซื้อ (BUY)' : '🔴 ขาย (SELL)'}\n`
-        // limit entry (19 Oct 2026): "wait for the dip" — the member sets a Buy Limit; never reached in time = cancelled
+        // limit entry (19 Oct 2026): Buy waits for a dip, Sell for a bounce — the member sets a Buy / Sell Limit; never reached in time = cancelled
         + (tr.limit
-          ? `📥 รอเข้าที่ ${f2(tr.entry)} (ราคาตอนนี้ ${f2(tr.priceAtSignal)} · รอย่อ $${c.dip}) ภายใน ${c.dipH} ชม. — ตั้ง Buy Limit ได้เลย · ราคาไม่ถึง = ยกเลิก\n`
+          ? `📥 รอเข้าที่ ${f2(tr.entry)} (ราคาตอนนี้ ${f2(tr.priceAtSignal)} · ${dir > 0 ? 'รอย่อ' : 'รอเด้งขึ้น'} $${c.dip}) ภายใน ${c.dipH} ชม. — ตั้ง ${dir > 0 ? 'Buy' : 'Sell'} Limit ได้เลย · ราคาไม่ถึง = ยกเลิก\n`
           : `เข้า ~${f2(tr.entry)}\n`)
         + `SL ${f2(tr.sl)} · ${tr.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}\n`
         + `แท่ง ${when(tf, t - dur)} ปิดแล้ว · คะแนน ${dec.score > 0 ? '+' : ''}${dec.score} · ทดสอบชนะ ${c.win}% (ไม่รับประกัน)\n`

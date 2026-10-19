@@ -52,8 +52,13 @@ for (const tf of only) {
   function sim(entries, side, c) {
     Object.assign(INTRA.RULE, { slUsd: 15 * c.mult, tpUsd: c.tps || (c.tp1 ? [15] : [15, 20, 30]).map((u) => u * c.mult) });
     let busy = 0; const trs = [];
-    for (const e of entries) {
-      if (e.t < busy) continue;
+    for (const e0 of entries) {
+      if (e0.t < busy) continue;
+      // limit entry (c.dip, 19 Oct 2026): filled when the price trades $0.3 through price ∓ dip within dipH, else no trade
+      let e = e0;
+      if (c.dip) { const lim = e0.price - side * c.dip, i0 = lb(FB, e0.t), i1 = lb(FB, e0.t + c.dipH * 3600e3); e = null;
+        for (let i = i0; i < i1 && i < FB.length; i++) if (side > 0 ? FB[i].low <= lim - 0.3 : FB[i].high >= lim + 0.3) { e = { ...e0, t: FB[i].time, price: lim }; break; }
+        if (!e) continue; }
       const t0 = INTRA.makeTrade({ dir: side, score: 0, keys: {}, frames: [] }, e.price, e.t);
       if (sys.hold) t0.expiresAt = e.t + sys.hold;
       const i = lb(FB, e.t), j = lb(FB, t0.expiresAt + 1);

@@ -37,7 +37,7 @@
     } else if (e.go) {
       const d = e.go, c = d > 0 ? e.sys.buy : e.sys.sell, L = CHARTSYS.levelsFor(c, e.price, d);
       icon = '✅'; cls = d > 0 ? 'buy' : 'sell';
-      title = L.dip ? `${d > 0 ? 'ซื้อ (Buy)' : 'ขาย (Sell)'} — รอราคาย่อมาที่ <b>${f2(L.entry)}</b> (ภายใน ${L.dipH} ชม.)` : `${d > 0 ? 'ซื้อ (Buy)' : 'ขาย (Sell)'} ได้ตอนนี้ ที่ราว <b>${f2(e.price)}</b>`;
+      title = L.dip ? `${d > 0 ? 'ซื้อ (Buy)' : 'ขาย (Sell)'} — รอราคา${d > 0 ? 'ย่อลง' : 'เด้งขึ้น'}มาที่ <b>${f2(L.entry)}</b> (ภายใน ${L.dipH} ชม.)` : `${d > 0 ? 'ซื้อ (Buy)' : 'ขาย (Sell)'} ได้ตอนนี้ ที่ราว <b>${f2(e.price)}</b>`;
       lines.push(`<span data-term="SL">ตัดขาดทุน</span> <b>${f2(L.sl)}</b> · <span data-term="TP">เป้ากำไร</span> <b>${L.tps.map(f2).join(' / ')}</b>`);
       lines.push('เสี่ยงไม่เกิน 1–2% ของทุนต่อรายการ <a href="#chart">→ คำนวณขนาดการซื้อขาย (lot) ที่หน้ากราฟ</a>');
     } else if (e.news) {
