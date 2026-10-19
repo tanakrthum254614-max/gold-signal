@@ -1060,7 +1060,7 @@
    "id": "5m-1792379700000",
    "createdAt": 1792379700000,
    "expiresAt": 1792439100000,
-   "status": "active",
+   "status": "loss",
    "entryAt": 1792379700000,
    "side": "BUY",
    "entry": 4177.56,
@@ -1077,8 +1077,11 @@
    "hitAt": [],
    "stop": 4162.56,
    "realized": 0,
-   "pnl": -14.98,
-   "last": 4162.58
+   "pnl": -15,
+   "last": 4162.58,
+   "closedBy": "sl",
+   "exitPrice": 4162.56,
+   "exitAt": 1792411200000
   },
   {
    "id": "30m-1792386000000",
@@ -1161,14 +1164,14 @@
    "limit": true,
    "tf": "15m",
    "risky": true,
-   "pnl": 7.88,
+   "pnl": 7.07,
    "hit": 1,
    "hitAt": [
-    1792409400000
+    1792409700000
    ],
    "stop": 4172.52,
    "realized": 1.25,
-   "last": 4162.58
+   "last": 4163.79
   },
   {
    "id": "30m-1792404000000",
@@ -1191,14 +1194,14 @@
    "limit": true,
    "tf": "30m",
    "risky": true,
-   "pnl": 7.88,
+   "pnl": 7.07,
    "hit": 1,
    "hitAt": [
-    1792409400000
+    1792409700000
    ],
    "stop": 4172.52,
    "realized": 1.25,
-   "last": 4162.58
+   "last": 4163.79
   },
   {
    "id": "5m-1792407300000",
@@ -1221,14 +1224,14 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": 9.41,
+   "pnl": 8.6,
    "hit": 1,
    "hitAt": [
     1792409400000
    ],
    "stop": 4174.82,
    "realized": 1.25,
-   "last": 4162.58
+   "last": 4163.79
   },
   {
    "id": "5m-1792409700000",
@@ -1319,9 +1322,32 @@
    "fillBy": 1792432800000,
    "limit": true,
    "tf": "1h",
+   "risky": true,
+   "pnl": 0
+  },
+  {
+   "id": "30m-1792411200000",
+   "createdAt": 1792411200000,
+   "expiresAt": 1792439100000,
+   "status": "pending",
+   "entryAt": 1792411200000,
+   "side": "SELL",
+   "entry": 4171.84,
+   "sl": 4186.84,
+   "tps": [
+    4168.09,
+    4156.84,
+    4141.84
+   ],
+   "tp": 4168.09,
+   "score": -2,
+   "priceAtSignal": 4166.84,
+   "fillBy": 1792422000000,
+   "limit": true,
+   "tf": "30m",
    "risky": true
   }
  ],
  "brakes": {},
- "updatedAt": 1792411222635
+ "updatedAt": 1792411521612
 }
