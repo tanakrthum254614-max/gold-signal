@@ -32,29 +32,36 @@
     // 1h (+$774 → +$792), but hurts 15m (+$465 → +$377) and 30m (+$957 → +$828) — so only 5m and 1h skip the news.
     '5m': { news: true, frames: [['m5', 5 * M, 60, '5 นาที'], ['m30', 30 * M, 60, '30 นาที'], ['h1', H, 60, '1 ชม.']], span: '2 ปี',
       // scale out (19 Oct 2026, user chose "ข้อ 1 + 3"): TP1 $5, SL to entry, then $10 / $15 — newidea.js PARTIAL: 1,702 trades, 75% win, +$137 (was TP1 $15: 54%, +$554)
-      buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: false, mult: 1, tps: [5, 10, 15], dip: 5, dipH: 1, since: '2026-10-19T18:00:00+07:00', win: 84, q: [636, 473, 717, -75] }, /* dip: wait $5 lower, up to 1 h (newidea.js LIMIT THROUGH=0.3: 1,342 trades 84% +$1,750) */ sell: { risky: 'ผลจริงชนะต่ำกว่าทดสอบมาก (14 รายการ ชนะ 4)', th: 6, tp1: false, mult: 0.67, confirm: 'sma2050', since: '2026-10-09T09:54:00+07:00', win: 53, q: [39, 84, 156, 172] },
+      // MORE entries (19 Oct 2026, user: "อยากให้จุดเข้า Buy และ Sell เยอะๆ สม่ำเสมอ"): research/indicators/morenew.js — lower score + wait for a
+      // better price + TP 3.75/15/30 (×mult), chosen only from settings that made money in all 4 periods; report-2026-10-19-more.txt
+      buy: { risky: 'กติกาใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 2, tp1: false, mult: 1, tps: [3.75, 15, 30], dip: 5, dipH: 1, since: '2026-10-19T20:00:00+07:00', win: 88, q: [571, 713, 1361, 256] }, /* dip: wait $5 lower, up to 1 h (newidea.js LIMIT THROUGH=0.3: 1,342 trades 84% +$1,750) */ sell: { risky: 'กติกาใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 2, tp1: false, mult: 1, tps: [3.75, 15, 30], dip: 5, dipH: 1, since: '2026-10-19T20:00:00+07:00', win: 88, q: [250, 126, 2028, 1067] },
       every: -1480 }, // taking every small arrow one at a time, SL / TP1 $15
-    '15m': { frames: INTRA.FRAMES15, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดกำไรน้อยมาก', th: 6, tp1: true, mult: 1.5, confirm: 'ema921', since: '2026-10-09T09:40:00+07:00', win: 56, q: [261, 72, 84, 48] },
+    '15m': { frames: INTRA.FRAMES15, span: '2 ปี', 
+      // MORE entries (19 Oct 2026, user: "อยากให้จุดเข้า Buy และ Sell เยอะๆ สม่ำเสมอ"): research/indicators/morenew.js — lower score + wait for a
+      // better price + TP 3.75/15/30 (×mult), chosen only from settings that made money in all 4 periods; report-2026-10-19-more.txt
+      buy: { risky: 'กติกาใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 2, tp1: false, mult: 1, tps: [3.75, 15, 30], dip: 5, dipH: 2, since: '2026-10-19T20:00:00+07:00', win: 89, q: [605, 529, 1315, 359] },
       // SELL (19 Oct 2026, user: "มีฝั่ง Sell บ้างไหม" → "ทำมาเลย"): research/indicators/sellnew.js — score −4, wait for a $5 bounce
       // up to 2 h, SL $15, TP 3.75/15/30: 1,330 trades, 87%, +$1,219, profit in all 4 periods (latest +$531). One of ~1,100 tried → ⚠️
-      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 4, tp1: false, mult: 1, tps: [3.75, 15, 30], dip: 5, dipH: 2, since: '2026-10-19T19:00:00+07:00', win: 87, q: [160, 132, 396, 531] }, sellQ: [115, -233, -72, 204] },
+      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 2, tp1: false, mult: 1, tps: [3.75, 15, 30], dip: 5, dipH: 2, since: '2026-10-19T20:00:00+07:00', win: 87, q: [234, 76, 818, 820] }, sellQ: [115, -233, -72, 204] },
     // 30m scale out (19 Oct 2026, "ข้อ 1 + 3"): TP1 $3.75, SL to entry, then $15 / $30 — 1,054 trades, 81% win, +$355 (was TP1 $15: 57%, +$957)
-    '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน', th: 5, tp1: false, mult: 1, tps: [3.75, 15, 30], dip: 5, dipH: 3, since: '2026-10-19T18:00:00+07:00', win: 87, q: [439, 232, 161, 1] }, /* dip $5 · 3 h: 765 trades 87% +$833 */
+    '30m': { frames: INTRA.FRAMES, span: '2 ปี', buy: { risky: 'ช่วงทดสอบล่าสุดกำไรน้อย', th: 4, tp1: false, mult: 1, tps: [3.75, 15, 30], confirm: 'ema921', dip: 5, dipH: 3, since: '2026-10-19T20:00:00+07:00', win: 88, q: [566, 350, 532, 22] }, /* more entries: th 4 + EMA 9/21 (morenew.js) */ /* dip $5 · 3 h: 765 trades 87% +$833 */
       // SELL (19 Oct 2026, sellnew.js): score −3, wait for a $5 bounce up to 3 h, SL $15, TP 3.75/15/30 — 1,376 trades, 87%, +$1,269,
       // profit in all 4 periods (latest +$651). ⚠️ until it has live results
-      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 3, tp1: false, mult: 1, tps: [3.75, 15, 30], dip: 5, dipH: 3, since: '2026-10-19T19:00:00+07:00', win: 87, q: [110, 115, 393, 651] }, sellQ: [129, -174, -58, 113] },
+      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 2, tp1: false, mult: 1, tps: [3.75, 15, 30], dip: 5, dipH: 3, since: '2026-10-19T20:00:00+07:00', win: 87, q: [119, 128, 558, 769] }, sellQ: [129, -174, -58, 113] },
     '1h': { news: true, frames: [['h1', H, 60, '1 ชม.'], ['h4', 4 * H, 60, '4 ชม.'], ['h5', 5 * H, 40, '5 ชม.']], span: '2 ปี',
       // scale out (19 Oct 2026, user: "ขอมากกว่า 70 ก็ได้ 50 เปอร์เซ็นต์ดูน้อยไป" → chose "ใช้กับ 1 ชม."): TP1 $7.5 near, then SL to
       // entry, the rest to $30 / $60 — research/indicators/newidea.js PARTIAL=1: 399 trades, 77% win, +$522, profit in all 4
       // periods (old 3 TP $30/40/60: 57%, +$804). The only scale-out ladder that also made money in the latest period.
       // limit entry (19 Oct 2026, user: "ขอแม่นยำจุดในการเข้า" → "ทั้ง 3 กรอบ Buy"): wait for a $3 dip, up to 6 h — 361 trades, 80% win,
       // +$775, profit in all 4 periods (latest +$105; entering at once: 77% +$522, latest +$9)
-      buy: { th: 5, tp1: false, mult: 2, tps: [7.5, 30, 60], dip: 3, dipH: 6, since: '2026-10-19T18:00:00+07:00', win: 80, q: [206, 311, 154, 105] },
+      // more entries (morenew.js): score +3, wait $10 lower up to 6 h — 583 trades 85% +$1,656, all 4 periods (latest +$214)
+      buy: { th: 3, tp1: false, mult: 2, tps: [7.5, 30, 60], dip: 10, dipH: 6, since: '2026-10-19T20:00:00+07:00', win: 85, q: [564, 296, 582, 214] },
       // SELL (17 Oct 2026, user: "ทำมาหมดเลย" — no tested Sell left for falling markets): selltest.js 12 Oct best 1h Sell,
       // score −4 + Bollinger reversal, SL $30, TP 30/40/60 — profitable in all 4 periods but one of ~680 tried, so ⚠️ risky
       // (shown + recorded, no LINE) until 20 live trades say otherwise. Old score-only Sell: −62 / 4 / −112 / 8. Replayed with the site code 17 Oct: 74 trades, 65%, +$593.
       // + wait for a $6 bounce, up to 6 h (19 Oct 2026, sellnew.js): 70 trades, 76%, +$693, all 4 periods profit (at once: 62% +$545)
-      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 4, tp1: false, mult: 2, confirm: 'bbrev', dip: 6, dipH: 6, since: '2026-10-19T19:00:00+07:00', win: 76, q: [140, 107, 191, 255] } },
+      // more entries (morenew.js): score −2 + Bollinger reversal, $6 bounce, TP 7.5/30/60 — 168 trades 83% +$532, all 4 periods
+      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 2, tp1: false, mult: 2, tps: [7.5, 30, 60], confirm: 'bbrev', dip: 6, dipH: 6, since: '2026-10-19T20:00:00+07:00', win: 83, q: [93, 124, 143, 172] } },
     '5h': { frames: [['h5', 5 * H, 60, '5 ชม.'], ['d1', DAY, 60, '1 วัน']], span: '2 ปี', long: true, hold: 5 * DAY,
       buy: { th: 3, tp1: false, mult: 4, confirm: 'roc12', since: '2026-10-09T09:40:00+07:00', win: 65, q: [483, 511, 635, 205] }, sellQ: [-72, -179, -6, 105] },
     '1d': { frames: [['d1', DAY, 60, '1 วัน'], ['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '5 ปี', long: true, hold: 20 * DAY,
@@ -141,7 +148,9 @@
   // • 5 losses in a row → pause until next week's open (5h/1d/1w: 30 days); trades inside that pause don't count again
   // • 20 closed trades winning 12+ points less than the backtest
   function brake(sys, trades, now) {
-    const done = trades.filter((t) => t.status === 'win' || t.status === 'loss').sort((a, b) => (a.exitAt || a.createdAt) - (b.exitAt || b.createdAt));
+    // only trades under the rules in use (since the side's `since`, 19 Oct 2026) — old rules' losses don't keep a new rule paused
+    const from = (t) => { const c = t.side === 'SELL' ? sys.sell : sys.buy; return c && c.since ? Date.parse(c.since) : 0; };
+    const done = trades.filter((t) => (t.status === 'win' || t.status === 'loss') && t.createdAt >= from(t)).sort((a, b) => (a.exitAt || a.createdAt) - (b.exitAt || b.createdAt));
     let until = 0, streak = 0;
     for (const t of done) {
       if (t.createdAt < until) continue;
