@@ -103,18 +103,6 @@
     .rec .tile .ent b { font-size: 12.5px; color: var(--pm-ivory); font-variant-numeric: tabular-nums; }
     .rec .tile .ent.wait { border-color: rgba(242, 169, 59, .45); } .rec .tile .ent.open { border-color: rgba(60, 207, 145, .45); }
     .rec .tile .ent:empty { display: none; }
-    /* ⚡ live: real win % + "ready to enter" bars (19 Oct 2026) */
-    .rec .tile .lv { display: block; font-size: 11px; color: var(--pm-muted); margin-top: 1px; white-space: nowrap; }
-    .rec .tile .lv b { color: var(--pm-ivory); font-variant-numeric: tabular-nums; }
-    .rec .tile .rdy { display: grid; gap: 3px; margin-top: 6px; }
-    .rec .tile .rdy > span { display: grid; grid-template-columns: 26px 1fr 32px; gap: 4px; align-items: center; font-size: 10.5px; }
-    .rec .tile .rdy em { font-style: normal; text-align: left; } .rec .tile .rdy .rb em { color: #8fe0bd; } .rec .tile .rdy .rs em { color: #f0a0a7; }
-    .rec .tile .rdy i { height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .08); overflow: hidden; }
-    .rec .tile .rdy u { display: block; height: 100%; width: 0; border-radius: 3px; transition: width .6s ease; }
-    .rec .tile .rdy .rb u { background: #3ccf91; } .rec .tile .rdy .rs u { background: #e5636e; }
-    .rec .tile .rdy b { text-align: right; font-variant-numeric: tabular-nums; color: var(--pm-ivory); }
-    .rec .tile .rdy .na { opacity: .35; }
-    .rec .tile .rdy .full b { color: var(--pm-gold-hi); }
     .rec .tile .ent b.up { color: var(--pm-up); } .rec .tile .ent b.down { color: var(--pm-down); }
     .rec .tcap { margin: 6px 0 0; font-size: 11px; color: var(--pm-muted); text-align: left; }
     @media (max-width: 979px) { .rec .tcap { text-align: center; } }
@@ -233,12 +221,12 @@
     <h1 class="headline rise d1">สัญญาณทองคำ</h1>
     <section class="rec rise d2" aria-label="ผลทดสอบและผลจริง">
       <div class="tiles" id="tiles">
-        <div class="tile" data-tf="5m"><span class="tf">5 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><small class="lv"></small><span class="rdy"><span class="rb"><em>Buy</em><i><u></u></i><b>—</b></span><span class="rs"><em>Sell</em><i><u></u></i><b>—</b></span></span><span class="ent"></span></div>
-        <div class="tile" data-tf="15m"><span class="tf">15 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><small class="lv"></small><span class="rdy"><span class="rb"><em>Buy</em><i><u></u></i><b>—</b></span><span class="rs"><em>Sell</em><i><u></u></i><b>—</b></span></span><span class="ent"></span></div>
-        <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><small class="lv"></small><span class="rdy"><span class="rb"><em>Buy</em><i><u></u></i><b>—</b></span><span class="rs"><em>Sell</em><i><u></u></i><b>—</b></span></span><span class="ent"></span></div>
-        <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><small class="lv"></small><span class="rdy"><span class="rb"><em>Buy</em><i><u></u></i><b>—</b></span><span class="rs"><em>Sell</em><i><u></u></i><b>—</b></span></span><span class="ent"></span></div>
+        <div class="tile" data-tf="5m"><span class="tf">5 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
+        <div class="tile" data-tf="15m"><span class="tf">15 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
+        <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
+        <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small><span class="ent"></span></div>
       </div>
-      <p class="tcap">% ตัวใหญ่ = อัตราชนะรวม Buy + Sell จากการทดสอบย้อนหลัง 2 ปี (ไม่รับประกันผลในอนาคต) · แถบ Buy / Sell = ความพร้อมเข้าตอนนี้ (100% = มีจุดเข้า) · ด้านล่าง = จุดเข้าล่าสุดของระบบ กำไร/ขาดทุนต่อออนซ์ตามราคาสด · ⚠ = สัญญาณเสี่ยง</p>
+      <p class="tcap">% ตัวใหญ่ = อัตราชนะรวม Buy + Sell จากการทดสอบย้อนหลัง 2 ปี (ไม่รับประกันผลในอนาคต) · ด้านล่าง = จุดเข้าล่าสุดของระบบ กำไร/ขาดทุนต่อออนซ์ตามราคาสด · ⚠ = สัญญาณเสี่ยง</p>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
       <li class="on"><b>สร้างบัญชี</b>อีเมลหรือ Google</li>
@@ -482,9 +470,6 @@
             pc.textContent = al ? `${al.tested}%` : '—'; pc.classList.toggle('na', !al);
             const sd = (k, x) => (x ? `<span class="${k === 'Buy' ? 'b' : 's'}">${k} ${x.tested}%${x.risky ? '<i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}</span>` : `<span class="na">${k} —</span>`);
             c.querySelector('.bs').innerHTML = `${sd('Buy', t.buy)} · ${sd('Sell', t.sell)}`;
-            // real results (closed trades, both sides) — moves whenever a trade closes
-            const lv = ((t.buy && t.buy.live) || 0) + ((t.sell && t.sell.live) || 0), lw = ((t.buy && t.buy.wins) || 0) + ((t.sell && t.sell.wins) || 0);
-            c.querySelector('.lv').innerHTML = lv ? `ผลจริง <b>${Math.round((lw / lv) * 100)}%</b> (ชนะ ${lw}/${lv})` : 'ผลจริง: ยังไม่มีไม้ที่ปิด';
             // a closed → new entry flashes the tile
             const k = t.last ? `${t.last.at}:${t.last.state}` : ''; if (c.dataset.k != null && c.dataset.k !== k) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.k = k;
             LAST[t.tf] = t.last; });
@@ -495,19 +480,9 @@
           if (a && a.live && $('reccap')) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;
         }).catch(() => {});
       }
-      // ⚡ "ready to enter" % per tile, live (server: the site's score on the forming candles, every ~10 s)
-      function loadReady() {
-        fetch('/api/market?blog=1&ready=1', { cache: 'no-store' }).then((r) => r.json()).then((j) => { if (!j.ok) return;
-          document.querySelectorAll('#tiles .tile').forEach((c) => { const x = j.tf[c.dataset.tf]; if (!x) return;
-            [['.rb', x.buy], ['.rs', x.sell]].forEach(([k, v]) => { const e = c.querySelector(`.rdy ${k}`); if (!e) return;
-              e.classList.toggle('na', v == null || x.closed); e.classList.toggle('full', v === 100);
-              e.querySelector('u').style.width = `${v == null || x.closed ? 0 : v}%`;
-              e.querySelector('b').textContent = v == null ? '—' : x.closed ? 'ปิด' : `${v}%`; }); }); }).catch(() => {});
-      }
-      loadReady(); setInterval(loadReady, 10e3);
       loadStats(); setInterval(loadStats, 20e3); // each tile's latest entry follows the recorder (checks every 5 minutes)
       stream(); setTimeout(fallback, 4000); setInterval(fallback, 10e3);
-      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { loadStats(); loadReady(); fallback(); } });
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { loadStats(); fallback(); } });
 
       // faint gold candles drifting left behind the page (made-up shapes, decoration only — not a price chart)
       const cv = $('bg'), ctx = cv.getContext('2d'), W = 14, still = matchMedia('(prefers-reduced-motion: reduce)').matches;

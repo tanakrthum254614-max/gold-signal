@@ -316,6 +316,9 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 19 ต.ค. 2569 — ✂️ ช่อง 4 กรอบ: เอา "ผลจริง" + แถบความพร้อมเข้าออก
+- ผู้ใช้ (ภาพบรรทัด "ผลจริง x% (ชนะ w/n)"): "เอาอันนี้ออก" · (ภาพแถบ Buy/Sell %): "เอาออกเลย" → login.html ลบ `.lv`, `.rdy` (markup/CSS/JS loadReady) · ช่อง = ชื่อกรอบ · % รวม · Buy/Sell % · จุดเข้าล่าสุดสด · endpoint `?ready=1` + vercel.json includeFiles ยังอยู่ (ไม่มีหน้าไหนเรียก) · **ผู้ใช้ไม่เอาผลจริง/ความพร้อมเข้าในหน้าสมัคร (ครั้งที่ 2 สำหรับผลจริง) — อย่าเสนออีก**
+
 ## 19 ต.ค. 2569 — ⚡ ช่อง 4 กรอบ: ความพร้อมเข้าสด + ผลจริง
 - ผู้ใช้: "ขอแบบเรียลไทม์ให้ตัวเลขเรียลไทม์ในการเข้าและขยับเปอร์เซ็นต่างๆ" → ถาม → "ทั้งสองแบบ"
 - lib/blog.mjs `?blog=1&ready=1` (public): createRequire → chartsys.js (+ intraday/indicators/signals) · Binance PAXG klines 5m/15m/30m/1h(1000 → h5)/4h · `CS.decide(sys, frames, now, [], true)` (แท่งที่กำลังวิ่ง, ไม่ส่งข่าว) → `CS.sideInfo(...).pct` ต่อฝั่ง (null = ไม่มีฝั่งนั้น) · `closed` = dec.stale · cache 10 วิ ต่อ instance · **vercel.json `functions.api/market.mjs.includeFiles = "{chartsys,intraday,indicators,signals}.js"`** (ไม่มีแล้ว function หาไฟล์ไม่เจอ)
