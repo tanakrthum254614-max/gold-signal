@@ -85,6 +85,15 @@ for (const tf of only) {
   for (const v of [65, 70, 75]) FILTERS.push([`rsi ≤ ${v}`, (e) => e.rsi <= v]);
   FILTERS.push(['pull', (e) => e.pull === 1], ['htf', (e) => e.htf === 1], ['margin ≥ 1', (e) => e.margin >= 1]);
   for (const v of [0.8, 0.9]) FILTERS.push([`vol ≤ ${v}`, (e) => e.vol <= v]);
+  // TIME=1 (19 Oct 2026, user: "อยากให้แม่นยำกว่านี้"): only the time filters — trading session by Thai hour of the entry
+  // (Asia 07–14 · London 14–19 · New York 19–03) and weekday. A handful on purpose: few tries = less chance of a lucky pick.
+  if (process.env.TIME) {
+    FILTERS.length = 0;
+    const hr = (e) => new Date(e.t + 7 * H).getUTCHours(), wd = (e) => new Date(e.t + 7 * H).getUTCDay();
+    const asia = (e) => hr(e) >= 7 && hr(e) < 14, lon = (e) => hr(e) >= 14 && hr(e) < 19, ny = (e) => hr(e) >= 19 || hr(e) < 3;
+    FILTERS.push(['no Asia', (e) => !asia(e)], ['no London', (e) => !lon(e)], ['no NY', (e) => !ny(e)], ['London+NY', (e) => lon(e) || ny(e)],
+      ['no Monday', (e) => wd(e) !== 1], ['no Friday', (e) => wd(e) !== 5], ['Tue–Thu', (e) => wd(e) >= 2 && wd(e) <= 4]);
+  }
   for (const [side, c] of sides) {
     const all = ents.filter((e) => e.dir === side), base = sim(all, side, c);
     const rows = FILTERS.map(([name, fn]) => ({ name, ...sim(all.filter(fn), side, c) }));
