@@ -90,6 +90,17 @@
     .rec .cap { margin: 0; text-align: center; font-size: 12px; color: var(--pm-muted); line-height: 1.6; }
     .rec .cap a { color: var(--pm-gold-hi); }
     .up { color: var(--pm-up); } .down { color: var(--pm-down); }
+    /* 🧾 latest trades, one by one, live (19 Oct 2026, user: "อยากให้เรียลไทม์แต่ละไม้ที่ให้เข้า") */
+    .rlist { list-style: none; margin: 0; padding: 0; width: 100%; display: grid; gap: 0; border: 1px solid var(--pm-line2); border-radius: 12px; background: rgba(20, 20, 23, .85); overflow: hidden; }
+    .rlist li { display: grid; grid-template-columns: 22px 1fr auto auto; align-items: center; gap: 10px; padding: 8px 12px; font-size: 12.5px; color: var(--pm-muted); border-top: 1px solid var(--pm-line2); }
+    .rlist li:first-child { border-top: 0; }
+    .rlist li.open { background: rgba(60, 207, 145, .06); color: var(--pm-text); }
+    .rlist .w { color: var(--pm-text); } .rlist em { font-style: normal; font-size: 10.5px; color: #f2a93b; border: 1px solid rgba(242, 169, 59, .4); border-radius: 6px; padding: 0 5px; margin-left: 4px; }
+    .rlist .p { font-variant-numeric: tabular-nums; } .rlist b { font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; }
+    .rlist .dot { justify-self: center; }
+    .rhead { display: flex; flex-wrap: wrap; gap: 2px 10px; justify-content: space-between; align-items: baseline; width: 100%; margin: 4px 0 -2px; font-size: 13px; color: var(--pm-ivory); font-weight: 600; }
+    .rhead small { color: var(--pm-muted); font-weight: 400; font-size: 11.5px; }
+    @media (max-width: 600px) { .rlist li { grid-template-columns: 18px 1fr auto; gap: 2px 8px; padding: 7px 10px; font-size: 11.5px; } .rlist .p { grid-column: 2; grid-row: 2; font-size: 11px; } .rlist b { grid-column: 3; grid-row: 1 / span 2; min-width: 0; } }
     /* gold light running round the sign-up box */
     @property --spin { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
     .glow { position: relative; border-radius: 22px; padding: 1.5px; max-width: 100%;
@@ -160,6 +171,8 @@
         <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 5 ชั่วโมง</span><span class="rl">กำลังโหลด…</span></div>
         <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 1 วัน</span><span class="rl">กำลังโหลด…</span></div>
       </div>
+      <div class="rhead">รายการล่าสุด<small><i class="dot on"></i> อัปเดตสด · ทั้งกำไรและขาดทุน</small></div>
+      <ul class="rlist" id="rlist"><li><span></span><span class="w">กำลังโหลด…</span></li></ul>
       <p class="cap" id="reccap">ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง</p>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
@@ -316,6 +329,7 @@
         if (prevClose) { const c = p - prevClose; $('lchg').innerHTML = `<span class="${c >= 0 ? 'up' : 'down'}">${c >= 0 ? '▲' : '▼'} ${((c / prevClose) * 100).toFixed(2)}%</span>`; }
         document.querySelector('#livepx .dot').classList.add('on');
         $('lsrc').textContent = src;
+        if (REC.open.length) renderRecent(); // the held trade's profit / loss moves with the price
       }
       function stream() {
         let ws; try { ws = new WebSocket(`wss://streaming.forexpros.com/echo/${Math.floor(Math.random() * 1000)}/${Math.random().toString(36).slice(2, 10)}/websocket`); } catch (e) { return; }
@@ -340,8 +354,22 @@
           if (closedNow()) document.querySelector('#livepx .dot').classList.remove('on');
         }).catch(() => {});
       }
+      // 🧾 latest trades one by one (19 Oct 2026): closed ones with their result (losses too) + the one held now, priced live
+      const TFN2 = { '5m': '5 นาที', '15m': '15 นาที', '30m': '30 นาที', '1h': '1 ชม.', '5h': '5 ชม.', '1d': '1 วัน', '1w': '1 สัปดาห์' };
+      const BY = { sl: 'ตัดขาดทุน', tp: 'ถึงเป้า', eod: 'หมดเวลา' };
+      const when = (ms) => new Date(ms).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+      let REC = { open: [], recent: [] };
+      function renderRecent() {
+        const box = document.getElementById('rlist'); if (!box) return;
+        const side = (t) => (t.side === 'SELL' ? 'Sell' : 'Buy');
+        const rows = REC.open.map((t) => { const d = t.side === 'SELL' ? -1 : 1, pl = px ? Math.round(d * (px - t.entry) * 100) / 100 : null;
+          return `<li class="open"><i class="dot on"></i><span class="w">กำลังถือ · ${when(t.at)} · ${side(t)} ${TFN2[t.tf] || t.tf}</span><span class="p">${f2(t.entry)} → ${px ? f2(px) : '—'}</span><b class="${pl == null ? '' : pl >= 0 ? 'up' : 'down'}">${pl == null ? '—' : money(pl)}</b></li>`; });
+        REC.recent.forEach((t) => rows.push(`<li><span>${t.pnl > 0 ? '✅' : '❌'}</span><span class="w">${when(t.at)} · ${side(t)} ${TFN2[t.tf] || t.tf}${t.risky ? '<em>เสี่ยง</em>' : ''}</span><span class="p">${f2(t.entry)} → ${f2(t.exit)} · ${BY[t.by] || ''}</span><b class="${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl)}</b></li>`));
+        box.innerHTML = rows.length ? rows.join('') : '<li><span></span><span class="w">ยังไม่มีรายการ</span></li>';
+      }
       function loadStats() {
         fetch('/api/market?blog=1&stats=1', { cache: 'no-store' }).then((r) => r.json()).then((j) => {
+          REC = { open: j.open || [], recent: (j.recent || []).slice(0, 5) }; renderRecent();
           const tiles = document.querySelectorAll('#tiles .tile');
           (j.tfs || []).forEach((t, i) => { const c = tiles[i]; if (!c) return;
             c.querySelector('.pc').textContent = t.tested != null ? `${t.tested}%` : '—';
