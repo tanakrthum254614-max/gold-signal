@@ -81,46 +81,6 @@
     .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pm-muted); display: inline-block; }
     .dot.on { background: var(--pm-up); box-shadow: 0 0 0 0 rgba(60, 207, 145, .6); animation: ping 1.6s infinite; }
     @keyframes ping { 70% { box-shadow: 0 0 0 8px rgba(60, 207, 145, 0); } 100% { box-shadow: 0 0 0 0 rgba(60, 207, 145, 0); } }
-    .rec { width: 100%; max-width: 460px; display: grid; gap: 8px; }
-    .rec .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; } /* 4 tiles since 19 Oct 2026 */
-    @media (max-width: 600px) { .rec .tiles { grid-template-columns: repeat(2, 1fr); } }
-    .rec .tile { text-align: center; padding: 12px 6px 10px; border-radius: 14px; border: 1px solid var(--pm-line); background: linear-gradient(180deg, rgba(212, 175, 95, .09), rgba(20, 20, 23, .85)); }
-    .rec .tile .pc { display: block; font-family: var(--pm-serif); font-size: 26px; font-weight: 700; line-height: 1.2; }
-    .rec .tile .tf { display: block; font-size: 12.5px; color: var(--pm-ivory); font-weight: 600; }
-    .rec .tile .nw { white-space: nowrap; } /* words stay whole in the narrow 4-up tiles (19 Oct 2026, user: "คำในกรอบตก") */
-    /* easier to read (19 Oct 2026, user: "เอาแบบเดิมกลับมา" → Buy | Sell detailed + "ปรับให้มันดูง่ายขึ้น") */
-    .rec .tile .wr { font-style: normal; color: #f2a93b; font-size: 10.5px; margin-left: 2px; }
-    .rec .tile .rl .na { color: var(--pm-muted); font-size: 10.5px; }
-    .rec .tile .sides .rl small { color: var(--pm-muted); }
-    .rec .tile .hold { margin-top: 6px; padding: 3px 4px; font-size: 11px; }
-    .rec .tile .tf { font-size: 13px; margin-bottom: 2px; }
-    .rec .tcap { margin: 6px 0 0; font-size: 11px; color: var(--pm-muted); text-align: left; }
-    @media (max-width: 979px) { .rec .tcap { text-align: center; } }
-    /* Buy | Sell side by side in each tile (19 Oct 2026) */
-    .rec .tile .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px; }
-    .rec .tile .sd { display: grid; justify-items: center; align-content: start; gap: 1px; padding: 2px 0; }
-    .rec .tile .sd + .sd { border-left: 1px solid var(--pm-line2); }
-    .rec .tile .sd > small { font-size: 11px; font-weight: 700; color: var(--pm-ivory); white-space: nowrap; }
-    .rec .tile .sd.s > small { color: #f0a0a7; } .rec .tile .sd.b > small { color: #8fe0bd; }
-    .rec .tile .sides .pc { font-size: 22px; } .rec .tile .pc.na { color: var(--pm-muted); background: none; -webkit-text-fill-color: currentColor; }
-    .rec .tile .sides .rl { margin-top: 0; font-size: 10.5px; line-height: 1.35; }
-    .rec .tile .sides .rl b.lw { font-size: 12.5px; }
-    .info .rec .tile .sides .pc { font-size: 24px; }
-    .rec .tile .lbl { display: block; font-size: 10.5px; color: var(--pm-muted); letter-spacing: .3px; margin: -2px 0 3px; }
-    .rec .tile .rl b.lw { font-size: 14px; color: var(--pm-ivory); font-variant-numeric: tabular-nums; } .rec .tile .rl small { font-size: 10.5px; }
-    .rec .tile .rl { display: block; font-size: 11.5px; color: var(--pm-muted); margin-top: 4px; line-height: 1.45; }
-    /* ⚡ tiles move in real time (19 Oct 2026, user: "อยากให้ตัวเลขขยับด้วยแบบเรียลไทม์เวลาเข้าไม้ของทามเฟรมไหนแล้วชนะหรือแพ้") */
-    .rec .tile { position: relative; transition: border-color .4s, box-shadow .4s; }
-    .rec .tile .hold { display: block; margin-top: 6px; padding: 4px 6px; border-radius: 8px; font-size: 11.5px; line-height: 1.4; color: var(--pm-text); background: rgba(60, 207, 145, .08); border: 1px solid rgba(60, 207, 145, .25); }
-    .rec .tile .hold[hidden] { display: none; }
-    .rec .tile .rk { font-style: normal; font-size: 10px; font-weight: 600; color: #f2a93b; border: 1px solid rgba(242, 169, 59, .45); border-radius: 6px; padding: 0 5px; margin-left: 3px; vertical-align: 1px; }
-    .rec .tile .hold b { font-variant-numeric: tabular-nums; }
-    .rec .tile.holding { border-color: rgba(60, 207, 145, .45); }
-    .rec .tile.flash { animation: tileFlash 1.6s ease-out; }
-    @keyframes tileFlash { 0% { box-shadow: 0 0 0 0 rgba(243, 214, 140, .0); border-color: var(--pm-gold-hi); } 25% { box-shadow: 0 0 22px 2px rgba(243, 214, 140, .45); border-color: var(--pm-gold-hi); } 100% { box-shadow: 0 0 0 0 rgba(243, 214, 140, 0); } }
-    @media (prefers-reduced-motion: reduce) { .rec .tile.flash { animation: none; } }
-    .rec .cap { margin: 0; text-align: center; font-size: 12px; color: var(--pm-muted); line-height: 1.6; }
-    .rec .cap a { color: var(--pm-gold-hi); }
     .up { color: var(--pm-up); } .down { color: var(--pm-down); }
     /* 🧾 latest trades, one by one, live (19 Oct 2026, user: "อยากให้เรียลไทม์แต่ละไม้ที่ให้เข้า") */
     .rlist { list-style: none; margin: 0; padding: 0; width: 100%; display: grid; gap: 0; border: 1px solid var(--pm-line2); border-radius: 12px; background: rgba(20, 20, 23, .85); overflow: hidden; }
@@ -143,13 +103,13 @@
     .rise { animation: rise .7s ease-out both; } .rise.d1 { animation-delay: .08s; } .rise.d2 { animation-delay: .16s; } .rise.d3 { animation-delay: .24s; }
     @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
     @media (prefers-reduced-motion: reduce) { .glow, .rise, .dot.on { animation: none; } }
-    @media (max-width: 400px) { .rec .tile .pc { font-size: 22px; } .headline { font-size: 23px; } }
+    @media (max-width: 400px) { .headline { font-size: 23px; } }
     /* 📐 the sign-up box shows on opening (user, 17 Oct 2026: "เวลาเปิดเข้ามามันไม่เห็นปุ่มสมัครสมาชิกเลย ต้องเลื่อนลงอย่างเดียว")
        phone: one column, the box right under the headline and steps, record tiles + Demo after it ·
        computer: two columns — info on the left, tabs + box on the right, FAQ underneath */
     .info, .form { display: contents; }
     .pm-brand { order: 1; } .livepx { order: 2; } .headline { order: 3; } .steps { order: 4; } .lead { order: 5; } #status { order: 7; } .glow { order: 8; }
-    .rec { order: 9; } .demo { order: 10; } .faq { order: 11; } .trust { order: 12; } .privacy { order: 13; }
+    .demo { order: 10; } .faq { order: 11; } .trust { order: 12; } .privacy { order: 13; }
     @media (max-width: 979px) {
       body { padding-top: 14px; } main { gap: 12px; }
       .glow { width: 100%; } .panel { padding: 8px 8px 0; } .panel > #signIn, #signIn > div { width: 100%; } #signIn .cl-rootBox, #signIn .cl-cardBox { width: 100% !important; max-width: none !important; }
@@ -169,7 +129,6 @@
       .lead { font-size: 12.5px; }
       .panel { padding: 6px 6px 0; border-radius: 18px; } .glow { border-radius: 19.5px; }
       .tabs { padding: 4px; border-radius: 11px; } .tabs button { padding: 8px; font-size: 13.5px; border-radius: 8px; }
-      .rec .tile { padding: 9px 4px 8px; } .rec .tile .pc { font-size: 20px; } .rec .tile .tf { font-size: 11.5px; } .rec .tile .rl { font-size: 10.5px; } .rec .cap { font-size: 11px; }
       .demo { font-size: 13px; padding: 10px 12px; }
       .faq-head h2 { font-size: 18px; } .faq summary { padding: 11px 13px; font-size: 13.5px; gap: 11px; } .faq .ic { width: 32px; height: 32px; } .faq .ic svg, .faq .chev { width: 16px; height: 16px; } .faq details p { font-size: 12.5px; padding: 0 14px 13px 56px; }
       .pm .trust span { padding: 6px 11px; font-size: 12px; } .privacy { font-size: 11.5px; }
@@ -182,8 +141,7 @@
       .info { justify-items: start; text-align: left; max-width: 560px; justify-self: end; width: 100%; }
       .form { justify-items: center; }
       .info .headline { text-align: left; font-size: 44px; line-height: 1.3; margin: 0; }
-      .info .lead { text-align: left; } .info .steps { max-width: 520px; } .info .rec { max-width: none; } .info .rec .cap { text-align: left; }
-      .info .rec .tile .pc { font-size: 32px; }
+      .info .lead { text-align: left; } .info .steps { max-width: 520px; }
       .info .demo { width: auto; max-width: none; text-align: left; padding: 10px 16px; }
       .faq, .trust, .privacy { grid-column: 1 / -1; justify-self: center; }
       .privacy { margin-bottom: 32px; }
@@ -197,15 +155,6 @@
     <a class="pm-brand" href="/"><img src="logo.svg" alt=""><span><b>GOLD SIGNAL</b><small>XAU/USD · Thailand</small></span></a>
     <div class="livepx rise" id="livepx"><i class="dot"></i><small>XAU/USD</small><b id="lpx">—</b><span id="lchg"></span><small id="lsrc">กำลังเชื่อมต่อ…</small></div>
     <h1 class="headline rise d1">สัญญาณทองคำ</h1>
-    <section class="rec rise d2" aria-label="ผลทดสอบและผลจริง">
-      <div class="tiles" id="tiles">
-        <div class="tile" data-tf="5m"><span class="tf">5 นาที</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b><span class="rl">กำลังโหลด…</span></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b><span class="rl"></span></div></div><span class="hold" hidden></span></div>
-        <div class="tile" data-tf="15m"><span class="tf">15 นาที</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b><span class="rl">กำลังโหลด…</span></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b><span class="rl"></span></div></div><span class="hold" hidden></span></div>
-        <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b><span class="rl">กำลังโหลด…</span></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b><span class="rl"></span></div></div><span class="hold" hidden></span></div>
-        <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><div class="sides"><div class="sd b"><small>Buy</small><b class="pc gold-text">—</b><span class="rl">กำลังโหลด…</span></div><div class="sd s"><small>Sell</small><b class="pc gold-text">—</b><span class="rl"></span></div></div><span class="hold" hidden></span></div>
-      </div>
-      <p class="tcap">% ตัวใหญ่ = ชนะจากการทดสอบย้อนหลัง 2 ปี · จริง = ผลที่ระบบบันทึก (ชนะ/ทั้งหมด) · ⚠ = สัญญาณเสี่ยง</p>
-    </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
       <li class="on"><b>สร้างบัญชี</b>อีเมลหรือ Google</li>
       <li><b>เลือกแพ็กเกจ</b>149 ฿/เดือน · 1,290 ฿/ปี</li>
@@ -350,7 +299,6 @@
     (() => {
       const $ = (id) => document.getElementById(id);
       const f2 = (v) => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      const money = (v) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
       let px = null, prevClose = null, lastTick = 0;
       function showPrice(p, src) {
         if (!(p > 0)) return;
@@ -360,7 +308,6 @@
         if (prevClose) { const c = p - prevClose; $('lchg').innerHTML = `<span class="${c >= 0 ? 'up' : 'down'}">${c >= 0 ? '▲' : '▼'} ${((c / prevClose) * 100).toFixed(2)}%</span>`; }
         document.querySelector('#livepx .dot').classList.add('on');
         $('lsrc').textContent = src;
-        if (REC.open.length || (REC.openTiles || []).length) { renderRecent(); renderHolds(); } // the held trade's profit / loss moves with the price
       }
       function stream() {
         let ws; try { ws = new WebSocket(`wss://streaming.forexpros.com/echo/${Math.floor(Math.random() * 1000)}/${Math.random().toString(36).slice(2, 10)}/websocket`); } catch (e) { return; }
@@ -385,57 +332,8 @@
           if (closedNow()) document.querySelector('#livepx .dot').classList.remove('on');
         }).catch(() => {});
       }
-      // 🧾 latest trades one by one (19 Oct 2026): closed ones with their result (losses too) + the one held now, priced live
-      const TFN2 = { '5m': '5 นาที', '15m': '15 นาที', '30m': '30 นาที', '1h': '1 ชม.', '5h': '5 ชม.', '1d': '1 วัน', '1w': '1 สัปดาห์' };
-      const BY = { sl: 'ตัดขาดทุน', tp: 'ถึงเป้า', eod: 'หมดเวลา' };
-      const when = (ms) => new Date(ms).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-      let REC = { open: [], recent: [] };
-      function renderRecent() {
-        const box = document.getElementById('rlist'); if (!box) return;
-        const side = (t) => (t.side === 'SELL' ? 'Sell' : 'Buy');
-        const rows = REC.open.map((t) => { const d = t.side === 'SELL' ? -1 : 1, pl = px ? Math.round(d * (px - t.entry) * 100) / 100 : null;
-          return `<li class="open"><i class="dot on"></i><span class="w">กำลังถือ · ${when(t.at)} · ${side(t)} ${TFN2[t.tf] || t.tf}</span><span class="p">${f2(t.entry)} → ${px ? f2(px) : '—'}</span><b class="${pl == null ? '' : pl >= 0 ? 'up' : 'down'}">${pl == null ? '—' : money(pl)}</b></li>`; });
-        REC.recent.forEach((t) => rows.push(`<li><span>${t.pnl > 0 ? '✅' : '❌'}</span><span class="w">${when(t.at)} · ${side(t)} ${TFN2[t.tf] || t.tf}${t.risky ? '<em>เสี่ยง</em>' : ''}</span><span class="p">${f2(t.entry)} → ${f2(t.exit)} · ${BY[t.by] || ''}</span><b class="${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl)}</b></li>`));
-        if (rows.length < 5) rows.push('<li><span></span><span class="w" style="color:var(--pm-muted)">ระบบหลักออกสัญญาณไม่บ่อย (1 ชม. ~2–3 ครั้ง/สัปดาห์ · 5 ชม. ~1 · 1 วัน ~1 ต่อ 3 สัปดาห์)</span></li>');
-        box.innerHTML = rows.join('');
-      }
-      function loadStats() {
-        fetch('/api/market?blog=1&stats=1', { cache: 'no-store' }).then((r) => r.json()).then((j) => {
-          REC = { open: j.open || [], openTiles: j.openTiles || [], recent: (j.recent || []).slice(0, 5) }; renderRecent(); renderHolds();
-        const o = j.others, rn = document.getElementById('rnote');
-        if (rn && o && o.live) rn.innerHTML = `กรอบเสี่ยง (5–30 นาที · 1 สัปดาห์ · Sell): ผลจริง <b>${o.live}</b> รายการ · ชนะ ${o.wins} · <b class="${o.pnl >= 0 ? 'up' : 'down'}">${money(o.pnl)}</b>/ออนซ์ — ยังให้จุดเข้า ติดป้ายเสี่ยง`;
-          const tiles = document.querySelectorAll('#tiles .tile');
-          (j.tiles || []).forEach((t, i) => { const c = tiles[i]; if (!c) return; // 5m / 30m / 1h
-            // a trade closed (win or loss) since the last look → the tile flashes gold
-            const sig = JSON.stringify([t.buy, t.sell]); if (c.dataset.sig && c.dataset.sig !== sig) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.sig = sig;
-            const one = (box, x) => { if (!box) return; const pc = box.querySelector('.pc'), rl = box.querySelector('.rl'), lab = box.querySelector('small');
-              lab.innerHTML = `${box.classList.contains('s') ? 'Sell' : 'Buy'}${x && x.risky ? ' <i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}`;
-              if (!x) { pc.textContent = '—'; pc.classList.add('na'); rl.innerHTML = '<span class="nw na">ไม่มีสัญญาณ</span>'; return; }
-              pc.classList.remove('na'); pc.textContent = `${x.tested}%`;
-              rl.innerHTML = x.live ? `<span class="nw">จริง <b class="lw">${Math.round((x.wins / x.live) * 100)}%</b></span><br><small class="nw">ชนะ ${x.wins}/${x.live}</small>` : '<span class="nw na">ยังไม่มีผลจริง</span>'; };
-            one(c.querySelector('.sd.b'), t.buy || (t.tested != null ? t : null)); one(c.querySelector('.sd.s'), t.sell || null); });
-          // the whole record too, risky timeframes included — public numbers are never cherry-picked
-          const a = j.all;
-          if (a && a.live && $('reccap')) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;
-        }).catch(() => document.querySelectorAll('#tiles .rl').forEach((x) => { x.textContent = 'แสดงผลจริงหลังเข้าสู่ระบบ'; }));
-      }
-      // the trade a tile's timeframe holds right now, priced with the live gold price every tick
-      const TILE_TF = ['5m', '15m', '30m', '1h'];
-      function renderHolds() {
-        const tiles = document.querySelectorAll('#tiles .tile');
-        TILE_TF.forEach((tf, i) => { const c = tiles[i]; if (!c) return; const h = c.querySelector('.hold'); if (!h) return;
-          const t = (REC.openTiles || []).find((x) => x.tf === tf);
-          c.classList.toggle('holding', !!t);
-          if (!t) { if (!h.hidden) { h.hidden = true; h.innerHTML = ''; } return; }
-          const d = t.side === 'SELL' ? -1 : 1, pl = px ? Math.round(d * (px - t.entry) * 100) / 100 : null;
-          h.hidden = false;
-          // limit entry waiting for its price (19 Oct 2026)
-          if (t.wait) { h.innerHTML = `<span class="nw"><i class="dot"></i> รอเข้า ${t.side === 'SELL' ? 'Sell' : 'Buy'} ${f2(t.entry)}</span>`; return; }
-          h.innerHTML = `<span class="nw"><i class="dot on"></i> ถือ ${t.side === 'SELL' ? 'Sell' : 'Buy'} · <b class="${pl == null ? '' : pl >= 0 ? 'up' : 'down'}">${pl == null ? '—' : money(pl)}</b></span>`; });
-      }
-      loadStats(); setInterval(loadStats, 30e3); // the recorder checks every ~5 minutes; 30 s keeps the tiles close to it
       stream(); setTimeout(fallback, 4000); setInterval(fallback, 10e3);
-      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { loadStats(); fallback(); } });
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { fallback(); } });
 
       // faint gold candles drifting left behind the page (made-up shapes, decoration only — not a price chart)
       const cv = $('bg'), ctx = cv.getContext('2d'), W = 14, still = matchMedia('(prefers-reduced-motion: reduce)').matches;
