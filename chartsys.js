@@ -46,6 +46,12 @@
     '1w': { frames: [['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '4 ปี', long: true, hold: 84 * DAY, few: 23,
       buy: { risky: 'รายการทดสอบน้อย และผลช่วงล่าสุดไม่สม่ำเสมอ', th: 1, tp1: true, mult: 20, win: 70, q: [196, 737, 1167, 296] } },
   };
+  // off (19 Oct 2026 — user, screenshot of the public trade list: "มันดูไม่น่าเชื่อถือเลย ติดลบมากกว่าบวกอีก" → saw previews
+  // A / B / C → "ทำAมา"): every ⚠️ risky side stops giving entries — live 7–16 Oct 36 risky trades, 14 wins, −$79.66,
+  // and the research (qualtest / confluence / exitlab / time filters, ~300 variants) found no fix. Entries, records and
+  // LINE now only on 1h / 5h / 1d BUY (profitable in all 4 test periods). Their charts, arrows and test numbers stay.
+  // To bring a side back: remove this loop (or delete .off on that side).
+  for (const s of Object.values(SYS)) for (const k of ['buy', 'sell']) if (s[k] && s[k].risky) s[k].off = 'เหลือเฉพาะกรอบที่ทดสอบผ่านทุกช่วง (19 ต.ค.)';
   const NONE = { ...INTRA.RULE, threshold: 99, sides: 'both', noChase: false }; // score only; entries decided by dirOf
   // TP $ before × mult: TP1 only, or TP $15/20/30 — the targets the tests used (indlab / monthly / qualtest). Not
   // INTRA.RULE.tpUsd: that became [15] on 9 Oct 2026 (old 30m system → TP1) and had silently cut 1h, 5h and 5m SELL to

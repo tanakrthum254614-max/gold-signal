@@ -216,7 +216,7 @@ function ago(ms) {
     else if (CHARTSYS.unconfirmed(sys, d)) { const c = CHARTSYS.CONFIRM[(d.score > 0 ? B : S).confirm]; head = `⏸ คะแนนถึง ${signedScore(d.score)} แต่ ${c.name} ยังไม่ยืนยัน${d.score > 0 ? 'ขาขึ้น' : 'ขาลง'} — รอ${c.wait}`; cls = 'near'; }
     else if (!sys.long && d.news) { head = '⏸ ช่วงข่าวแรง — งดเข้า (พื้นหลังเหลือง)'; cls = 'wait'; }
     else if (!sys.long && d.lastHour) { head = '⏸ ใกล้ตลาดปิด — งดเปิดรายการใหม่'; cls = 'wait'; }
-    else if (sellNo) { head = `⚠️ แนวโน้มลง ${signedScore(d.score)} แต่กรอบนี้ไม่ให้สัญญาณ SELL — ฝั่งขายทดสอบไม่ผ่าน · ใช้ดูทิศเท่านั้น (SELL มีแค่ <a href="#" data-tf="5m">กรอบ 5 นาที</a> — ติดป้ายเสี่ยง)`; cls = 'no'; waitOnly = true; }
+    else if (sellNo) { head = `⚠️ แนวโน้มลง ${signedScore(d.score)} แต่กรอบนี้ไม่ให้สัญญาณ SELL — ฝั่งขายทดสอบไม่ผ่าน · ใช้ดูทิศเท่านั้น (ตอนนี้ไม่มีกรอบไหนให้สัญญาณ SELL — จุดเข้าอยู่ที่ Buy <a href="#" data-tf="1h">1 ชม.</a> · <a href="#" data-tf="5h">5 ชม.</a> · <a href="#" data-tf="1d">1 วัน</a>)`; cls = 'no'; waitOnly = true; }
     else if (Bon && d.score > 0 && d.score >= B.th - 2) { head = `⏳ ใกล้สัญญาณ BUY — คะแนน ${signedScore(d.score)} ขาดอีก ${B.th - d.score}`; cls = 'near'; waitOnly = true; }
     else if (Son && d.score < 0 && d.score <= -(S.th - 2)) { head = `⏳ ใกล้สัญญาณ SELL — คะแนน ${signedScore(d.score)} ขาดอีก ${S.th + d.score}`; cls = 'near'; waitOnly = true; }
     else { head = `⏸ รอก่อน — คะแนน ${signedScore(d.score)} · BUY ต้อง +${B.th}${Son ? ` · SELL ต้อง −${S.th}` : ''}`; cls = 'wait'; waitOnly = true; }

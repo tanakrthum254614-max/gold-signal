@@ -171,8 +171,9 @@
         <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 5 ชั่วโมง</span><span class="rl">กำลังโหลด…</span></div>
         <div class="tile"><span class="pc gold-text">—</span><span class="tf">Buy · 1 วัน</span><span class="rl">กำลังโหลด…</span></div>
       </div>
-      <div class="rhead">รายการล่าสุด<small><i class="dot on"></i> อัปเดตสด · ทั้งกำไรและขาดทุน</small></div>
+      <div class="rhead">รายการล่าสุด · ระบบหลัก 1 ชม. / 5 ชม. / 1 วัน<small><i class="dot on"></i> อัปเดตสด · ทั้งกำไรและขาดทุน</small></div>
       <ul class="rlist" id="rlist"><li><span></span><span class="w">กำลังโหลด…</span></li></ul>
+      <p class="cap" id="rnote"></p>
       <p class="cap" id="reccap">ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง</p>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
@@ -365,11 +366,14 @@
         const rows = REC.open.map((t) => { const d = t.side === 'SELL' ? -1 : 1, pl = px ? Math.round(d * (px - t.entry) * 100) / 100 : null;
           return `<li class="open"><i class="dot on"></i><span class="w">กำลังถือ · ${when(t.at)} · ${side(t)} ${TFN2[t.tf] || t.tf}</span><span class="p">${f2(t.entry)} → ${px ? f2(px) : '—'}</span><b class="${pl == null ? '' : pl >= 0 ? 'up' : 'down'}">${pl == null ? '—' : money(pl)}</b></li>`; });
         REC.recent.forEach((t) => rows.push(`<li><span>${t.pnl > 0 ? '✅' : '❌'}</span><span class="w">${when(t.at)} · ${side(t)} ${TFN2[t.tf] || t.tf}${t.risky ? '<em>เสี่ยง</em>' : ''}</span><span class="p">${f2(t.entry)} → ${f2(t.exit)} · ${BY[t.by] || ''}</span><b class="${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl)}</b></li>`));
-        box.innerHTML = rows.length ? rows.join('') : '<li><span></span><span class="w">ยังไม่มีรายการ</span></li>';
+        if (rows.length < 5) rows.push('<li><span></span><span class="w" style="color:var(--pm-muted)">ระบบหลักออกสัญญาณไม่บ่อย (1 ชม. ~2–3 ครั้ง/สัปดาห์ · 5 ชม. ~1 · 1 วัน ~1 ต่อ 3 สัปดาห์)</span></li>');
+        box.innerHTML = rows.join('');
       }
       function loadStats() {
         fetch('/api/market?blog=1&stats=1', { cache: 'no-store' }).then((r) => r.json()).then((j) => {
           REC = { open: j.open || [], recent: (j.recent || []).slice(0, 5) }; renderRecent();
+        const o = j.others, rn = document.getElementById('rnote');
+        if (rn && o && o.live) rn.innerHTML = `กรอบเสี่ยง (5–30 นาที · 1 สัปดาห์ · Sell): ผลจริง <b>${o.live}</b> รายการ · ชนะ ${o.wins} · <b class="${o.pnl >= 0 ? 'up' : 'down'}">${money(o.pnl)}</b>/ออนซ์ — <b>หยุดให้จุดเข้าแล้ว</b> ตั้งแต่ 19 ต.ค.`;
           const tiles = document.querySelectorAll('#tiles .tile');
           (j.tfs || []).forEach((t, i) => { const c = tiles[i]; if (!c) return;
             c.querySelector('.pc').textContent = t.tested != null ? `${t.tested}%` : '—';

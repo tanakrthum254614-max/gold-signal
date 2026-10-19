@@ -134,7 +134,7 @@
       </div>
       <div class="card holding" id="holding" hidden></div>
       <div class="card others" id="others" hidden></div>
-      <div class="card recent"><div class="rhead">รายการล่าสุด<small><i class="dot on"></i> อัปเดตสด · ทุกกรอบเวลา ทั้งกำไรและขาดทุน</small></div><ul class="rlist" id="rlist"><li><span></span><span class="w">กำลังโหลด…</span></li></ul></div>
+      <div class="card recent"><div class="rhead">รายการล่าสุด · ระบบหลัก 1 ชม. / 5 ชม. / 1 วัน<small><i class="dot on"></i> อัปเดตสด · ทั้งกำไรและขาดทุน</small></div><ul class="rlist" id="rlist"><li><span></span><span class="w">กำลังโหลด…</span></li></ul></div>
       <p class="fine" style="text-align:center;margin-top:10px"><i class="dot"></i> อัปเดตอัตโนมัติทุก 30 วินาที · ล่าสุด <span class="mono" id="upd">—</span></p>
       <p class="fine" style="text-align:center;margin-top:18px">ทดสอบหลังหักสเปรด $0.4 · ผลจริงต่อทอง 1 ออนซ์ ก่อนหักสเปรด · ผลในอดีตไม่รับประกันผลในอนาคต</p>
     </div></section>
@@ -251,7 +251,8 @@
         const rows = REC.open.map((t) => { const d = t.side === 'SELL' ? -1 : 1, pl = px ? Math.round(d * (px - t.entry) * 100) / 100 : null;
           return `<li class="open"><i class="dot on"></i><span class="w">กำลังถือ · ${when(t.at)} · ${side(t)} ${TFN2[t.tf] || t.tf}</span><span class="p">${f2(t.entry)} → ${px ? f2(px) : '—'}</span><b class="${pl == null ? '' : pl >= 0 ? 'up' : 'down'}">${pl == null ? '—' : money(pl)}</b></li>`; });
         REC.recent.forEach((t) => rows.push(`<li><span>${t.pnl > 0 ? '✅' : '❌'}</span><span class="w">${when(t.at)} · ${side(t)} ${TFN2[t.tf] || t.tf}${t.risky ? '<em>เสี่ยง</em>' : ''}</span><span class="p">${f2(t.entry)} → ${f2(t.exit)} · ${BY[t.by] || ''}</span><b class="${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl)}</b></li>`));
-        box.innerHTML = rows.length ? rows.join('') : '<li><span></span><span class="w">ยังไม่มีรายการ</span></li>';
+        if (rows.length < 5) rows.push('<li><span></span><span class="w" style="color:var(--pm-muted)">ระบบหลักออกสัญญาณไม่บ่อย (1 ชม. ~2–3 ครั้ง/สัปดาห์ · 5 ชม. ~1 · 1 วัน ~1 ต่อ 3 สัปดาห์)</span></li>');
+        box.innerHTML = rows.join('');
       }
     function loadStats() {
       fetch('/api/market?blog=1&stats=1', { cache: 'no-store' }).then((r) => r.json()).then((j) => {
@@ -271,8 +272,8 @@
         const o = j.others, a = j.all, box = document.getElementById('others');
         if (o && o.live) {
           box.hidden = false;
-          box.innerHTML = `<b>กรอบเวลาความเสี่ยงสูง</b> (5–30 นาที · 1 สัปดาห์ · Sell): ผลจริง <b>${o.live}</b> รายการ · ชนะ <b>${o.wins}</b> · <b class="${o.pnl >= 0 ? 'up' : 'down'}">${money(o.pnl)}</b> ต่อออนซ์`
-            + `<br><span class="muted">ผลรวมทุกรายการที่ระบบบันทึก: ${a.live} รายการ · ชนะ ${a.wins} (${Math.round((a.wins / a.live) * 100)}%) · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ — กรอบเวลาความเสี่ยงสูงไม่ส่งแจ้งเตือน LINE และควรใช้ขนาดการซื้อขายที่เล็กลง</span>`;
+          box.innerHTML = `<b>กรอบเสี่ยง</b> (5–30 นาที · 1 สัปดาห์ · Sell) <b>หยุดให้จุดเข้าแล้ว</b> ตั้งแต่ 19 ต.ค. · ผลจริงเดิม <b>${o.live}</b> รายการ · ชนะ <b>${o.wins}</b> · <b class="${o.pnl >= 0 ? 'up' : 'down'}">${money(o.pnl)}</b> ต่อออนซ์`
+            + `<br><span class="muted">ผลรวมทุกรายการที่ระบบบันทึก: ${a.live} รายการ · ชนะ ${a.wins} (${Math.round((a.wins / a.live) * 100)}%) · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ — จากนี้ให้จุดเข้า บันทึก และแจ้ง LINE เฉพาะกรอบ 1 ชม. / 5 ชม. / 1 วัน ที่ทดสอบผ่านทุกช่วง</span>`;
         }
         if (j.since) document.getElementById('since').textContent = `(${new Date(j.since).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })})`;
       }).catch(() => document.querySelectorAll('#stats .live').forEach((x) => { if (/กำลังโหลด/.test(x.textContent)) x.textContent = 'ดูผลจริงได้หลังเข้าสู่ระบบ'; }));
