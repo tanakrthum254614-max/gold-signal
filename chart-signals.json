@@ -1704,9 +1704,10 @@
    "fillBy": 1792461600000,
    "limit": true,
    "tf": "5m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1792458021571
+ "updatedAt": 1792458322111
 }
