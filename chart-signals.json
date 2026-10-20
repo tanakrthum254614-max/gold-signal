@@ -1561,8 +1561,74 @@
    "closedBy": "eod",
    "exitPrice": 4142.66,
    "exitAt": 1792438800000
+  },
+  {
+   "id": "5m-1792454400000",
+   "createdAt": 1792454400000,
+   "expiresAt": 1792525500000,
+   "status": "pending",
+   "entryAt": 1792454400000,
+   "side": "SELL",
+   "entry": 4137.49,
+   "sl": 4152.49,
+   "tps": [
+    4133.74,
+    4122.49,
+    4107.49
+   ],
+   "tp": 4133.74,
+   "score": -5,
+   "priceAtSignal": 4132.49,
+   "fillBy": 1792458000000,
+   "limit": true,
+   "tf": "5m",
+   "risky": true
+  },
+  {
+   "id": "15m-1792454400000",
+   "createdAt": 1792454400000,
+   "expiresAt": 1792525500000,
+   "status": "pending",
+   "entryAt": 1792454400000,
+   "side": "SELL",
+   "entry": 4136.97,
+   "sl": 4151.97,
+   "tps": [
+    4133.22,
+    4121.97,
+    4106.97
+   ],
+   "tp": 4133.22,
+   "score": -4,
+   "priceAtSignal": 4131.97,
+   "fillBy": 1792461600000,
+   "limit": true,
+   "tf": "15m",
+   "risky": true
+  },
+  {
+   "id": "30m-1792454400000",
+   "createdAt": 1792454400000,
+   "expiresAt": 1792525500000,
+   "status": "pending",
+   "entryAt": 1792454400000,
+   "side": "SELL",
+   "entry": 4136.97,
+   "sl": 4151.97,
+   "tps": [
+    4133.22,
+    4121.97,
+    4106.97
+   ],
+   "tp": 4133.22,
+   "score": -5,
+   "priceAtSignal": 4131.97,
+   "fillBy": 1792465200000,
+   "limit": true,
+   "tf": "30m",
+   "risky": true
   }
  ],
  "brakes": {},
- "updatedAt": 1792439121708
+ "updatedAt": 1792454421833
 }
