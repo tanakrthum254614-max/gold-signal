@@ -15,7 +15,7 @@ import { blogGET } from '../lib/blog.mjs'; // public /blog pages ride on this fu
 
 const CONFIG = 'marketing/config.json', DRAFTS = 'marketing/drafts.json', QUEUE = 'marketing/queue.json', BLOG = 'content/blog.json';
 const RAW = 'https://raw.githubusercontent.com/tanakrthum254614-max/gold-signal';
-const SITE = () => (process.env.SITE_URL || 'https://gold-signal-ten.vercel.app').replace(/\/$/, '');
+const SITE = () => (process.env.SITE_URL || 'https://gold-signal.gold-signal.workers.dev').replace(/\/$/, '');
 const MODEL = () => process.env.AI_MARKET_MODEL || process.env.AI_COACH_MODEL || 'google/gemini-2.5-flash';
 const RISK = '⚠️ ผลในอดีตไม่รับประกันผลในอนาคต · การซื้อขายทองมีความเสี่ยงสูง อาจขาดทุนได้ · ไม่ใช่คำแนะนำการลงทุน';
 const TFL = { '1h': '1 ชม.', '5h': '5 ชม.', '1d': '1 วัน' };
@@ -125,7 +125,7 @@ export async function GET(request) {
   if (!m || !isAdmin(m)) return fail('เฉพาะแอดมิน', 403);
   const [cfg, all, q] = await Promise.all([readJson(CONFIG, {}), readJson(DRAFTS, { drafts: [] }), readJson(QUEUE, { items: [] })]);
   return json({ ok: true, config: { live: !!cfg.live, at: cfg.at || 0 }, drafts: all.drafts || [], queue: (q.items || []).slice(-10).reverse(),
-    fb: !!((process.env.FB_PAGE_ID || '').trim() && (process.env.FB_PAGE_TOKEN || '').trim()), site: SITE(), siteFinal: !/vercel\.app/.test(SITE()), cron: !!(process.env.CRON_SECRET || '').trim() });
+    fb: !!((process.env.FB_PAGE_ID || '').trim() && (process.env.FB_PAGE_TOKEN || '').trim()), site: SITE(), siteFinal: !/vercel\.app|workers\.dev/.test(SITE()), cron: !!(process.env.CRON_SECRET || '').trim() });
 }
 
 export async function POST(request) {

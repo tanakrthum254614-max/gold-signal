@@ -29,8 +29,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           # web push to members' devices (scripts/push.js) — skipped while these are empty
-          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
-          SITE_URL: https://gold-signal-ten.vercel.app
+          SITE_URL: https://gold-signal.gold-signal.workers.dev
         run: bash scripts/gurus-live.sh

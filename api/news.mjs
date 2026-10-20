@@ -20,7 +20,7 @@ const tag = (x, name) => { const m = x.match(new RegExp(`<${name}[^>]*>([\\s\\S]
 const safe = (u, host) => { try { const p = new URL(u); return p.protocol === 'https:' && host.test(p.hostname) ? p.href : ''; } catch (e) { return ''; } };
 
 async function feed([cat, label, url]) {
-  const r = await fetch(url, { headers: { 'user-agent': 'Mozilla/5.0 (compatible; GoldSignal/1.0; +https://gold-signal-ten.vercel.app)' }, signal: AbortSignal.timeout(8000) });
+  const r = await fetch(url, { headers: { 'user-agent': 'Mozilla/5.0 (compatible; GoldSignal/1.0; +https://gold-signal.gold-signal.workers.dev)' }, signal: AbortSignal.timeout(8000) });
   if (!r.ok) throw new Error(`${cat} ${r.status}`);
   const xml = await r.text();
   return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map(([, x]) => {

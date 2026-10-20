@@ -9,7 +9,7 @@
 import { member, isAdmin, readJson, writeJson, json, fail, body, PRO_CONFIG, clearProCache, proEnabled } from '../lib/gs.mjs';
 import { stripe, hasLiveKey, liveConfig, clearLiveCache, LIVE_FILE, loadPro, savePro, giftExisting } from '../lib/stripe.mjs';
 
-const SITE = () => (process.env.SITE_URL || 'https://gold-signal-ten.vercel.app').replace(/\/$/, '');
+const SITE = () => (process.env.SITE_URL || 'https://gold-signal.gold-signal.workers.dev').replace(/\/$/, '');
 const EVENTS = ['checkout.session.completed', 'checkout.session.async_payment_succeeded', 'invoice.paid', 'customer.subscription.updated', 'customer.subscription.deleted', 'charge.refunded']; // + refunds 17 Oct 2026
 
 export async function status() {

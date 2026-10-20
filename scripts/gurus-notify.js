@@ -23,7 +23,7 @@ function text(x) {
   if (!items.length) return console.log('guru alerts: nothing new');
   let follows = {};
   try {
-    const { get } = require('@vercel/blob');
+    const { get } = require('./blob');
     const r = await get('access/guru-follows.json', { access: 'private', useCache: false });
     if (r && r.statusCode === 200) follows = JSON.parse(await new Response(r.stream).text()).follows || {};
   } catch (e) { console.log(`guru alerts: no follow list (${e.message}) — everyone gets all`); }

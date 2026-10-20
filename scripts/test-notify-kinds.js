@@ -3,7 +3,7 @@
 const assert = require('assert');
 process.env.SEND = 'true';
 process.env.LINE_CHANNEL_ACCESS_TOKEN = 'test';
-delete process.env.OUTBOX; delete process.env.LINE_OWNER_ID; delete process.env.BLOB_READ_WRITE_TOKEN;
+delete process.env.OUTBOX; delete process.env.LINE_OWNER_ID; delete process.env.SUPABASE_SERVICE_KEY;
 let world, calls;
 global.fetch = async (url, opts = {}) => {
   const u = String(url), j = (x) => ({ ok: true, status: 200, json: async () => x, text: async () => JSON.stringify(x) });

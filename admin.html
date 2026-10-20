@@ -366,7 +366,7 @@
       try { mk = await api('/api/market'); } catch (e) { $('mkState').textContent = e.message; return; }
       const c = mk.config;
       $('mkState').innerHTML = `${c.live ? '🟢 <b>เปิดโพสต์อยู่</b>' : '⚪ <b>ปิดการโพสต์</b> — สร้างร่างดูได้ แต่ยังไม่ส่งออกไปไหน (เปิดหลังซื้อโดเมน .com)'}
-        · ลิงก์ในโพสต์: <code>${esc(mk.site)}</code>${mk.siteFinal ? '' : ' (ยังเป็น vercel.app)'}
+        · ลิงก์ในโพสต์: <code>${esc(mk.site)}</code>${mk.siteFinal ? '' : ' (ยังไม่ใช่โดเมน .com)'}
         · Facebook: ${mk.fb ? '✅ เชื่อมแล้ว' : '⬜ ยังไม่เชื่อม'} · ร่างอัตโนมัติทุกเช้าวันทำการ: ${mk.cron ? (c.live ? '✅' : 'รอเปิดโพสต์') : '⬜ ยังไม่ตั้ง CRON_SECRET'}`
         + (mk.queue.length ? `<br>คิว LINE: ${mk.queue.slice(0, 3).map((x) => `${when(x.at)} ${x.status === 'sent' ? '✅ ส่งแล้ว' : x.status === 'waiting' ? '⏳ รอโควตา' : x.status === 'failed' ? '❌ ' + esc(x.why || '') : '⏳ รอส่ง'}`).join(' · ')}` : '');
       $('mkLive').textContent = c.live ? '⏸ ปิดการโพสต์' : '🚀 เปิดใช้การตลาด';

@@ -9,11 +9,11 @@ const FILE = 'access/price-alerts.json';
 const f2 = (v) => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 (async () => {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return console.log('price alerts: no Blob token — skipped');
+  if (!require('./blob').ready()) return console.log('price alerts: no Blob token — skipped');
   const data = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
   const bars = (data.m15 || []).map((b) => ({ t: b[0], h: b[2], l: b[3], c: b[4] }));
   if (!bars.length) return console.log('price alerts: no candles');
-  const { get, put } = require('@vercel/blob');
+  const { get, put } = require('./blob');
   const r = await get(FILE, { access: 'private', useCache: false });
   if (!r || r.statusCode !== 200) return console.log('price alerts: none set');
   const all = JSON.parse(await new Response(r.stream).text());

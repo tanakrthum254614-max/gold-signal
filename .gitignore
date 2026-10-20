@@ -8,3 +8,6 @@ state/
 outbox.json
 
 .env*
+dist/
+.wrangler/
+.dev.vars

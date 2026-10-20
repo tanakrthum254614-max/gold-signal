@@ -1,6 +1,6 @@
 // Sends a text file to the admins only: web push to devices marked admin: true, and LINE to the owner when
 // LINE_OWNER_ID is set (push API — never a broadcast). node scripts/admin-notify.js <file>
-// Env: BLOB_READ_WRITE_TOKEN, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, LINE_CHANNEL_ACCESS_TOKEN, LINE_OWNER_ID, SEND=true
+// Env: SUPABASE_URL, SUPABASE_SERVICE_KEY, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, LINE_CHANNEL_ACCESS_TOKEN, LINE_OWNER_ID, SEND=true
 const fs = require('fs');
 const { push } = require('./push.js');
 (async () => {

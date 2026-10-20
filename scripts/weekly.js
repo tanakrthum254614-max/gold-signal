@@ -12,7 +12,7 @@ const { signed } = require('./trade-events.js');
 // One set of test numbers everywhere (monthly study → test-stats.json)
 try { CS.applyStats(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'test-stats.json'), 'utf8'))); } catch (e) { /* keep chartsys.js numbers */ }
 
-const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
+const SITE_URL = process.env.SITE_URL || 'https://gold-signal.gold-signal.workers.dev';
 const SPREAD = +(process.env.SPREAD_USD || 0.4);
 const ROOT = path.join(__dirname, '..');
 const read = (f, empty) => (fs.existsSync(path.join(ROOT, f)) ? JSON.parse(fs.readFileSync(path.join(ROOT, f), 'utf8')) : empty);

@@ -12,21 +12,25 @@
 // NO imports on purpose: Vercel does not ship node_modules with Routing Middleware (with @vercel/blob imported, production
 // failed "Cannot find module '@vercel/blob'", and a bundled copy wouldn't load as a module). The Blob store is reached
 // with plain fetch — the same requests @vercel/blob makes (reads: the store host with ?cache=0; writes: the Blob API).
-const blobToken = () => process.env.BLOB_READ_WRITE_TOKEN || '';
-const storeId = () => blobToken().split('_')[3] || ''; // vercel_blob_rw_<storeId>_<secret>
+// 20 Oct 2026: moved to Cloudflare Workers (worker.js calls this file first; next() → the static file) and the private
+// files from Vercel Blob to Supabase (table kv: path → body) — same as lib/gs.mjs blobGet / blobPut.
+const sbUrl = () => (process.env.SUPABASE_URL || '').trim().replace(/\/$/, '');
+const sbHeaders = (extra = {}) => {
+  const k = (process.env.SUPABASE_SERVICE_KEY || '').trim();
+  return { apikey: k, ...(k.startsWith('eyJ') ? { authorization: `Bearer ${k}` } : {}), ...extra };
+};
 async function blobGet(path) {
-  const r = await fetch(`https://${storeId()}.private.blob.vercel-storage.com/${path}?cache=0`, { headers: { authorization: `Bearer ${blobToken()}` } });
-  if (r.status === 404) return null;
-  if (!r.ok) throw new Error(`blob get ${r.status}`);
-  return r.text();
+  const r = await fetch(`${sbUrl()}/rest/v1/kv?select=body&path=eq.${encodeURIComponent(path)}`, { headers: sbHeaders() });
+  if (!r.ok) throw new Error(`store get ${r.status}`);
+  const rows = await r.json();
+  return rows.length ? rows[0].body : null;
 }
 async function blobPut(path, text) {
-  const r = await fetch(`https://vercel.com/api/blob/?pathname=${encodeURIComponent(path)}`, {
-    method: 'PUT', body: text,
-    headers: { authorization: `Bearer ${blobToken()}`, 'x-api-version': '12', 'x-vercel-blob-store-id': storeId(), 'x-vercel-blob-access': 'private',
-      'x-add-random-suffix': '0', 'x-allow-overwrite': '1', 'x-content-type': 'application/json' },
+  const r = await fetch(`${sbUrl()}/rest/v1/kv?on_conflict=path`, {
+    method: 'POST', body: JSON.stringify({ path, body: text, updated_at: new Date().toISOString() }),
+    headers: sbHeaders({ 'content-type': 'application/json', prefer: 'resolution=merge-duplicates,return=minimal' }),
   });
-  if (!r.ok) throw new Error(`blob put ${r.status}`);
+  if (!r.ok) throw new Error(`store put ${r.status}`);
 }
 // What @vercel/functions next() returns: let the request continue to the static file
 const next = () => new Response(null, { headers: { 'x-middleware-next': '1' } });

@@ -41,13 +41,13 @@ function diagnose(list, now) {
 }
 
 async function readState() {
-  const { get } = require('@vercel/blob');
+  const { get } = require('./blob');
   const r = await get(STATE, { access: 'private', useCache: false }).catch(() => null);
   if (!r || r.statusCode !== 200) return { problem: null };
   return JSON.parse(await new Response(r.stream).text());
 }
 async function writeState(s) {
-  const { put } = require('@vercel/blob');
+  const { put } = require('./blob');
   await put(STATE, JSON.stringify(s), { access: 'private', addRandomSuffix: false, allowOverwrite: true, contentType: 'application/json' });
 }
 async function line(text) {
@@ -67,7 +67,7 @@ async function main() {
   if (!INTRA.marketOpen(now) || !INTRA.marketOpen(now - 25 * M)) return console.log('watchdog: market closed (or just opened) — nothing to check');
   const problem = diagnose(await runs(), now);
   console.log('watchdog:', problem ? `${problem.kind} — ${problem.text}` : 'recorder OK');
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return console.log('watchdog: BLOB_READ_WRITE_TOKEN missing — no alerts');
+  if (!require('./blob').ready()) return console.log('watchdog: BLOB_READ_WRITE_TOKEN missing — no alerts');
   const st = await readState();
   const was = st.problem && st.problem.kind;
   let text = null;

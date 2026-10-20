@@ -439,7 +439,7 @@ def main():
 
     data["record"] = signal_record()
     if data["record"]:
-        data["sources"].append({"name": "Gold Signal (gold-signal-ten.vercel.app)", "what": "ผลสัญญาณที่บันทึกจริง", "at": now})
+        data["sources"].append({"name": "Gold Signal (gold-signal.gold-signal.workers.dev)", "what": "ผลสัญญาณที่บันทึกจริง", "at": now})
 
     ea = read_json(os.path.join(MT5, "GoldTraderLive", "status.json"))
     if ea:

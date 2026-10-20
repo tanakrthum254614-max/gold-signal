@@ -8,8 +8,8 @@ const { broadcast } = require('./line.js');
 const FILE = 'marketing/queue.json', CONFIG = 'marketing/config.json';
 
 (async () => {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return console.log('marketing: no Blob token — skipped');
-  const { get, put } = require('@vercel/blob');
+  if (!require('./blob').ready()) return console.log('marketing: no Blob token — skipped');
+  const { get, put } = require('./blob');
   const read = async (k, d) => { const r = await get(k, { access: 'private', useCache: false }).catch(() => null); return r && r.statusCode === 200 ? JSON.parse(await new Response(r.stream).text()) : d; };
   const cfg = await read(CONFIG, {});
   if (!cfg.live) return console.log('marketing: off');

@@ -18,7 +18,7 @@ try { CS.applyStats(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'test-
 const { sendFlex } = require('./notify.js');
 const { lotLine } = require('./trade-events.js');
 
-const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
+const SITE_URL = process.env.SITE_URL || 'https://gold-signal.gold-signal.workers.dev';
 const SPREAD = +(process.env.SPREAD_USD || 0.4);
 const SIGNALS_FILE = process.env.SIGNALS_FILE || path.join(__dirname, '..', 'signals.json');
 const BACKTEST_FILE = path.join(__dirname, '..', 'backtest.json');

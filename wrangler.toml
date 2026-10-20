@@ -1,0 +1,20 @@
+# Cloudflare Worker for gold-signal (20 Oct 2026 — moved off Vercel). Deploy: bash scripts/cf-build.sh && npx wrangler deploy
+# Secrets (npx wrangler secret put …): ACCESS_SECRET, CLERK_SECRET_KEY, SUPABASE_URL, SUPABASE_SERVICE_KEY,
+# STRIPE_LIVE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, CRON_SECRET, AI_GATEWAY_API_KEY
+name = "gold-signal"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"] # also fills process.env from vars + secrets (the code reads process.env like on Vercel)
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+run_worker_first = true   # members-only: middleware.js checks every file, like Vercel's middleware did
+html_handling = "none"    # keep /login.html as is (no redirect to /login — middleware matches exact names)
+
+[triggers]
+crons = ["30 1 * * 1-5"]  # vercel.json cron: marketing draft 08:30 Thai, Mon–Fri (does nothing while marketing is off)
+
+[vars]
+ADMIN_EMAILS = "tanakrthum2546@gmail.com,tanakrthum254614@gmail.com"
+SITE_URL = "https://gold-signal.gold-signal.workers.dev" # change when goldsignalth.com is bought

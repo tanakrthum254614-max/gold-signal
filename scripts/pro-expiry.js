@@ -8,8 +8,8 @@ const FILE = 'access/pro.json', DAY = 864e5;
 const thDate = (t) => new Date(t).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
 
 (async () => {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return console.log('pro expiry: no Blob token — skipped');
-  const { get, put } = require('@vercel/blob');
+  if (!require('./blob').ready()) return console.log('pro expiry: no Blob token — skipped');
+  const { get, put } = require('./blob');
   const r = await get(FILE, { access: 'private', useCache: false });
   if (!r || r.statusCode !== 200) return console.log('pro expiry: no members');
   const all = JSON.parse(await new Response(r.stream).text());

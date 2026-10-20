@@ -11,14 +11,14 @@ let store = { alerts: [
 const pushed = [];
 const realLoad = Module._load;
 Module._load = function (req, ...rest) {
-  if (req === '@vercel/blob') return {
+  if (req === './blob') return { ready: () => true,
     get: async () => ({ statusCode: 200, stream: new Response(JSON.stringify(store)).body }),
     put: async (p, body) => { store = JSON.parse(body); },
   };
   if (req === './push.js') return { push: async (texts, opts) => { for (const sub of [{ who: 'u1' }, { who: 'u2' }, { who: 'u3' }]) texts.forEach((t, i) => { if (opts.pick(sub, i)) pushed.push([sub.who, t.split('\n')[0]]); }); } };
   return realLoad.call(this, req, ...rest);
 };
-process.env.BLOB_READ_WRITE_TOKEN = 'test';
+process.env.SUPABASE_URL = 'test'; process.env.SUPABASE_SERVICE_KEY = 'test';
 const data = { m15: [[now - 3 * m15, 4180, 4205, 4170, 4190], [now - 2 * m15, 4190, 4195, 4160, 4165], [now - m15, 4165, 4170, 4140, 4160], [now, 4160, 4162, 4148, 4150]] };
 const tmp = path.join(require('os').tmpdir(), 'pa-data.json');
 fs.writeFileSync(tmp, JSON.stringify(data));

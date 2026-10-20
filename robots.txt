@@ -6,4 +6,4 @@ Allow: /login.html
 Allow: /terms.html
 Allow: /privacy.html
 Disallow: /
-Sitemap: https://gold-signal-ten.vercel.app/sitemap.xml
+Sitemap: https://gold-signal.gold-signal.workers.dev/sitemap.xml

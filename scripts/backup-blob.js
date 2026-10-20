@@ -10,8 +10,8 @@ const PREFIXES = ['access/', 'journal/', 'content/'];
 const KEEP = 30;
 
 (async () => {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return console.log('backup: no Blob token — skipped');
-  const { list, get, put, del } = require('@vercel/blob');
+  if (!require('./blob').ready()) return console.log('backup: no Blob token — skipped');
+  const { list, get, put, del } = require('./blob');
   const day = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10); // Thai date
   const listAll = async (prefix) => { const out = []; let cursor; do { const r = await list({ prefix, cursor, limit: 1000 }); out.push(...r.blobs); cursor = r.hasMore ? r.cursor : null; } while (cursor); return out; };
   if (!process.env.BACKUP_FORCE && (await list({ prefix: `backup/${day}/`, limit: 1 })).blobs.length) return console.log(`backup: ${day} done already`);

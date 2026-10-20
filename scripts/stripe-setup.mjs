@@ -1,5 +1,5 @@
 // One-time Stripe setup for PRO, run when the prices are decided:
-//   STRIPE_SECRET_KEY=sk_... node scripts/stripe-setup.mjs --month 199 --year 1990 [--url https://gold-signal-ten.vercel.app]
+//   STRIPE_SECRET_KEY=sk_... node scripts/stripe-setup.mjs --month 199 --year 1990 [--url https://gold-signal.gold-signal.workers.dev]
 // Creates the "Gold Signal PRO" product with two recurring THB prices (PromptPay charges the same amounts once) and the
 // webhook endpoint for api/pay/webhook.mjs. Prints the price ids; the webhook signing secret is written to
 // .vercel/stripe-webhook-secret.txt (git-ignored), never printed. Then:
@@ -11,7 +11,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { stripe } from '../lib/stripe.mjs';
 
 const arg = (k, d) => { const i = process.argv.indexOf(`--${k}`); return i > 0 ? process.argv[i + 1] : d; };
-const month = +arg('month'), year = +arg('year'), url = arg('url', 'https://gold-signal-ten.vercel.app'), tag = arg('label', '');
+const month = +arg('month'), year = +arg('year'), url = arg('url', 'https://gold-signal.gold-signal.workers.dev'), tag = arg('label', '');
 if (!(month > 0 && year > 0)) { console.error('usage: --month <baht> --year <baht> [--url <site>]'); process.exit(1); }
 const k = process.env.STRIPE_LIVE_SECRET_KEY || process.env.STRIPE_SECRET_KEY || '';
 if (!k) { console.error('set STRIPE_LIVE_SECRET_KEY or STRIPE_SECRET_KEY'); process.exit(1); }

@@ -1,19 +1,19 @@
 // Web push: sends every message that goes to LINE to the devices people switched notifications on
 // for in the app (saved by middleware.js /api/push in the private Blob store, access/push-subs.json, one entry per
 // device with the access-code holder's name). Doesn't use the LINE quota.
-// Env: BLOB_READ_WRITE_TOKEN, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY (scripts/setup-push.js sets the VAPID keys up).
+// Env: SUPABASE_URL, SUPABASE_SERVICE_KEY, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY (scripts/setup-push.js sets the VAPID keys up).
 // Missing keys / packages → skipped with a log line. Never throws.
-const SITE = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
+const SITE = process.env.SITE_URL || 'https://gold-signal.gold-signal.workers.dev';
 const SUBS = 'access/push-subs.json';
 
 async function readSubs() {
-  const { get } = require('@vercel/blob');
+  const { get } = require('./blob');
   const r = await get(SUBS, { access: 'private', useCache: false });
   if (!r || r.statusCode !== 200) return { subs: [] };
   return JSON.parse(await new Response(r.stream).text());
 }
 async function writeSubs(data) {
-  const { put } = require('@vercel/blob');
+  const { put } = require('./blob');
   await put(SUBS, JSON.stringify(data), { access: 'private', addRandomSuffix: false, allowOverwrite: true, contentType: 'application/json' });
 }
 
@@ -27,9 +27,9 @@ function toNote(text, i) {
 
 // opts.adminsOnly: only the devices marked admin: true by middleware.js (e.g. "new member" messages)
 async function push(texts, opts = {}) {
-  const { BLOB_READ_WRITE_TOKEN, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY } = process.env;
+  const { VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY } = process.env;
   if (!texts.length) return;
-  if (!BLOB_READ_WRITE_TOKEN || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return console.log('push: not set up (keys missing) — skipped');
+  if (!require('./blob').ready() || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return console.log('push: not set up (keys missing) — skipped');
   let webpush;
   try { webpush = require('web-push'); } catch (e) { return console.log('push: web-push package not installed — skipped'); }
   try {

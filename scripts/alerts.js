@@ -10,7 +10,7 @@ const { money } = require('../dailyplan.js');
 const { send } = require('./notify.js');
 const { at, targetEvents } = require('./trade-events.js');
 
-const SITE_URL = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
+const SITE_URL = process.env.SITE_URL || 'https://gold-signal.gold-signal.workers.dev';
 const SPREAD = +(process.env.SPREAD_USD || 0.4);
 const SIGNALS_FILE = process.env.SIGNALS_FILE || path.join(__dirname, '..', 'signals.json');
 

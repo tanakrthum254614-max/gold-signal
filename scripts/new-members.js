@@ -5,17 +5,17 @@
 // Usage: node scripts/new-members.js      Env: BLOB_READ_WRITE_TOKEN, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, SEND=true,
 //        LINE_CHANNEL_ACCESS_TOKEN + LINE_OWNER_ID (optional), SITE_URL
 const { push } = require('./push.js');
-const SITE = process.env.SITE_URL || 'https://gold-signal-ten.vercel.app';
+const SITE = process.env.SITE_URL || 'https://gold-signal.gold-signal.workers.dev';
 const QUEUE = 'access/new-members.json';
 
 async function readQueue() {
-  const { get } = require('@vercel/blob');
+  const { get } = require('./blob');
   const r = await get(QUEUE, { access: 'private', useCache: false });
   if (!r || r.statusCode !== 200) return { pending: [], sent: [] };
   return JSON.parse(await new Response(r.stream).text());
 }
 async function writeQueue(q) {
-  const { put } = require('@vercel/blob');
+  const { put } = require('./blob');
   await put(QUEUE, JSON.stringify(q), { access: 'private', addRandomSuffix: false, allowOverwrite: true, contentType: 'application/json' });
 }
 const thai = (ms) => new Date(ms).toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
@@ -40,7 +40,7 @@ async function line(texts) {
 }
 
 (async () => {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return console.log('new-members: BLOB_READ_WRITE_TOKEN missing — skipped');
+  if (!require('./blob').ready()) return console.log('new-members: BLOB_READ_WRITE_TOKEN missing — skipped');
   const q = await readQueue();
   if (!q.pending.length) return console.log('new-members: nobody new');
   const texts = q.pending.map(text);
