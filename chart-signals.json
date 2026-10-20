@@ -553,14 +553,14 @@
    "limit": true,
    "tf": "30m",
    "risky": true,
-   "pnl": 3.66,
+   "pnl": 2.57,
    "hit": 1,
    "hitAt": [
     1792488300000
    ],
    "stop": 4123.88,
    "realized": 1.25,
-   "last": 4120.26
+   "last": 4121.900000000001
   },
   {
    "id": "5m-1792488600000",
@@ -612,8 +612,8 @@
    "id": "5m-1792490700000",
    "createdAt": 1792490700000,
    "expiresAt": 1792525500000,
-   "status": "pending",
-   "entryAt": 1792490700000,
+   "status": "active",
+   "entryAt": 1792491900000,
    "side": "SELL",
    "entry": 4120.57,
    "sl": 4135.57,
@@ -629,11 +629,16 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": 0
+   "pnl": -1.33,
+   "hit": 0,
+   "hitAt": [],
+   "stop": 4135.57,
+   "realized": 0,
+   "last": 4121.900000000001
   }
  ],
  "brakes": {},
- "updatedAt": 1792491921889,
+ "updatedAt": 1792492221208,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1792491321793
