@@ -483,6 +483,10 @@ function renderRecord() {
   const used = CHARTSYS.ENTRY_TFS, days = { '1h': 730, '5h': 700, '1d': 1826 };
   const closed = (t) => t.status === 'win' || t.status === 'loss';
   const sum = (a) => a.reduce((x, t) => x + (t.pnl || 0), 0);
+  // average $ per trade (20 Oct 2026): win % next to how much a win / a loss is worth on average
+  const avg = (a) => (a.length ? ` · เฉลี่ย <b class="${sum(a) >= 0 ? 'up' : 'down'}">${money(sum(a) / a.length)}</b>/รายการ` : '');
+  const wl = (a) => { const w = a.filter((t) => t.pnl > 0), l = a.filter((t) => !(t.pnl > 0));
+    return a.length ? ` · ชนะเฉลี่ย ${w.length ? money(sum(w) / w.length) : '—'} · แพ้เฉลี่ย ${l.length ? money(sum(l) / l.length) : '—'}` : ''; };
   const tiles = used.map((tf) => {
     const c = CHARTSYS.SYS[tf].buy, mine = all.filter((t) => t.tf === tf && t.side !== 'SELL'), done = mine.filter(closed), w = done.filter((t) => t.pnl > 0).length;
     const perWeek = c.n ? (c.n / (days[tf] / 7)) : { '1h': 2.4, '5h': 0.9, '1d': 0.35 }[tf];
@@ -490,7 +494,7 @@ function renderRecord() {
     const open = mine.find((t) => t.status === 'active');
     return `<div class="rc-tile"><b>Buy ${TF_LABEL[tf]}${tf === CHARTSYS.MAIN_TF ? ' <small>ระบบหลัก</small>' : ''}</b>
       <div class="rc-big mono">${c.win}%</div><small class="muted">ทดสอบย้อนหลังชนะ · ${often}</small>
-      <div class="rc-live">${done.length ? `ผลจริง ${done.length} รายการ ชนะ ${w} · <b class="${sum(done) >= 0 ? 'up' : 'down'}">${money(sum(done))}</b>` : 'ผลจริง: ยังไม่มีรายการที่ปิด'}${open ? '<br>🟡 ถือสถานะอยู่ 1 รายการ' : ''}</div></div>`;
+      <div class="rc-live">${done.length ? `ผลจริง ${done.length} รายการ ชนะ ${w} · <b class="${sum(done) >= 0 ? 'up' : 'down'}">${money(sum(done))}</b>${avg(done)}` : 'ผลจริง: ยังไม่มีรายการที่ปิด'}${open ? '<br>🟡 ถือสถานะอยู่ 1 รายการ' : ''}</div></div>`;
   }).join('');
   const rows = all.filter((t) => used.includes(t.tf) && closed(t) && !t.risky).sort((a, b) => (b.exitAt || b.createdAt) - (a.exitAt || a.createdAt)).slice(0, 10);
   const day = (ms) => new Date(ms).toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
@@ -502,7 +506,7 @@ function renderRecord() {
   const since = state.chartSig && state.chartSig.startedAt ? new Date(state.chartSig.startedAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Bangkok' }) : '';
   box.innerHTML = `<div class="rc-tiles">${tiles}</div>
     <h4 class="rc-h">รายการล่าสุด (ทั้งชนะและแพ้) · กรอบ 1 ชม. / 5 ชม. / 1 วัน</h4><ul class="rc-list">${list}</ul>
-    <p class="muted small">ต่อทอง 1 ออนซ์ ก่อนหักสเปรด · บันทึกอัตโนมัติตั้งแต่ ${since}${old.length ? ` · กรอบอื่น (5 นาที – 30 นาที, 1 สัปดาห์) + Sell 1 ชม. = ⚠️ สัญญาณเสี่ยง: ผลจริง ${old.length} รายการ ชนะ ${ow} · ${money(sum(old))}` : ''} · ผลในอดีตไม่รับประกันอนาคต ไม่ใช่คำแนะนำการลงทุน</p>`;
+    <p class="muted small">ต่อทอง 1 ออนซ์ ก่อนหักสเปรด · บันทึกอัตโนมัติตั้งแต่ ${since}${old.length ? ` · กรอบอื่น (5 นาที – 30 นาที, 1 สัปดาห์) + Sell 1 ชม. = ⚠️ สัญญาณเสี่ยง: ผลจริง ${old.length} รายการ ชนะ ${ow} · ${money(sum(old))}${wl(old)}` : ''} · ผลในอดีตไม่รับประกันอนาคต ไม่ใช่คำแนะนำการลงทุน</p>`;
 }
 
 // Is the 30-minute system actually checking? intraday.json only changes when a trade changes, so ask

@@ -99,6 +99,7 @@
     .rec .tile .bs { display: block; font-size: 11px; color: var(--pm-muted); white-space: nowrap; }
     .rec .tile .bs small { font-size: 9.5px; opacity: .8; }
     .rec .tile .bs > span { display: block; line-height: 1.5; }
+    .rec .tile .bs .av { display: block; line-height: 1.5; font-size: 10.5px; } .rec .tile .bs .av.up { color: #8fe0bd; } .rec .tile .bs .av.down { color: #f0a0a7; }
     .rec .tile .bs .b { color: #8fe0bd; } .rec .tile .bs .s { color: #f0a0a7; } .rec .tile .bs .na { color: var(--pm-muted); }
     .rec .tile .cnt { display: block; font-size: 10.5px; color: var(--pm-muted); margin-top: 1px; }
     .rec .tcap { margin: 6px 0 0; font-size: 11px; color: var(--pm-muted); text-align: left; }
@@ -225,7 +226,7 @@
         <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small></div>
         <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small></div>
       </div>
-      <p class="tcap">% = อัตราชนะจริงจากทุกรายการที่ปิดแล้ว นับใหม่ตั้งแต่ 20 ต.ค. 2569 (ชนะ/ทั้งหมด รวมรายการที่แพ้) · <span id="oldRules"></span>ผลในอดีตไม่รับประกันอนาคต · ⚠ = สัญญาณเสี่ยง</p>
+      <p class="tcap">% = อัตราชนะจริงจากทุกรายการที่ปิดแล้ว นับใหม่ตั้งแต่ 20 ต.ค. 2569 (ชนะ/ทั้งหมด รวมรายการที่แพ้) · เฉลี่ย = กำไร/ขาดทุนเฉลี่ยต่อรายการ ($/ออนซ์) · <span id="avgAll"></span><span id="oldRules"></span>ผลในอดีตไม่รับประกันอนาคต · ⚠ = สัญญาณเสี่ยง</p>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
       <li class="on"><b>สร้างบัญชี</b>อีเมลหรือ Google</li>
@@ -416,10 +417,16 @@
             const pc = c.querySelector('.pc'), lv = B.live + S.live, lw = B.wins + S.wins;
             pc.textContent = lv ? `${Math.round((lw / lv) * 100)}%` : '—'; pc.classList.toggle('na', !lv);
             const sd = (k, x) => (!x ? `<span class="na">${k} —</span>` : `<span class="${k === 'Buy' ? 'b' : 's'}">${k} ${cu(x).live ? `${Math.round((cu(x).wins / cu(x).live) * 100)}% <small>(${cu(x).wins}/${cu(x).live})</small>` : '— <small>(ยังไม่มีไม้ปิด)</small>'}${x.risky ? '<i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}</span>`);
-            c.querySelector('.bs').innerHTML = `${sd('Buy', t.buy)}${sd('Sell', t.sell)}`; // one line each (fits 4-up / phones)
+            // average $ per closed trade (20 Oct 2026, "เพิ่มเติมหรือปรับอะไรดี" → "ทำมา"): the win % alone hides small wins vs full-SL losses
+            const lp = (B.pnl || 0) + (S.pnl || 0), av = lv ? `<span class="av ${lp >= 0 ? 'up' : 'down'}">เฉลี่ย ${money(Math.round((lp / lv) * 100) / 100)}</span>` : '';
+            c.querySelector('.bs').innerHTML = `${sd('Buy', t.buy)}${sd('Sell', t.sell)}${av}`; // one line each (fits 4-up / phones)
             // a trade closed since the last look → the tile flashes
             const k = JSON.stringify([B, S]); if (c.dataset.k != null && c.dataset.k !== k) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.k = k;
             });
+          // every tile together: average win vs average loss ($ per ounce) — shown with the win %, never instead of it
+          const ag = (j.tiles || []).flatMap((t) => [t.buy, t.sell]).filter(Boolean).map((x) => x.cur || {}).reduce((a, x) => ({ n: a.n + (x.live || 0), w: a.w + (x.wins || 0), ws: a.ws + (x.winSum || 0), ls: a.ls + (x.lossSum || 0) }), { n: 0, w: 0, ws: 0, ls: 0 });
+          const ae = document.getElementById('avgAll'), r2 = (v) => Math.round(v * 100) / 100;
+          if (ae) ae.innerHTML = ag.n ? `ชนะเฉลี่ย <b class="up">${ag.w ? money(r2(ag.ws / ag.w)) : '—'}</b> · แพ้เฉลี่ย <b class="down">${ag.n - ag.w ? money(r2(ag.ls / (ag.n - ag.w))) : '—'}</b> ต่อรายการ · ` : '';
           const old = j.oldRules, oe = document.getElementById('oldRules');
           if (oe && old && old.live) oe.innerHTML = `กติกาเก่า (เลิกใช้แล้ว): ${old.live} รายการ ชนะ ${Math.round((old.wins / old.live) * 100)}% · <b class="${old.pnl >= 0 ? 'up' : 'down'}">${money(old.pnl)}</b>/ออนซ์ · `;
           // the whole record too, risky timeframes included — public numbers are never cherry-picked

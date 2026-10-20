@@ -22,6 +22,29 @@ const CDUR = { '5m': 5 * M, '15m': 15 * M, '30m': 30 * M, '1h': H };
 const CROWS = CONF ? JSON.parse(fs.readFileSync(path.join(DIR, `score2-${CONF[0]}.json`), 'utf8')) : null;
 const confOk = (t, side) => { if (!CROWS) return true; let lo = 0, hi = CROWS.length; while (lo < hi) { const m = (lo + hi) >> 1; if (CROWS[m].t <= t) lo = m + 1; else hi = m; } const i = lo - 1; const r = i >= 0 ? CROWS[i] : null; // rows sorted by t (closed candle end)
   return !!r && t - r.t < CDUR[CONF[0]] && side * r.s >= +CONF[1]; };
+// BE=tp1|tp2|half|none (20 Oct 2026, "เพิ่มเติมหรือปรับอะไรดี" → "ทำมา"): when the stop moves after a target — tp1 = the site
+// (stop to entry at TP1) · tp2 = stop stays at SL until TP2, then entry · half = at TP1 the stop goes halfway from SL to entry,
+// at TP2 to entry · none = stop never moves. A copy of signals.js evaluateTargets with only that line changed (site untouched).
+const BE = process.env.BE || 'tp1';
+function evalBE(sig, bars, now) {
+  const buy = sig.side === 'BUY', d = buy ? 1 : -1, n = sig.tps.length, part = 1 / n, end = Math.min(now, sig.expiresAt);
+  let stop = sig.sl, hit = 0, realized = 0, last = null;
+  const fin = (status, exitAt) => ({ ...sig, status, exitAt, hit, pnl: Math.round(realized * 100) / 100 });
+  for (const b of bars) {
+    if (b.time < sig.createdAt || b.time >= end) continue;
+    last = b;
+    if (buy ? b.low <= stop : b.high >= stop) { realized += (n - hit) * part * d * (stop - sig.entry); return fin(hit || realized > 0 ? 'win' : 'loss', b.time); }
+    while (hit < n && (buy ? b.high >= sig.tps[hit] : b.low <= sig.tps[hit])) {
+      realized += part * Math.abs(sig.tps[hit] - sig.entry); hit++;
+      if (BE === 'tp1' || (BE === 'tp2' && hit >= 2) || (BE === 'half' && hit >= 2)) stop = sig.entry;
+      else if (BE === 'half' && hit === 1) stop = (sig.sl + sig.entry) / 2;
+    }
+    if (hit === n) return fin('win', b.time);
+  }
+  if (!last) return { ...sig, status: 'active', pnl: 0 };
+  realized += (n - hit) * part * d * (last.close - sig.entry);
+  return now >= sig.expiresAt ? fin(hit || realized >= 0 ? 'win' : 'loss', last.time) : { ...sig, status: 'active', pnl: 0 };
+}
 const out = []; const say = (s) => { console.log(s); out.push(s); }; const res = {};
 for (const tf of (process.env.TFS || '5m,15m,30m,1h').split(',')) {
   const sys = CS.SYS[tf], dur = sys.frames[0][1], rows = JSON.parse(fs.readFileSync(path.join(DIR, `score2-${tf}.json`), 'utf8'));
@@ -43,7 +66,7 @@ for (const tf of (process.env.TFS || '5m,15m,30m,1h').split(',')) {
         if (t == null) { busy = r.t + c.dipH * H; continue; } } // live: a waiting limit holds the side until it expires
       Object.assign(INTRA.RULE, { slUsd: sl, tpUsd: tps });
       const t0 = INTRA.makeTrade({ dir: side, score: 0, keys: {}, frames: [] }, price, t); if (sys.hold) t0.expiresAt = t + sys.hold;
-      const i = lb(FB, t), j = lb(FB, t0.expiresAt + 1), ev = SIG.evaluate(t0, FB.slice(i, Math.min(j, i + 6000)), now);
+      const i = lb(FB, t), j = lb(FB, t0.expiresAt + 1), ev = (BE === 'tp1' && !process.env.BE ? SIG.evaluate : evalBE)(t0, FB.slice(i, Math.min(j, i + 6000)), now);
       const s = SIG.summary([ev], SPREAD); if (s.traded) trs.push({ p: period(r.t), pnl: s.pnl });
       busy = (ev.exitAt || t0.expiresAt) + dur;
     }
