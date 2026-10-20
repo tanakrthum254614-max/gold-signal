@@ -11,7 +11,7 @@ const path = require('path');
 const SIG = require('../signals.js');
 const INTRA = require('../intraday.js');
 const CS = require('../chartsys.js');
-const { send } = require('./notify.js');
+const { send, quotaShare } = require('./notify.js');
 const { signed } = require('./trade-events.js');
 // One set of test numbers everywhere (monthly study → test-stats.json)
 try { CS.applyStats(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'test-stats.json'), 'utf8'))); } catch (e) { /* keep chartsys.js numbers */ }
@@ -94,15 +94,16 @@ function pack(queue) {
     const t = fast[fast.length - 1].time + dur;
     if (now - t > (sys.long ? 2 * H : Math.min(dur, 10 * 60e3))) continue; // missed this candle: never enter late
     const mine = store.trades.filter((x) => x.tf === tf);
-    // Every NEW signal is recorded and sent, also while an earlier trade is still open (19 Oct 2026, user: "เอาระบบเข้าซื้อออก
-    // ให้บอกแค่จุดเข้าซื้อตรงที่สัญญาณบอกในกราฟ" → "หน้าเว็บ + LINE"; was one trade at a time per timeframe). "New" = this candle
-    // gives the entry and the candle before did not (same side), so a signal that stays on isn't sent every candle.
+    // One open trade per SIDE — Buy and Sell independent (20 Oct 2026). 19 Oct it was "every new signal" (first candle of a
+    // signal only), but the live-like backtest (research/indicators/edgetest.js) showed those first-candle entries lose money;
+    // a side takes the next entry once its trade closed (a limit that never filled holds the side until it expires).
     if (mine.some((x) => x.createdAt >= t)) continue; // this candle is done
     const data2 = Object.fromEntries(sys.frames.map(([k]) => [k, C[k]]));
     const dec = CS.decide(sys, data2, t, data.news || []);
     const dir = CS.dirOf(sys, dec);
     if (!dir) continue;
-    if (CS.dirOf(sys, CS.decide(sys, data2, t - dur, data.news || [])) === dir) continue; // not new: the signal was already on
+    const sd = dir > 0 ? 'BUY' : 'SELL';
+    if (mine.some((x) => x.side === sd && (!SIG.isFinal(x) || (x.status === 'expired' ? x.fillBy : (x.exitAt || x.expiresAt)) + dur > t))) continue; // that side is busy
     // While the safety brake is on, keep recording (so it can lift by itself) but don't announce
     const paused = !!CS.brake(sys, mine, now);
     // risky sides (chartsys.js, 15 Oct 2026) are recorded too, flagged ⚠️ — since 19 Oct 2026 also in LINE (labelled) for
@@ -113,14 +114,14 @@ function pack(queue) {
     console.log(`${tf}: ${tr.side} ${tr.entry} SL ${tr.sl} TP ${tr.tps.join('/')} (score ${dec.score})${paused ? ' — paused, not announced' : ''}`);
     if (NOTIFY.includes(tf) && !paused) {
       const c = dir > 0 ? sys.buy : sys.sell;
-      texts.push(`${tf === CS.MAIN_TF ? `⏱️ สัญญาณ ${TF_TH[tf]} (ระบบหลัก)` : `🎯 สัญญาณกราฟ ${TF_TH[tf]}`} · ${dir > 0 ? '🟢 ซื้อ (BUY)' : '🔴 ขาย (SELL)'}\n`
+      texts.push({ tf, text: `${tf === CS.MAIN_TF ? `⏱️ สัญญาณ ${TF_TH[tf]} (ระบบหลัก)` : `🎯 สัญญาณกราฟ ${TF_TH[tf]}`} · ${dir > 0 ? '🟢 ซื้อ (BUY)' : '🔴 ขาย (SELL)'}\n`
         // limit entry (19 Oct 2026): Buy waits for a dip, Sell for a bounce — the member sets a Buy / Sell Limit; never reached in time = cancelled
         + (tr.limit
-          ? `📥 รอเข้าที่ ${f2(tr.entry)} (ราคาตอนนี้ ${f2(tr.priceAtSignal)} · ${dir > 0 ? 'รอย่อ' : 'รอเด้งขึ้น'} $${c.dip}) ภายใน ${c.dipH} ชม. — ตั้ง ${dir > 0 ? 'Buy' : 'Sell'} Limit ได้เลย · ราคาไม่ถึง = ยกเลิก\n`
+          ? `📥 รอเข้าที่ ${f2(tr.entry)} (ราคาตอนนี้ ${f2(tr.priceAtSignal)} · ${dir > 0 ? 'รอย่อ' : 'รอเด้งขึ้น'} $${c.dip}) ภายใน ${c.dipH < 1 ? `${Math.round(c.dipH * 60)} นาที` : `${c.dipH} ชม.`} — ตั้ง ${dir > 0 ? 'Buy' : 'Sell'} Limit ที่ราคานี้ (อย่าเข้าทันที) · ราคาไม่ถึง = ยกเลิก\n`
           : `เข้า ~${f2(tr.entry)}\n`)
         + `SL ${f2(tr.sl)} · ${tr.tps.map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}\n`
         + `แท่ง ${when(tf, t - dur)} ปิดแล้ว · คะแนน ${dec.score > 0 ? '+' : ''}${dec.score} · ทดสอบชนะ ${c.win}% (ไม่รับประกัน)\n`
-        + (risky ? `⚠️ สัญญาณเสี่ยง — ${c.risky} · ควรใช้ขนาดการซื้อขายเล็กกว่าปกติ\n` : '') + `${SITE_URL}/#chart`);
+        + (risky ? `⚠️ สัญญาณเสี่ยง — ${c.risky} · ควรใช้ขนาดการซื้อขายเล็กกว่าปกติ\n` : '') + `${SITE_URL}/#chart` });
     }
   }
 
@@ -143,9 +144,16 @@ function pack(queue) {
   // 📬 LINE at most once every 30 minutes (20 Oct 2026, user: "มีการแจ้งเตือนถี่เกินไป อยากให้ 30 นาทีแจ้งทีแต่ละสัญญาณ"): a signal
   // after a quiet half hour goes at once; later ones wait in store.lineQueue and go together in ONE message when 30 minutes passed
   const GAP = 30 * 60e3, beforeQ = JSON.stringify(store.lineQueue || []);
-  const queue = [...(store.lineQueue || []), ...texts.map((text) => ({ at: now, text }))];
+  const queue = [...(store.lineQueue || []), ...texts.map((x) => ({ at: now, tf: x.tf, text: x.text }))];
   let out = [];
-  if (queue.length && now - (store.lineAt || 0) >= GAP) { out = [pack(queue)]; store.lineAt = now; store.lineQueue = []; } else store.lineQueue = queue;
+  if (queue.length && now - (store.lineAt || 0) >= GAP) {
+    // LINE quota guard (20 Oct 2026): past 80% of the month, only 1 ชม. and longer go out (the rest stay on the website)
+    const share = process.env.SEND === 'true' ? await quotaShare() : null, LONG = ['1h', '5h', '1d', '1w'];
+    let send1 = queue;
+    if (share != null && share >= 0.8) { send1 = queue.filter((x) => !x.tf || LONG.includes(x.tf)); console.log(`LINE quota ${Math.round(share * 100)}% — sending ${send1.length}/${queue.length} (1h+ only)`); }
+    out = send1.length ? [pack(send1) + (send1.length < queue.length ? `\n(โควตา LINE เดือนนี้ใกล้หมด — ส่งเฉพาะกรอบ 1 ชม. ขึ้นไป · กรอบอื่นดูบนเว็บ)` : '')] : [];
+    store.lineAt = now; store.lineQueue = [];
+  } else store.lineQueue = queue;
   if (queue.length && !out.length) console.log(`📬 ${queue.length} signal(s) waiting — LINE again at ${when('1d', (store.lineAt || 0) + GAP)}`);
 
   store.trades = store.trades.slice(-600);

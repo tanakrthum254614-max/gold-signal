@@ -316,6 +316,13 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 20 ต.ค. 2569 — 🔧 ผลทดสอบแบบเดียวกับระบบจริง · ถือแยกฝั่ง · กันโควตา LINE
+- ผู้ใช้: "เพิ่มเติมหรือปรับอะไรดี" → เสนอ 7 ข้อ → "ทำมา" (ทำข้อ 1 กันโควตา, 2 ทดสอบใหม่, 5 ข้อความ Limit)
+- **พบบั๊กในการจำลอง** (newidea LIMIT / sellnew / morenew run()): ไม้รอราคาที่ไม่ได้เข้าไม่กันฝั่ง → แท่งถัดไปลองใหม่ทันที (ระบบจริงต้องรอจน fillBy) → ผลดีเกินจริงมาก · แก้ morenew.js (`e.wait` / `e.at`) + indlab.js (busy = t + dipH) · edgetest.js ใหม่: ทดสอบกติกาปัจจุบันแบบ "ทุกสัญญาณใหม่" (MODE ปกติ) หรือ "ถือแยกฝั่ง" (MODE=side) — ทุกสัญญาณใหม่: กำไรหาย/ขาดทุน (5m SELL −$109, 1h SELL −$61) → เลิกใช้
+- ผลใหม่ (report-2026-10-20-more-fixed.txt, กำไรทุก 4 ช่วง + ชนะ ≥ 70%): 5m SELL th2 roc12 dip5/0.5h 87% +$1,010 · 15m BUY th4 bbrev dip3/1h 88% +$309 · 15m SELL th4 roc12 dip5/1h 87% +$579 · 30m SELL th2 roc12 dip5/1h 87% +$614 · 1h BUY th4 sma2050 dip6/6h 82% +$496 · 1h SELL th3 bbrev dip6/2h TP 7.5/30/60 82% +$201 · **5m BUY / 30m BUY ไม่มีแบบไหนผ่าน** → คงกติกา + risky "ช่วงทดสอบล่าสุดขาดทุน" (86% / 84%, ล่าสุด −$340 / −$232) · since ทั้งหมด 2026-10-20T00:00 (= วันล้างสถิติ) · test-stats.json ตาม
+- **chart-run.js**: ถือได้ฝั่งละ 1 ไม้ (Buy/Sell แยก; expired limit กันฝั่งถึง fillBy + dur) แทน "ทุกสัญญาณใหม่" · LINE quota guard: notify.js `quotaShare()` → ≥ 80% ส่งเฉพาะ 1h/5h/1d/1w + หมายเหตุ · texts = {tf, text} · ข้อความ "ตั้ง Buy/Sell Limit ที่ราคานี้ (อย่าเข้าทันที)" · dipH < 1 แสดงเป็นนาที (chart-run/chartzones/chartchat/main/easy)
+- ทดสอบ: dry run · batchtest.js · tpcheck.cjs · errscan.cjs · tilelive.mjs ไม่มี error
+
 ## 20 ต.ค. 2569 — ⚡ ผลจริงอัปเดตทุก 15 วินาที
 - ผู้ใช้: "ขอทุกอย่างเรียลไทม์ให้ตัวเลขขยับตามที่สั่งไว้" → login.html loadStats 60 → 15 วิ · main.js `every(15e3, refreshSignals)` (เดิม 60 วิ) · ทางข้อมูลเร็วอยู่แล้ว: middleware dataFile / lib/blog statsJSON ใส่ `?t=` ทุก 10–20 วิ (ข้าม CDN 5 นาทีของ GitHub) → ช้าสุดคือรอบเช็กของ recorder ทุก 5 นาที (ผลตัดสินบนแท่ง 5 นาที — เร็วกว่านี้ไม่ได้โดยไม่ให้ตัวเลขกลับไปกลับมา)
 - errscan.cjs ไม่มี error

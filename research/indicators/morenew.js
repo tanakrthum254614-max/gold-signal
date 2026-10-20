@@ -42,7 +42,11 @@ function scores(tf) {
 function run(entries, holdMs) {
   let busy = 0; const trs = [];
   for (const e of entries) {
-    if (e.t < busy || e.t < start) continue;
+    // live-like (20 Oct 2026 fix): a limit that never filled still held the side until it expired (e.wait); the attempt time is
+    // the signal (e.at), not the fill — before this fix an unfilled limit let the next candle try again at once (too rosy)
+    const at = e.at != null ? e.at : e.t;
+    if (at < busy || at < start) continue;
+    if (e.wait) { busy = e.until; continue; }
     Object.assign(INTRA.RULE, { slUsd: e.sl, tpUsd: e.tps });
     const t0 = INTRA.makeTrade({ dir: e.dir, score: 0, keys: {}, frames: [] }, e.price, e.t); if (holdMs) t0.expiresAt = e.t + holdMs;
     const i = lb(FB, e.t), j = lb(FB, t0.expiresAt + 1); const r = SIG.evaluate(t0, FB.slice(i, Math.min(j, i + 6000)), now);
@@ -74,7 +78,8 @@ for (const tf of TFS) {
           for (const e of sig) {
             if (!d) { fills.push({ t: e.t, dir: side, price: e.price, sl, tps: T }); continue; }
             const lim = e.price - side * d, i0 = lb(FB, e.t), i1 = lb(FB, e.t + w);
-            for (let i = i0; i < i1 && i < FB.length; i++) if (side > 0 ? FB[i].low <= lim - 0.3 : FB[i].high >= lim + 0.3) { fills.push({ t: FB[i].time, dir: side, price: lim, sl, tps: T }); break; }
+            for (let i = i0; i < i1 && i < FB.length; i++) if (side > 0 ? FB[i].low <= lim - 0.3 : FB[i].high >= lim + 0.3) { fills.push({ at: e.t, t: FB[i].time, dir: side, price: lim, sl, tps: T }); break; }
+            if (!fills.length || fills[fills.length - 1].at !== e.t) fills.push({ wait: true, at: e.t, until: e.t + w });
           }
           const r = run(fills, sys.hold || 0);
           res.push({ th, cf, d, w, name: `th ${th} ${cf || 'ไม่ยืนยัน'} · TP ${T.join('/')} · ${d ? `รอ $${d} ภายใน ${w / H} ชม.` : 'เข้าทันที'}`, ...r });

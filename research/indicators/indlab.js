@@ -58,7 +58,7 @@ for (const tf of only) {
       let e = e0;
       if (c.dip) { const lim = e0.price - side * c.dip, i0 = lb(FB, e0.t), i1 = lb(FB, e0.t + c.dipH * 3600e3); e = null;
         for (let i = i0; i < i1 && i < FB.length; i++) if (side > 0 ? FB[i].low <= lim - 0.3 : FB[i].high >= lim + 0.3) { e = { ...e0, t: FB[i].time, price: lim }; break; }
-        if (!e) continue; }
+        if (!e) { busy = e0.t + c.dipH * 3600e3; continue; } } // a limit that never filled still held the side (20 Oct 2026)
       const t0 = INTRA.makeTrade({ dir: side, score: 0, keys: {}, frames: [] }, e.price, e.t);
       if (sys.hold) t0.expiresAt = e.t + sys.hold;
       const i = lb(FB, e.t), j = lb(FB, t0.expiresAt + 1);

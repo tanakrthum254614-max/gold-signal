@@ -112,4 +112,12 @@ async function toAdmins(texts) {
   } catch (e) { console.log(`⚠️ LINE owner push failed: ${e.message}`); }
 }
 
-module.exports = { send, sendFlex, pack, lineRoom };
+// Share of this month's LINE quota used (0–1), or null when unknown / unlimited — chart-run.js keeps the shorter
+// timeframes off LINE when it runs high (20 Oct 2026)
+async function quotaShare() {
+  try {
+    const [quota, used] = await Promise.all([lineGet('https://api.line.me/v2/bot/message/quota'), lineGet('https://api.line.me/v2/bot/message/quota/consumption')]);
+    return quota.type === 'limited' && quota.value ? used.totalUsage / quota.value : null;
+  } catch (e) { return null; }
+}
+module.exports = { send, sendFlex, pack, lineRoom, quotaShare };

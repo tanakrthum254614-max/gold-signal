@@ -248,7 +248,7 @@ function ago(ms) {
     const col = (x) => `<div class="cz-col ${x.side > 0 ? 'buy' : 'sell'}${x.go ? ' go' : ''}${x.tested ? '' : ' untested'}">
       <div class="cz-col-h"><b>${x.side > 0 ? '🟢 Buy' : '🔴 Sell'}</b><span class="cz-verdict">${x.verdict}</span></div>
       <div class="cz-prog"><span>ความพร้อมเข้า <b>${x.pct}%</b></span><i><em style="width:${x.pct}%"></em></i></div>
-      ${x.tested ? `<div class="cz-col-px">${x.L.dip ? `รอเข้า <b>${f2(x.L.entry)}</b> <small>(${x.side > 0 ? 'ย่อ' : 'เด้ง'} $${x.L.dip} ภายใน ${x.L.dipH} ชม.)</small>` : `เข้า ~<b>${f2(price)}</b>`} · SL <b>${f2(x.L.sl)}</b><br>${x.L.tps.map((v, k) => `TP${k + 1} <b>${f2(v)}</b>`).join(' · ')}</div>` : `<div class="cz-col-px muted">ไม่มีจุดเข้าฝั่งนี้ — ใช้ดูทิศเท่านั้น</div>`}
+      ${x.tested ? `<div class="cz-col-px">${x.L.dip ? `รอเข้า <b>${f2(x.L.entry)}</b> <small>(${x.side > 0 ? 'ย่อ' : 'เด้ง'} $${x.L.dip} ภายใน ${x.L.dipH < 1 ? `${Math.round(x.L.dipH * 60)} นาที` : `${x.L.dipH} ชม.`})</small>` : `เข้า ~<b>${f2(price)}</b>`} · SL <b>${f2(x.L.sl)}</b><br>${x.L.tps.map((v, k) => `TP${k + 1} <b>${f2(v)}</b>`).join(' · ')}</div>` : `<div class="cz-col-px muted">ไม่มีจุดเข้าฝั่งนี้ — ใช้ดูทิศเท่านั้น</div>`}
       <small>${x.tested ? `ทดสอบชนะ ${x.c.win}% · ต้องได้คะแนน ${x.side > 0 ? '+' : '−'}${x.c.th}` : x.off ? `ปิดจุดเข้า — ${x.c.off}` : 'ฝั่งนี้ทดสอบย้อนหลังแล้วขาดทุน ระบบจึงไม่ให้สัญญาณ'}${x.risky ? `<br><b class="cz-risk">${CHARTSYS.riskText(x.c)}</b>` : ''}</small></div>`;
     // Buy | Sell entry plans always shown, also while a trade is held (19 Oct 2026, user: "ขอให้แสดงจุดเข้าเสมอของสัญญาณ")
     const fresh = !!d && (sys.long || !d.stale), showPlans = fresh && !noEntry;

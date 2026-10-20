@@ -1291,7 +1291,7 @@ function updateDonut(el, dir, x, v, price) {
   el.querySelector('[data-k="th"]').textContent = `คะแนน ${dir > 0 ? '+' : '−'}${cc.th}${c && c.confirm ? ` + ${CHARTSYS.CONFIRM[c.confirm].name}` : ''}`;
   const L = price != null ? CHARTSYS.levelsFor(cc, price, dir) : null, r = (n) => SIG.round(n);
   el.querySelector('[data-k="lv"]').innerHTML = L ? [
-    ...(L.dip ? [`<div class="tp"><label>📥 รอเข้า</label><b class="mono">${f2(r(L.entry))}</b><small>${dir > 0 ? 'ย่อ' : 'เด้ง'} $${L.dip} · ${L.dipH} ชม.</small></div>`] : []),
+    ...(L.dip ? [`<div class="tp"><label>📥 รอเข้า</label><b class="mono">${f2(r(L.entry))}</b><small>${dir > 0 ? 'ย่อ' : 'เด้ง'} $${L.dip} · ${L.dipH < 1 ? `${Math.round(L.dipH * 60)} นาที` : `${L.dipH} ชม.`}</small></div>`] : []),
     `<div class="sl"><label>🛑 SL</label><b class="mono">${f2(r(L.sl))}</b><small>−$${Math.round(15 * cc.mult)}</small></div>`,
     ...L.tps.map((tp, k) => `<div class="tp"><label>TP${k + 1}</label><b class="mono">${f2(r(tp))}</b><small>+$${CHARTSYS.usdList(cc)[k]}</small></div>`),
   ].join('') : '';
