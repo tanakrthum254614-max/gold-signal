@@ -37,6 +37,15 @@ const when = (tf, ms) => new Date(ms).toLocaleString('th-TH', CS.SYS[tf].long
   : { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
 const f2 = (v) => v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explanation fields
+// several queued signals → one LINE text (≤ 4,700 characters; the link once at the end)
+function pack(queue) {
+  if (queue.length === 1) return queue[0].text;
+  const strip = (x) => x.text.split('\n').filter((l) => l.trim() !== `${SITE_URL}/#chart`).join('\n');
+  const head = `📬 สัญญาณ ${queue.length} รายการ (${when('1d', queue[0].at)} – ${when('1h', queue[queue.length - 1].at)} น.)`;
+  let body = '', n = 0;
+  for (const x of queue) { const part = `\n\n${strip(x)}`; if ((head + body + part).length > 4700) break; body += part; n++; }
+  return `${head}${body}${n < queue.length ? `\n\n…และอีก ${queue.length - n} สัญญาณ` : ''}\n\nดูทั้งหมด: ${SITE_URL}/#chart`;
+}
 
 (async function main() {
   const now = +process.env.CHART_NOW || Date.now();
@@ -131,10 +140,18 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
   const brakesChanged = JSON.stringify(brakes) !== JSON.stringify(store.brakes || {});
   store.brakes = brakes;
 
+  // 📬 LINE at most once every 30 minutes (20 Oct 2026, user: "มีการแจ้งเตือนถี่เกินไป อยากให้ 30 นาทีแจ้งทีแต่ละสัญญาณ"): a signal
+  // after a quiet half hour goes at once; later ones wait in store.lineQueue and go together in ONE message when 30 minutes passed
+  const GAP = 30 * 60e3, beforeQ = JSON.stringify(store.lineQueue || []);
+  const queue = [...(store.lineQueue || []), ...texts.map((text) => ({ at: now, text }))];
+  let out = [];
+  if (queue.length && now - (store.lineAt || 0) >= GAP) { out = [pack(queue)]; store.lineAt = now; store.lineQueue = []; } else store.lineQueue = queue;
+  if (queue.length && !out.length) console.log(`📬 ${queue.length} signal(s) waiting — LINE again at ${when('1d', (store.lineAt || 0) + GAP)}`);
+
   store.trades = store.trades.slice(-600);
-  if (JSON.stringify(store.trades) === before && !brakesChanged) return console.log('chart signals: no change');
+  if (JSON.stringify(store.trades) === before && !brakesChanged && !out.length && JSON.stringify(store.lineQueue) === beforeQ) return console.log('chart signals: no change');
   store.updatedAt = now;
   if (process.env.RECORD === 'true') fs.writeFileSync(FILE, `${JSON.stringify(store, null, 1)}\n`);
   else console.log(`(not recorded) ${store.trades.length} trades`);
-  await send(texts);
+  await send(out);
 })().catch((e) => { console.error(e); process.exit(1); });
