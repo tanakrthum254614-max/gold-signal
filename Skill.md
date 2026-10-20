@@ -316,6 +316,11 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 20 ต.ค. 2569 — 🧹 ล้างสถิติเก่า เริ่มนับผลจริงใหม่ 20 ต.ค.
+- ผู้ใช้: "ล้างสถิติของเก่าทั้งหมด เริ่มใหม่วันนี้เลย" → branch data: chart-signals.json เก็บเฉพาะ createdAt ≥ 2026-10-20T00:00+07:00 (8 รายการ) · `startedAt` = นั้น · `brakes` = {} · `resetAt` · 57 รายการเดิม → **chart-signals-archive-2026-10-20.json** (branch data, ไม่ลบ) · ทำผ่าน git worktree ของ origin/data, commit + push (recorder pull ก่อนทุกรอบ)
+- **กับดัก**: commit บน data ต้องใช้อีเมล noreply `331178108+tanakrthum254614-max@users.noreply.github.com` — ผมเผลอใช้อีเมลจริงแล้ว amend + force-with-lease แก้ทันที (repo สาธารณะ)
+- login.html tcap "นับใหม่ตั้งแต่ 20 ต.ค. 2569" · บรรทัดกติกาเก่าหายเอง (oldRules = 0) · raw.githubusercontent cache ~5 นาที
+
 ## 20 ต.ค. 2569 — 🔍 ผลจริงแยกกติกาปัจจุบัน / กติกาเก่า
 - ผู้ใช้: "แพ้มากกว่าชนะ … วิเคราะห์ให้ชนะเกิน 70%" → วิเคราะห์ chart-signals.json: **ทุกไม้ที่แพ้เป็นกติกาเก่า** (ก่อน since 19 ต.ค. 20:00): 5m BUY 16 ไม้ 44% −$43 · 5m SELL 14 ไม้ 29% −$51 · 30m BUY 9 ไม้ 56% · 1h BUY 2 ไม้ 50% · กติกาใหม่: 4 ปิด ชนะ 4 (+$7.55, ส่วนใหญ่ TP1 แล้วออกที่ทุน) · 7 expired (ราคาไม่ถึง) · 3 pending
 - lib/blog.mjs tiles side(): `cur` = ไม้ที่ createdAt ≥ since ของฝั่ง (chartsys) · `oldRules` = ไม้กติกาเก่าทุกกรอบในช่อง (43 ไม้ ชนะ 44% −$83.17) · login.html ตัวใหญ่/บรรทัด Buy-Sell = cur · tcap บอกวันเริ่มกติกา + บรรทัดกติกาเก่า (#oldRules) — **ไม่ซ่อนผลแพ้** · กับดัก: ตัวแปร `o` ชนกับของเดิมใน loadStats → SyntaxError ทั้งหน้า (ใช้ `old`)
