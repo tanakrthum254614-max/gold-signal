@@ -488,7 +488,7 @@
           if (a && a.live && $('reccap')) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;
         }).catch(() => {});
       }
-      loadStats(); setInterval(loadStats, 60e3); // real results move when trades close · was: tested % only (changes with the monthly study) — the latest-entry box went 19 Oct 2026 (user: "เอาอันนี้ออก")
+      loadStats(); setInterval(loadStats, 15e3); // real results move when trades close (15 s since 20 Oct 2026, was 60 s) · was: tested % only (changes with the monthly study) — the latest-entry box went 19 Oct 2026 (user: "เอาอันนี้ออก")
       stream(); setTimeout(fallback, 4000); setInterval(fallback, 10e3);
       document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { loadStats(); fallback(); } });
 

@@ -316,6 +316,10 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 20 ต.ค. 2569 — ⚡ ผลจริงอัปเดตทุก 15 วินาที
+- ผู้ใช้: "ขอทุกอย่างเรียลไทม์ให้ตัวเลขขยับตามที่สั่งไว้" → login.html loadStats 60 → 15 วิ · main.js `every(15e3, refreshSignals)` (เดิม 60 วิ) · ทางข้อมูลเร็วอยู่แล้ว: middleware dataFile / lib/blog statsJSON ใส่ `?t=` ทุก 10–20 วิ (ข้าม CDN 5 นาทีของ GitHub) → ช้าสุดคือรอบเช็กของ recorder ทุก 5 นาที (ผลตัดสินบนแท่ง 5 นาที — เร็วกว่านี้ไม่ได้โดยไม่ให้ตัวเลขกลับไปกลับมา)
+- errscan.cjs ไม่มี error
+
 ## 20 ต.ค. 2569 — 🧹 ล้างสถิติเก่า เริ่มนับผลจริงใหม่ 20 ต.ค.
 - ผู้ใช้: "ล้างสถิติของเก่าทั้งหมด เริ่มใหม่วันนี้เลย" → branch data: chart-signals.json เก็บเฉพาะ createdAt ≥ 2026-10-20T00:00+07:00 (8 รายการ) · `startedAt` = นั้น · `brakes` = {} · `resetAt` · 57 รายการเดิม → **chart-signals-archive-2026-10-20.json** (branch data, ไม่ลบ) · ทำผ่าน git worktree ของ origin/data, commit + push (recorder pull ก่อนทุกรอบ)
 - **กับดัก**: commit บน data ต้องใช้อีเมล noreply `331178108+tanakrthum254614-max@users.noreply.github.com` — ผมเผลอใช้อีเมลจริงแล้ว amend + force-with-lease แก้ทันที (repo สาธารณะ)

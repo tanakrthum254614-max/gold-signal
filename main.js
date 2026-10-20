@@ -1926,7 +1926,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { st
   every(60e3, refreshIntraCandles);
   every(5 * 60e3, refreshNews); // + newsstats.js polls every 15 s around a release
   every(60 * 60e3, refreshThb);
-  every(60e3, refreshSignals); // recorded signals / open trades (the recorder commits every 5 min)
+  every(15e3, refreshSignals); // recorded signals / open trades — 15 s since 20 Oct 2026 (user: "ขอทุกอย่างเรียลไทม์"; was 60 s), the recorder commits every 5 min
   refreshBeat();
   every(60e3, refreshBeat);
 })();
