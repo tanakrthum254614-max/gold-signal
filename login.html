@@ -228,7 +228,7 @@
         <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small></div>
         <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small></div>
       </div>
-      <p class="tcap">% = อัตราชนะจริงจากทุกรายการที่ระบบบันทึกและปิดแล้ว (ชนะ/ทั้งหมด รวมรายการที่แพ้) · ผลในอดีตไม่รับประกันอนาคต · ⚠ = สัญญาณเสี่ยง</p>
+      <p class="tcap">% = อัตราชนะจริงของกติกาปัจจุบัน (เริ่ม 19 ต.ค. 2569 20:00 น.) จากทุกรายการที่ปิดแล้ว (ชนะ/ทั้งหมด รวมรายการที่แพ้) · <span id="oldRules"></span>ผลในอดีตไม่รับประกันอนาคต · ⚠ = สัญญาณเสี่ยง</p>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
       <li class="on"><b>สร้างบัญชี</b>อีเมลหรือ Google</li>
@@ -470,14 +470,18 @@
             // combined % big · Buy / Sell small · entries tested · the latest entry (19 Oct 2026)
             // REAL results, not the backtest (20 Oct 2026, user: "ปรับให้เป็นตัวเลขจริงในการเข้าของทุกทามเฟรม ไม่เฟคเลขขึ้นมา"): wins / closed
             // trades the recorder logged, both sides together big, each side small with its count — losses included
-            const pc = c.querySelector('.pc'), lv = ((t.buy && t.buy.live) || 0) + ((t.sell && t.sell.live) || 0), lw = ((t.buy && t.buy.wins) || 0) + ((t.sell && t.sell.wins) || 0);
+            // the rules in use only (20 Oct 2026) — the replaced rules' record is the line under the tiles
+            const cu = (x) => (x && x.cur) || { live: 0, wins: 0 }, B = cu(t.buy), S = cu(t.sell);
+            const pc = c.querySelector('.pc'), lv = B.live + S.live, lw = B.wins + S.wins;
             pc.textContent = lv ? `${Math.round((lw / lv) * 100)}%` : '—'; pc.classList.toggle('na', !lv);
-            const sd = (k, x) => (!x ? `<span class="na">${k} —</span>` : `<span class="${k === 'Buy' ? 'b' : 's'}">${k} ${x.live ? `${Math.round((x.wins / x.live) * 100)}% <small>(${x.wins}/${x.live})</small>` : '— <small>(ยังไม่มีไม้ปิด)</small>'}${x.risky ? '<i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}</span>`);
+            const sd = (k, x) => (!x ? `<span class="na">${k} —</span>` : `<span class="${k === 'Buy' ? 'b' : 's'}">${k} ${cu(x).live ? `${Math.round((cu(x).wins / cu(x).live) * 100)}% <small>(${cu(x).wins}/${cu(x).live})</small>` : '— <small>(ยังไม่มีไม้ปิด)</small>'}${x.risky ? '<i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}</span>`);
             c.querySelector('.bs').innerHTML = `${sd('Buy', t.buy)}${sd('Sell', t.sell)}`; // one line each (fits 4-up / phones)
             // a closed → new entry flashes the tile
             const k = t.last ? `${t.last.at}:${t.last.state}` : ''; if (c.dataset.k != null && c.dataset.k !== k) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.k = k;
             LAST[t.tf] = t.last; });
           renderEnt();
+          const old = j.oldRules, oe = document.getElementById('oldRules');
+          if (oe && old && old.live) oe.innerHTML = `กติกาเก่า (เลิกใช้แล้ว): ${old.live} รายการ ชนะ ${Math.round((old.wins / old.live) * 100)}% · <b class="${old.pnl >= 0 ? 'up' : 'down'}">${money(old.pnl)}</b>/ออนซ์ · `;
           TODAY = j.today || null; renderToday();
           // the whole record too, risky timeframes included — public numbers are never cherry-picked
           const a = j.all;
