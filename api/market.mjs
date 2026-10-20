@@ -10,7 +10,7 @@
 //   approve channel 'line' → marketing/queue.json (sent by scripts/market-send.js in the 5-minute check, LINE quota-guarded)
 //   approve channel 'facebook' → Graph API /{FB_PAGE_ID}/feed with FB_PAGE_TOKEN · channel 'seo' → content/blog.json (public /blog)
 // Daily drafts: vercel.json cron → GET ?cron=1 with Authorization: Bearer CRON_SECRET (only while live).
-import { member, isAdmin, readJson, writeJson, json, fail, body, clip } from '../lib/gs.mjs';
+import { member, isAdmin, readJson, writeJson, json, fail, body, clip, workersAI, WORKERS_AI_MODEL } from '../lib/gs.mjs';
 import { blogGET } from '../lib/blog.mjs'; // public /blog pages ride on this function (12-function Hobby limit)
 
 const CONFIG = 'marketing/config.json', DRAFTS = 'marketing/drafts.json', QUEUE = 'marketing/queue.json', BLOG = 'content/blog.json';
@@ -66,19 +66,24 @@ function tokenOf(request) { return process.env.AI_GATEWAY_API_KEY || (request &&
 
 async function writeWithAI(f, request) {
   const auth = tokenOf(request);
-  if (!auth) return null;
+  const messages = [{ role: 'system', content: PROMPT.replaceAll('{SITE}', f.site) }, { role: 'user', content: `<facts>\n${JSON.stringify(f, null, 1)}\n</facts>` }];
+  if (!auth && !globalThis.GS_AI) return null;
   try {
-    const r = await fetch('https://ai-gateway.vercel.sh/v1/chat/completions', {
-      method: 'POST', signal: AbortSignal.timeout(50000),
-      headers: { authorization: `Bearer ${auth}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ model: MODEL(), max_tokens: 2500, temperature: 0.7, response_format: { type: 'json_object' },
-        messages: [{ role: 'system', content: PROMPT.replaceAll('{SITE}', f.site) }, { role: 'user', content: `<facts>\n${JSON.stringify(f, null, 1)}\n</facts>` }] }),
-    });
-    if (!r.ok) { console.error('market ai', r.status, (await r.text().catch(() => '')).slice(0, 200)); return null; }
-    const out = await r.json(), txt = (out.choices && out.choices[0] && out.choices[0].message && out.choices[0].message.content) || '';
+    let txt;
+    if (!auth) txt = await workersAI(messages, { max_tokens: 2500, temperature: 0.7 }); // on Cloudflare (20 Oct 2026)
+    else {
+      const r = await fetch('https://ai-gateway.vercel.sh/v1/chat/completions', {
+        method: 'POST', signal: AbortSignal.timeout(50000),
+        headers: { authorization: `Bearer ${auth}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ model: MODEL(), max_tokens: 2500, temperature: 0.7, response_format: { type: 'json_object' }, messages }),
+      });
+      if (!r.ok) { console.error('market ai', r.status, (await r.text().catch(() => '')).slice(0, 200)); return null; }
+      const out = await r.json();
+      txt = (out.choices && out.choices[0] && out.choices[0].message && out.choices[0].message.content) || '';
+    }
     const j = JSON.parse(txt.slice(txt.indexOf('{'), txt.lastIndexOf('}') + 1));
     if (!j.line || !j.facebook || !j.seo || !j.seo.title || !j.seo.body) return null;
-    return { line: clip(j.line, 900), facebook: clip(j.facebook, 3000), seo: { title: clip(j.seo.title, 120), description: clip(j.seo.description || '', 200), body: clip(j.seo.body, 12000) }, by: MODEL() };
+    return { line: clip(j.line, 900), facebook: clip(j.facebook, 3000), seo: { title: clip(j.seo.title, 120), description: clip(j.seo.description || '', 200), body: clip(j.seo.body, 12000) }, by: auth ? MODEL() : WORKERS_AI_MODEL };
   } catch (e) { console.error('market ai', e.message); return null; }
 }
 

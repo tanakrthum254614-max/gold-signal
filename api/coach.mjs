@@ -6,7 +6,7 @@
 // articles. The model is reached through Vercel AI Gateway (OpenAI-compatible Chat Completions) — on Vercel with the
 // project's OIDC token, elsewhere with AI_GATEWAY_API_KEY. Model: AI_COACH_MODEL (an id from
 // https://ai-gateway.vercel.sh/v1/models). Each member gets AI_DAILY_LIMIT questions a day (default 30, Thai date).
-import { member, isAdmin, readJson, writeJson, json, fail, body, clip } from '../lib/gs.mjs';
+import { member, isAdmin, readJson, writeJson, json, fail, body, clip, workersAI } from '../lib/gs.mjs';
 
 const MODEL = () => process.env.AI_COACH_MODEL || 'google/gemini-2.5-flash'; // in the team's free AI credit (Claude / DeepSeek need paid credit);
 const LIMIT = () => Math.max(1, +process.env.AI_DAILY_LIMIT || 30);
@@ -103,26 +103,30 @@ ${articles.map((a) => `### ${a.title}\n${clip(a.body, 1200)}`).join('\n') || '�
   const history = (Array.isArray(q.history) ? q.history : []).slice(-8)
     .filter((h) => h && (h.role === 'user' || h.role === 'assistant')).map((h) => ({ role: h.role, content: clip(h.content, 1500) }));
 
+  const messages = [{ role: 'system', content: `${SYSTEM}\n\n${context}` }, ...history, { role: 'user', content: message }];
   const auth = token(request);
-  if (!auth) return fail('ยังไม่ได้ตั้งค่า AI Gateway', 503);
-  let r;
-  try {
-    r = await fetch('https://ai-gateway.vercel.sh/v1/chat/completions', {
-      method: 'POST', signal: AbortSignal.timeout(45000),
-      headers: { authorization: `Bearer ${auth}`, 'content-type': 'application/json' },
-      body: JSON.stringify({
-        model: MODEL(), max_tokens: 700, temperature: 0.6, user: m.id,
-        messages: [{ role: 'system', content: `${SYSTEM}\n\n${context}` }, ...history, { role: 'user', content: message }],
-      }),
-    });
-  } catch (e) { return fail('โค้ชตอบช้าเกินไป ลองใหม่อีกครั้ง', 504); }
-  if (!r.ok) {
-    console.error('coach gateway', r.status, (await r.text().catch(() => '')).slice(0, 300));
-    // 402 = credits used up · 403 customer_verification_required = no card on the Vercel team yet (free credits locked)
-    return fail(r.status === 402 || r.status === 403 ? 'โค้ช AI ยังไม่พร้อมใช้งาน (รอแอดมินเปิดเครดิต AI) ลองใช้โหมด "ระบบ" ไปก่อน' : 'โค้ชไม่ว่างชั่วคราว ลองใหม่อีกครั้ง', 502);
+  let reply;
+  if (!auth) { // 20 Oct 2026, on Cloudflare: no Vercel AI Gateway → Workers AI (free daily allowance)
+    if (!globalThis.GS_AI) return fail('ยังไม่ได้ตั้งค่า AI', 503);
+    try { reply = clip(await workersAI(messages, { max_tokens: 700, temperature: 0.6 }), 6000).trim(); }
+    catch (e) { console.error('coach workers ai', e.message); return fail('โค้ชไม่ว่างชั่วคราว ลองใหม่อีกครั้ง', 502); }
+  } else {
+    let r;
+    try {
+      r = await fetch('https://ai-gateway.vercel.sh/v1/chat/completions', {
+        method: 'POST', signal: AbortSignal.timeout(45000),
+        headers: { authorization: `Bearer ${auth}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ model: MODEL(), max_tokens: 700, temperature: 0.6, user: m.id, messages }),
+      });
+    } catch (e) { return fail('โค้ชตอบช้าเกินไป ลองใหม่อีกครั้ง', 504); }
+    if (!r.ok) {
+      console.error('coach gateway', r.status, (await r.text().catch(() => '')).slice(0, 300));
+      // 402 = credits used up · 403 customer_verification_required = no card on the Vercel team yet (free credits locked)
+      return fail(r.status === 402 || r.status === 403 ? 'โค้ช AI ยังไม่พร้อมใช้งาน (รอแอดมินเปิดเครดิต AI) ลองใช้โหมด "ระบบ" ไปก่อน' : 'โค้ชไม่ว่างชั่วคราว ลองใหม่อีกครั้ง', 502);
+    }
+    const out = await r.json();
+    reply = clip(out.choices && out.choices[0] && out.choices[0].message && out.choices[0].message.content, 6000).trim();
   }
-  const out = await r.json();
-  const reply = clip(out.choices && out.choices[0] && out.choices[0].message && out.choices[0].message.content, 6000).trim();
   if (!reply) return fail('โค้ชไม่ได้ตอบ ลองถามใหม่', 502);
   use.n[m.id] = used + 1;
   await writeJson(USE, use).catch(() => {});

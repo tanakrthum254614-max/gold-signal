@@ -31,6 +31,7 @@ async function api(mod, request) {
 
 export default {
   async fetch(request, env) {
+    globalThis.GS_AI = env.AI; // Workers AI for the coach / marketing writer (lib/gs.mjs workersAI)
     const url = new URL(request.url);
     const gate = await middleware(request);
     if (gate.headers.get('x-middleware-next') !== '1') return gate;

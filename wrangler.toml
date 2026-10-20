@@ -12,6 +12,9 @@ binding = "ASSETS"
 run_worker_first = true   # members-only: middleware.js checks every file, like Vercel's middleware did
 html_handling = "none"    # keep /login.html as is (no redirect to /login — middleware matches exact names)
 
+[ai]
+binding = "AI"            # Workers AI — AI coach (api/coach.mjs) + marketing drafts, free daily allowance
+
 [triggers]
 crons = ["30 1 * * 1-5"]  # vercel.json cron: marketing draft 08:30 Thai, Mon–Fri (does nothing while marketing is off)
 
