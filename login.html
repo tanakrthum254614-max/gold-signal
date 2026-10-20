@@ -101,11 +101,6 @@
     .rec .tile .bs > span { display: block; line-height: 1.5; }
     .rec .tile .bs .b { color: #8fe0bd; } .rec .tile .bs .s { color: #f0a0a7; } .rec .tile .bs .na { color: var(--pm-muted); }
     .rec .tile .cnt { display: block; font-size: 10.5px; color: var(--pm-muted); margin-top: 1px; }
-    .rec .tile .ent { display: grid; margin-top: 6px; padding: 4px 4px; border-radius: 8px; border: 1px solid var(--pm-line2); font-size: 10.5px; line-height: 1.35; color: var(--pm-muted); }
-    .rec .tile .ent b { font-size: 12.5px; color: var(--pm-ivory); font-variant-numeric: tabular-nums; }
-    .rec .tile .ent.wait { border-color: rgba(242, 169, 59, .45); } .rec .tile .ent.open { border-color: rgba(60, 207, 145, .45); }
-    .rec .tile .ent:empty { display: none; }
-    .rec .tile .ent b.up { color: var(--pm-up); } .rec .tile .ent b.down { color: var(--pm-down); }
     .rec .tcap { margin: 6px 0 0; font-size: 11px; color: var(--pm-muted); text-align: left; }
     @media (max-width: 979px) { .rec .tcap { text-align: center; } }
     /* Buy | Sell side by side in each tile (19 Oct 2026) */
@@ -133,18 +128,7 @@
     @media (prefers-reduced-motion: reduce) { .rec .tile.flash { animation: none; } }
     .rec .cap { margin: 0; text-align: center; font-size: 12px; color: var(--pm-muted); line-height: 1.6; }
     .rec .cap a { color: var(--pm-gold-hi); }
-    /* 📋 today's entries, live (19 Oct 2026) */
-    .rec .today { margin-top: 10px; border: 1px solid var(--pm-line); border-radius: 14px; padding: 10px 12px; background: rgba(255, 255, 255, .02); }
-    .rec .today .th { display: flex; align-items: baseline; gap: 8px; font-size: 13px; color: var(--pm-ivory); }
-    .rec .today .th .lv { font-size: 10px; color: #3ccf91; border: 1px solid rgba(60, 207, 145, .45); border-radius: 6px; padding: 0 5px; }
-    .rec .today .th .sum { margin-left: auto; font-variant-numeric: tabular-nums; }
-    .rec .today ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 2px; max-height: 236px; overflow-y: auto; }
-    .rec .today li { display: grid; grid-template-columns: 40px 50px 1fr auto; gap: 6px; align-items: baseline; font-size: 12px; padding: 4px 0; border-top: 1px solid var(--pm-line2); color: var(--pm-text); font-variant-numeric: tabular-nums; }
-    .rec .today li:first-child { border-top: 0; }
-    .rec .today li .t, .rec .today li .f { color: var(--pm-muted); }
-    .rec .today li .sB { color: #8fe0bd; } .rec .today li .sS { color: #f0a0a7; }
-    .rec .today li .r { text-align: right; white-space: nowrap; } .rec .today li .na { color: var(--pm-muted); }
-    .rec .today .empty { color: var(--pm-muted); font-size: 12px; padding: 4px 0; }
+
     .up { color: var(--pm-up); } .down { color: var(--pm-down); }
     /* 🧾 latest trades, one by one, live (19 Oct 2026, user: "อยากให้เรียลไทม์แต่ละไม้ที่ให้เข้า") */
     .rlist { list-style: none; margin: 0; padding: 0; width: 100%; display: grid; gap: 0; border: 1px solid var(--pm-line2); border-radius: 12px; background: rgba(20, 20, 23, .85); overflow: hidden; }
@@ -397,8 +381,6 @@
         if (prevClose) { const c = p - prevClose; $('lchg').innerHTML = `<span class="${c >= 0 ? 'up' : 'down'}">${c >= 0 ? '▲' : '▼'} ${((c / prevClose) * 100).toFixed(2)}%</span>`; }
         document.querySelector('#livepx .dot').classList.add('on');
         $('lsrc').textContent = src;
-        if (REC.open.length) { renderRecent(); } // the held trade's profit / loss moves with the price
-        renderEnt(); renderToday();
       }
       function stream() {
         let ws; try { ws = new WebSocket(`wss://streaming.forexpros.com/echo/${Math.floor(Math.random() * 1000)}/${Math.random().toString(36).slice(2, 10)}/websocket`); } catch (e) { return; }
@@ -423,64 +405,10 @@
           if (closedNow()) document.querySelector('#livepx .dot').classList.remove('on');
         }).catch(() => {});
       }
-      // 🧾 latest trades one by one (19 Oct 2026): closed ones with their result (losses too) + the one held now, priced live
-      const TFN2 = { '5m': '5 นาที', '15m': '15 นาที', '30m': '30 นาที', '1h': '1 ชม.', '5h': '5 ชม.', '1d': '1 วัน', '1w': '1 สัปดาห์' };
-      const BY = { sl: 'ตัดขาดทุน', tp: 'ถึงเป้า', eod: 'หมดเวลา' };
-      const when = (ms) => new Date(ms).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-      let REC = { open: [], recent: [] };
-      function renderRecent() {
-        const box = document.getElementById('rlist'); if (!box) return;
-        const side = (t) => (t.side === 'SELL' ? 'Sell' : 'Buy');
-        const rows = REC.open.map((t) => { const d = t.side === 'SELL' ? -1 : 1, pl = px ? Math.round(d * (px - t.entry) * 100) / 100 : null;
-          return `<li class="open"><i class="dot on"></i><span class="w">กำลังถือ · ${when(t.at)} · ${side(t)} ${TFN2[t.tf] || t.tf}</span><span class="p">${f2(t.entry)} → ${px ? f2(px) : '—'}</span><b class="${pl == null ? '' : pl >= 0 ? 'up' : 'down'}">${pl == null ? '—' : money(pl)}</b></li>`; });
-        REC.recent.forEach((t) => rows.push(`<li><span>${t.pnl > 0 ? '✅' : '❌'}</span><span class="w">${when(t.at)} · ${side(t)} ${TFN2[t.tf] || t.tf}${t.risky ? '<em>เสี่ยง</em>' : ''}</span><span class="p">${f2(t.entry)} → ${f2(t.exit)} · ${BY[t.by] || ''}</span><b class="${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl)}</b></li>`));
-        if (rows.length < 5) rows.push('<li><span></span><span class="w" style="color:var(--pm-muted)">ระบบหลักออกสัญญาณไม่บ่อย (1 ชม. ~2–3 ครั้ง/สัปดาห์ · 5 ชม. ~1 · 1 วัน ~1 ต่อ 3 สัปดาห์)</span></li>');
-        box.innerHTML = rows.join('');
-      }
-      // each tile's latest entry, priced with the live gold price on every tick (19 Oct 2026, user: "ขอแบบเรียลไทม์ทุกอย่าง"):
-      // held = profit / loss now · waiting = how far the price still is from the entry
-      const LAST = {};
-      // 📋 every entry of the day (19 Oct 2026) — held ones priced with the live price, as the site's evaluator does (parts closed at
-      // a target are counted at that target, the rest at the price now)
-      let TODAY = null;
-      const TFS3 = { '5m': '5 น.', '15m': '15 น.', '30m': '30 น.', '1h': '1 ชม.', '5h': '5 ชม.', '1d': '1 วัน', '1w': '1 สป.' };
-      const livePL = (x) => { const d = x.side === 'SELL' ? -1 : 1; return px == null ? null : Math.round((x.realized + (1 - x.hit / x.n) * d * (px - x.entry)) * 100) / 100; };
-      function renderToday() {
-        const ul = document.getElementById('tdList'); if (!ul || !TODAY) return;
-        const hm = (ms) => new Date(ms).toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
-        const isToday = new Date(TODAY.day + 7 * 3600e3).toISOString().slice(0, 10) === new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);
-        document.getElementById('tdHead').textContent = isToday ? 'สัญญาณวันนี้ · ทุกกรอบ' : `สัญญาณวันทำการล่าสุด · ${new Date(TODAY.day + 12 * 3600e3).toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short' })}`;
-        let sum = 0, any = false;
-        ul.innerHTML = TODAY.list.length ? TODAY.list.map((x) => {
-          const sd = x.side === 'SELL' ? 'Sell' : 'Buy', d = x.side === 'SELL' ? -1 : 1;
-          let r;
-          if (x.state === 'wait') r = `<span class="na">📥 รอเข้า${px != null ? ` อีก $${Math.max(0, d * (px - x.entry)).toFixed(2)}` : ''}</span>`;
-          else if (x.state === 'cancel') r = '<span class="na">ราคาไม่ถึง · ยกเลิก</span>';
-          else if (x.state === 'open') { const pl = livePL(x); if (pl != null) { sum += pl; any = true; } r = `<i class="dot on"></i> <b class="${pl == null ? '' : pl >= 0 ? 'up' : 'down'}">${pl == null ? '—' : money(pl)}</b>`; }
-          else { sum += x.pnl || 0; any = true; r = `${x.pnl > 0 ? '✅' : '❌'} <b class="${x.pnl >= 0 ? 'up' : 'down'}">${money(x.pnl || 0)}</b>`; }
-          return `<li><span class="t">${hm(x.at)}</span><span class="f">${TFS3[x.tf] || x.tf}</span><span><b class="s${sd[0]}">${sd}</b> ${f2(x.entry)}${x.risky ? ' <i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}</span><span class="r">${r}</span></li>`; }).join('')
-          : '<li class="empty">วันนี้ยังไม่มีสัญญาณ — ระบบเช็กทุก 5 นาที</li>';
-        document.getElementById('tdSum').innerHTML = any ? `รวม <b class="${sum >= 0 ? 'up' : 'down'}">${money(Math.round(sum * 100) / 100)}</b>/ออนซ์` : '';
-      }
-      function renderEnt() {
-        document.querySelectorAll('#tiles .tile').forEach((c) => { const L = LAST[c.dataset.tf], e = c.querySelector('.ent'); if (!e) return;
-          const sn = L && (L.side === 'SELL' ? 'Sell' : 'Buy'), d = L && L.side === 'SELL' ? -1 : 1;
-          const pl = L && px ? Math.round(d * (px - L.entry) * 100) / 100 : null, cls = (v) => (v == null ? '' : v >= 0 ? 'up' : 'down');
-          const cn = `ent${L ? ` ${L.state}` : ''}`; if (e.className !== cn) e.className = cn;
-          e.innerHTML = !L ? '<span class="na">ยังไม่มีจุดเข้า</span>'
-            : L.state === 'wait' ? `<span class="nw">📥 รอเข้า ${sn} ${f2(L.entry)}</span><b>${px ? `อีก $${Math.max(0, d * (px - L.entry)).toFixed(2)}` : '—'}</b>`
-            : L.state === 'open' ? `<span class="nw"><i class="dot on"></i> ถือ ${sn} ${f2(L.entry)}</span><b class="${cls(pl)}">${pl == null ? '—' : money(pl)}</b>`
-            : `<span class="nw">ล่าสุด ${sn} · ${when(L.at)}</span><b>${f2(L.entry)}</b>`; });
-      }
       function loadStats() {
         fetch('/api/market?blog=1&stats=1', { cache: 'no-store' }).then((r) => r.json()).then((j) => {
-          REC = { open: j.open || [], openTiles: j.openTiles || [], recent: (j.recent || []).slice(0, 5) }; renderRecent();
-        const o = j.others, rn = document.getElementById('rnote');
-        if (rn && o && o.live) rn.innerHTML = `กรอบเสี่ยง (5–30 นาที · 1 สัปดาห์ · Sell): ผลจริง <b>${o.live}</b> รายการ · ชนะ ${o.wins} · <b class="${o.pnl >= 0 ? 'up' : 'down'}">${money(o.pnl)}</b>/ออนซ์ — ยังให้จุดเข้า ติดป้ายเสี่ยง`;
           const tiles = document.querySelectorAll('#tiles .tile');
-          // % only (19 Oct 2026, user: "เอากลับมาแบบเดิม ให้แสดงแค่เปอร์เซ็นจุดเข้าในการซื้อ ฝั่ง Buy Sell")
           (j.tiles || []).forEach((t, i) => { const c = tiles[i]; if (!c) return;
-            // combined % big · Buy / Sell small · entries tested · the latest entry (19 Oct 2026)
             // REAL results, not the backtest (20 Oct 2026, user: "ปรับให้เป็นตัวเลขจริงในการเข้าของทุกทามเฟรม ไม่เฟคเลขขึ้นมา"): wins / closed
             // trades the recorder logged, both sides together big, each side small with its count — losses included
             // the rules in use only (20 Oct 2026) — the replaced rules' record is the line under the tiles
@@ -489,13 +417,11 @@
             pc.textContent = lv ? `${Math.round((lw / lv) * 100)}%` : '—'; pc.classList.toggle('na', !lv);
             const sd = (k, x) => (!x ? `<span class="na">${k} —</span>` : `<span class="${k === 'Buy' ? 'b' : 's'}">${k} ${cu(x).live ? `${Math.round((cu(x).wins / cu(x).live) * 100)}% <small>(${cu(x).wins}/${cu(x).live})</small>` : '— <small>(ยังไม่มีไม้ปิด)</small>'}${x.risky ? '<i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}</span>`);
             c.querySelector('.bs').innerHTML = `${sd('Buy', t.buy)}${sd('Sell', t.sell)}`; // one line each (fits 4-up / phones)
-            // a closed → new entry flashes the tile
-            const k = t.last ? `${t.last.at}:${t.last.state}` : ''; if (c.dataset.k != null && c.dataset.k !== k) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.k = k;
-            LAST[t.tf] = t.last; });
-          renderEnt();
+            // a trade closed since the last look → the tile flashes
+            const k = JSON.stringify([B, S]); if (c.dataset.k != null && c.dataset.k !== k) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.k = k;
+            });
           const old = j.oldRules, oe = document.getElementById('oldRules');
           if (oe && old && old.live) oe.innerHTML = `กติกาเก่า (เลิกใช้แล้ว): ${old.live} รายการ ชนะ ${Math.round((old.wins / old.live) * 100)}% · <b class="${old.pnl >= 0 ? 'up' : 'down'}">${money(old.pnl)}</b>/ออนซ์ · `;
-          TODAY = j.today || null; renderToday();
           // the whole record too, risky timeframes included — public numbers are never cherry-picked
           const a = j.all;
           if (a && a.live && $('reccap')) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;

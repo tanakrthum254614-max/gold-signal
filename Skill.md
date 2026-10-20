@@ -316,6 +316,12 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
+## 20 ต.ค. 2569 — 🔔 LINE ถึง TP1 / ยกเลิก Limit + 🧹 ลบโค้ดที่ไม่ใช้
+- ผู้ใช้: "เพิ่มเติมหรือปรับอะไรดี หรือควรลดอะไรดี" → เสนอ → "ทำมา" (ข้อ 1 + 2 + 4; ข้อ 1 = อนุญาตข้อความทางออกใน LINE)
+- chart-run.js follow loop: hit 0 → ≥ 1 (ยังไม่ปิด) → `✅ {กรอบ} {Buy/Sell} (เข้า X) ถึง TP1 Y แล้ว → เลื่อน SL ไปที่ทุน X · ที่เหลือถือต่อไป TP2` · pending → expired → `❌ ยกเลิก … รอเข้าที่ X — ราคาไม่ถึงภายในเวลา → ลบคำสั่ง Limit` · เฉพาะ CHART_NOTIFY และไม่ paused · เข้าคิว lineQueue เดียวกัน (หัว "📬 แจ้งเตือน N รายการ") · followtest.js (scratchpad dry) ไม้ปลอม 2 ไม้ → ข้อความถูก
+- ลบ: login.html renderRecent/REC/renderEnt/LAST/renderToday/TODAY + CSS .today/.ent (−78) · lib/blog.mjs readyJSON + `?ready=1`, today, openTiles, tiles[].all/.last (−43) · คงไว้ chartsys require (ใช้ `cur`) + vercel includeFiles · welcome ใช้ open/recent/tfs/others/all ครบ
+- ทดสอบ tilelive / phoneshot / errscan ไม่มี error
+
 ## 20 ต.ค. 2569 — 🔎 "ขอแม่นยำกว่านี้" — ให้กรอบใหญ่ยืนยัน: ไม่ช่วยพอจะใช้
 - edgetest.js `CONF=<tf>:<k>` (คะแนนแท่งปิดล่าสุดของกรอบใหญ่ต้องเอียงทางเดียวกัน ≥ k) · `TFS=` · ลอง 5m+15m/30m/1h, 15m+30m/1h, 30m+1h × k 2/3 (MODE=side)
 - ผล: **อัตราชนะไม่ขึ้นเลย** (ยัง 84–88% ทุกแบบ) · กำไรรวมลดเกือบทุกแบบ · มีอันเดียวที่น่าสนใจ: 5m BUY + 15m ≥ 2 → +$598 [241/304/86/−32] (เดิม +$552, ช่วงล่าสุด −340 → −32) แต่ยังไม่กำไรครบ 4 ช่วง → ไม่ใช้ (ต้องให้ chartsys ข้ามกรอบ — ไม่คุ้มสำหรับฝั่ง risky)

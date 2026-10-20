@@ -41,10 +41,10 @@ const keep = ({ why, stars, rule, market, ...t }) => t; // drop the long explana
 function pack(queue) {
   if (queue.length === 1) return queue[0].text;
   const strip = (x) => x.text.split('\n').filter((l) => l.trim() !== `${SITE_URL}/#chart`).join('\n');
-  const head = `📬 สัญญาณ ${queue.length} รายการ (${when('1d', queue[0].at)} – ${when('1h', queue[queue.length - 1].at)} น.)`;
+  const head = `📬 แจ้งเตือน ${queue.length} รายการ (${when('1d', queue[0].at)} – ${when('1h', queue[queue.length - 1].at)} น.)`;
   let body = '', n = 0;
   for (const x of queue) { const part = `\n\n${strip(x)}`; if ((head + body + part).length > 4700) break; body += part; n++; }
-  return `${head}${body}${n < queue.length ? `\n\n…และอีก ${queue.length - n} สัญญาณ` : ''}\n\nดูทั้งหมด: ${SITE_URL}/#chart`;
+  return `${head}${body}${n < queue.length ? `\n\n…และอีก ${queue.length - n} รายการ` : ''}\n\nดูทั้งหมด: ${SITE_URL}/#chart`;
 }
 
 (async function main() {
@@ -80,7 +80,11 @@ function pack(queue) {
   store.trades = store.trades.map((t) => {
     if (SIG.isFinal(t)) return t;
     const r = keep(SIG.evaluate(t, (follow[t.tf] || C.m5).filter((b) => b.time >= t.createdAt), now));
-    // Exits are recorded but not sent: LINE carries only entry signals and news warnings (user, 9 Oct 2026)
+    // Exits are recorded but not sent (user, 9 Oct 2026) — except two things members must act on (20 Oct 2026, user: "ทำมา"):
+    // TP1 reached → move the stop to entry (the tested results assume it) · a limit that never filled → delete the order
+    const tell = NOTIFY.includes(t.tf) && !t.paused, sd = t.side === 'SELL' ? '🔴 Sell' : '🟢 Buy';
+    if (tell && (r.hit || 0) >= 1 && !(t.hit || 0) && !SIG.isFinal(r)) texts.push({ tf: t.tf, text: `✅ ${TF_TH[t.tf]} ${sd} (เข้า ${f2(r.entry)}) ถึง TP1 ${f2(r.tps[0])} แล้ว\n→ เลื่อน SL ไปที่ทุน ${f2(r.entry)} · ที่เหลือถือต่อไป TP2 ${f2(r.tps[1] || r.tps[0])}` });
+    if (tell && t.status === 'pending' && r.status === 'expired') texts.push({ tf: t.tf, text: `❌ ยกเลิก ${TF_TH[t.tf]} ${sd} รอเข้าที่ ${f2(r.entry)} — ราคาไม่ถึงภายในเวลา\n→ ลบคำสั่ง Limit ที่ตั้งไว้ได้เลย` });
     if (t.status === 'pending' && r.status !== 'pending') console.log(`${r.tf}: limit ${r.side} ${f2(r.entry)} ${r.status === 'expired' ? 'never reached — cancelled' : 'filled'}`);
     if (SIG.isFinal(r) && r.status !== 'expired') console.log(`${r.tf}: closed ${r.side} ${f2(r.entry)} ${r.closedBy || ''} ${signed(r.pnl)}`);
     return r;
