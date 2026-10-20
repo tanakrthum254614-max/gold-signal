@@ -16,8 +16,14 @@ const period = (t) => Math.min(3, Math.floor(((t - start) / (days * DAY)) * 4));
 function emaArr(c, p) { const k = 2 / (p + 1), o = []; c.forEach((x, i) => o.push(i ? x * k + o[i - 1] * (1 - k) : x)); return o; }
 const HK = process.env.HTF, HB = HK ? D[HK] : null, HDUR = HK === '4h' ? 4 * H : H, HE = HB ? emaArr(HB.map((b) => b.close), +(process.env.HTF_EMA || 50)) : null;
 const withTrend = (t, side) => { if (!HB) return true; const i = lb(HB, t - HDUR + 1) - 1; return i >= 50 && side * (HB[i].close - HE[i]) > 0; };
+// CONF=<tf>:<k> (20 Oct 2026, "ขอแม่นยำกว่านี้"): the bigger timeframe's latest closed score must lean the same way by ≥ k
+const CONF = process.env.CONF ? process.env.CONF.split(':') : null;
+const CDUR = { '5m': 5 * M, '15m': 15 * M, '30m': 30 * M, '1h': H };
+const CROWS = CONF ? JSON.parse(fs.readFileSync(path.join(DIR, `score2-${CONF[0]}.json`), 'utf8')) : null;
+const confOk = (t, side) => { if (!CROWS) return true; let lo = 0, hi = CROWS.length; while (lo < hi) { const m = (lo + hi) >> 1; if (CROWS[m].t <= t) lo = m + 1; else hi = m; } const i = lo - 1; const r = i >= 0 ? CROWS[i] : null; // rows sorted by t (closed candle end)
+  return !!r && t - r.t < CDUR[CONF[0]] && side * r.s >= +CONF[1]; };
 const out = []; const say = (s) => { console.log(s); out.push(s); }; const res = {};
-for (const tf of ['5m', '15m', '30m', '1h']) {
+for (const tf of (process.env.TFS || '5m,15m,30m,1h').split(',')) {
   const sys = CS.SYS[tf], dur = sys.frames[0][1], rows = JSON.parse(fs.readFileSync(path.join(DIR, `score2-${tf}.json`), 'utf8'));
   const byT = new Map(rows.map((r) => [r.t, r]));
   for (const side of [1, -1]) {
@@ -28,7 +34,7 @@ for (const tf of ['5m', '15m', '30m', '1h']) {
     let sig = 0;
     for (const r of rows) {
       // MODE=side: one open trade per SIDE (Buy and Sell independent), any signal candle once that side's trade closed
-      if (r.t < start || !ok(r) || !withTrend(r.t, side)) continue;
+      if (r.t < start || !ok(r) || !withTrend(r.t, side) || !confOk(r.t, side)) continue;
       if (process.env.MODE === 'side') { if (r.t < busy) continue; } else if (ok(byT.get(r.t - dur))) continue; // not new
       sig++;
       let t = r.t, price = r.price;
