@@ -17,7 +17,8 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 
 | อะไร | ที่ไหน |
 |---|---|
-| เว็บจริง | https://gold-signal-ten.vercel.app (alias: thander-gold-signal.vercel.app) |
+| เว็บจริง | **https://gold-signal.gold-signal.workers.dev** (Cloudflare Worker ตั้งแต่ 20 ต.ค. 2569 — `worker.js` + `wrangler.toml`, deploy: `bash scripts/cf-build.sh && npx wrangler deploy`, รหัสลับ: `npx wrangler secret put`) · เดิม gold-signal-ten.vercel.app (Vercel thander1 โดนบล็อก) |
+| ข้อมูลส่วนตัว | **Supabase** โปรเจค bormgxqwigwrezzzffmb (Singapore) ตาราง `kv` (path → body) แทน Vercel Blob — `lib/gs.mjs` / `middleware.js` blobGet/blobPut, สคริปต์ใช้ `scripts/blob.js` · env SUPABASE_URL / SUPABASE_SERVICE_KEY (Cloudflare secret + GitHub secret + .env.local) |
 | โค้ด (Public) | https://github.com/tanakrthum254614-max/gold-signal — push `main` = deploy อัตโนมัติ |
 | Vercel | scope `thander1`, project `gold-signal` = **เว็บจริง** (ใช้ CLI `npx vercel`, ล็อกอินเป็น tanakrthum2546-3404) · repo นี้ผูกกับโปรเจค `thander2/gold-signal` ด้วย (สถานะ "Vercel – gold-signal" บน GitHub มาจากตัวนั้น ไม่ใช่เว็บจริง — preview ของมันถูกล็อก เข้าทดสอบไม่ได้) · ทดสอบ preview ให้ใช้ `npx vercel ls gold-signal` → URL `-thander1` แล้ว `npx vercel curl <url>` |
 | ล็อกอิน | **สมาชิกเท่านั้น** (8 ต.ค. 2569) — Clerk dev instance `delicate-tapir-2101` (สมัครด้วยอีเมล+รหัสผ่าน ยืนยันโค้ดทางอีเมล หรือ Google) บน `login.html` → ตรวจฝั่งเซิร์ฟเวอร์ใน `middleware.js` · `?demo=1` เลิกใช้แล้ว · ระบบรหัส GOLD-… ถูกลบแล้ว |
@@ -315,6 +316,15 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 # 📜 บันทึกการเปลี่ยนแปลง (ใหม่สุดอยู่บน)
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
+
+## 20 ต.ค. 2569 — 🚚 ย้ายออกจาก Vercel → Cloudflare Worker + Supabase
+- ผู้ใช้ (ภาพหน้าล็อกอิน "ยืนยันบัญชีไม่สำเร็จ"): "เข้าไม่ได้ กรอกบัญชี 2 บัญชีที่ฟิกไว้" → สาเหตุ: Vercel ทีม thander1 **softBlock FAIR_USE_LIMITS_EXCEEDED / blobTotalSimpleRequests** ตั้งแต่ 20 ต.ค. 16:45 (เปิดเอง 19 พ.ย.) ทั้งเว็บตอบ 402 DEPLOYMENT_DISABLED · ตัวการอ่าน Blob: middleware ทุก request (banned/pro cache 30 วิต่อ instance) + check-loop ทุก 5 นาที (price-alerts-user, pro-expiry, backup-blob list, market-send, push)
+- ผู้ใช้เลือก "ไม่จ่าย ย้ายไปบัญชีอื่น" → "ย้ายไปใช้ supabase ได้ไหม" → Cloudflare (ฟรี ใช้เชิงพาณิชย์ได้) + Supabase · "ทำให้หน่อย"
+- **worker.js**: middleware.js ก่อนทุก request (คืน x-middleware-next = ไปต่อ) → api/*.mjs เดิม (export GET/POST…) → rewrites /blog, /sitemap.xml → ASSETS (dist/) + headers no-store ตาม vercel.json · `/` และ `.../` → index.html เอง · cron 30 1 * * 1-5 = scheduled() เรียก market cron · **wrangler.toml** nodejs_compat (process.env มาจาก vars/secrets), assets run_worker_first, **html_handling "none"** (ไม่งั้น /login.html → 307 /login แล้ว middleware วน) · vars ADMIN_EMAILS, SITE_URL · `scripts/cf-build.sh` = git ls-files ลบ api/lib/scripts/research/docs/.github/*.md ฯลฯ → dist/ (639 ไฟล์ 105 MB)
+- **Supabase** ตาราง `kv(path text pk, body text, updated_at)` RLS เปิด ไม่มี policy (secret key เท่านั้น) · REST: GET `?select=body&path=eq.` · upsert POST `?on_conflict=path` + `prefer: resolution=merge-duplicates` · key ขึ้นต้น eyJ (legacy) ส่ง bearer ด้วย · `scripts/blob.js` = get/put/list/del แบบ @vercel/blob (get คืน {statusCode, stream}) — สคริปต์ 9 ตัว require('./blob') + `ready()` แทนเช็ก BLOB_READ_WRITE_TOKEN · workflow 6 ไฟล์ใช้ secrets SUPABASE_URL / SUPABASE_SERVICE_KEY · `scripts/blob-to-supabase.js` คัดลอก 16 ไฟล์ (ไม่เอา backup/) ตรวจอ่านกลับตรงทุกไฟล์ · `scripts/cf-secrets.sh` (ผู้ใช้รันเอง — ระบบสิทธิ์ไม่ให้ผมแตะรหัสลับ): ✓ ACCESS_SECRET, CLERK_SECRET_KEY, SUPABASE_*, STRIPE_LIVE_SECRET_KEY, CRON_SECRET · ไม่มี AI_GATEWAY_API_KEY → **โค้ช AI ยังใช้ไม่ได้** · Stripe webhook secret อยู่ใน access/stripe-live.json แล้ว แต่ **URL webhook ใน Stripe ต้องเปลี่ยนเป็น /api/pay/webhook ของโดเมนใหม่ (ผู้ใช้ทำ)**
+- lib/blog.mjs: `import CSYS from '../chartsys.js'` แทน createRequire · ลิงก์ gold-signal-ten.vercel.app → workers.dev ใน 34 ไฟล์ · market siteFinal ถือ workers.dev = ยังไม่ใช่โดเมนจริง
+- กับดัก: sed -i ใน Git Bash ทำ CRLF หาย (push.js, golive, market, ref, morning-plan) → เติม \r คืน · SSL ของ subdomain workers.dev ใหม่ใช้ ~1 นาที (curl 35 schannel ระหว่างรอ)
+- ทดสอบ: wrangler dev (ไม่ล็อกอิน = เหมือน Vercel ทุกเส้นทาง · คุกกี้สมาชิก/แอดมิน: หน้าแอป, data branch, ข่าว, /api/me admin:true, admin.html เฉพาะแอดมิน) · เว็บจริง / → welcome, login 200, main.js 401 · workflow new-members รันสำเร็จ (อ่าน/เขียน Supabase) · commit fc2c28b
 
 ## 20 ต.ค. 2569 — 💲 "เฉลี่ยต่อรายการ" คู่กับ % ชนะ · 🔬 เลื่อน SL ไปทุนช้าลง (ไม่ใช้) · 📦 ย่อ Skill.md
 - ผู้ใช้: "เพิ่มเติมหรือปรับอะไรดี หรือควรลดอะไรดี" → เสนอ 5 ข้อ → "ทำมา" (ข้อ 1 + 3 + 4, ข้อ 2 รายงานอย่างเดียว) · ที่มา: ไม้จริงวันนี้ ชนะ 3 × +$1.25 · แพ้ 2 × −$15 → % ชนะดูดีเกินจริง (ต้องชนะ ~92% ถึงเท่าทุน)
