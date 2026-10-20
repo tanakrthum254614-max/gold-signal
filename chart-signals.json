@@ -971,18 +971,18 @@
    "limit": true,
    "tf": "30m",
    "risky": true,
-   "pnl": -0.8,
+   "pnl": -0.53,
    "hit": 0,
    "hitAt": [],
    "stop": 4142.11,
    "realized": 0,
-   "last": 4127.910000000001
+   "last": 4127.64
   },
   {
    "id": "5m-1792518300000",
    "createdAt": 1792518300000,
    "expiresAt": 1792525500000,
-   "status": "pending",
+   "status": "expired",
    "entryAt": 1792518300000,
    "side": "SELL",
    "entry": 4129.72,
@@ -1022,17 +1022,23 @@
    "limit": true,
    "tf": "15m",
    "risky": true,
-   "pnl": -0.08,
+   "pnl": 0.19,
    "hit": 0,
    "hitAt": [],
    "stop": 4142.83,
    "realized": 0,
-   "last": 4127.910000000001
+   "last": 4127.64
   }
  ],
  "brakes": {},
- "updatedAt": 1792519821933,
+ "updatedAt": 1792520121932,
  "resetAt": 1792460907843,
- "lineQueue": [],
+ "lineQueue": [
+  {
+   "at": 1792520121932,
+   "tf": "5m",
+   "text": "❌ ยกเลิก 5 นาที 🔴 Sell รอเข้าที่ 4,129.72 — ราคาไม่ถึงภายในเวลา\n→ ลบคำสั่ง Limit ที่ตั้งไว้ได้เลย"
+  }
+ ],
  "lineAt": 1792519821933
 }
