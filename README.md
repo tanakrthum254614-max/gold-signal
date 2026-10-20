@@ -4,9 +4,9 @@
 
 <br>
 
-<a href="https://gold-signal-ten.vercel.app"><img src="https://img.shields.io/badge/Website-gold--signal--ten.vercel.app-d4af5f?style=flat-square&labelColor=0a0a0c" alt="Website"></a>
-<a href="https://gold-signal-ten.vercel.app/demo.html"><img src="https://img.shields.io/badge/Demo-available-f4ecda?style=flat-square&labelColor=0a0a0c" alt="Demo"></a>
-<img src="https://img.shields.io/badge/Vercel-000?style=flat-square&logo=vercel&logoColor=white" alt="Vercel">
+<a href="https://gold-signal.gold-signal.workers.dev"><img src="https://img.shields.io/badge/Website-gold--signal.workers.dev-d4af5f?style=flat-square&labelColor=0a0a0c" alt="Website"></a>
+<a href="https://gold-signal.gold-signal.workers.dev/demo.html"><img src="https://img.shields.io/badge/Demo-available-f4ecda?style=flat-square&labelColor=0a0a0c" alt="Demo"></a>
+<img src="https://img.shields.io/badge/Cloudflare_Workers-000?style=flat-square&logo=cloudflare&logoColor=F38020" alt="Cloudflare Workers"> <img src="https://img.shields.io/badge/Supabase-000?style=flat-square&logo=supabase&logoColor=3ECF8E" alt="Supabase">
 <img src="https://img.shields.io/badge/Node.js-24-3c873a?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js">
 <img src="https://img.shields.io/badge/GitHub%20Actions-2088ff?style=flat-square&logo=githubactions&logoColor=white" alt="GitHub Actions">
 <img src="https://img.shields.io/badge/Stripe-635bff?style=flat-square&logo=stripe&logoColor=white" alt="Stripe">
@@ -62,10 +62,10 @@ flowchart LR
   subgraph B["Member browser"]
     UI["index.html / main.js<br/>chartzones / chartchat / easy.js"]
   end
-  subgraph V["Vercel"]
+  subgraph V["Cloudflare Worker"]
     MW["middleware.js<br/>login + membership"]
     API["api/*.mjs<br/>pro / pay / coach / market"]
-    BLOB[("Vercel Blob<br/>members / journals / articles")]
+    BLOB[("Supabase<br/>members / journals / articles")]
   end
   subgraph G["GitHub Actions"]
     LOOP["check-loop.sh every 5 min<br/>chart-run / news-warn / alerts / backup"]
@@ -86,9 +86,9 @@ flowchart LR
 ## Tech Stack
 
 - **Frontend** — HTML, CSS, JavaScript (ไม่ใช้ framework) · TradingView Lightweight Charts
-- **Backend** — Vercel Serverless Functions, Edge Middleware, Vercel Blob, Vercel Cron
+- **Backend** — Cloudflare Workers (static assets, middleware, API, Cron Triggers), Supabase (Postgres)
 - **Automation** — GitHub Actions (ตรวจสอบสัญญาณทุก 5 นาทีต่อเนื่อง โดยแต่ละรอบจัดคิวรอบถัดไปเพื่อไม่ให้มีช่วงว่าง, งานรายวัน / รายสัปดาห์ / รายเดือน)
-- **Integrations** — Stripe, Clerk, LINE Messaging API, Web Push, Vercel AI Gateway, SEC EDGAR
+- **Integrations** — Stripe, Clerk, LINE Messaging API, Web Push, Cloudflare Workers AI, SEC EDGAR
 - **Research** — Node.js และ Python สำหรับการทดสอบย้อนหลัง (`research/`)
 
 ## Project Structure
@@ -97,6 +97,7 @@ flowchart LR
 ├── index.html · main.js · chartzones.js · chartchat.js · easy.js   เว็บไซต์สำหรับสมาชิก
 ├── chartsys.js · intraday.js · indicators.js · signals.js          กติกาสัญญาณ (ใช้ร่วมกับระบบบันทึก)
 ├── welcome.html · login.html · pay.html · demo.html · terms.html   หน้าสาธารณะ
+├── worker.js · wrangler.toml                                       Cloudflare Worker (เส้นทาง, API, ไฟล์เว็บ)
 ├── middleware.js                                                   การยืนยันตัวตนและสิทธิ์สมาชิก
 ├── api/            pro · pay · golive · coach · journal · articles · market · news · candles
 ├── lib/            gs · stripe · blog · ref
@@ -111,7 +112,7 @@ flowchart LR
 PORT=3000 node dev-server.js     # ไม่ต้องติดตั้ง dependency — /api/* ใช้ข้อมูลจำลอง
 ```
 
-การ push ไปยัง branch `main` จะ deploy ไปยัง Vercel โดยอัตโนมัติ ข้อมูลการซื้อขายจัดเก็บใน branch `data` ซึ่งไม่ถูก deploy และค่าลับทั้งหมดจัดเก็บใน Vercel / GitHub Secrets
+การนำขึ้นระบบใช้คำสั่ง `bash scripts/cf-build.sh && npx wrangler deploy` (Cloudflare Workers) ข้อมูลการซื้อขายจัดเก็บใน branch `data` ข้อมูลสมาชิกจัดเก็บใน Supabase และค่าลับทั้งหมดจัดเก็บใน Cloudflare Secrets / GitHub Secrets
 
 ## Disclaimer
 
