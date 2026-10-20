@@ -97,6 +97,8 @@
     /* combined % + entries (19 Oct 2026) */
     .rec .tile > .pc { margin: 4px 0 1px; }
     .rec .tile .bs { display: block; font-size: 11px; color: var(--pm-muted); white-space: nowrap; }
+    .rec .tile .bs small { font-size: 9.5px; opacity: .8; }
+    .rec .tile .bs > span { display: block; line-height: 1.5; }
     .rec .tile .bs .b { color: #8fe0bd; } .rec .tile .bs .s { color: #f0a0a7; } .rec .tile .bs .na { color: var(--pm-muted); }
     .rec .tile .cnt { display: block; font-size: 10.5px; color: var(--pm-muted); margin-top: 1px; }
     .rec .tile .ent { display: grid; margin-top: 6px; padding: 4px 4px; border-radius: 8px; border: 1px solid var(--pm-line2); font-size: 10.5px; line-height: 1.35; color: var(--pm-muted); }
@@ -226,7 +228,7 @@
         <div class="tile" data-tf="30m"><span class="tf">30 นาที</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small></div>
         <div class="tile" data-tf="1h"><span class="tf">1 ชั่วโมง</span><b class="pc gold-text">—</b><small class="bs">กำลังโหลด…</small></div>
       </div>
-      <p class="tcap">% ตัวใหญ่ = อัตราชนะรวม Buy + Sell จากการทดสอบย้อนหลัง 2 ปี (ไม่รับประกันผลในอนาคต) · ⚠ = สัญญาณเสี่ยง</p>
+      <p class="tcap">% = อัตราชนะจริงจากทุกรายการที่ระบบบันทึกและปิดแล้ว (ชนะ/ทั้งหมด รวมรายการที่แพ้) · ผลในอดีตไม่รับประกันอนาคต · ⚠ = สัญญาณเสี่ยง</p>
     </section>
     <ol class="steps" aria-label="ขั้นตอนการสมัคร">
       <li class="on"><b>สร้างบัญชี</b>อีเมลหรือ Google</li>
@@ -466,10 +468,12 @@
           // % only (19 Oct 2026, user: "เอากลับมาแบบเดิม ให้แสดงแค่เปอร์เซ็นจุดเข้าในการซื้อ ฝั่ง Buy Sell")
           (j.tiles || []).forEach((t, i) => { const c = tiles[i]; if (!c) return;
             // combined % big · Buy / Sell small · entries tested · the latest entry (19 Oct 2026)
-            const pc = c.querySelector('.pc'), al = t.all;
-            pc.textContent = al ? `${al.tested}%` : '—'; pc.classList.toggle('na', !al);
-            const sd = (k, x) => (x ? `<span class="${k === 'Buy' ? 'b' : 's'}">${k} ${x.tested}%${x.risky ? '<i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}</span>` : `<span class="na">${k} —</span>`);
-            c.querySelector('.bs').innerHTML = `${sd('Buy', t.buy)} · ${sd('Sell', t.sell)}`;
+            // REAL results, not the backtest (20 Oct 2026, user: "ปรับให้เป็นตัวเลขจริงในการเข้าของทุกทามเฟรม ไม่เฟคเลขขึ้นมา"): wins / closed
+            // trades the recorder logged, both sides together big, each side small with its count — losses included
+            const pc = c.querySelector('.pc'), lv = ((t.buy && t.buy.live) || 0) + ((t.sell && t.sell.live) || 0), lw = ((t.buy && t.buy.wins) || 0) + ((t.sell && t.sell.wins) || 0);
+            pc.textContent = lv ? `${Math.round((lw / lv) * 100)}%` : '—'; pc.classList.toggle('na', !lv);
+            const sd = (k, x) => (!x ? `<span class="na">${k} —</span>` : `<span class="${k === 'Buy' ? 'b' : 's'}">${k} ${x.live ? `${Math.round((x.wins / x.live) * 100)}% <small>(${x.wins}/${x.live})</small>` : '— <small>(ยังไม่มีไม้ปิด)</small>'}${x.risky ? '<i class="wr" title="สัญญาณเสี่ยง">⚠</i>' : ''}</span>`);
+            c.querySelector('.bs').innerHTML = `${sd('Buy', t.buy)}${sd('Sell', t.sell)}`; // one line each (fits 4-up / phones)
             // a closed → new entry flashes the tile
             const k = t.last ? `${t.last.at}:${t.last.state}` : ''; if (c.dataset.k != null && c.dataset.k !== k) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); } c.dataset.k = k;
             LAST[t.tf] = t.last; });
@@ -480,7 +484,7 @@
           if (a && a.live && $('reccap')) $('reccap').innerHTML = `ร้อยละ = อัตราชนะจากการทดสอบย้อนหลัง · ด้านล่าง = ผลการซื้อขายจริง<br>ผลรวมทุกรายการ (รวมกรอบเวลาความเสี่ยงสูง): <b>${a.live}</b> รายการ · ชนะ ${Math.round((a.wins / a.live) * 100)}% · <b class="${a.pnl >= 0 ? 'up' : 'down'}">${money(a.pnl)}</b> ต่อออนซ์ · <a href="/welcome.html#stats">รายละเอียด</a>`;
         }).catch(() => {});
       }
-      loadStats(); // tested % only (changes with the monthly study) — the latest-entry box went 19 Oct 2026 (user: "เอาอันนี้ออก")
+      loadStats(); setInterval(loadStats, 60e3); // real results move when trades close · was: tested % only (changes with the monthly study) — the latest-entry box went 19 Oct 2026 (user: "เอาอันนี้ออก")
       stream(); setTimeout(fallback, 4000); setInterval(fallback, 10e3);
       document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { loadStats(); fallback(); } });
 
