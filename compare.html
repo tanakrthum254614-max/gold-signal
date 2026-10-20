@@ -39,6 +39,23 @@
   <p class="lead">สิ่งที่เปลี่ยนในแต่ละรอบของ Gold Signal · <a href="./">กลับไปที่เว็บ</a></p>
 
   <section>
+    <h2>🚚 ย้ายเว็บออกจาก Vercel → Cloudflare Workers + Supabase (เว็บกลับมาใช้ได้)</h2>
+    <p class="date">20 ต.ค. 2569 · ผู้ใช้: "เข้าไม่ได้ กรอกบัญชี 2 บัญชีที่ฟิกไว้" → "ไม่จ่าย ย้ายไปบัญชีอื่น" → "ย้ายไปใช้ supabase ได้ไหม" → "ทำมาให้หน่อยทั้งหมด"</p>
+    <div class="pair">
+      <div class="side old"><h3>🕰️ แบบเก่า: ล็อกอินแล้วขึ้น "ยืนยันบัญชีไม่สำเร็จ" (ภาพจากผู้ใช้ 17:03)</h3><img loading="lazy" src="compare/mig-old-error.png" alt=""></div>
+      <div class="side new"><h3>✨ แบบใหม่: gold-signal.gold-signal.workers.dev — หน้าเข้าสู่ระบบ ราคาสด ผลจริง 4 กรอบ (คอม 1280)</h3><img loading="lazy" src="compare/mig-new-pc.png" alt=""></div>
+    </div>
+    <div class="pair">
+      <div class="side old"><h3>🕰️ แบบเก่า ตอนนี้: gold-signal-ten.vercel.app ทั้งเว็บตอบ 402 "This deployment is temporarily paused" (iPhone 13)</h3><img loading="lazy" src="compare/mig-old-phone.png" alt=""></div>
+      <div class="side new"><h3>✨ แบบใหม่ (iPhone 13) — ไม่มี error ไม่ล้นจอ</h3><img loading="lazy" src="compare/mig-new-phone.png" alt=""></div>
+    </div>
+    <div class="pair">
+      <div class="side old text"><h3>🕰️ แบบเก่า</h3><ul><li>Vercel (แผนฟรี Hobby) บล็อกทั้งทีม thander1 ตั้งแต่ 20 ต.ค. 16:45 เพราะอ่าน Vercel Blob เกินโควตา (เปิดเองอีกที 19 พ.ย.)</li><li>ข้อมูลสมาชิก / PRO / สมุดเทรด อยู่ใน Vercel Blob · แผนฟรีห้ามใช้เชิงพาณิชย์</li><li>โค้ช AI ใช้ Vercel AI Gateway</li><li>push main = deploy อัตโนมัติ</li></ul></div>
+      <div class="side new text"><h3>✨ แบบใหม่</h3><ul><li>เว็บอยู่บน <b>Cloudflare Workers</b> (ฟรี ใช้เชิงพาณิชย์ได้) — middleware และ API ชุดเดิม ไม่ได้เขียนใหม่ · ล็อกอินจริงสำเร็จ 17:36 / 17:48</li><li>ข้อมูลอยู่ใน <b>Supabase</b> (ตาราง kv) — คัดลอก 16 ไฟล์ ตรวจตรงทุกไฟล์</li><li>โค้ช AI ใช้ Cloudflare Workers AI (SEA-LION ภาษาไทย ฟรี ~500 คำตอบ/วัน)</li><li>Stripe webhook + ลิงก์ LINE ริชเมนู/ทักทาย/ตอบกลับ ชี้ที่อยู่ใหม่แล้ว · deploy ด้วย <code>npx wrangler deploy</code></li></ul></div>
+    </div>
+  </section>
+
+  <section>
     <h2>💲 ผลจริงบอก "เฉลี่ยต่อรายการ" คู่กับ % ชนะ · 🔬 ทดสอบเลื่อน SL ไปทุนช้าลง · 📦 Skill.md เล็กลง</h2>
     <p class="date">20 ต.ค. 2569 · ผู้ใช้: "เพิ่มเติมหรือปรับอะไรดี หรือควรลดอะไรดี" → "ทำมา"</p>
     <div class="pair">
