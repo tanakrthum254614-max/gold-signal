@@ -1169,14 +1169,14 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": 4.02,
+   "pnl": 3.3,
    "hit": 1,
    "hitAt": [
     1792549200000
    ],
    "stop": 4119.72,
    "realized": 1.25,
-   "last": 4115.56
+   "last": 4116.64
   },
   {
    "id": "15m-1792547100000",
@@ -1226,7 +1226,7 @@
   }
  ],
  "brakes": {},
- "updatedAt": 1792549521866,
+ "updatedAt": 1792549821996,
  "resetAt": 1792460907843,
  "lineQueue": [
   {
