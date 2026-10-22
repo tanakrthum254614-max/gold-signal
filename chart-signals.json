@@ -1858,7 +1858,8 @@
    "fillBy": 1792629000000,
    "limit": true,
    "tf": "5m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   },
   {
    "id": "30m-1792627200000",
@@ -1880,7 +1881,8 @@
    "fillBy": 1792630800000,
    "limit": true,
    "tf": "30m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   },
   {
    "id": "1h-1792627200000",
@@ -1902,11 +1904,12 @@
    "fillBy": 1792634400000,
    "limit": true,
    "tf": "1h",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1792627221941,
+ "updatedAt": 1792627521765,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1792627221941
