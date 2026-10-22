@@ -2052,11 +2052,12 @@
    "fillBy": 1792637100000,
    "limit": true,
    "tf": "15m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1792633521851,
+ "updatedAt": 1792633821844,
  "resetAt": 1792460907843,
  "lineQueue": [
   {
