@@ -1980,12 +1980,12 @@
    ],
    "stop": 4118.5,
    "realized": 1.25,
-   "pnl": 4.31,
-   "last": 4113.91
+   "pnl": 5.46,
+   "last": 4112.18
   }
  ],
  "brakes": {},
- "updatedAt": 1792632021682,
+ "updatedAt": 1792632321330,
  "resetAt": 1792460907843,
  "lineQueue": [
   {
