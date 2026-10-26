@@ -4087,7 +4087,7 @@
    "id": "5m-1793014200000",
    "createdAt": 1793014200000,
    "expiresAt": 1793043900000,
-   "status": "pending",
+   "status": "expired",
    "entryAt": 1793014200000,
    "side": "BUY",
    "entry": 4009.96,
@@ -4108,8 +4108,8 @@
   }
  ],
  "brakes": {},
- "updatedAt": 1793014521650,
+ "updatedAt": 1793017821978,
  "resetAt": 1792460907843,
  "lineQueue": [],
- "lineAt": 1793014221278
+ "lineAt": 1793017821978
 }
