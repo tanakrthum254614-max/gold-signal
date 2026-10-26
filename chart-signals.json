@@ -4309,16 +4309,16 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": -0.67,
+   "pnl": -1.81,
    "hit": 0,
    "hitAt": [],
    "stop": 3999.04,
    "realized": 0,
-   "last": 4013.37
+   "last": 4012.23
   }
  ],
  "brakes": {},
- "updatedAt": 1793042723191,
+ "updatedAt": 1793043022085,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793037622405
