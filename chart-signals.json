@@ -4429,25 +4429,63 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": 5.15,
+   "pnl": 5,
    "hit": 1,
    "hitAt": [
     1793065800000
    ],
    "stop": 4016.48,
    "realized": 1.25,
-   "last": 4010.63
+   "last": 4010.85
+  },
+  {
+   "id": "15m-1793066400000",
+   "createdAt": 1793066400000,
+   "expiresAt": 1793130300000,
+   "status": "pending",
+   "entryAt": 1793066400000,
+   "side": "SELL",
+   "entry": 4016.2,
+   "sl": 4031.2,
+   "tps": [
+    4012.45,
+    4001.2,
+    3986.2
+   ],
+   "tp": 4012.45,
+   "score": -5,
+   "priceAtSignal": 4011.2,
+   "fillBy": 1793070000000,
+   "limit": true,
+   "tf": "15m",
+   "risky": true
+  },
+  {
+   "id": "30m-1793066400000",
+   "createdAt": 1793066400000,
+   "expiresAt": 1793130300000,
+   "status": "pending",
+   "entryAt": 1793066400000,
+   "side": "SELL",
+   "entry": 4016.2,
+   "sl": 4031.2,
+   "tps": [
+    4012.45,
+    4001.2,
+    3986.2
+   ],
+   "tp": 4012.45,
+   "score": -6,
+   "priceAtSignal": 4011.2,
+   "fillBy": 1793070000000,
+   "limit": true,
+   "tf": "30m",
+   "risky": true
   }
  ],
  "brakes": {},
- "updatedAt": 1793066421848,
+ "updatedAt": 1793066722434,
  "resetAt": 1792460907843,
- "lineQueue": [
-  {
-   "at": 1793066121619,
-   "tf": "5m",
-   "text": "✅ 5 นาที 🔴 Sell (เข้า 4,016.48) ถึง TP1 4,012.73 แล้ว\n→ เลื่อน SL ไปที่ทุน 4,016.48 · ที่เหลือถือต่อไป TP2 4,001.48"
-  }
- ],
- "lineAt": 1793064921710
+ "lineQueue": [],
+ "lineAt": 1793066722434
 }
