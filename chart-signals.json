@@ -5245,11 +5245,12 @@
    "fillBy": 1793168400000,
    "limit": true,
    "tf": "5m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1793166621540,
+ "updatedAt": 1793166921373,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793166621540
