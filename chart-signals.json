@@ -5384,12 +5384,12 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": -8.38,
+   "pnl": -9.02,
    "hit": 0,
    "hitAt": [],
    "stop": 4034.14,
    "realized": 0,
-   "last": 4040.76
+   "last": 4040.12
   },
   {
    "id": "5m-1793199900000",
@@ -5458,18 +5458,18 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": 5.07,
+   "pnl": 5.5,
    "hit": 1,
    "hitAt": [
     1793206800000
    ],
    "stop": 4046.49,
    "realized": 1.25,
-   "last": 4040.76
+   "last": 4040.12
   }
  ],
  "brakes": {},
- "updatedAt": 1793208921745,
+ "updatedAt": 1793209222295,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793208021489
