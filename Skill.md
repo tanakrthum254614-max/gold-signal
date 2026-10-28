@@ -49,6 +49,8 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 - **↩️ 19 ต.ค. 2569: แบบ A (ทุกฝั่ง risky = off) ใช้ได้ไม่กี่ชั่วโมง แล้วผู้ใช้สั่ง "เอาจุดเข้ามากลับมาทั้งหมด ทุกทามเฟรม" (67c0e99) → กลับเป็น ⚠️ risky เหมือนเดิม (ให้จุดเข้า + บันทึก, ไม่ส่ง LINE)** · **บทเรียน: ผู้ใช้ต้องการจุดเข้าทุกกรอบเสมอ (เคยปิด 16 ต.ค. และ 19 ต.ค. แล้วสั่งคืนทั้งสองครั้ง) — ห้ามเสนอปิดกรอบอีก** · ตารางสาธารณะยังเป็นระบบหลักเท่านั้น
 - **จุดเข้าปกติ (15 ต.ค. 2569): 1h BUY · 5h BUY · 1d BUY** · เสี่ยง (risky): 5m BUY (ช่วงล่าสุดขาดทุน) · 5m SELL (ผลจริง 14 ไม้ ชนะ 4 vs ทดสอบ 53%) · 15m (กำไรน้อยมาก) · 30m (ขาดทุน) · 1w (ไม้น้อย ไม่สม่ำเสมอ)
 
+- **📚 28 ต.ค. 2569: ตัวยืนยันจาก PDF (`c.pdf`) ซ้อนบน `confirm`** — 1h BUY/SELL `box` (กรอบพักตัว ท่า 11) · 30m BUY/SELL `rsibrk` (RSI เบรก ท่า 9) · 15m BUY `sess` (07–09/13–15/19–21 น.) · 15m SELL `mss` (กวาด SL + MSS) · 5m ไม่มี · since ฝั่งเหล่านี้ = 2026-10-28T12:00 · ตาราง th ด้านล่างเก่ากว่าโค้ด — ดูค่าจริงใน `chartsys.js`
+
 | กรอบ | กรอบที่ใช้คิด | BUY | SELL | หลบข่าว ±30 นาที |
 |---|---|---|---|---|
 | 5m | 5m · 30m · 1h | ⚠️ เสี่ยง: +5 · SL $15 · **TP 5/10/15 · 📥 รอย่อ $5 ภายใน 1 ชม. (19 ต.ค., 84%)** | ⚠️ เสี่ยง: −6 + SMA20<50 · SL $10 · TP $10/13/20 | ✅ |
@@ -316,6 +318,13 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 # 📜 บันทึกการเปลี่ยนแปลง (ใหม่สุดอยู่บน)
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
+
+## 28 ต.ค. 2569 — 📚 เพิ่มเทคนิคจาก PDF เป็นตัวยืนยันจุดเข้า (ชนะบ่อยขึ้น จุดเข้าน้อยลง)
+- ผู้ใช้วางไฟล์ `PDF/` (ICT.pdf · ท่าคัดกรอง Plan Of God · ท่าเอาไว้สอบกองหรือเทรด (ริวเรน 12 ท่า) · บทสรุปเทคนิค snr — 112 หน้า ส่วนใหญ่เป็นภาพ) → "อ่านในนี้ทุกไฟล์" → สรุปให้ → "เพิ่มเทคนิคนี้เข้าไปเพิ่มความเเม่นยำในการเทรดมากขึ้น" · **PDF/ อยู่ใน .gitignore** (เอกสารคอร์สของคนอื่น, repo public)
+- ข้อมูลใหม่: `research/indicators/fetch.js` + `fetch_news.py` → DATA_DIR = scratchpad/exit (ข้อมูลถึง 28 ต.ค.) · **research/indicators/pdftest.js** (ใหม่): จุดเข้าเดิมของ CHARTSYS + ตัวกรอง 11 แบบ (ema, emax, rsibrk, stoch 5-3-3, sweep, mss, fvg ใช้ครั้งเดียว, pd premium/discount, ote 0.618–0.79, sess, box) + 7 คู่ · แบบเดียวกับ edgetest MODE=side (ถือฝั่งละ 1, limit $0.3, สเปรด $0.4, 4 ช่วง) · `COUNT=1` นับแท่งที่ผ่านเทียบโค้ดเว็บ
+- เกณฑ์เลือก: % ชนะสูงกว่าเดิม + กำไรครบ 4 ช่วง + ≥ 30 ไม้ (ตั้งค่าตัวกรองไว้ก่อนดูผล ไม่ได้จูน) · ผล (2 ปี): 1h BUY base 355 ไม้ 81% +$389 → **box 66 ไม้ 88% +$151** [49/29/14/59] · 1h SELL 112 82% +$209 (ช่วง 4 −6) → **box 31 90% +$151** · 15m BUY 309 86% +$180 → **sess 132 91% +$283** · 15m SELL 898 88% +$598 → **mss 125 90% +$181** · 30m BUY 788 85% +$341 (ช่วง 3–4 ขาดทุน) → **rsibrk 198 88% +$228** · 30m SELL 1,007 87% +$742 → **rsibrk 211 89% +$193** · 5m BUY/SELL: ไม่มีอะไรผ่าน → ไม่เปลี่ยน · FVG/OTE/sweep/stoch/EMA ไม่ช่วยเกือบทุกกรอบ · ⚠️ ลองหลายแบบ = บางตัวอาจดีโดยบังเอิญ
+- โค้ด: intraday.js `conf` เพิ่ม boxLo/boxHi, rsibrk, mssB/mssS, sessB/sessS (จากแท่งกรอบเร็ว `fast`, เวลา `now`) · chartsys.js `CONFIRM.box/mss/rsibrk/sess` (`keys` ต่อฝั่ง) · `confirmed()` เช็กทั้ง `confirm` และ `pdf` · `missing()` / `confNames()` ใช้ใน chartzones / chartchat / main.js (ข้อความ "ต้องมี X + Y ยืนยัน") · win/q/since ใหม่ใน SYS + test-stats.json · **monthly.js: ฝั่งที่มี `pdf` เก็บตัวเลขเดิมจาก test-stats.json** (indlab ไม่รู้จักตัวกรองนี้ — ไม่งั้นต้นเดือนจะเขียนทับ)
+- ตรวจ: pdfverify (scratchpad) โค้ดเว็บ decideWith → confirmed ได้ผ่านเท่ากับ pdftest ทุกฝั่ง (RSI ต่าง 1–4 แท่งจาก warm-up) · chart-run.js dry run ไม่มี error · errscan.cjs คอม + มือถือ ไม่มี error · การ์ดหน้าแรก "ชนะ 88% · คะแนน +4 + SMA 20/50 + กรอบพักตัว" · compare.html + compare/pdf-old|new.png (gold-signal-tools/donutshot.cjs ใหม่) · ?v=202610281200 · b47e184 · wrangler deploy c8bf5aec
 
 ## 20 ต.ค. 2569 — 🚚 ย้ายออกจาก Vercel → Cloudflare Worker + Supabase
 - ผู้ใช้ (ภาพหน้าล็อกอิน "ยืนยันบัญชีไม่สำเร็จ"): "เข้าไม่ได้ กรอกบัญชี 2 บัญชีที่ฟิกไว้" → สาเหตุ: Vercel ทีม thander1 **softBlock FAIR_USE_LIMITS_EXCEEDED / blobTotalSimpleRequests** ตั้งแต่ 20 ต.ค. 16:45 (เปิดเอง 19 พ.ย.) ทั้งเว็บตอบ 402 DEPLOYMENT_DISABLED · ตัวการอ่าน Blob: middleware ทุก request (banned/pro cache 30 วิต่อ instance) + check-loop ทุก 5 นาที (price-alerts-user, pro-expiry, backup-blob list, market-send, push)
