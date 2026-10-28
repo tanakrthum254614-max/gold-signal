@@ -43,9 +43,12 @@ lines.push('', 'หมายเหตุ: เป็นผลจากอดี�
 // The test numbers of the rules in use (confirm side = its filter row, else the plain system) → test-stats.json, which
 // the website, LINE and the safety brake read (CHARTSYS.applyStats)
 const stats = { at: Date.now(), tf: {} };
+const OLD = (() => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, 'test-stats.json'), 'utf8')); } catch (e) { return {}; } })();
 for (const [tf, sys] of Object.entries(CS.SYS)) {
   for (const [side, c] of [['BUY', sys.buy], ['SELL', sys.sell]]) {
     if (!c || !o[tf]) continue;
+    // a side with a PDF technique (c.pdf, 28 Oct 2026) isn't replayed by indlab — keep its pdftest.js numbers (test-stats.json / SYS)
+    if (c.pdf) { const prev = (OLD.tf && OLD.tf[tf] && OLD.tf[tf][side]) || { n: 0, win: c.win, pnl: 0, q: c.q }; (stats.tf[tf] = stats.tf[tf] || {})[side] = prev; continue; }
     const r = c.confirm ? o[tf].find((x) => x.mode === 'filter' && x.side === side && x.ind === NAME[c.confirm]) : o[tf].find((x) => x.mode === 'base' && x.side === side);
     if (r && r.n) (stats.tf[tf] = stats.tf[tf] || {})[side] = { n: r.n, win: r.win, pnl: r.pnl, q: r.q };
   }

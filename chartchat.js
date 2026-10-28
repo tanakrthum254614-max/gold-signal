@@ -163,7 +163,7 @@
     if (!sy.long && d.news) out.push('📰 อยู่ในช่วงข่าวแรง ±30 นาที — ราคากระชากได้ทั้งสองทาง');
     if (!sy.long && d.lastHour) out.push('🕐 ใกล้ตลาดปิด — ระบบไม่เปิดรายการใหม่');
     if (n.stretched) out.push('📏 ราคายืดเกินขอบกรอบราคา (Bollinger) — มักย่อกลับก่อน อย่าไล่ราคา');
-    if (n.unconf) { const c = CHARTSYS.CONFIRM[(d.score > 0 ? sy.buy : sy.sell || sy.buy).confirm]; if (c) out.push(`⏳ คะแนนถึงแล้ว แต่ ${c.name} ยังไม่ยืนยัน — รอ${c.wait}`); }
+    if (n.unconf) { const c = CHARTSYS.missing(d.score > 0 ? sy.buy : sy.sell || sy.buy, d, d.score > 0 ? 1 : -1); if (c) out.push(`⏳ คะแนนถึงแล้ว แต่ ${c.name} ยังไม่ยืนยัน — รอ${c.wait}`); }
     if (s) { const x = side(n, s); if (x && !x.tested) out.push(`⚠️ ฝั่ง${s > 0 ? 'ซื้อ' : 'ขาย'}ของกรอบ ${nameOf(n.tf)} ${CHARTSYS.whyNo(x.c)}`);
       if (x && x.risky) out.push(`${CHARTSYS.riskText(x.c)} — ถ้าเข้า ใช้ขนาดเล็กกว่าปกติ`); }
     return out;
@@ -185,8 +185,8 @@
     const sy = sysOf(n), d = n.d, B = sy.buy, S = sy.sell;
     const fr = d.frames.map((f) => `${f.label}: <b>${INV.trendTh(f.trend)}</b> (${signedScore(({ strong_buy: 2, buy: 1, neutral: 0, sell: -1, strong_sell: -2 })[f.trend] || 0)})`).join(' · ');
     let t = `<b>ทำไมกรอบ ${nameOf(n.tf)} ยังไม่เข้า</b><br>คะแนนรวม <b>${signedScore(d.score)}</b> จาก ${fr}`;
-    t += `<br>• Buy ต้องได้ +${B.th}${B.confirm ? ` และ ${CHARTSYS.CONFIRM[B.confirm].name} ยืนยันขาขึ้น` : ''} → ${side(n, 1).go ? '✅ ถึงแล้ว' : `ขาดอีก ${need(n, side(n, 1))} คะแนน`}`;
-    t += S ? `<br>• Sell ต้องได้ −${S.th}${S.confirm ? ` และ ${CHARTSYS.CONFIRM[S.confirm].name} ยืนยันขาลง` : ''} → ${side(n, -1).go ? '✅ ถึงแล้ว' : `ขาดอีก ${need(n, side(n, -1))} คะแนน`}`
+    t += `<br>• Buy ต้องได้ +${B.th}${B.confirm || B.pdf ? ` และ ${CHARTSYS.confNames(B)} ยืนยันขาขึ้น` : ''} → ${side(n, 1).go ? '✅ ถึงแล้ว' : `ขาดอีก ${need(n, side(n, 1))} คะแนน`}`;
+    t += S ? `<br>• Sell ต้องได้ −${S.th}${S.confirm || S.pdf ? ` และ ${CHARTSYS.confNames(S)} ยืนยันขาลง` : ''} → ${side(n, -1).go ? '✅ ถึงแล้ว' : `ขาดอีก ${need(n, side(n, -1))} คะแนน`}`
       : `<br>• Sell: กรอบนี้ไม่มีสัญญาณขาย (ทดสอบย้อนหลังขาดทุน) — Sell มีแค่กรอบ 5 นาที (⚠️ สัญญาณเสี่ยง)`;
     const bl = blockers(n);
     if (bl.length) t += `<br>${bl.join('<br>')}`;
@@ -202,7 +202,7 @@
     if (x.go) return `${t}<br>${x.risky ? '⚠️ มีสัญญาณ' : '✅ เข้าได้ตอนนี้'}ที่ ~<b>${p2(n.price)}</b> · ${levelsTxt(c, n.price, s)}${risk}`;
     t += risk;
     if (!x.tested) t += `<br>⚠️ ฝั่ง${name}ของกรอบนี้ ${CHARTSYS.whyNo(x.c)}${s < 0 && n.tf !== '5m' ? ' — Sell มีแค่กรอบ 5 นาที (⚠️ เสี่ยง)' : ''}`;
-    else if (!n.br) t += `<br>ขาดอีก ${need(n, x)} คะแนน${c.confirm ? ` และต้องมี ${CHARTSYS.CONFIRM[c.confirm].name} ยืนยัน` : ''}`;
+    else if (!n.br) t += `<br>ขาดอีก ${need(n, x)} คะแนน${c.confirm || c.pdf ? ` และต้องมี ${CHARTSYS.confNames(c)} ยืนยัน` : ''}`;
     const zone = s > 0 ? z.buy : z.sell, spots = [];
     if (zone) spots.push(`โซน${s > 0 ? 'ซื้อ (แนวรับ)' : 'ขาย (แนวต้าน)'} <b>${zTxt(zone)}</b> — ห่างจากราคาตอนนี้ ${p2(Math.abs((s > 0 ? zone.top : zone.bottom) - n.price))} ดอลลาร์`);
     if (n.env) spots.push(`ขอบ${s > 0 ? 'ล่าง' : 'บน'}กรอบราคา <b>${p2(s > 0 ? n.env.lo : n.env.up)}</b>`);

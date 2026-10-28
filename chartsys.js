@@ -22,6 +22,11 @@
 // gone ("จุดที่ให้เข้าซื้อไปไหนหมดของทุกทามเฟรม") — back to ⚠️ risky (as on 15 Oct); `off` stays available.
 // 19 Oct 2026: off again for every risky side (user chose option A after a list full of losses), back the same
 // morning (user: "เอาจุดเข้ามากลับมาทั้งหมด ทุกทามเฟรม") — risky sides keep giving entries, labelled ⚠️, no LINE.
+// pdf (28 Oct 2026, user sent 4 PDFs of trading techniques — ICT, Plan Of God, ริวเรน 12 ท่า, SNR — "เพิ่มเทคนิคนี้เข้าไป
+// เพิ่มความเเม่นยำ"): research/indicators/pdftest.js tried 11 of them (+7 pairs) as an extra confirmation on every side; kept
+// one per side only if win % went up AND it made money in all 4 periods: 1h Buy/Sell = กรอบพักตัว (ท่า 11) 81→88% / 82→90%,
+// 15m Buy = ช่วงเวลาเทรด 07–09 · 13–15 · 19–21 (Plan Of God) 86→91%, 15m Sell = กวาด SL + MSS (ICT) 88→90%, 30m Buy/Sell =
+// RSI เบรก (ท่า 9) 85→88% / 87→89%. Far fewer trades (1h Buy 355 → 66 in 2 years) and less total profit; 5m: nothing passed.
 // MAIN_TF = the timeframe of the signals tab and LINE's "ระบบหลัก" (30m until 15 Oct 2026, now 1h).
 (function (root) {
   const INTRA = root.INTRA || (typeof require === 'function' ? require('./intraday.js') : null);
@@ -39,15 +44,15 @@
     '15m': { frames: INTRA.FRAMES15, span: '2 ปี', 
       // MORE entries (19 Oct 2026, user: "อยากให้จุดเข้า Buy และ Sell เยอะๆ สม่ำเสมอ"): research/indicators/morenew.js — lower score + wait for a
       // better price + TP 3.75/15/30 (×mult), chosen only from settings that made money in all 4 periods; report-2026-10-19-more.txt
-      /* 20 Oct 2026: live-like test (morenew.js fixed: an unfilled limit holds its side until it expires) */ buy: { risky: 'กติกาใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 4, tp1: false, mult: 1, tps: [3.75, 15, 30], confirm: 'bbrev', dip: 3, dipH: 1, since: '2026-10-20T00:00:00+07:00', win: 88, q: [138, 51, 108, 12] },
+      /* 20 Oct 2026: live-like test (morenew.js fixed: an unfilled limit holds its side until it expires) */ buy: { risky: 'กติกาใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 4, tp1: false, mult: 1, tps: [3.75, 15, 30], confirm: 'bbrev', pdf: 'sess', dip: 3, dipH: 1, since: '2026-10-28T12:00:00+07:00', win: 91, q: [45, 83, 104, 51] },
       // SELL (19 Oct 2026, user: "มีฝั่ง Sell บ้างไหม" → "ทำมาเลย"): research/indicators/sellnew.js — score −4, wait for a $5 bounce
       // up to 2 h, SL $15, TP 3.75/15/30: 1,330 trades, 87%, +$1,219, profit in all 4 periods (latest +$531). One of ~1,100 tried → ⚠️
-      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 4, tp1: false, mult: 1, tps: [3.75, 15, 30], confirm: 'roc12', dip: 5, dipH: 1, since: '2026-10-20T00:00:00+07:00', win: 87, q: [145, 23, 309, 102] }, sellQ: [115, -233, -72, 204] },
+      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 4, tp1: false, mult: 1, tps: [3.75, 15, 30], confirm: 'roc12', pdf: 'mss', dip: 5, dipH: 1, since: '2026-10-28T12:00:00+07:00', win: 90, q: [11, 8, 72, 90] }, sellQ: [115, -233, -72, 204] },
     // 30m scale out (19 Oct 2026, "ข้อ 1 + 3"): TP1 $3.75, SL to entry, then $15 / $30 — 1,054 trades, 81% win, +$355 (was TP1 $15: 57%, +$957)
-    '30m': { frames: INTRA.FRAMES, span: '2 ปี', /* 20 Oct 2026: live-like test (morenew.js fixed: an unfilled limit holds its side until it expires) */ buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน (ทดสอบแบบเดียวกับระบบจริง)', th: 4, tp1: false, mult: 1, tps: [3.75, 15, 30], confirm: 'ema921', dip: 5, dipH: 3, since: '2026-10-20T00:00:00+07:00', win: 84, q: [298, 74, 63, -232] }, /* more entries: th 4 + EMA 9/21 (morenew.js) */ /* dip $5 · 3 h: 765 trades 87% +$833 */
+    '30m': { frames: INTRA.FRAMES, span: '2 ปี', /* 20 Oct 2026: live-like test (morenew.js fixed: an unfilled limit holds its side until it expires) */ buy: { risky: 'ช่วงทดสอบล่าสุดขาดทุน (ทดสอบแบบเดียวกับระบบจริง)', th: 4, tp1: false, mult: 1, tps: [3.75, 15, 30], confirm: 'ema921', pdf: 'rsibrk', dip: 5, dipH: 3, since: '2026-10-28T12:00:00+07:00', win: 88, q: [80, 89, 12, 46] }, /* more entries: th 4 + EMA 9/21 (morenew.js) */ /* dip $5 · 3 h: 765 trades 87% +$833 */
       // SELL (19 Oct 2026, sellnew.js): score −3, wait for a $5 bounce up to 3 h, SL $15, TP 3.75/15/30 — 1,376 trades, 87%, +$1,269,
       // profit in all 4 periods (latest +$651). ⚠️ until it has live results
-      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 2, tp1: false, mult: 1, tps: [3.75, 15, 30], confirm: 'roc12', dip: 5, dipH: 1, since: '2026-10-20T00:00:00+07:00', win: 87, q: [90, 101, 214, 209] }, sellQ: [129, -174, -58, 113] },
+      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 2, tp1: false, mult: 1, tps: [3.75, 15, 30], confirm: 'roc12', pdf: 'rsibrk', dip: 5, dipH: 1, since: '2026-10-28T12:00:00+07:00', win: 89, q: [87, 61, 4, 41] }, sellQ: [129, -174, -58, 113] },
     '1h': { news: true, frames: [['h1', H, 60, '1 ชม.'], ['h4', 4 * H, 60, '4 ชม.'], ['h5', 5 * H, 40, '5 ชม.']], span: '2 ปี',
       // scale out (19 Oct 2026, user: "ขอมากกว่า 70 ก็ได้ 50 เปอร์เซ็นต์ดูน้อยไป" → chose "ใช้กับ 1 ชม."): TP1 $7.5 near, then SL to
       // entry, the rest to $30 / $60 — research/indicators/newidea.js PARTIAL=1: 399 trades, 77% win, +$522, profit in all 4
@@ -55,13 +60,13 @@
       // limit entry (19 Oct 2026, user: "ขอแม่นยำจุดในการเข้า" → "ทั้ง 3 กรอบ Buy"): wait for a $3 dip, up to 6 h — 361 trades, 80% win,
       // +$775, profit in all 4 periods (latest +$105; entering at once: 77% +$522, latest +$9)
       // more entries (morenew.js): score +3, wait $10 lower up to 6 h — 583 trades 85% +$1,656, all 4 periods (latest +$214)
-      /* 20 Oct 2026: live-like test (morenew.js fixed: an unfilled limit holds its side until it expires) */ buy: { th: 4, tp1: false, mult: 2, tps: [7.5, 30, 60], confirm: 'sma2050', dip: 6, dipH: 6, since: '2026-10-20T00:00:00+07:00', win: 82, q: [96, 27, 276, 98] },
+      /* 20 Oct 2026: live-like test (morenew.js fixed: an unfilled limit holds its side until it expires) */ buy: { th: 4, tp1: false, mult: 2, tps: [7.5, 30, 60], confirm: 'sma2050', pdf: 'box', dip: 6, dipH: 6, since: '2026-10-28T12:00:00+07:00', win: 88, q: [49, 29, 14, 59] },
       // SELL (17 Oct 2026, user: "ทำมาหมดเลย" — no tested Sell left for falling markets): selltest.js 12 Oct best 1h Sell,
       // score −4 + Bollinger reversal, SL $30, TP 30/40/60 — profitable in all 4 periods but one of ~680 tried, so ⚠️ risky
       // (shown + recorded, no LINE) until 20 live trades say otherwise. Old score-only Sell: −62 / 4 / −112 / 8. Replayed with the site code 17 Oct: 74 trades, 65%, +$593.
       // + wait for a $6 bounce, up to 6 h (19 Oct 2026, sellnew.js): 70 trades, 76%, +$693, all 4 periods profit (at once: 62% +$545)
       // more entries (morenew.js): score −2 + Bollinger reversal, $6 bounce, TP 7.5/30/60 — 168 trades 83% +$532, all 4 periods
-      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 3, tp1: false, mult: 2, tps: [7.5, 30, 60], confirm: 'bbrev', dip: 6, dipH: 2, since: '2026-10-20T00:00:00+07:00', win: 82, q: [68, 30, 53, 49] } },
+      sell: { risky: 'Sell ใหม่ — ยังไม่มีผลจริงครบ 20 รายการ', th: 3, tp1: false, mult: 2, tps: [7.5, 30, 60], confirm: 'bbrev', pdf: 'box', dip: 6, dipH: 2, since: '2026-10-28T12:00:00+07:00', win: 90, q: [50, 39, 52, 10] } },
     '5h': { frames: [['h5', 5 * H, 60, '5 ชม.'], ['d1', DAY, 60, '1 วัน']], span: '2 ปี', long: true, hold: 5 * DAY,
       buy: { th: 3, tp1: false, mult: 4, confirm: 'roc12', since: '2026-10-09T09:40:00+07:00', win: 65, q: [483, 511, 635, 205] }, sellQ: [-72, -179, -6, 105] },
     '1d': { frames: [['d1', DAY, 60, '1 วัน'], ['w1', 7 * DAY, 60, '1 สัปดาห์']], span: '5 ปี', long: true, hold: 20 * DAY,
@@ -83,8 +88,18 @@
     roc12: { name: 'ROC 12', wait: 'ราคาปิดสูง/ต่ำกว่าเมื่อ 12 แท่งก่อน' },
     sma2050: { name: 'SMA 20/50', wait: ' SMA 20 ตัดผ่าน SMA 50' },
     bbrev: { name: 'Bollinger กลับตัว', wait: 'ราคาปิดหลุดขอบ Bollinger แล้วกลับเข้ามา (Sell: ขอบบน)' },
+    // techniques from the user's PDFs (28 Oct 2026, research/indicators/pdftest.js) — c.pdf, checked on top of c.confirm
+    box: { name: 'กรอบพักตัว', wait: 'ราคากลับมาที่ขอบกรอบพักตัว (Buy: ขอบล่าง · Sell: ขอบบน)', keys: ['boxLo', 'boxHi'] },
+    mss: { name: 'กวาด SL + MSS', wait: 'ราคากวาด SL ใต้ Low (Sell: เหนือ High) แล้วปิดทะลุโครงสร้างกลับ', keys: ['mssB', 'mssS'] },
+    rsibrk: { name: 'RSI เบรก', wait: ' RSI 14 ทะลุจุดสูงสุด (Sell: ต่ำสุด) ของ 10 แท่งก่อน' },
+    sess: { name: 'ช่วงเวลาเทรด', wait: 'ช่วงเวลา 07–09 · 13–15 · 19–21 น.', keys: ['sessB', 'sessS'] },
   };
-  const confirmed = (c, dec, side) => !c.confirm || !dec.conf || dec.conf[c.confirm] === side;
+  const confKey = (k, side) => (CONFIRM[k] && CONFIRM[k].keys ? CONFIRM[k].keys[side > 0 ? 0 : 1] : k);
+  const confOk = (k, dec, side) => !k || !dec.conf || dec.conf[confKey(k, side)] === side;
+  const confirmed = (c, dec, side) => confOk(c.confirm, dec, side) && confOk(c.pdf, dec, side);
+  // the confirmation still missing (for "waiting for …" texts) and every confirmation's name (rule texts)
+  const missing = (c, dec, side) => CONFIRM[!confOk(c.confirm, dec, side) ? c.confirm : c.pdf] || null;
+  const confNames = (c) => [c.confirm, c.pdf].filter(Boolean).map((k) => CONFIRM[k].name).join(' + ');
   // A side in use: has settings and isn't switched off
   const on = (c) => (c && !c.off ? c : null);
   const ENTRY_TFS = ['1h', '5h', '1d']; // where entries are on (shown in "use these instead" texts)
@@ -172,7 +187,7 @@
   // Why a side gives no entries (chart card, chat)
   const whyNo = (c) => (c && c.off ? `ปิดจุดเข้าแล้ว (${c.off}) — ใช้ดูทิศเท่านั้น · จุดเข้าอยู่ที่กรอบ 1 ชม. / 5 ชม. / 1 วัน` : 'ทดสอบย้อนหลังแล้วขาดทุน — ระบบไม่ให้สัญญาณฝั่งนี้');
   const MAIN_TF = '1h';
-  const CHARTSYS = { SYS, MAIN_TF, ENTRY_TFS, on, whyNo, riskText, NONE, CONFIRM, usdList, levelsFor, maxScore, dirOf, stretched, unconfirmed, sideInfo, applyStats, decide, trade, brake };
+  const CHARTSYS = { SYS, MAIN_TF, ENTRY_TFS, on, whyNo, riskText, NONE, CONFIRM, confirmed, missing, confNames, usdList, levelsFor, maxScore, dirOf, stretched, unconfirmed, sideInfo, applyStats, decide, trade, brake };
   if (typeof module !== 'undefined' && module.exports) module.exports = CHARTSYS;
   else root.CHARTSYS = CHARTSYS;
 })(typeof window !== 'undefined' ? window : globalThis);

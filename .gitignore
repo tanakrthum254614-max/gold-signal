@@ -11,3 +11,6 @@ outbox.json
 dist/
 .wrangler/
 .dev.vars
+
+# user-supplied course PDFs (third-party material, public repo) — 28 Oct 2026
+PDF/

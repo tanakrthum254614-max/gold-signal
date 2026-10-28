@@ -97,7 +97,41 @@
       const w = cl.slice(i - 19, i + 1), m = w.reduce((a, x) => a + x, 0) / 20, sd = Math.sqrt(w.reduce((a, x) => a + (x - m) ** 2, 0) / 20);
       if (cl[i] < m - 2 * sd) bbrev = 1; else if (cl[i] > m + 2 * sd) bbrev = -1;
     }
-    const conf = { ema921: Math.sign(ema(9) - ema(21)), roc12: n > 12 ? Math.sign(cl[n - 1] - cl[n - 13]) : 0, sma2050: n >= 50 ? Math.sign(sma(20) - sma(50)) : 0, bbrev };
+    // box (28 Oct 2026, the user's PDF "ริวเรน ท่า 11 การพักตัว คือจุดเข้า"; research/indicators/pdftest.js): the 12 candles
+    // before the last were a pause — their range ≤ 4× the 50-candle average candle — and the price is back at the box edge:
+    // boxLo = +1 within one average candle of the box bottom (Buy), boxHi = −1 within one of the top (Sell)
+    let boxLo = 0, boxHi = 0;
+    if (fast.length >= 64) {
+      const f = fast.slice(-64), p = f[63].close, avg = f.slice(14).reduce((a, b) => a + b.high - b.low, 0) / 50, bx = f.slice(51, 63);
+      const hi = Math.max(...bx.map((b) => b.high)), lo = Math.min(...bx.map((b) => b.low));
+      if (hi - lo <= 4 * avg) { if (p <= lo + avg) boxLo = 1; if (p >= hi - avg) boxHi = -1; }
+    }
+    // rsibrk (28 Oct 2026, PDF "ท่า 9 RSI สไนเปอร์"): RSI 14 (Wilder) of the last close beyond the 10 before it — +1 up, −1 down
+    let rsibrk = 0;
+    if (n >= 30) {
+      const r = new Array(n).fill(50); let g = 0, l = 0;
+      for (let i = 1; i < n; i++) { const d = cl[i] - cl[i - 1], up = Math.max(d, 0), dn = Math.max(-d, 0);
+        if (i <= 14) { g += up / 14; l += dn / 14; } else { g = (g * 13 + up) / 14; l = (l * 13 + dn) / 14; }
+        if (i >= 14) r[i] = l ? 100 - 100 / (1 + g / l) : 100; }
+      const prev = r.slice(n - 11, n - 1);
+      if (r[n - 1] > Math.max(...prev)) rsibrk = 1; else if (r[n - 1] < Math.min(...prev)) rsibrk = -1;
+    }
+    // mssB / mssS (28 Oct 2026, PDF ICT model + SNR "MSS"): in the last 12 candles a wick swept the 20-candle low (high) and
+    // closed back inside, then a later candle closed beyond the high (low) of the 6 candles up to the sweep = structure shift
+    const mss = (side) => {
+      const b = fast, z = b.length;
+      for (let j = z - 1; j >= Math.max(21, z - 12); j--) {
+        const w = b.slice(j - 20, j), lo = Math.min(...w.map((x) => x.low)), hi = Math.max(...w.map((x) => x.high));
+        if (side > 0 ? !(b[j].low < lo && b[j].close > lo) : !(b[j].high > hi && b[j].close < hi)) continue;
+        const k6 = b.slice(Math.max(0, j - 5), j + 1), lvl = side > 0 ? Math.max(...k6.map((x) => x.high)) : Math.min(...k6.map((x) => x.low));
+        return b.slice(j + 1).some((x) => side * (x.close - lvl) > 0) ? side : 0;
+      }
+      return 0;
+    };
+    // sess (28 Oct 2026, PDF "Plan Of God" ช่วงเวลาที่ควรเทรด): Thai time 07–09 Asia · 13–15 London · 19–21 New York
+    const th = new Date(now + 7 * 3600e3).getUTCHours(), sess = (th >= 7 && th < 9) || (th >= 13 && th < 15) || (th >= 19 && th < 21);
+    const conf = { ema921: Math.sign(ema(9) - ema(21)), roc12: n > 12 ? Math.sign(cl[n - 1] - cl[n - 13]) : 0, sma2050: n >= 50 ? Math.sign(sma(20) - sma(50)) : 0, bbrev,
+      boxLo, boxHi, rsibrk, mssB: mss(1), mssS: mss(-1), sessB: sess ? 1 : 0, sessS: sess ? -1 : 0 };
     return {
       conf,
       slot: slotOf(now), score, keys, lean, rule,

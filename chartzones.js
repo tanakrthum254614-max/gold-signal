@@ -149,7 +149,7 @@ function ago(ms) {
     });
     return out.sort((a, b) => a.time - b.time);
   }
-  const sideText = (c) => `SL $${Math.round(15 * c.mult)} · ${c.tp1 ? 'TP1' : 'TP'} $${usdList(c).join('/')}${c.confirm ? ` · ต้องมี ${CHARTSYS.CONFIRM[c.confirm].name} ยืนยัน` : ''}`;
+  const sideText = (c) => `SL $${Math.round(15 * c.mult)} · ${c.tp1 ? 'TP1' : 'TP'} $${usdList(c).join('/')}${c.confirm || c.pdf ? ` · ต้องมี ${CHARTSYS.confNames(c)} ยืนยัน` : ''}`;
 
   // Draw for the current timeframe
   window.renderChartZones = function () {
@@ -217,7 +217,7 @@ function ago(ms) {
     }
     else if (noEntry) { head = `⏸ กรอบ ${TF_LABEL[tf]} ใช้ดูกราฟอย่างเดียว — ไม่มีจุดเข้า (ผลทดสอบช่วงล่าสุด/ผลจริงไม่ผ่าน) · จุดเข้าอยู่ที่ <a href="#" data-tf="1h">1 ชม.</a> · <a href="#" data-tf="5h">5 ชม.</a> · <a href="#" data-tf="1d">1 วัน</a>`; cls = 'no'; waitOnly = false; }
     else if (stretched(sys, d)) { head = `⏸ คะแนนถึง ${signedScore(d.score)} แต่ราคายืดเกินขอบ${d.score > 0 ? 'บน' : 'ล่าง'} Bollinger — รอราคากลับเข้ากรอบก่อน`; cls = 'near'; }
-    else if (CHARTSYS.unconfirmed(sys, d)) { const c = CHARTSYS.CONFIRM[(d.score > 0 ? B : S).confirm]; head = `⏸ คะแนนถึง ${signedScore(d.score)} แต่ ${c.name} ยังไม่ยืนยัน${d.score > 0 ? 'ขาขึ้น' : 'ขาลง'} — รอ${c.wait}`; cls = 'near'; }
+    else if (CHARTSYS.unconfirmed(sys, d)) { const c = CHARTSYS.missing(d.score > 0 ? B : S, d, d.score > 0 ? 1 : -1) || { name: 'ตัวยืนยัน', wait: '' }; head = `⏸ คะแนนถึง ${signedScore(d.score)} แต่ ${c.name} ยังไม่ยืนยัน${d.score > 0 ? 'ขาขึ้น' : 'ขาลง'} — รอ${c.wait}`; cls = 'near'; }
     else if (!sys.long && d.news) { head = '⏸ ช่วงข่าวแรง — งดเข้า (พื้นหลังเหลือง)'; cls = 'wait'; }
     else if (!sys.long && d.lastHour) { head = '⏸ ใกล้ตลาดปิด — งดเปิดรายการใหม่'; cls = 'wait'; }
     else if (sellNo) { head = `⚠️ แนวโน้มลง ${signedScore(d.score)} แต่กรอบนี้ไม่ให้สัญญาณ SELL — ฝั่งขายทดสอบไม่ผ่าน · ใช้ดูทิศเท่านั้น (SELL มีแค่ <a href="#" data-tf="5m">กรอบ 5 นาที</a> — ติดป้ายเสี่ยง)`; cls = 'no'; waitOnly = true; }
