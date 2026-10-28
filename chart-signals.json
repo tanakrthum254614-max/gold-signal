@@ -5064,7 +5064,8 @@
    "fillBy": 1793149200000,
    "limit": true,
    "tf": "5m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   },
   {
    "id": "30m-1793145600000",
@@ -5086,11 +5087,12 @@
    "fillBy": 1793156400000,
    "limit": true,
    "tf": "30m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1793145621797,
+ "updatedAt": 1793145921287,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793145621797
