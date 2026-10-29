@@ -5495,20 +5495,20 @@
    "tf": "5m",
    "paused": true,
    "risky": true,
-   "pnl": 3.93,
+   "pnl": 7.64,
    "hit": 1,
    "hitAt": [
     1793236200000
    ],
    "stop": 4049.31,
    "realized": 1.25,
-   "last": 4053.33
+   "last": 4058.89
   },
   {
    "id": "5m-1793235600000",
    "createdAt": 1793235600000,
    "expiresAt": 1793303100000,
-   "status": "active",
+   "status": "loss",
    "entryAt": 1793235600000,
    "side": "SELL",
    "entry": 4042.13,
@@ -5530,8 +5530,11 @@
    "hitAt": [],
    "stop": 4057.13,
    "realized": 0,
-   "pnl": -11.2,
-   "last": 4053.33
+   "pnl": -15,
+   "last": 4053.33,
+   "closedBy": "sl",
+   "exitPrice": 4057.13,
+   "exitAt": 1793236800000
   }
  ],
  "brakes": {
@@ -5540,7 +5543,7 @@
    "until": null
   }
  },
- "updatedAt": 1793236546822,
+ "updatedAt": 1793236821879,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793208021489
