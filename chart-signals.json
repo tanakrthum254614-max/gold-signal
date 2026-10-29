@@ -5921,8 +5921,8 @@
    "id": "15m-1793277900000",
    "createdAt": 1793277900000,
    "expiresAt": 1793303100000,
-   "status": "pending",
-   "entryAt": 1793277900000,
+   "status": "active",
+   "entryAt": 1793279700000,
    "side": "SELL",
    "entry": 4030.24,
    "sl": 4045.24,
@@ -5938,7 +5938,14 @@
    "limit": true,
    "tf": "15m",
    "risky": true,
-   "pnl": 0
+   "pnl": 5.1,
+   "hit": 1,
+   "hitAt": [
+    1793280000000
+   ],
+   "stop": 4030.24,
+   "realized": 1.25,
+   "last": 4024.47
   },
   {
    "id": "5m-1793279700000",
@@ -5961,7 +5968,8 @@
    "limit": true,
    "tf": "5m",
    "paused": true,
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {
@@ -5970,8 +5978,14 @@
    "until": null
   }
  },
- "updatedAt": 1793279721529,
+ "updatedAt": 1793280022387,
  "resetAt": 1792460907843,
- "lineQueue": [],
+ "lineQueue": [
+  {
+   "at": 1793280022387,
+   "tf": "15m",
+   "text": "✅ 15 นาที 🔴 Sell (เข้า 4,030.24) ถึง TP1 4,026.49 แล้ว\n→ เลื่อน SL ไปที่ทุน 4,030.24 · ที่เหลือถือต่อไป TP2 4,015.24"
+  }
+ ],
  "lineAt": 1793279121416
 }
