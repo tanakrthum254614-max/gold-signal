@@ -6375,7 +6375,7 @@
    "id": "30m-1793334600000",
    "createdAt": 1793334600000,
    "expiresAt": 1793389500000,
-   "status": "active",
+   "status": "win",
    "entryAt": 1793334600000,
    "side": "SELL",
    "entry": 3997.43,
@@ -6398,8 +6398,11 @@
    ],
    "stop": 3997.43,
    "realized": 1.25,
-   "pnl": 2.47,
-   "last": 3995.6000000000004
+   "pnl": 1.25,
+   "last": 3995.6000000000004,
+   "closedBy": "be",
+   "exitPrice": 3997.43,
+   "exitAt": 1793335500000
   }
  ],
  "brakes": {
@@ -6408,7 +6411,7 @@
    "until": null
   }
  },
- "updatedAt": 1793335548025,
+ "updatedAt": 1793335821453,
  "resetAt": 1792460907843,
  "lineQueue": [
   {
