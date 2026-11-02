@@ -6973,11 +6973,12 @@
    "fillBy": 1793622900000,
    "limit": true,
    "tf": "5m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1793621121279,
+ "updatedAt": 1793621420923,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793621121279
