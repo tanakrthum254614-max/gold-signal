@@ -7080,11 +7080,33 @@
    "stop": 3932.64,
    "realized": 6.25,
    "last": 3950.96
+  },
+  {
+   "id": "5m-1793633700000",
+   "createdAt": 1793633700000,
+   "expiresAt": 1793652300000,
+   "status": "pending",
+   "entryAt": 1793633700000,
+   "side": "BUY",
+   "entry": 3943.8,
+   "sl": 3928.8,
+   "tps": [
+    3947.55,
+    3958.8,
+    3973.8
+   ],
+   "tp": 3947.55,
+   "score": 2,
+   "priceAtSignal": 3948.8,
+   "fillBy": 1793637300000,
+   "limit": true,
+   "tf": "5m",
+   "risky": true
   }
  ],
  "brakes": {},
- "updatedAt": 1793632821411,
+ "updatedAt": 1793633721867,
  "resetAt": 1792460907843,
  "lineQueue": [],
- "lineAt": 1793631921383
+ "lineAt": 1793633721867
 }
