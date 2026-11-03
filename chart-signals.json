@@ -7193,12 +7193,12 @@
    "hitAt": [],
    "stop": 3938.26,
    "realized": 0,
-   "pnl": -5.83,
-   "last": 3947.43
+   "pnl": 1.55,
+   "last": 3954.81
   }
  ],
  "brakes": {},
- "updatedAt": 1793668221481,
+ "updatedAt": 1793668521531,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793667621412
