@@ -7226,13 +7226,35 @@
    "hitAt": [],
    "stop": 3935.93,
    "realized": 0,
-   "pnl": -3.96,
-   "last": 3946.97
+   "pnl": -4.79,
+   "last": 3946.14
+  },
+  {
+   "id": "30m-1793674800000",
+   "createdAt": 1793674800000,
+   "expiresAt": 1793738700000,
+   "status": "pending",
+   "entryAt": 1793674800000,
+   "side": "SELL",
+   "entry": 3950.76,
+   "sl": 3965.76,
+   "tps": [
+    3947.01,
+    3935.76,
+    3920.76
+   ],
+   "tp": 3947.01,
+   "score": -2,
+   "priceAtSignal": 3945.76,
+   "fillBy": 1793678400000,
+   "limit": true,
+   "tf": "30m",
+   "risky": true
   }
  ],
  "brakes": {},
- "updatedAt": 1793674822160,
+ "updatedAt": 1793674850477,
  "resetAt": 1792460907843,
  "lineQueue": [],
- "lineAt": 1793669422050
+ "lineAt": 1793674850477
 }
