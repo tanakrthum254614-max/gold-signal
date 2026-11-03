@@ -7277,6 +7277,29 @@
    "tf": "5m",
    "risky": true,
    "pnl": 0
+  },
+  {
+   "id": "5m-1793678100000",
+   "createdAt": 1793678100000,
+   "expiresAt": 1793738700000,
+   "status": "pending",
+   "entryAt": 1793678100000,
+   "side": "SELL",
+   "entry": 3933.6,
+   "sl": 3948.6,
+   "tps": [
+    3929.85,
+    3918.6,
+    3903.6
+   ],
+   "tp": 3929.85,
+   "score": -2,
+   "priceAtSignal": 3928.6,
+   "fillBy": 1793679900000,
+   "limit": true,
+   "tf": "5m",
+   "paused": true,
+   "risky": true
   }
  ],
  "brakes": {
@@ -7285,7 +7308,7 @@
    "until": null
   }
  },
- "updatedAt": 1793677521962,
+ "updatedAt": 1793678121385,
  "resetAt": 1792460907843,
  "lineQueue": [
   {
