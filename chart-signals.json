@@ -8006,11 +8006,12 @@
    "fillBy": 1793775600000,
    "limit": true,
    "tf": "5m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1793772021729,
+ "updatedAt": 1793772064699,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793772021729
