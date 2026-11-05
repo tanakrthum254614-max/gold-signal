@@ -8522,12 +8522,12 @@
    "hitAt": [],
    "stop": 4102.91,
    "realized": 0,
-   "pnl": -1.25,
-   "last": 4089.16
+   "pnl": -4.97,
+   "last": 4092.88
   }
  ],
  "brakes": {},
- "updatedAt": 1793894721608,
+ "updatedAt": 1793895021580,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793894421888
