@@ -8553,12 +8553,12 @@
    "hitAt": [],
    "stop": 4106.63,
    "realized": 0,
-   "pnl": -1.91,
-   "last": 4119.720000000001
+   "pnl": -3.65,
+   "last": 4117.98
   }
  ],
  "brakes": {},
- "updatedAt": 1793898321713,
+ "updatedAt": 1793898357258,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793898022731
