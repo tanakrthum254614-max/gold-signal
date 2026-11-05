@@ -8231,11 +8231,12 @@
    "fillBy": 1793844000000,
    "limit": true,
    "tf": "5m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1793840421281,
+ "updatedAt": 1793840721815,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793840421281
