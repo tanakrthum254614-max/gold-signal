@@ -8254,11 +8254,12 @@
    "fillBy": 1793847900000,
    "limit": true,
    "tf": "5m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1793844321828,
+ "updatedAt": 1793844352159,
  "resetAt": 1792460907843,
  "lineQueue": [
   {
