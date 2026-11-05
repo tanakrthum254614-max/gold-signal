@@ -8491,12 +8491,12 @@
    "hitAt": [],
    "stop": 4099.38,
    "realized": 0,
-   "pnl": -9.16,
-   "last": 4105.22
+   "pnl": -10.61,
+   "last": 4103.77
   }
  ],
  "brakes": {},
- "updatedAt": 1793892021926,
+ "updatedAt": 1793892321044,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793891421530
