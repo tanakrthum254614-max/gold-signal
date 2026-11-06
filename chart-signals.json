@@ -9144,16 +9144,16 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": -2.9,
+   "pnl": -5.34,
    "hit": 0,
    "hitAt": [],
    "stop": 4058.27,
    "realized": 0,
-   "last": 4046.17
+   "last": 4048.61
   }
  ],
  "brakes": {},
- "updatedAt": 1793979356206,
+ "updatedAt": 1793979621075,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793976021821
