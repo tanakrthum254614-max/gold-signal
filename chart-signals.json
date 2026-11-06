@@ -8795,6 +8795,29 @@
    "closedBy": "be",
    "exitPrice": 4063.65,
    "exitAt": 1793931300000
+  },
+  {
+   "id": "5m-1793932500000",
+   "createdAt": 1793932500000,
+   "expiresAt": 1793997900000,
+   "status": "pending",
+   "entryAt": 1793932500000,
+   "side": "SELL",
+   "entry": 4069.22,
+   "sl": 4084.22,
+   "tps": [
+    4065.47,
+    4054.22,
+    4039.22
+   ],
+   "tp": 4065.47,
+   "score": -5,
+   "priceAtSignal": 4064.22,
+   "fillBy": 1793934300000,
+   "limit": true,
+   "tf": "5m",
+   "paused": true,
+   "risky": true
   }
  ],
  "brakes": {
@@ -8803,14 +8826,8 @@
    "until": null
   }
  },
- "updatedAt": 1793931921551,
+ "updatedAt": 1793932521344,
  "resetAt": 1792460907843,
- "lineQueue": [
-  {
-   "at": 1793931321969,
-   "tf": "1h",
-   "text": "✅ 1 ชม. 🟢 Buy (เข้า 4,063.65) ถึง TP1 4,071.15 แล้ว\n→ เลื่อน SL ไปที่ทุน 4,063.65 · ที่เหลือถือต่อไป TP2 4,093.65"
-  }
- ],
- "lineAt": 1793930421856
+ "lineQueue": [],
+ "lineAt": 1793932521344
 }
