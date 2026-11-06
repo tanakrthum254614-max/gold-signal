@@ -8936,8 +8936,8 @@
    "hitAt": [],
    "stop": 4057.85,
    "realized": 0,
-   "pnl": -3.28,
-   "last": 4046.13
+   "pnl": -0.45,
+   "last": 4043.3
   },
   {
    "id": "5m-1793945400000",
@@ -9005,11 +9005,12 @@
    "fillBy": 1793951700000,
    "limit": true,
    "tf": "5m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1793949921673,
+ "updatedAt": 1793950221739,
  "resetAt": 1792460907843,
  "lineQueue": [
   {
