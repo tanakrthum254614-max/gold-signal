@@ -9179,12 +9179,12 @@
    "hitAt": [],
    "stop": 4048.12,
    "realized": 0,
-   "pnl": -2.16,
-   "last": 4060.9599999999996
+   "pnl": -2.92,
+   "last": 4060.2
   }
  ],
  "brakes": {},
- "updatedAt": 1793985322567,
+ "updatedAt": 1793985621555,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793984422484
