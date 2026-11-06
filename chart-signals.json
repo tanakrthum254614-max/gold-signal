@@ -8768,7 +8768,7 @@
    "id": "1h-1793930400000",
    "createdAt": 1793930400000,
    "expiresAt": 1793997900000,
-   "status": "pending",
+   "status": "active",
    "entryAt": 1793930400000,
    "side": "BUY",
    "entry": 4063.65,
@@ -8783,7 +8783,13 @@
    "priceAtSignal": 4069.65,
    "fillBy": 1793952000000,
    "limit": true,
-   "tf": "1h"
+   "tf": "1h",
+   "hit": 0,
+   "hitAt": [],
+   "stop": 4033.65,
+   "realized": 0,
+   "pnl": -0.13,
+   "last": 4063.52
   }
  ],
  "brakes": {
@@ -8792,7 +8798,7 @@
    "until": null
   }
  },
- "updatedAt": 1793930421856,
+ "updatedAt": 1793930722032,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793930421856
