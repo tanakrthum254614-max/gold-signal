@@ -9181,12 +9181,12 @@
    ],
    "stop": 4063.12,
    "realized": 1.25,
-   "pnl": 4.5,
-   "last": 4068
+   "pnl": 5.48,
+   "last": 4069.47
   }
  ],
  "brakes": {},
- "updatedAt": 1793989850584,
+ "updatedAt": 1793990121952,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793989821169
