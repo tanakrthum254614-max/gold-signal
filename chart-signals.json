@@ -8768,7 +8768,7 @@
    "id": "1h-1793930400000",
    "createdAt": 1793930400000,
    "expiresAt": 1793997900000,
-   "status": "active",
+   "status": "win",
    "entryAt": 1793930400000,
    "side": "BUY",
    "entry": 4063.65,
@@ -8790,8 +8790,11 @@
    ],
    "stop": 4063.65,
    "realized": 2.5,
-   "pnl": 4.19,
-   "last": 4066.1899999999996
+   "pnl": 2.5,
+   "last": 4066.1899999999996,
+   "closedBy": "be",
+   "exitPrice": 4063.65,
+   "exitAt": 1793931300000
   }
  ],
  "brakes": {
@@ -8800,7 +8803,7 @@
    "until": null
   }
  },
- "updatedAt": 1793931348139,
+ "updatedAt": 1793931621404,
  "resetAt": 1792460907843,
  "lineQueue": [
   {
