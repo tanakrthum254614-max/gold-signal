@@ -8865,7 +8865,8 @@
    "limit": true,
    "tf": "5m",
    "paused": true,
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {
@@ -8874,7 +8875,7 @@
    "until": null
   }
  },
- "updatedAt": 1793937921578,
+ "updatedAt": 1793938221553,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793932521344
