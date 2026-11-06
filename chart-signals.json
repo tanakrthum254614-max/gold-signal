@@ -9120,11 +9120,12 @@
    "fillBy": 1793975700000,
    "limit": true,
    "tf": "5m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1793973921605,
+ "updatedAt": 1793974221482,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1793973921605
