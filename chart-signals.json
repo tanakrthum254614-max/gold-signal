@@ -9248,8 +9248,8 @@
    "id": "5m-1794203700000",
    "createdAt": 1794203700000,
    "expiresAt": 1794257100000,
-   "status": "pending",
-   "entryAt": 1794203700000,
+   "status": "active",
+   "entryAt": 1794204300000,
    "side": "BUY",
    "entry": 4119.14,
    "sl": 4104.14,
@@ -9265,11 +9265,16 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": 0
+   "pnl": -2.42,
+   "hit": 0,
+   "hitAt": [],
+   "stop": 4104.14,
+   "realized": 0,
+   "last": 4116.72
   }
  ],
  "brakes": {},
- "updatedAt": 1794204021911,
+ "updatedAt": 1794204621406,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1794203783796
