@@ -9264,11 +9264,12 @@
    "fillBy": 1794207300000,
    "limit": true,
    "tf": "5m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1794203783796,
+ "updatedAt": 1794204021911,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1794203783796
