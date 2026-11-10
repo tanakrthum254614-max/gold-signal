@@ -9634,8 +9634,8 @@
    "hitAt": [],
    "stop": 4067.71,
    "realized": 0,
-   "pnl": -52.71,
-   "last": 4075
+   "pnl": -47.6,
+   "last": 4080.11
   },
   {
    "id": "5m-1794279600000",
@@ -9957,12 +9957,12 @@
    "tf": "5m",
    "paused": true,
    "risky": true,
-   "pnl": 1.17,
+   "pnl": -3.94,
    "hit": 0,
    "hitAt": [],
    "stop": 4091.17,
    "realized": 0,
-   "last": 4075
+   "last": 4080.11
   },
   {
    "id": "30m-1794312000000",
@@ -9989,8 +9989,8 @@
    "hitAt": [],
    "stop": 4091.21,
    "realized": 0,
-   "pnl": 1.21,
-   "last": 4075
+   "pnl": -3.9,
+   "last": 4080.11
   }
  ],
  "brakes": {
@@ -9999,7 +9999,7 @@
    "until": null
   }
  },
- "updatedAt": 1794315922239,
+ "updatedAt": 1794316221722,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1794312021671
