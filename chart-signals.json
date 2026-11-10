@@ -9515,7 +9515,7 @@
    "id": "1h-1794247200000",
    "createdAt": 1794247200000,
    "expiresAt": 1794343500000,
-   "status": "pending",
+   "status": "expired",
    "entryAt": 1794247200000,
    "side": "BUY",
    "entry": 4096.05,
@@ -9588,8 +9588,8 @@
    "until": null
   }
  },
- "updatedAt": 1794257721638,
+ "updatedAt": 1794268821899,
  "resetAt": 1792460907843,
  "lineQueue": [],
- "lineAt": 1794247221677
+ "lineAt": 1794268821899
 }
