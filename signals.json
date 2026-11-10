@@ -1082,9 +1082,40 @@
    "hitAt": [],
    "stop": 4109.07,
    "pnl": -15
+  },
+  {
+   "id": "2026-11-10",
+   "createdAt": 1794294222955,
+   "expiresAt": 1794343500000,
+   "rule": "market-trend",
+   "trendScore": 5,
+   "priceAtSignal": 4123.89,
+   "advisory": true,
+   "why": [
+    "investing.com วิเคราะห์ 8 ช่วงเวลา: บอก “ลง” 0 · “ขึ้น” 7",
+    "แนวโน้ม ระยะสั้น ขาขึ้นแรง · ระยะกลาง ขาขึ้นแรง · ระยะยาว ขาขึ้น",
+    "ทองแกว่งเฉลี่ยวันละ ~$81.87"
+   ],
+   "source": "investing.com",
+   "alerts": {
+    "entry": 1794294222955
+   },
+   "market": true,
+   "side": "BUY",
+   "entry": 4123.89,
+   "sl": 4108.89,
+   "tps": [
+    4138.89,
+    4143.89,
+    4153.89
+   ],
+   "tp": 4138.89,
+   "stars": 5,
+   "status": "active",
+   "entryAt": 1794294222955
   }
  ],
- "updatedAt": 1794207621370,
+ "updatedAt": 1794294222955,
  "summary": {
   "total": 26,
   "traded": 26,
