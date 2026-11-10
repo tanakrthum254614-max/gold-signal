@@ -9634,8 +9634,8 @@
    "hitAt": [],
    "stop": 4067.71,
    "realized": 0,
-   "pnl": -50.62,
-   "last": 4077.09
+   "pnl": -57.65,
+   "last": 4070.06
   },
   {
    "id": "5m-1794279600000",
@@ -9957,12 +9957,14 @@
    "tf": "5m",
    "paused": true,
    "risky": true,
-   "pnl": -0.92,
-   "hit": 0,
-   "hitAt": [],
-   "stop": 4091.17,
-   "realized": 0,
-   "last": 4077.09
+   "pnl": 5.32,
+   "hit": 1,
+   "hitAt": [
+    1794316800000
+   ],
+   "stop": 4076.17,
+   "realized": 1.25,
+   "last": 4070.06
   },
   {
    "id": "30m-1794312000000",
@@ -9985,12 +9987,14 @@
    "limit": true,
    "tf": "30m",
    "risky": true,
-   "hit": 0,
-   "hitAt": [],
-   "stop": 4091.21,
-   "realized": 0,
-   "pnl": -0.88,
-   "last": 4077.09
+   "hit": 1,
+   "hitAt": [
+    1794316800000
+   ],
+   "stop": 4076.21,
+   "realized": 1.25,
+   "pnl": 5.35,
+   "last": 4070.06
   }
  ],
  "brakes": {
@@ -9999,8 +10003,8 @@
    "until": null
   }
  },
- "updatedAt": 1794316821552,
+ "updatedAt": 1794317121755,
  "resetAt": 1792460907843,
  "lineQueue": [],
- "lineAt": 1794312021671
+ "lineAt": 1794317121755
 }
