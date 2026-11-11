@@ -59,7 +59,7 @@ jobs:
         with:
           node-version: "22"
       - run: pip install -r requirements.txt
-      - name: Check every 5 minutes and record the signals (11 Nov 2026: no LINE / push any more)
+      - name: Check every 5 minutes and record the signals (no LINE or push since 11 Nov 2026)
         env:
           LOOP_MINUTES: ${{ (github.event_name == 'schedule' || inputs.chain) && '28' || '0' }}
           GH_TOKEN: ${{ github.token }}
