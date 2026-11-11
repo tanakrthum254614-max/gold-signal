@@ -1,6 +1,6 @@
 ---
 name: gold-signal
-description: คู่มือโปรเจค Gold Signal — เว็บสัญญาณเทรดทองคำ XAU/USD (สมาชิกเท่านั้น) สัญญาณ Buy/Sell ทุกกรอบเวลา 5 นาที–1 สัปดาห์ (ระบบหลัก 30 นาที) กราฟเรียลไทม์ สถิติข่าวเศรษฐกิจสหรัฐ แจ้ง LINE เฉพาะสัญญาณเข้า + เตือนข่าว และหลังบ้านแอดมิน ใช้เมื่อจะแก้ไข ทดสอบ หรือ deploy โปรเจคนี้
+description: คู่มือโปรเจค Gold Signal — เว็บสัญญาณเทรดทองคำ XAU/USD (เว็บสาธารณะ ไม่ต้องสมัคร ตั้งแต่ 11 พ.ย. 2569) สัญญาณ Buy/Sell ทุกกรอบเวลา 5 นาที–1 สัปดาห์ (ระบบหลัก 1 ชม.) กราฟเรียลไทม์ ข่าวเศรษฐกิจสหรัฐ หุ้นสหรัฐ — ไม่มี LINE / แจ้งเตือนเด้ง / สมาชิก / หลังบ้านแล้ว ใช้เมื่อจะแก้ไข ทดสอบ หรือ deploy โปรเจคนี้
 ---
 
 # Gold Signal — สัญญาณเทรดทองคำ XAU/USD
@@ -13,7 +13,9 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 - ผู้ใช้ขอแยกคู่มือทั้งสองงานเมื่อ 6 ตุลาคม 2569; เก็บรายละเอียดเดิมไว้ทั้งหมด และบันทึกข้อกำหนด Exness เฉพาะคู่มืองานใหม่
 - การแยกเอกสารครั้งนี้ไม่เปลี่ยนหน้าเว็บ กติกาสัญญาณ หรือเปิดระบบซื้อขาย
 
-เว็บและระบบอัตโนมัติที่ให้สัญญาณ **ซื้อ/ขายทองคำ** พร้อม SL/TP ส่งเข้า LINE และ**บันทึกผลชนะ–แพ้จริงทุกไม้** (ไม่ตัดทิ้ง ไม่แก้ย้อนหลัง)
+เว็บและระบบอัตโนมัติที่ให้สัญญาณ **ซื้อ/ขายทองคำ** พร้อม SL/TP บนหน้าเว็บ และ**บันทึกผลชนะ–แพ้จริงทุกไม้** (ไม่ตัดทิ้ง ไม่แก้ย้อนหลัง)
+
+> **🔓 11 พ.ย. 2569 — เว็บสาธารณะ** (ผู้ใช้: "เอาออกที่เชื่อมกับไลน์ ไม่เอาหน้าสมัครหน้าสมาชิกแล้ว" → ฟีเจอร์ที่ผูกบัญชี "เอาออกทั้งหมด" · แจ้งเตือนเด้ง "เอาออกด้วย"): **ไม่มี LINE · web push · สมัคร/ล็อกอิน (Clerk) · จ่ายเงิน (Stripe) · หลังบ้าน · สมุดเทรด · โค้ช AI · แจ้งเตือนราคา · การตลาด/บทความ** แล้ว — ข้อความเรื่องเหล่านี้ที่เหลือในข้อ 1–9 และบันทึกเก่า = **ประวัติ** ไม่ใช่สภาพปัจจุบัน (โค้ดเดิมดูได้ที่ commit 413a2c1) · ตัวบันทึกสัญญาณทุก 5 นาที / เช้า / เสาร์ / รายเดือน ยังรันเหมือนเดิม แค่ไม่ส่งข้อความ (`scripts/notify.js` = log อย่างเดียว) · ห้ามเพิ่ม LINE / สมาชิกกลับเองถ้าผู้ใช้ไม่สั่ง
 
 | อะไร | ที่ไหน |
 |---|---|
@@ -21,9 +23,8 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 | ข้อมูลส่วนตัว | **Supabase** โปรเจค bormgxqwigwrezzzffmb (Singapore) ตาราง `kv` (path → body) แทน Vercel Blob — `lib/gs.mjs` / `middleware.js` blobGet/blobPut, สคริปต์ใช้ `scripts/blob.js` · env SUPABASE_URL / SUPABASE_SERVICE_KEY (Cloudflare secret + GitHub secret + .env.local) |
 | โค้ด (Public) | https://github.com/tanakrthum254614-max/gold-signal — push `main` = deploy อัตโนมัติ |
 | Vercel | scope `thander1`, project `gold-signal` = **เว็บจริง** (ใช้ CLI `npx vercel`, ล็อกอินเป็น tanakrthum2546-3404) · repo นี้ผูกกับโปรเจค `thander2/gold-signal` ด้วย (สถานะ "Vercel – gold-signal" บน GitHub มาจากตัวนั้น ไม่ใช่เว็บจริง — preview ของมันถูกล็อก เข้าทดสอบไม่ได้) · ทดสอบ preview ให้ใช้ `npx vercel ls gold-signal` → URL `-thander1` แล้ว `npx vercel curl <url>` |
-| ล็อกอิน | **สมาชิกเท่านั้น** (8 ต.ค. 2569) — Clerk dev instance `delicate-tapir-2101` (สมัครด้วยอีเมล+รหัสผ่าน ยืนยันโค้ดทางอีเมล หรือ Google) บน `login.html` → ตรวจฝั่งเซิร์ฟเวอร์ใน `middleware.js` · `?demo=1` เลิกใช้แล้ว · ระบบรหัส GOLD-… ถูกลบแล้ว |
-| LINE OA | `@279arudw` · เพิ่มเพื่อน https://line.me/R/ti/p/@279arudw |
-| Secret | GitHub Actions secret `LINE_CHANNEL_ACCESS_TOKEN` (Channel access token *long-lived* จากแท็บ Messaging API) |
+| ล็อกอิน | **ไม่มีแล้ว** (11 พ.ย. 2569) — ทุกคนเปิดเว็บได้ทันที · หน้า login/pay/welcome/demo/terms/privacy/admin → 302 ไป `/` (middleware.js `GONE`) |
+| LINE OA | **เลิกใช้** (11 พ.ย. 2569) `@279arudw` — ไม่มีโค้ดส่งแล้ว ผู้ใช้ปิด/ลบ OA เองได้ · GitHub secret `LINE_CHANNEL_ACCESS_TOKEN` ไม่มี workflow ใช้แล้ว |
 
 ## 0. ทำงานเสร็จแล้วต้องทำต่อ (ทุกครั้ง)
 0. ⏰ **ทุกงาน: ข้อความสุดท้ายต้องเตือนผู้ใช้ "ยังต้องซื้อโดเมน .com (goldsignalth.com)" หลังบันทึก Skill.md แล้ว — จนกว่าผู้ใช้บอกว่าซื้อแล้ว** (17 ต.ค. 2569)
@@ -65,7 +66,7 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 - ตัวเลข win/q ใน SYS ถูกเขียนทับด้วย `test-stats.json` (`CHARTSYS.applyStats`, งาน monthly-research) — ตารางผลอยู่ข้อ 8 · กรอบ long ไม่สนตลาดปิด/ข่าว
 - **เบรก** `CHARTSYS.brake` (คำนวณจาก chart-signals.json ไม่มี state): แพ้ติด 5 ไม้ → พักถึงเปิดตลาดจันทร์หน้า (long พัก 30 วัน) · 20 ไม้ล่าสุดชนะต่ำกว่าทดสอบเกิน 12 จุด → พักจนกว่าจะดีขึ้น · ระหว่างพักยังบันทึกไม้ (`paused: true`) แต่ไม่ส่ง LINE
 - **ตัวบันทึก** `scripts/chart-run.js` (ทุกเช็ก 5 นาทีใน check-loop.sh): ตามไม้เปิดบนแท่ง 5m (กรอบสั้น) / 1h (5h, 1d) / 1d (1w) แล้วเปิดไม้ใหม่ครั้งละ 1 ไม้ต่อกรอบที่เปิดแท่งถัดไป · แท่ง investing.com m15/m30/h1/h5 จาก data.json + Binance PAXG m5/h4/d1/w1 เลื่อนด้วย **ค่ากลางส่วนต่าง 12 แท่ง m15 ที่เวลาตรงกัน** (log `PAXG → spot offset`) · เขียน `chart-signals.json` บน branch data
-- **LINE** ส่งเฉพาะ "เข้าไม้" ของกรอบใน `CHART_NOTIFY` (ค่าเริ่ม **1h,5h,1d** — 5m SELL ไม่ส่ง LINE · หัวข้อ "⏱️ สัญญาณ 1 ชม. (ระบบหลัก)") · ไม้ของฝั่งเสี่ยงบันทึกแต่ไม่ส่ง LINE · ไม่ส่งผลปิดไม้/พัก-กลับมา (log อย่างเดียว) · web push ส่งข้อความเดียวกันอัตโนมัติ
+- **(ประวัติ — ไม่ส่งแล้ว 11 พ.ย.) LINE** ส่งเฉพาะ "เข้าไม้" ของกรอบใน `CHART_NOTIFY` (ค่าเริ่ม **1h,5h,1d** — 5m SELL ไม่ส่ง LINE · หัวข้อ "⏱️ สัญญาณ 1 ชม. (ระบบหลัก)") · ไม้ของฝั่งเสี่ยงบันทึกแต่ไม่ส่ง LINE · ไม่ส่งผลปิดไม้/พัก-กลับมา (log อย่างเดียว) · web push ส่งข้อความเดียวกันอัตโนมัติ
 
 ### บนหน้าเว็บ
 - **กราฟ** (`chartzones.js`): ป้าย Buy/Sell ที่แท่งตัดสินใจ, เส้นไม้ที่ปิดแล้ว (เข้า/TP ✓/SL ✗), กล่อง position ของไม้ที่ถืออยู่ หรือแผนฝั่งเดียว (`CZ_PLANS`) ทางขวาแท่งล่าสุด, ลูกศรเปลี่ยนทิศ (`fdir`), โซน swing + เส้นโค้ง NWE (ภาพประกอบเท่านั้น — ทดสอบแล้วขาดทุน), ช่อง Buy | Sell พร้อม % · ปุ่ม "มุมมองสะอาด" (`gs-clean`) · เลื่อนย้อนดูวันก่อนได้ (`loadOlder`, Binance) · ไม้ที่บันทึกจริงมาก่อนผล replay → ถือไม้ตรงกันทุกหน้า
@@ -87,7 +88,7 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
   - **ทุกคนมีภาพ** (16 ต.ค., ผู้ใช้: "เอาให้มีทุกคน … เว้นว่างไว้มันดูไม่น่าเชื่อถือ"): ลำดับ `FILE` (ไฟล์ Commons ที่ตรวจเอง — Terry Smith MNZM + `POS` ครอป/ซูมจากรูปหมู่) → หน้า Wikipedia/Wikidata → `commonsSearch` (ชื่อเต็มเรียงกันในชื่อไฟล์ + คำอธิบายต้องมี investor/hedge fund/fund manager/ชื่อกองทุน — กันคนชื่อซ้ำ) → โลโก้กองทุน `zframes/gurus-logos/<domain>.png|ico` (ตรวจด้วยตา 8 ไฟล์; บริการ favicon ไม่เสถียรจาก GitHub) → ป้ายชื่อกองทุน `MARK` (SCION, DUQUESNE, HIMALAYA, THIRD POINT, GREENLIGHT, GOTHAM) · ผล: รูป 14 · โลโก้ 8 · ป้ายชื่อ 6 · **ไม่ใช้รูปมีลิขสิทธิ์** · himcap.com = ไอคอน Webflow, thirdpoint.com = placeholder → ไม่ใช้ · แก้หน่วยพันดอลลาร์: ต้อง median < $3 **และ** รวม < $50M (Oaktree เคยเป็น $3.78 ล้านล้าน)
   - **⚡ ล่าสุดจาก SEC (สด)** (16 ต.ค., "ขอทุกอย่างแบบเรียลไทม์"): `.github/workflows/gurus-live.yml` ทุก 10 นาที → `scripts/gurus-live.sh` → `scripts/gurus-live.js` (submissions ของ 28 CIK, 45 วันล่าสุด): ฟอร์ม 4 (อ่าน XML: เฉพาะที่ rptOwnerCik = กูรู, รวมรายการ P/S, ราคาเฉลี่ย, ถือหลังทำรายการ = ค่ามากสุดของคลาสหลัก) · SCHEDULE 13D/13G (issuerName, % ของบริษัท, CUSIP→ticker จาก gurus-cusip.json) · 13F-HR ใหม่กว่า gurus.json → รัน gurus-13f.js ทันที · บันทึกลง data branch เฉพาะเมื่อเปลี่ยน · `zframes/dashboards/gurus-live.json` (middleware DATA) · gurus.js `guruLive` การ์ดบนสุดของแท็บ + ส่วนในหน้าพอร์ตแต่ละคน · อ่านใหม่ทุก 2 นาที, "x นาทีที่แล้ว" + ราคาสดเทียบราคาที่ซื้อทุก 30 วิ · gurus-13f.js export { GURUS, UA } (main รันเฉพาะ require.main)
   - **⭐ ติดตาม / 🔔 แจ้งเตือน / ARK รายวัน** (16 ต.ค.): middleware `/api/gurus/follow` (GET { ciks } · POST header x-follow base64 { ciks }) → Blob `access/guru-follows.json` { follows: { who: [cik] } } · gurus.js ☆/★ `data-follow` บนการ์ด+หน้าพอร์ต (localStorage gs-guru-follow สำรอง) ติดตามขึ้นก่อน · การ์ดล่าสุดมีชิป "⭐ เฉพาะที่ติดตาม" · `arkTrades()` ใน gurus-live.js: CSV 6 กองทุน (assets.ark-funds.com) snapshot ต่อกองทุนใน `zframes/dashboards/gurus-ark.json` (data branch) → วันที่ใหม่ = รายการ kind `ark` (≥0.5% เปลี่ยน, 6 ใหญ่สุดต่อฝั่ง) · รายการ f4/ark ใหม่ → `GURUS_NEW` → `scripts/gurus-notify.js` หลัง data_save สำเร็จ → push.js `opts.pick(sub, i)` (ติดตามใครไว้ = เฉพาะคนนั้น, ไม่ติดตาม = ทั้งหมด) · ข้อความขึ้นต้น 🔔 → คลิกเปิด /#zframes · gurus-live.yml มี npm install + BLOB/VAPID · ทดสอบ gold-signal-tools/gurufollow.cjs
-- เมนู 6 แท็บ: สัญญาณ · ข่าวสหรัฐ · กราฟ · หุ้นสหรัฐ · สมุดเทรด · บัญชี — ไอคอนเส้น SVG (**ห้ามกลับไปใช้อีโมจิ**) · ≥900px เป็นเมนูซ้าย, มือถือเป็นแถบล่าง
+- เมนู 5 แท็บ (11 พ.ย. 2569): สัญญาณ · ข่าวสหรัฐ · กราฟ · หุ้นสหรัฐ · ตั้งค่า (`--tabs:5` บน nav) — ไอคอนเส้น SVG (**ห้ามกลับไปใช้อีโมจิ**) · ≥900px เป็นเมนูซ้าย, มือถือเป็นแถบล่าง
 - **มือถือย่อทั้งหน้า** (16 ต.ค.): head script ใน index.html (`<meta name="viewport" id="vp">`) — มือถือ (ด้านสั้นของ screen ≤600 + pointer coarse) ตั้ง viewport `width = ด้านกว้างจอ × S, initial-scale = 1/S` โดย **S = 1.75** (ทุกอย่างเหลือ ~57%; เดิม 1.5 → ผู้ใช้ "ขอเล็กลงกว่านี้อีกนิด") + class `vp-scaled` ที่ html · คำนวณใหม่เมื่อหมุนจอ · แนวนอน 844 → CSS กว้าง 1477 = ได้หน้าแบบคอม (เมนูซ้ายเต็ม) · **ผล: กฎ CSS มือถือแนวนอน (แถบไอคอนซ้าย/บล็อก ≤600) ไม่ match แล้วบนมือถือที่ย่อ** · zframes/app.js ไม่ใส่ `html.phone` ถ้าหน้าแม่มี `vp-scaled` · อยากเล็ก/ใหญ่ขึ้น = แก้ S (มากขึ้น = เล็กลง)
   - **พื้นที่กดบนมือถือที่ย่อ** (16 ต.ค.): terminal.css `html.vp-scaled` ปุ่ม .cc-mode/.cc-tfs/.cc-quick/.nf-chips/.jr-tools .btn/.tfs min-height 44px (≈25 px บนจอจริง) · zframes app.js ใส่ `html.site-scaled` เมื่อหน้าแม่ vp-scaled → .zn button/.rng/.top select min-height 44px · ตัวหนังสือไม่เปลี่ยน · ตรวจ `gold-signal-tools/phoneaudit.cjs` (5 รุ่น × 2 แนว × 6 แท็บ: ล้น/ตกขอบ/ตัวหนังสือเล็กสุด/ปุ่มเล็ก) + `smalltaps.cjs` (ปุ่มที่ < 22 px บนจอจริง) · ตัวหนังสือเล็กสุดบนจอจริง ~6–7 px (11px × 0.571)
   - **iPhone (ผู้ใช้ใช้ iPhone 13)** (16 ต.ค.): head script ไม่ใส่ viewport-fit=cover (Safari เว้นรอยบากเอง) + minimum-scale = initial-scale · ทิศจอจาก screen.orientation.type → window.orientation → innerWidth>innerHeight (iPhone ไม่สลับ screen.width/height, innerWidth = ความกว้างที่เราตั้ง) · fit ซ้ำ 150/600 ms หลังหมุน + screen.orientation change · apple-mobile-web-app-status-bar-style = black (ทึบ — ไม่มี cover แล้ว) · CSS `-webkit-text-size-adjust: 100%` ทั้งเว็บ+zframes · ช่องพิมพ์ 16px บน vp-scaled/site-scaled · ui.js หน้าหมุนจอ: iPhone ซ่อนปุ่มเต็มจอ + บอกวิธีปิดล็อกหมุนจอ · ทดสอบ `gold-signal-tools/iphone13.cjs` (UA iOS, 390x844 DPR3, หมุน แนวตั้ง→นอน→ตั้ง) — Chrome จำลอง ไม่ใช่ Safari จริง
@@ -103,18 +104,19 @@ description: คู่มือโปรเจค Gold Signal — เว็บ�
 - **การนับผล** (`signals.js` → `evaluateTargets`): ปิด ⅓ ที่แต่ละ TP · ถึง TP1 แล้วเลื่อน SL ไปทุน · ชนะ = ถึง TP1 ก่อน SL · แท่งเดียวโดนทั้งคู่ = นับ SL ก่อน · ไม้เก่าที่มี `tp` เดียวใช้ `evaluate` แบบเดิม — อย่าลบ
 - **สเปรด**: เซิร์ฟเวอร์ `vars.SPREAD_USD` (0.4) · เว็บใช้ค่าที่ผู้ใช้ตั้ง · **ขนาดไม้** 0.01 lot = 1 ออนซ์ → lot = ทุน × %เสี่ยง ÷ (SL × 100) ปัดลง
 - **ข่าวแรงสหรัฐ**: `endpoints.investing.com/pd-instruments/v1/calendars/economic/events/occurrences?domain_id=1&country_ids=5&importance=high` (CORS เปิด) — งดเข้า ±30 นาทีเฉพาะกรอบ 5m / 1h (หน้าแรกด้วย เพราะระบบหลักคือ 1h)
-- **LINE ทั้งระบบ = สัญญาณเข้า + เตือนข่าว + ภาพรวมเช้า** · รวมเป็นคำขอเดียวต่อรอบ (`OUTBOX` → `flush.js`) · โควตาฟรี 300/เดือน (ดูข้อ 7) · ส่งพลาด = log ไม่ล้ม
+- **(ประวัติ — เลิกแล้ว 11 พ.ย. 2569) LINE ทั้งระบบ = สัญญาณเข้า + เตือนข่าว + ภาพรวมเช้า** · รวมเป็นคำขอเดียวต่อรอบ (`OUTBOX` → `flush.js`) · โควตาฟรี 300/เดือน (ดูข้อ 7) · ส่งพลาด = log ไม่ล้ม
   - **ชนิดข้อความ + กันโควตา** (16 ต.ค.): scripts/notify.js `send(texts, { kind })` / `sendFlex(flex, { kind })` — `signal` (ค่าเริ่มต้น: chart-run, alerts) ส่ง LINE เสมอ · `extra` (morning-plan ภาพรวม, intraday-run เตือนข่าว, weekly) ส่ง LINE เฉพาะเมื่อ `lineRoom()`: โควตาเหลือ − เพื่อน ≥ เพื่อน × 15 (เพื่อน = /v2/bot/insight/followers เมื่อวาน; ไม่รู้ = ใช้ไม่เกิน 50%) ไม่งั้นแจ้งเตือนเว็บอย่างเดียว · `admin` (notify-failure, line-quota เตือน 80%) = web push เครื่องแอดมิน + LINE push ถึง LINE_OWNER_ID ถ้ามี — **ไม่ broadcast** · env LINE_EXTRAS=on|off บังคับได้ · OUTBOX เก็บ {text, kind} (string เก่า = signal) · ทดสอบ `node scripts/test-notify-kinds.js` (fake LINE API)
 
-### แจ้งเตือนบนเครื่อง (PWA) + สมาชิก + หลังบ้าน
-- PWA: `manifest.webmanifest`, `icons/`, `sw.js` (ไม่แคชข้อมูล, รับ push) · `pwa.js` ปุ่มติดตั้ง + เปิดแจ้งเตือน → เก็บใน Clerk `unsafeMetadata.push` (≤5 เครื่อง) · `scripts/push.js` ส่ง web push ทุกครั้งที่ส่ง LINE · VAPID ตั้งแล้ว (8 ต.ค., config.js มี vapidPublicKey)
-- **สมาชิกเท่านั้น**: `login.html` (Clerk อีเมล/Google) → `POST /api/session` → คุกกี้ `gs_auth` 14 วัน · `middleware.js` ตรวจทุก request (ห้าม import แพ็กเกจ, ไม่รับ body) · ไม่ล็อกอิน: หน้า → 302 /login.html, ไฟล์อื่น 401 · ระงับสมาชิกได้ (`access/banned.json`) · `?demo=1` เลิกใช้แล้ว
-  - **หน้า Demo** (16 ต.ค., ผู้ใช้อยากให้คนสแกน QR ดูก่อนสมัคร): `demo.html` อยู่ใน PUBLIC ของ middleware.js · ราคาสด + กราฟแท่งเทียนธรรมดา (lightweight-charts, investing.com → Binance PAXG สำรอง, โหลดใหม่ทุก 5 วิ, กรอบ 5m/15m/1h/5h/1d/1w) · **ไม่โหลดไฟล์ของสมาชิกเลย** (chartsys/chartzones/chartchat/main ฯลฯ ยัง 401 สำหรับคนไม่ล็อกอิน — ตรวจบนเว็บจริงแล้ว) · การ์ด 🔒 ฟีเจอร์สมาชิก (ข้อความเบลอเป็นตัวอย่าง ไม่ใช่ข้อมูลจริง) + ปุ่ม → /login.html#signup · login.html มีปุ่ม "👀 ทดลองดูก่อน (Demo)" เหนือกล่องล็อกอิน · ทดสอบ gold-signal-tools/demotest.cjs (ไม่มีคำขอไฟล์สมาชิก) + demolive.cjs
-- **💲 ราคา (16 ต.ค. 2569 ดึก): 149 บาท/เดือน · 1,290 บาท/ปี** — ผู้ใช้: "ปรับราคาเป็น 149" + เลือกรายปี 1,290 · เปลี่ยนราคาที่หลังบ้าน ⭐ PRO → ใส่ราคา → **💲 บันทึกราคาใหม่** (api/golive.mjs action 'prices': สร้าง Price THB ใหม่ + archive ตัวเก่า + อัปเดต stripe-live.json; คนที่สมัครบัตรไว้แล้วจ่ายราคาเดิมต่อ) · lib/stripe.mjs prices() cache 1 นาที · ข้อความ pay/login/demo/terms เขียนราคาไว้ตรง ๆ ต้องแก้ด้วยถ้าเปลี่ยนอีก (pay.html ดึงราคาจริงจาก /api/pro ทับ) · **อย่ากด 🚀 ซ้ำเพื่อเปลี่ยนราคา** (🚀 ไม่เปลี่ยนราคาที่มีแล้ว และให้ PRO ฟรีสมาชิกใหม่) · ทดสอบ gold-signal-tools/pricetest.mjs + adminprice.cjs
-- **💰 สมาชิกต้องจ่ายก่อน (16 ต.ค. 2569 ดึก)**: paywall เปิดอยู่ → middleware `paidOk(who)` (แอดมิน หรือ pro.json until > now) ไม่ผ่าน = หน้า (/, *.html) 302 → **/pay.html** · อย่างอื่น 402 `{pay:true}` · เปิดได้: `PAY_OPEN` = /pay.html, /api/pro, /api/pay/checkout|portal, /api/visit + /api/me, /api/logout, /api/paid (อ่าน pro.json สด) · checkout success → /pay.html?pay=ok (poll /api/paid ทุก 2 วิ แล้วเข้า /) · cancel → ?pay=cancel · **ไม่มีแบบฟรีแล้ว** (ล็อกฟีเจอร์ฟรี/PRO เดิมยังอยู่ในโค้ดแต่ไม่มีผลเพราะคนไม่จ่ายเข้าไม่ได้) · login/demo/terms เปลี่ยนคำว่า "ฟรี" เป็นราคา · ทดสอบ gold-signal-tools/paidtest.mjs (middleware) + paypage.cjs (หน้า) · **ADMIN_EMAILS = tanakrthum2546@gmail.com, tanakrthum254614@gmail.com** (ผู้ใช้ขอ 2 คน)
-- **⭐ PRO / Stripe — 🟢 เปิดเก็บเงินจริงแล้ว 16 ต.ค. 2569 22:30** (Blob access/pro-config.json enabled:true · access/stripe-live.json = product prod_VS7KvGWa67Ao2q + ราคา THB 199/1,990 + webhook we_1URD5w1Rf1sT8NWCPjuzNwql → `${SITE_URL}/api/pay/webhook` (**ย้ายโดเมนต้องแก้ URL webhook ใน Stripe ด้วย**) · env STRIPE_LIVE_SECRET_KEY = rk_live_ แบบ "Full access—except sensitive operations" ใส่ผ่านหน้าเว็บ Vercel (คำสั่ง `!` ใส่ค่าไม่ได้ เพราะไม่ interactive) · ผู้ใช้ 2 คนที่เหลือคือแอดมิน · สมาชิกเดิม 1 คนได้ PRO ฟรีถึง ~15 พ.ย. · บัญชี Stripe ยังไม่ผูกบัญชีธนาคาร (⚠️ เงินค้างใน Stripe จนกว่าเพิ่มที่ Settings → Payouts) · PromptPay active · การ์ด #proCard: แอดมินเห็นแพ็กเกจเป็น **ตัวอย่าง (ปุ่ม disabled)** · ตรวจ Blob: scratchpad blobpeek.mjs กับ env pull production) — ประวัติเดิม: revert 9ee2c92 (โค้ดจาก payments-shelved: lib/stripe.mjs, api/pro.mjs, api/pay/{checkout,portal,webhook}.mjs, api/golive.mjs, scripts/stripe-setup.mjs, grant-existing.mjs, หลังบ้านแท็บ ⭐ PRO + 🚀, การ์ด #proCard ใน journal.js) · **PRO_FEATURES ค่าเริ่มต้น `ai,dashboard,signals,alerts`** (lib/gs.mjs + middleware.js ต้องตรงกัน) · ราคา 199/เดือน 1,990/ปี · paywall เปิดเมื่อ env PRO_ENABLED=1 หรือ Blob `access/pro-config.json { enabled }` (ปุ่ม 🚀) — **17 ต.ค. ตรวจแล้ว: ไม่มี PRO_ENABLED, ไม่มี pro-config.json, pro.json 0 คน = ทุกคนใช้ฟรี** · เปิดแล้วสมาชิกฟรี: middleware 402 ที่ /zframes/*, /api/zframes/*, /api/candles, /api/gurus/follow (proWall หน้า "หุ้นสหรัฐ + พอร์ตกูรู สำหรับ PRO") · /chart-signals.json กรองเหลือ tf 1h · /api/alerts ตั้งได้ 1 (PRO 10, เกิน = 402) · โค้ช api/coach.mjs allowed(m,"ai") 402 · หน้าเว็บ `pro.js` (โหลดหลัง config.js) GET /api/pro → `gsLocked(feature, tf)` (signals ล็อกเมื่อ tf ≠ 1h) · chartzones.js renderChartZones: ล็อก = ลบ markers/zones/decor + CZ_OPEN/CZ_PLANS = null + `#tab-chart.tf-locked` (ซ่อน .cz-box แสดง .tf-lock) · chartchat.js ask(): ล็อกกรอบอื่น + all/bestbuy/bestsell · `terms.html` สาธารณะ (PUBLIC): แพ็กเกจ/ราคา/เงื่อนไข/ยกเลิก/คืนเงิน 7 วัน/ติดต่อ — Stripe ใช้ตรวจ · ทดสอบ gold-signal-tools/protest.mjs (middleware ทุกกรณี) + prouitest.cjs (หน้าเว็บ off/on) · **ที่ผู้ใช้ต้องทำก่อนกด 🚀**: Stripe "Thander" (TH) → Verify your business (บัตรประชาชน + บัญชีธนาคาร + เว็บ gold-signal-ten.vercel.app/terms.html) → เปิด PromptPay ใน Payment methods → สร้าง restricted live key → `npx vercel env add STRIPE_LIVE_SECRET_KEY production --sensitive` → หลังบ้าน ⭐ PRO → เช็กลิสต์ ✅ ครบ → 🚀
-- **หลังบ้าน** `/admin.html` (อีเมลใน env `ADMIN_EMAILS`): สมาชิก, บันทึกการเข้าใช้ (`access/log.json`), ระงับ/คืนสิทธิ์, เขียนบทความ · `new-members.yml` ทุก 15 นาที: `new-members.js` (แจ้งสมาชิกใหม่) + `watchdog.js` (ตัวบันทึกหยุด/ค้าง/ล้ม) → web push เฉพาะเครื่องแอดมิน (+ LINE push เจ้าของถ้ามี `LINE_OWNER_ID`) — **ห้าม broadcast**
-- **Vercel Functions** `api/*.mjs` (journal, articles, coach, news) + `lib/gs.mjs` (ก๊อปจาก middleware — **แก้ต้องแก้ทั้งสองที่**) · ข้อมูลใน Vercel Blob · ระบบชำระเงินเก็บไว้ที่ branch `payments-shelved` (ทุกอย่างฟรีตอนนี้)
+### เว็บสาธารณะ (11 พ.ย. 2569) — ไม่มีสมาชิก / แจ้งเตือน / หลังบ้าน
+- **middleware.js** (ไม่มี import): `/lib/*` 404 · หน้าเก่า `GONE` (login, pay, welcome, demo, terms, privacy, admin .html) → 302 `/` · `/api/zframes/quotes` (Yahoo spark) · JSON สัญญาณ/แดชบอร์ดจาก branch data (`DATA`, แคช 10 วิ) · อย่างอื่น next()
+- **worker.js** API เหลือ 2 ตัว: `/api/candles` (Yahoo แท่งเทียนหุ้นสหรัฐ) · `/api/news` (RSS ข่าวไทย) — ทั้งคู่สาธารณะ · `lib/gs.mjs` เหลือแค่ json/fail · wrangler.toml ไม่มี secret / AI / cron แล้ว (secret เก่าใน Cloudflare ยังค้างอยู่ ไม่มีโค้ดอ่าน)
+- **PWA**: `pwa.js` ติดตั้งแอปอย่างเดียว + ยกเลิก push subscription เก่าของเครื่องที่เคยเปิดไว้ · `sw.js` ไม่มี push handler · `config.js` = `{}`
+- **auth.js** = หน้าโหลด SPLASH + `AUTH = { ready: Promise.resolve(null) }` (main.js ยังรอ AUTH.ready) — ไม่เรียก /api/me
+- **แท็บ "ตั้งค่า"** (`#tab-account` id เดิม, ไอคอนเฟือง): หน้าจอ (ธีม) · แอปบนมือถือ · ตั้งค่าการซื้อขาย (localStorage `gs-settings`) · ชวนเพื่อน (คัดลอกลิงก์ / แชร์ — ไม่มีปุ่ม LINE) · ทัวร์ · เวอร์ชัน
+- **พอร์ตกูรู ☆ ติดตาม** เก็บใน localStorage `gs-guru-follow` อย่างเดียว (ไม่มี /api/gurus/follow, ไม่มีแจ้งเตือน)
+- **แชทถามจุดเข้า** เหลือโหมดระบบอย่างเดียว (ไม่มี 🤖 โค้ช AI)
+- ข้อมูลเก่าใน Supabase (`kv`: access/*, journal/*, marketing/* …) ยังอยู่ ไม่มีโค้ดอ่าน · Stripe / Clerk ไม่มีโค้ดเรียกแล้ว (ไม่มีสมาชิกจ่ายเงิน — ตรวจ pro.json 11 พ.ย.: 1 คน PRO ฟรีจากแอดมิน)
+- ทดสอบ: `gold-signal-tools/nolinetest.cjs <base> <prefix>` (4 แท็บ + มือถือ, ไม่มีคำ LINE/สมัคร/เข้าสู่ระบบ, error ต้องว่าง — CORS ปฏิทิน investing จาก localhost เป็นปกติ) · `zfcheck.cjs <base>` (หุ้นสหรัฐโหลดเสร็จ)
 
 ---
 
@@ -204,16 +206,16 @@ node scripts/backtest.js 365 && node scripts/backtest-30m.js 365
 ## 5. รันงานอัตโนมัติด้วยมือ
 
 ```bash
-gh workflow run morning-plan.yml -R tanakrthum254614-max/gold-signal -f send=false -f record=false   # ทดสอบเฉย ๆ
-gh workflow run morning-plan.yml -R tanakrthum254614-max/gold-signal -f send=true  -f record=true    # ของจริง (ส่ง LINE + บันทึก)
-gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f send=false                   # เช็กครั้งเดียว (LOOP_MINUTES=0)
-gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=true                  # สรุปเสาร์ส่ง LINE เฉพาะแบบนี้
+gh workflow run morning-plan.yml -R tanakrthum254614-max/gold-signal -f record=false   # ทดสอบเฉย ๆ (record=true = บันทึก)
+gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal                   # เช็ก + บันทึกครั้งเดียว (LOOP_MINUTES=0)
+gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal                 # สรุปสัปดาห์ (ไม่บันทึกซ้ำ ไม่ส่งอะไร)
 ```
+- ไม่มี input `send` แล้ว (11 พ.ย. 2569) — ไม่มีงานไหนส่ง LINE / push
 
 ---
 
 ## 6. Deploy
-- `git push` ไป `main` → Vercel (thander1) build เองภายใน ~1 นาที · push ไป `data` ไม่ deploy
+- **Cloudflare**: `bash scripts/cf-build.sh && npx wrangler deploy` (push GitHub ไม่ deploy เอง) · เช็กด้วย curl ได้เลย (เว็บสาธารณะแล้ว) · หลัง deploy อาจได้ผลเก่าปนสัก ~1 นาที
 - เปลี่ยนไฟล์เว็บไหน **เปลี่ยน `?v=` ของไฟล์นั้นใน index.html** (เลขแยกรายไฟล์ ไม่ต้องเปลี่ยนทุกตัว) และ "เวอร์ชัน N" ในหน้าบัญชี เป็นเวลาปัจจุบัน `YYYYMMDDHHMM`
 - ก่อน push `git pull --rebase` (monthly-research commit test-stats.json / รายงานขึ้น main เดือนละครั้ง) · ข้อมูลไม้ไม่ commit ขึ้น main แล้ว
 - เช็กว่าเว็บจริงได้ไฟล์ใหม่: เว็บต้องล็อกอิน → ใช้ `npx vercel curl` หรือดูเลข `?v=` ผ่านเครื่องมือของ thander1 · Hobby จำกัด 100 deploy/วัน
@@ -316,6 +318,13 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal -f send=t
 ---
 
 # 📜 บันทึกการเปลี่ยนแปลง (ใหม่สุดอยู่บน)
+
+## 11 พ.ย. 2569 — 🔓 เอา LINE + หน้าสมัคร/สมาชิกออก: เว็บสาธารณะ
+- ผู้ใช้: "เอาออกที่เชื่อมกับไลน์ ไม่เอาหน้าสมัครหน้าสมาชิกแล้ว" · ถาม 2 ข้อ → ฟีเจอร์ผูกบัญชี "เอาออกทั้งหมด (แนะนำ)" · web push "เอาออกด้วย (แนะนำ)"
+- ลบ: login/pay/welcome/demo/terms/privacy/admin.html · journal.js · pro.js · pricealerts.js · api/{articles,coach,golive,journal,market,pro,pay/*} · lib/{blog,ref,stripe} · scripts ส่งข้อความทั้งหมด (line, push, flush, line-quota, market-send, new-members, watchdog, admin-notify, notify-failure, price-alerts-user, pro-expiry, gurus-notify, setup-push, news-warn, backup-blob, blob, blob-to-supabase, cf-secrets, stripe-setup, grant-existing, test-notify-kinds, test-price-alerts-user) · new-members.yml · โปสเตอร์ LINE · deps @vercel/blob, web-push
+- workflows: ไม่มี LINE/VAPID/Supabase env, ไม่มี npm install, ไม่มี notify-failure/admin-notify/line-quota · input `send` ถูกลบ (price-alerts / morning-plan / weekly-summary) · price-alerts.yml ชื่อใหม่ "Signal recorder (every 5 minutes)" — **บทเรียน: ชื่อ step ห้ามมี ": " (YAML พัง → GitHub บอก "does not have workflow_dispatch")** ตรวจด้วย `npx -y js-yaml <file>`
+- ทดสอบ: wrangler dev ในเครื่อง + เว็บจริง (nolinetest.cjs ไม่มี error, หน้าเก่า 302 → /, /api/me|pro 404, /api/news|candles 200) · compare.html หัวข้อใหม่ · deploy เวอร์ชัน 4210d5cd
+- ที่ผู้ใช้ทำเองได้ (ไม่จำเป็น): ปิด LINE OA @279arudw · ลบแอป Clerk · ปิด/ลบ product ใน Stripe · ลบ secret เก่าใน Cloudflare / GitHub
 
 > จัดเรียงใหม่ 14 ต.ค. 2569: เนื้อหาเดิมครบทุกหัวข้อ แค่เรียงตามวันที่ (ใหม่ → เก่า) · งานใหม่ให้เพิ่มหัวข้อไว้บนสุดของส่วนนี้
 
