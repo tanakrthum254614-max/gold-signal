@@ -10230,7 +10230,7 @@
    "id": "5m-1794358800000",
    "createdAt": 1794358800000,
    "expiresAt": 1794429900000,
-   "status": "active",
+   "status": "expired",
    "entryAt": 1794360300000,
    "side": "SELL",
    "entry": 4037.09,
@@ -10247,7 +10247,7 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": -0.9,
+   "pnl": 0,
    "hit": 0,
    "hitAt": [],
    "stop": 4052.09,
@@ -10256,7 +10256,7 @@
   }
  ],
  "brakes": {},
- "updatedAt": 1794360621779,
+ "updatedAt": 1794360921391,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1794358821676
