@@ -49,7 +49,7 @@
   <link rel="stylesheet" href="live.css?v=202610210130">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
-  <link rel="stylesheet" href="terminal.css?v=202611111700">
+  <link rel="stylesheet" href="terminal.css?v=202611111800">
   <link rel="stylesheet" href="splash.css?v=202610171000">
   <script>/* refresh = stay where you were, no loading screen (user, 16 Oct 2026: "กดรีเฟรชแล้วอยู่ที่เดิม ไม่ต้องไปเริ่มที่หน้าตอนโหลดใหม่ทุกครั้ง"): the splash plays once per tab; a reload or a later visit in the same tab skips it */ try { var gsNav = performance.getEntriesByType("navigation")[0]; if ((gsNav && gsNav.type === "reload") || sessionStorage.getItem("gs-splash-seen") === "1") document.documentElement.classList.add("no-splash"); } catch (e) {}</script>
   <script>/* apply the saved theme before the first paint */ var gsT = "dark"; try { gsT = localStorage.getItem("gs-theme") === "light" ? "light" : "dark"; } catch (e) {} /* dark trading terminal = default since 14 Oct 2026 */ if (gsT === "dark") { document.getElementById("themeLight").disabled = true; document.documentElement.classList.add("dark"); document.querySelector("meta[name=theme-color]").content = "#0b0e11"; }</script>
@@ -119,7 +119,7 @@
       <div class="appbar-right">
         <span class="hdr-price mono" id="hdrPrice">—</span>
         <button class="mode-btn" id="modeBtn" type="button" aria-pressed="true">โหมดง่าย</button>
-        <button class="theme-btn" id="themeBtn" type="button" title="สลับโหมดสว่าง/มืด" aria-label="สลับโหมดสว่าง/มืด">🌙</button>
+        <button class="theme-btn" id="themeBtn" type="button" title="สลับโหมดสว่าง/มืด" aria-label="สลับโหมดสว่าง/มืด"></button>
         <span class="conn" id="conn"><span class="dot"></span><span id="connText">กำลังเชื่อมต่อ…</span></span>
       </div>
     </header>
@@ -198,13 +198,13 @@
           <div class="intra-call" id="inCall">กำลังวิเคราะห์…</div>
           <p class="intra-why muted" id="inWhy"></p>
           <div class="in-flags" id="inFlags" hidden></div>
-          <details class="why-box adv" id="inDetail"><summary id="inDetailSum">🔍 ดูเหตุผลละเอียด</summary><div class="why-body" id="inDetailBody"></div></details>
+          <details class="why-box adv" id="inDetail"><summary id="inDetailSum">ดูเหตุผลละเอียด</summary><div class="why-body" id="inDetailBody"></div></details>
         </div>
 
         <div id="inTrade"></div>
 
         <!-- Odds for each side, as donuts -->
-        <h3 class="sec-title adv">🎯 ถ้าเข้าตอนนี้ — โอกาสแต่ละจุด <span class="lv-tag">สด</span></h3>
+        <h3 class="sec-title adv">ถ้าเข้าตอนนี้ — โอกาสแต่ละจุด <span class="lv-tag">สด</span></h3>
         <div class="donuts adv">
           <div class="card dn buy" id="dnBuy"></div>
           <div class="card dn sell" id="dnSell"></div>
@@ -212,11 +212,11 @@
         <p class="muted small dn-note adv" id="dnNote"></p>
 
         <!-- 📋 Every entry of the day on every timeframe, live (main.js renderToday, 19 Oct 2026) -->
-        <h3 class="sec-title">📋 สัญญาณวันนี้ · ทุกกรอบ <span class="lv-tag">สด</span></h3>
+        <h3 class="sec-title">สัญญาณวันนี้ · ทุกกรอบ <span class="lv-tag">สด</span></h3>
         <div class="card today-card" id="todayCard"><p class="muted">กำลังโหลด…</p></div>
 
         <!-- 📒 Real results of every trade on the timeframes with entries (main.js renderRecord, 16 Oct 2026) -->
-        <h3 class="sec-title">📒 ผลจริงทุกรายการ · กรอบที่ทดสอบผ่านทุกช่วง</h3>
+        <h3 class="sec-title">ผลจริงทุกรายการ · กรอบที่ทดสอบผ่านทุกช่วง</h3>
         <div class="card rec" id="recCard"><p class="muted">กำลังโหลดผลจริง…</p></div>
 
         <!-- US news + today's trades card hidden (user, 16 Oct 2026, screenshot: "เอาออก"); main.js still fills it, news pause still applies -->
@@ -226,7 +226,7 @@
         </div>
 
         <!-- daily overview + "ตลาดทองตอนนี้" hidden (user, 16 Oct 2026, screenshot: "เอาอันนี้ออก"); main.js still fills it; the 07:05 LINE overview was off 17–19 Oct 2026, back on 19 Oct -->
-        <h3 class="sec-title home-off">🧭 ภาพรวมรายวัน (ตลาดเปิด) <span class="tag neutral">ข้อมูลประกอบ</span></h3>
+        <h3 class="sec-title home-off">ภาพรวมรายวัน (ตลาดเปิด) <span class="tag neutral">ข้อมูลประกอบ</span></h3>
         <div class="home-cols home-off">
           <div class="card sig" id="sigCard">
             <div class="sig-top">
@@ -239,8 +239,8 @@
             <p class="adv-note" id="sgAdv" hidden>⚠️ <b>ข้อมูลประกอบ ไม่ใช่สัญญาณให้เปิดรายการ</b> — สูตรรายวันทดสอบย้อนหลัง 1 ปีแล้วขาดทุนหลังหักสเปรด จึงใช้ <b>ระบบหลัก 1 ชม.</b> ด้านบนเป็นหลัก · ระบบยังบันทึกผลสมมติไว้ติดตามด้วยตัวเลขด้านล่าง</p>
 
             <div class="sig-nums">
-              <div class="n entry"><label>🎯 จุดเข้า</label><b class="mono" id="sgEntry">—</b></div>
-              <div class="n sl"><label>🛑 ตัดขาดทุน</label><b class="mono" id="sgSl">—</b></div>
+              <div class="n entry"><label>จุดเข้า</label><b class="mono" id="sgEntry">—</b></div>
+              <div class="n sl"><label>ตัดขาดทุน</label><b class="mono" id="sgSl">—</b></div>
             </div>
             <div class="sig-tps" id="sgTps"></div>
 
@@ -282,14 +282,14 @@
         <!-- Real news with pictures, like a news site (user, 15 Oct 2026, sent IUX24 / news-site examples: "ให้รูปและข้อความ
              … น่าดูและน่าเชื่อถือ" → "ดึงข่าวจริงจากสำนักข่าว"): investing.com Thai RSS through api/news.mjs, links to the source -->
         <section class="nf" id="nfCard">
-          <div class="nf-head"><div><span class="st-eyebrow nf-eyebrow">📰 ข่าวทองคำและเศรษฐกิจ · อัปเดตทุก 1 นาที</span><h2 class="nf-title">ข่าวล่าสุด</h2></div>
+          <div class="nf-head"><div><span class="st-eyebrow nf-eyebrow">ข่าวทองคำและเศรษฐกิจ · อัปเดตทุก 1 นาที</span><h2 class="nf-title">ข่าวล่าสุด</h2></div>
             <nav class="nf-chips" id="nfChips"></nav></div>
           <div id="nfBody"><p class="muted">กำลังโหลดข่าว…</p></div>
         </section>
 
         <section class="st-hero ns-hero">
           <div class="st-hero-top">
-            <div><span class="st-eyebrow">📅 ปฏิทินข่าวเศรษฐกิจสหรัฐ · ข่าวที่มีผลกับราคาทอง</span><h2 class="st-title">ข่าวแรงสหรัฐ <span class="st-live"><i></i>อัปเดตสด</span></h2></div>
+            <div><span class="st-eyebrow">ปฏิทินข่าวเศรษฐกิจสหรัฐ · ข่าวที่มีผลกับราคาทอง</span><h2 class="st-title">ข่าวแรงสหรัฐ <span class="st-live"><i></i>อัปเดตสด</span></h2></div>
           </div>
           <!-- Card layout (user, 15 Oct: "หน้าข่าวยังดูยาก ไม่น่าสนใจ" → chose "การ์ดข่าวทีละเรื่อง"): one big card for the
                next release in plain words, upcoming news by day with impact badges, released news as cards, stats folded -->
@@ -298,19 +298,19 @@
         </section>
 
         <section class="card">
-          <h3>📅 ข่าวที่จะออก</h3>
-          <p class="hint">เวลาไทย · ข่าวสำคัญของสหรัฐ 8 วันข้างหน้า · <span class="nc-imp hi">🔥 แรง</span> <span class="nc-imp mid">⚡ ปานกลาง</span> <span class="nc-imp lo">เบา</span> = ทองมักขยับเท่าไรใน 1 ชม. หลังข่าวนี้ (เฉลี่ย 60 วัน) · กด “อ่าน” ดูว่าข่าวนี้คืออะไร</p>
+          <h3>ข่าวที่จะออก</h3>
+          <p class="hint">เวลาไทย · ข่าวสำคัญของสหรัฐ 8 วันข้างหน้า · <span class="nc-imp hi">แรง</span> <span class="nc-imp mid">ปานกลาง</span> <span class="nc-imp lo">เบา</span> = ทองมักขยับเท่าไรใน 1 ชม. หลังข่าวนี้ (เฉลี่ย 60 วัน) · กด “อ่าน” ดูว่าข่าวนี้คืออะไร</p>
           <div class="nc-days" id="nsWeek"></div>
         </section>
 
         <section class="card">
-          <h3>📊 ข่าวที่ออกแล้ว — ทองขยับเท่าไร</h3>
+          <h3>ข่าวที่ออกแล้ว — ทองขยับเท่าไร</h3>
           <p class="hint"><span class="ns-chip pos">ดีกว่าคาด</span> ดีต่อดอลลาร์ ทองมักลง · <span class="ns-chip neg">แย่กว่าคาด</span> ดอลลาร์อ่อน ทองมักขึ้น · ทองวัดจากราคาตอนข่าวออก (PAXG แท่ง 5 นาที)</p>
           <div class="nc-list" id="nsPast"></div>
         </section>
 
         <details class="card nc-stats">
-          <summary><h3>🧮 สถิติ: ข่าวไหนทำให้ทองวิ่งแรงที่สุด <span class="nc-fold">กดดู</span></h3></summary>
+          <summary><h3>สถิติ: ข่าวไหนทำให้ทองวิ่งแรงที่สุด <span class="nc-fold">กดดู</span></h3></summary>
           <p class="hint">จากข่าวที่ออกแล้ว 60 วัน · *ไปตามตำรา = ข่าวดีกว่าคาดแล้วทองลง หรือแย่กว่าคาดแล้วทองขึ้น ใน 1 ชม. (ไม่นับข่าวที่ออกตามคาด)</p>
           <div class="ns-table" id="nsTable"></div>
         </details>
@@ -332,7 +332,7 @@
             <div class="cz-box" id="czBoxS">กำลังคำนวณโซนเข้า…</div>
             <ul class="s15-legend cz-legend"><li><i class="zone ok"></i>โซน BUY</li><li><i class="zone sell"></i>โซน SELL</li><li><i class="zone near"></i>ใกล้โซน</li><li><i class="zone bad"></i>ขาลง</li><li><i class="zone news"></i>ข่าว งดเข้า</li><li><i class="up">▲</i><i class="sell-mk">▼</i>กราฟนี้เปลี่ยนเป็นขึ้น/ลง</li><li><i class="up">▲</i><i class="lg-tag buy">Buy</i>เข้าซื้อ</li><li><i class="sell-mk">▼</i><i class="lg-tag sell">Sell</i>เข้าขาย</li><li><i class="tp">●</i>TP</li><li><i class="sl">●</i>SL</li></ul>
             <div id="simpleChart" class="chart-simple"></div>
-            <p class="hint">เส้นสีทอง = ราคาทอง · 🎯 จุดเข้า · 🛑 ตัดขาดทุน · 💰 เป้าหมาย ของสัญญาณล่าสุด</p>
+            <p class="hint">เส้นสีทอง = ราคาทอง · จุดเข้า · ตัดขาดทุน · เป้าหมาย ของสัญญาณล่าสุด</p>
           </section>
         </div>
 
@@ -356,7 +356,7 @@
     <div class="tf-row">
       <span class="muted small">เลือกกรอบเวลา — 1 แท่งเทียนแทนช่วงเวลาเท่าไร</span>
       <nav class="tfs" id="tfs"></nav>
-      <button type="button" class="btn cz-clean-btn" id="czClean" aria-pressed="true">📊 แสดงเส้นอินดิเคเตอร์</button>
+      <button type="button" class="btn cz-clean-btn" id="czClean" aria-pressed="true">แสดงเส้นอินดิเคเตอร์</button>
     </div>
 
     <main class="layout">
@@ -399,7 +399,7 @@
         </section>
         <section class="card">
           <h3>แนวรับ–แนวต้าน · <span id="pvTf">—</span></h3>
-          <p class="hint">🔴 <b>แนวต้าน</b> = ระดับที่ราคามักขึ้นไปชนแล้วถูกกดลง · 🟢 <b>แนวรับ</b> = ระดับที่ราคามักลงมาแล้วเด้งขึ้น (คำนวณแบบ Pivot Points ของ investing.com)</p>
+          <p class="hint">● <b>แนวต้าน</b> = ระดับที่ราคามักขึ้นไปชนแล้วถูกกดลง · ● <b>แนวรับ</b> = ระดับที่ราคามักลงมาแล้วเด้งขึ้น (คำนวณแบบ Pivot Points ของ investing.com)</p>
           <ul class="levels" id="levels"></ul>
         </section>
       </aside>
@@ -438,16 +438,16 @@
         </section>
         <!-- Lot calculator (the chart's 🧮 button fills it and scrolls here) -->
         <section class="card tp calc-card" id="calcCard">
-          <h3>🧮 คำนวณขนาดการซื้อขายก่อนเข้า</h3>
+          <h3>คำนวณขนาดการซื้อขายก่อนเข้า</h3>
             <div class="tp-calc" id="tpCalc">
-              <div class="tp-side"><button type="button" class="on" data-side="1">🟢 ซื้อ</button><button type="button" data-side="-1">🔴 ขาย</button></div>
+              <div class="tp-side"><button type="button" class="on" data-side="1">▲ ซื้อ</button><button type="button" data-side="-1">▼ ขาย</button></div>
               <label>จุดเข้า<input id="cEntry" type="number" step="0.01" inputmode="decimal"></label>
               <label>SL<input id="cSl" type="number" step="0.01" inputmode="decimal"></label>
               <label>TP<input id="cTp" type="number" step="0.01" inputmode="decimal"></label>
               <button type="button" class="btn" id="cNow">ใช้ราคาตอนนี้</button>
               <div class="tp-calc-out" id="cOut"></div>
             </div>
-            <p class="muted small tp-note">⚠️ จุดเข้าที่ผ่านการทดสอบย้อนหลังคือสัญญาณบนกราฟด้านบน (กดปุ่ม 🧮 ในกล่องเหนือกราฟเพื่อใส่ค่าให้) ตั้ง SL ทุกครั้ง และไม่เสี่ยงเกิน 1–2% ของทุนต่อรายการ</p>
+            <p class="muted small tp-note">⚠️ จุดเข้าที่ผ่านการทดสอบย้อนหลังคือสัญญาณบนกราฟด้านบน (กดปุ่ม ในกล่องเหนือกราฟเพื่อใส่ค่าให้) ตั้ง SL ทุกครั้ง และไม่เสี่ยงเกิน 1–2% ของทุนต่อรายการ</p>
         </section>
       </div>
     </section>
@@ -515,7 +515,7 @@
               <div class="sp-row"><div class="sp-lbl"><b>ทัวร์แนะนำ</b><span>ดูวิธีใช้หน้าสัญญาณอีกครั้ง</span></div>
                 <div class="sp-ctl"><button class="btn" type="button" onclick="window.gsTour && gsTour()">เริ่มทัวร์</button></div></div>
               <div class="sp-row"><div class="sp-lbl"><b>เวอร์ชัน</b><span><a href="compare.html">เทียบแบบเก่า vs แบบใหม่</a></span></div>
-                <div class="sp-ctl"><span class="mono sp-ver">202611111700</span></div></div>
+                <div class="sp-ctl"><span class="mono sp-ver">202611111800</span></div></div>
             </section>
           </div>
         </div>
@@ -537,12 +537,12 @@
   <script src="pwa.js?v=202611111700"></script>
   <script src="ui.js?v=202611111700"></script>
   <script src="chartsys.js?v=202610281200"></script>
-  <script src="main.js?v=202611111200"></script>
-  <script src="tradeplan.js?v=202610180200"></script>
-  <script src="chartzones.js?v=202610281200"></script>
-  <script src="newsstats.js?v=202610180200"></script>
-  <script src="chartchat.js?v=202611111200"></script>
-  <script src="easy.js?v=202611111200"></script>
+  <script src="main.js?v=202611111840"></script>
+  <script src="tradeplan.js?v=202611111830"></script>
+  <script src="chartzones.js?v=202611111840"></script>
+  <script src="newsstats.js?v=202611111840"></script>
+  <script src="chartchat.js?v=202611111830"></script>
+  <script src="easy.js?v=202611111800"></script>
   <script src="motion.js?v=202610180100"></script>
 </body>
 </html>

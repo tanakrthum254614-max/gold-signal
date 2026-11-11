@@ -215,9 +215,9 @@ function drawSignalLines(s) {
   if (s.advisory) return; // overview days are not trades: no entry / stop / target lines
   const line = (price, color, title, style, width = 2) =>
     zoneLines.push(areaS.createPriceLine({ price, color, lineWidth: width, lineStyle: style, title }));
-  line(s.entry, s.side === 'BUY' ? '#0f9f6e' : '#e0424f', s.side === 'BUY' ? '🎯 ซื้อ' : '🎯 ขาย', LC.LineStyle.Solid);
-  line(s.sl, '#e0424f', '🛑 ตัดขาดทุน', LC.LineStyle.Dotted, 1);
-  (s.tps || [s.tp]).forEach((tp, k, all) => line(tp, '#d99a10', all.length > 1 ? `💰 TP${k + 1}` : '💰 เป้าหมาย', LC.LineStyle.Dashed, 1));
+  line(s.entry, s.side === 'BUY' ? '#0f9f6e' : '#e0424f', s.side === 'BUY' ? 'ซื้อ' : 'ขาย', LC.LineStyle.Solid);
+  line(s.sl, '#e0424f', 'ตัดขาดทุน', LC.LineStyle.Dotted, 1);
+  (s.tps || [s.tp]).forEach((tp, k, all) => line(tp, '#d99a10', all.length > 1 ? `TP${k + 1}` : 'เป้าหมาย', LC.LineStyle.Dashed, 1));
 }
 
 // Keep the three panes scrolled/zoomed together
@@ -462,11 +462,11 @@ function renderToday(price) {
   const rows = list.map((t) => {
     const d = t.side === 'SELL' ? -1 : 1, n = (t.tps || [1]).length;
     let r;
-    if (t.status === 'pending') r = `<span class="muted">📥 รอเข้า${px != null ? ` · อีก $${Math.max(0, d * (px - t.entry)).toFixed(2)}` : ''}</span>`;
+    if (t.status === 'pending') r = `<span class="muted">รอเข้า${px != null ? ` · อีก $${Math.max(0, d * (px - t.entry)).toFixed(2)}` : ''}</span>`;
     else if (t.status === 'expired') r = '<span class="muted">ราคาไม่ถึง · ยกเลิก</span>';
     else if (t.status === 'active') { const pl = px == null ? null : SIG.round((t.realized || 0) + (1 - (t.hit || 0) / n) * d * (px - t.entry)); if (pl != null) { sum += pl; any = true; }
       r = `<i class="dot on"></i> <b class="mono ${pl == null ? '' : pl >= 0 ? 'up' : 'down'}">${pl == null ? '—' : money(pl)}</b>${t.hit ? ` <small class="muted">TP${t.hit} แล้ว</small>` : ''}`; }
-    else { sum += t.pnl || 0; any = true; r = `${t.pnl > 0 ? '✅' : '❌'} <b class="mono ${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl || 0)}</b>`; }
+    else { sum += t.pnl || 0; any = true; r = `${t.pnl > 0 ? '✓' : '✕'} <b class="mono ${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl || 0)}</b>`; }
     return `<li><span class="mono muted">${hhmm(t.createdAt)}</span><span>${TF_LABEL[t.tf] || t.tf}</span>
       <span><b class="${d > 0 ? 'up' : 'down'}">${d > 0 ? 'Buy' : 'Sell'}</b> <b class="mono">${f2(t.entry)}</b>${t.risky ? ' ⚠️' : ''}${t.paused ? ' <small class="muted">(พัก)</small>' : ''}<br>
       <small class="muted mono">SL ${f2(t.hit ? t.entry : t.sl)} · ${(t.tps || []).map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}</small></span><span class="r">${r}</span></li>`; });
@@ -493,12 +493,12 @@ function renderRecord() {
     const open = mine.find((t) => t.status === 'active');
     return `<div class="rc-tile"><b>Buy ${TF_LABEL[tf]}${tf === CHARTSYS.MAIN_TF ? ' <small>ระบบหลัก</small>' : ''}</b>
       <div class="rc-big mono">${c.win}%</div><small class="muted">ทดสอบย้อนหลังชนะ · ${often}</small>
-      <div class="rc-live">${done.length ? `ผลจริง ${done.length} รายการ ชนะ ${w} · <b class="${sum(done) >= 0 ? 'up' : 'down'}">${money(sum(done))}</b>${avg(done)}` : 'ผลจริง: ยังไม่มีรายการที่ปิด'}${open ? '<br>🟡 ถือสถานะอยู่ 1 รายการ' : ''}</div></div>`;
+      <div class="rc-live">${done.length ? `ผลจริง ${done.length} รายการ ชนะ ${w} · <b class="${sum(done) >= 0 ? 'up' : 'down'}">${money(sum(done))}</b>${avg(done)}` : 'ผลจริง: ยังไม่มีรายการที่ปิด'}${open ? '<br>ถือสถานะอยู่ 1 รายการ' : ''}</div></div>`;
   }).join('');
   const rows = all.filter((t) => used.includes(t.tf) && closed(t) && !t.risky).sort((a, b) => (b.exitAt || b.createdAt) - (a.exitAt || a.createdAt)).slice(0, 10);
   const day = (ms) => new Date(ms).toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
   const why = { tp: 'ถึง TP', sl: 'โดน SL', be: 'ออกที่ทุน', eod: 'หมดเวลาถือ' };
-  const list = rows.length ? rows.map((t) => `<li class="${t.pnl > 0 ? 'win' : 'loss'}"><span>${t.pnl > 0 ? '✅' : '❌'} ${day(t.createdAt)} · ${t.side === 'SELL' ? 'Sell' : 'Buy'} ${TF_LABEL[t.tf]}</span>
+  const list = rows.length ? rows.map((t) => `<li class="${t.pnl > 0 ? 'win' : 'loss'}"><span>${t.pnl > 0 ? '✓' : '✕'} ${day(t.createdAt)} · ${t.side === 'SELL' ? 'Sell' : 'Buy'} ${TF_LABEL[t.tf]}</span>
       <span class="mono">${f2(t.entry)} → ${f2(t.exitPrice)} <small>${why[t.closedBy] || ''}</small></span><b class="mono ${t.pnl > 0 ? 'up' : 'down'}">${money(t.pnl)}</b></li>`).join('')
     : '<li class="muted">ยังไม่มีรายการที่ปิดในกรอบ 1 ชม. / 5 ชม. / 1 วัน</li>';
   const old = all.filter((t) => (!used.includes(t.tf) || t.risky) && closed(t)), ow = old.filter((t) => t.pnl > 0).length;
@@ -533,8 +533,8 @@ function beatInfo(marketOpen) {
   if (marketOpen === false) return { cls: 'muted', text: '⏸ ตลาดปิด · ระบบพัก' };
   const age = Math.round((Date.now() - b.at) / 60e3);
   if (!b.ok) return { cls: 'down', text: `⚠️ ระบบเช็กรอบล่าสุดล้มเหลว (${hhmm(b.at)} น.)` };
-  if (b.running) return { cls: 'up', text: `🟢 ระบบทำงานอยู่ · เช็กทุก 5 นาที (รอบนี้เริ่ม ${hhmm(b.at)} น.)` };
-  if (age <= 45) return { cls: 'up', text: `🟢 ระบบทำงานอยู่ · เช็กล่าสุด ${hhmm(b.at)} น.` };
+  if (b.running) return { cls: 'up', text: `● ระบบทำงานอยู่ · เช็กทุก 5 นาที (รอบนี้เริ่ม ${hhmm(b.at)} น.)` };
+  if (age <= 45) return { cls: 'up', text: `● ระบบทำงานอยู่ · เช็กล่าสุด ${hhmm(b.at)} น.` };
   return { cls: 'down', text: `⚠️ ระบบไม่ได้เช็กมา ${age} นาที (ล่าสุด ${hhmm(b.at)} น.)` };
 }
 
@@ -602,8 +602,8 @@ function renderSignalHome() {
   $('sgStars').textContent = '★'.repeat(s.stars) + '☆'.repeat(5 - s.stars);
   $('sigCard').className = `card sig ${buy ? 'buy' : 'sell'} st-${s.status}${advisory ? ' advisory' : ''}`;
   $('sgSide').innerHTML = advisory
-    ? `🧭 เอียง${buy ? 'ขึ้น' : 'ลง'} <small>แนวโน้มวันนี้</small>`
-    : `${buy ? '🟢 ซื้อ' : '🔴 ขาย'}${s.market && !final ? 'ตอนนี้' : ''} <small>${buy ? 'BUY' : 'SELL'}</small>`;
+    ? `เอียง${buy ? 'ขึ้น' : 'ลง'} <small>แนวโน้มวันนี้</small>`
+    : `${buy ? '▲ ซื้อ' : '▼ ขาย'}${s.market && !final ? 'ตอนนี้' : ''} <small>${buy ? 'BUY' : 'SELL'}</small>`;
   $('sgEntry').textContent = f2(s.entry);
   $('sgSl').textContent = f2(s.sl);
 
@@ -613,24 +613,24 @@ function renderSignalHome() {
   const multi = tps.length > 1;
   $('sgTps').className = `sig-tps n${tps.length}`;
   $('sgTps').innerHTML = tps.map((tp, k) => `<div class="n tp${hit > k ? ' done' : ''}">
-      <label>💰 ${multi ? `TP${k + 1}` : 'เป้าหมาย'}${hit > k ? ' ✓' : ''}</label><b class="mono">${f2(tp)}</b>
+      <label>${multi ? `TP${k + 1}` : 'เป้าหมาย'}${hit > k ? ' ✓' : ''}</label><b class="mono">${f2(tp)}</b>
       <small>+$${f2(Math.abs(tp - s.entry))}</small></div>`).join('');
 
   const away = price != null ? Math.abs(price - s.entry) : null;
   const status = {
     pending: `${SIG.STATUS_TH.pending} — ต้อง${buy ? 'ลง' : 'ขึ้น'}อีก $${f2(away)} · หมดอายุ ${thaiTime(s.expiresAt)}`,
     active: hit
-      ? `✅ ถึง TP${hit} แล้ว · SL เลื่อนไปที่ทุน ${f2(s.entry)} — รายการนี้ไม่ขาดทุนแล้ว`
+      ? `✓ ถึง TP${hit} แล้ว · SL เลื่อนไปที่ทุน ${f2(s.entry)} — รายการนี้ไม่ขาดทุนแล้ว`
       : s.market
-        ? `🟦 เข้าแล้วที่ ${f2(s.entry)} (${thaiTime(s.createdAt)}) · ปิดเองถ้าถึง ${thaiTime(s.expiresAt)}`
+        ? `เข้าแล้วที่ ${f2(s.entry)} (${thaiTime(s.createdAt)}) · ปิดเองถ้าถึง ${thaiTime(s.expiresAt)}`
         : `${SIG.STATUS_TH.active} — เข้าที่ ${f2(s.entry)} แล้ว`,
-    win: s.closedBy === 'tp' ? (multi ? '🏆 ชนะ — ครบทั้ง 3 เป้า' : `${SIG.STATUS_TH.win} — ราคาถึงเป้าหมาย`)
+    win: s.closedBy === 'tp' ? (multi ? 'ชนะ — ครบทั้ง 3 เป้า' : `${SIG.STATUS_TH.win} — ราคาถึงเป้าหมาย`)
       : s.closedBy === 'be' ? `${SIG.STATUS_TH.win} — ถึง TP${hit} แล้วราคากลับมาที่ทุน`
         : `${SIG.STATUS_TH.win} — ปิดสิ้นวันมีกำไร${hit ? ` (ถึง TP${hit})` : ''}`,
     loss: `${SIG.STATUS_TH.loss} — ${s.closedBy === 'eod' ? 'ปิดสิ้นวันขาดทุน' : 'โดนตัดขาดทุน'}`,
     expired: `${SIG.STATUS_TH.expired} — วันนั้นไม่ได้ซื้อขาย`,
   }[s.status];
-  $('sgStatus').textContent = (advisory ? '📝 ผลสมมติ: ' : '') + status + (final ? ` · ${advisory ? 'ภาพรวม' : 'สัญญาณ'}ถัดไป ${thaiTime(nextSignalTime())}` : '');
+  $('sgStatus').textContent = (advisory ? 'ผลสมมติ: ' : '') + status + (final ? ` · ${advisory ? 'ภาพรวม' : 'สัญญาณ'}ถัดไป ${thaiTime(nextSignalTime())}` : '');
 
   // Track: stop-loss on the left, last target on the right, entry / targets / price in between
   const far = tps[tps.length - 1];
@@ -647,8 +647,8 @@ function renderSignalHome() {
     $('trNow').className = `track-now${pct(nowPx) > 80 ? ' edge-r' : pct(nowPx) < 20 ? ' edge-l' : ''}`;
     $('trNowLabel').textContent = `${final ? 'ปิดที่' : 'ตอนนี้'} ${f2(nowPx)}`;
   }
-  $('trLeft').textContent = `🛑 ${f2(s.sl)}`;
-  $('trRight').textContent = `💰 ${multi ? `TP${tps.length} ` : ''}${f2(far)}`;
+  $('trLeft').textContent = `${f2(s.sl)}`;
+  $('trRight').textContent = `${multi ? `TP${tps.length} ` : ''}${f2(far)}`;
 
   // Open trade: profit/loss from the live price (the 15-minute candles can lag a few minutes)
   const d = buy ? 1 : -1;
@@ -686,9 +686,9 @@ function renderDailyVsMain() {
   const d = raw.side === 'BUY' ? 1 : -1, mine = m.sides.find((x) => x.side === d);
   const mainDir = m.open ? (m.open.side === 'BUY' ? 1 : -1) : (m.sides.find((x) => x.go) || {}).side || 0;
   const clash = (mainDir && mainDir !== d) || !mine.tested;
-  const now = m.open ? `ถือสถานะ${m.open.side === 'BUY' ? 'ซื้อ' : 'ขาย'}อยู่` : mainDir ? `${mainDir > 0 ? 'Buy' : 'Sell'} ✅ ควรเข้า` : `รอก่อน · Buy ${m.sides[0].pct}% · Sell ${m.sides[1].pct}%`;
+  const now = m.open ? `ถือสถานะ${m.open.side === 'BUY' ? 'ซื้อ' : 'ขาย'}อยู่` : mainDir ? `${mainDir > 0 ? 'Buy' : 'Sell'} ✓ ควรเข้า` : `รอก่อน · Buy ${m.sides[0].pct}% · Sell ${m.sides[1].pct}%`;
   el.className = `sig-main${clash ? ' clash' : ''}`;
-  el.innerHTML = `${clash ? '⚠️ <b>ขัดกับระบบหลัก — ยึดระบบหลัก</b><br>' : '🔗 '}ระบบหลัก (${mainLabel()}) ตอนนี้: ${now}`
+  el.innerHTML = `${clash ? '⚠️ <b>ขัดกับระบบหลัก — ยึดระบบหลัก</b><br>' : ''}ระบบหลัก (${mainLabel()}) ตอนนี้: ${now}`
     + `${!mine.tested ? ` · ระบบหลักไม่เปิดฝั่ง${d > 0 ? 'ซื้อ' : 'ขาย'} (ทดสอบแล้วขาดทุน)` : ''}`;
 }
 
@@ -1168,7 +1168,7 @@ function renderMeter(dec, off) {
   $('sm').style.setProperty('--glow-x', `${((score + 6.5) / 13) * 100}%`);
   $('smDot').className = `sm-dot${off ? ' off' : ''}`;
   smCount(dec ? score : null);
-  $('smMood').textContent = !dec ? 'กำลังวิเคราะห์…' : off === 'closed' ? '🌙 ตลาดปิด' : off ? '⏳ รอข้อมูลกราฟ' : smMood(score);
+  $('smMood').textContent = !dec ? 'กำลังวิเคราะห์…' : off === 'closed' ? 'ตลาดปิด' : off ? 'รอข้อมูลกราฟ' : smMood(score);
   [...$('smSegs').children].forEach((el, i) => {
     const s = i - 6, lit = !off && dec && score !== 0 && Math.sign(s) === Math.sign(score) && Math.abs(s) <= Math.abs(score);
     el.className = `${i === 6 ? 'mid ' : ''}${lit ? `on ${s > 0 ? 'b' : 's'}${s === score ? ' peak' : ''}` : ''}`;
@@ -1236,7 +1236,7 @@ const RING_R = 46, RING_C = 2 * Math.PI * RING_R;
 // legend shows that side's tested win rate — the same numbers as the chart tab's Buy | Sell columns
 function buildDonut(el, dir) {
   el.innerHTML = `
-    <div class="dn-head"><span>${dir > 0 ? '🟢 ฝั่งซื้อ (BUY)' : '🔴 ฝั่งขาย (SELL)'}</span><span class="dn-verdict" data-k="verdict">—</span></div>
+    <div class="dn-head"><span>${dir > 0 ? '▲ ฝั่งซื้อ (BUY)' : '▼ ฝั่งขาย (SELL)'}</span><span class="dn-verdict" data-k="verdict">—</span></div>
     <div class="dn-body">
       <div class="dn-ring">
         <svg viewBox="0 0 120 120"><circle class="dn-bg" cx="60" cy="60" r="${RING_R}"/>
@@ -1283,8 +1283,8 @@ function updateDonut(el, dir, x, v, price) {
   el.querySelector('[data-k="th"]').textContent = `คะแนน ${dir > 0 ? '+' : '−'}${cc.th}${c && (c.confirm || c.pdf) ? ` + ${CHARTSYS.confNames(c)}` : ''}`;
   const L = price != null ? CHARTSYS.levelsFor(cc, price, dir) : null, r = (n) => SIG.round(n);
   el.querySelector('[data-k="lv"]').innerHTML = L ? [
-    ...(L.dip ? [`<div class="tp"><label>📥 รอเข้า</label><b class="mono">${f2(r(L.entry))}</b><small>${dir > 0 ? 'ย่อ' : 'เด้ง'} $${L.dip} · ${L.dipH < 1 ? `${Math.round(L.dipH * 60)} นาที` : `${L.dipH} ชม.`}</small></div>`] : []),
-    `<div class="sl"><label>🛑 SL</label><b class="mono">${f2(r(L.sl))}</b><small>−$${Math.round(15 * cc.mult)}</small></div>`,
+    ...(L.dip ? [`<div class="tp"><label>รอเข้า</label><b class="mono">${f2(r(L.entry))}</b><small>${dir > 0 ? 'ย่อ' : 'เด้ง'} $${L.dip} · ${L.dipH < 1 ? `${Math.round(L.dipH * 60)} นาที` : `${L.dipH} ชม.`}</small></div>`] : []),
+    `<div class="sl"><label>SL</label><b class="mono">${f2(r(L.sl))}</b><small>−$${Math.round(15 * cc.mult)}</small></div>`,
     ...L.tps.map((tp, k) => `<div class="tp"><label>TP${k + 1}</label><b class="mono">${f2(r(tp))}</b><small>+$${CHARTSYS.usdList(cc)[k]}</small></div>`),
   ].join('') : '';
 }
@@ -1299,11 +1299,11 @@ function renderOpenTrade(open, price) {
   if (box.dataset.id !== `${open.id}|${hit}`) {
     box.dataset.id = `${open.id}|${hit}`;
     box.innerHTML = `<div class="card lt ${buy ? 'buy' : 'sell'}">
-      <div class="sig-top"><span class="muted">📌 รายการที่เปิดอยู่ · ระบบหลัก ${mainLabel()} <span class="lv-tag">สด</span></span><span class="muted small">เข้า ${hhmm(open.createdAt)} น. · ปิดเองไม่เกิน ${hhmm(open.expiresAt)} น.</span></div>
-      <div class="lt-head"><b style="font-size:20px">${buy ? '🟢 ซื้อ' : '🔴 ขาย'}ที่ <span class="mono">${f2(open.entry)}</span></b><span class="lt-pnl mono" id="ltPnl">—</span></div>
+      <div class="sig-top"><span class="muted">รายการที่เปิดอยู่ · ระบบหลัก ${mainLabel()} <span class="lv-tag">สด</span></span><span class="muted small">เข้า ${hhmm(open.createdAt)} น. · ปิดเองไม่เกิน ${hhmm(open.expiresAt)} น.</span></div>
+      <div class="lt-head"><b style="font-size:20px">${buy ? '▲ ซื้อ' : '▼ ขาย'}ที่ <span class="mono">${f2(open.entry)}</span></b><span class="lt-pnl mono" id="ltPnl">—</span></div>
       <small class="muted">กำไร/ขาดทุนตอนนี้ ต่อทอง 1 ออนซ์ (0.01 lot)${hit ? ` · ถึง TP${hit} แล้ว SL เลื่อนมาที่ทุน` : ''}</small>
       <div class="lt-bar" style="--entry:${pct(open.entry)}%">
-        <i class="mk" style="left:0"><span>🛑 ${f2(hit ? open.entry : open.sl)}</span></i>
+        <i class="mk" style="left:0"><span>${f2(hit ? open.entry : open.sl)}</span></i>
         <i class="mk" style="left:${pct(open.entry)}%"><span>เข้า</span></i>
         ${open.tps.map((tp, k) => `<i class="mk${hit > k ? ' done' : ''}" style="left:${pct(tp)}%"><span>TP${k + 1}${hit > k ? '✓' : ''}</span></i>`).join('')}
         <i class="now" id="ltNow"><span id="ltNowTx"></span></i>
@@ -1352,25 +1352,25 @@ function renderIntra() {
   if (pause && !open) {
     call = `⛔ ระบบพัก — ${pause.reason}`; cls = 'wait';
   } else if (open) {
-    call = `📌 มีรายการ${open.side === 'BUY' ? 'ซื้อ' : 'ขาย'}เปิดอยู่ — ถือต่อตามแผน`;
+    call = `มีรายการ${open.side === 'BUY' ? 'ซื้อ' : 'ขาย'}เปิดอยู่ — ถือต่อตามแผน`;
     cls = open.side === 'BUY' ? 'buy' : 'sell';
   } else if (wait) { // limit entry (19 Oct 2026): waits for the dip
-    call = `📥 รอเข้า${wait.side === 'BUY' ? 'ซื้อ' : 'ขาย'}ที่ ${f2(wait.entry)} (ถึง ${hhmm(wait.fillBy)} น.) — ราคาไม่ถึง = ยกเลิก`;
+    call = `รอเข้า${wait.side === 'BUY' ? 'ซื้อ' : 'ขาย'}ที่ ${f2(wait.entry)} (ถึง ${hhmm(wait.fillBy)} น.) — ราคาไม่ถึง = ยกเลิก`;
     cls = wait.side === 'BUY' ? 'buy' : 'sell';
   } else if (!dec) {
     call = 'กำลังวิเคราะห์…'; cls = 'wait';
   } else if (off === 'closed') {
     const at = INTRA.nextOpen(now), day = SIG.thaiDate(at) === SIG.thaiDate(now) ? ''
       : `วัน${new Date(at).toLocaleDateString('th-TH', { weekday: 'long', timeZone: 'Asia/Bangkok' }).replace(/^วัน/, '')} `;
-    call = `🌙 ตลาดปิดอยู่ — เปิดอีกครั้ง${day ? ` ${day}` : ' '}${hhmm(at)} น.`; cls = 'wait';
+    call = `ตลาดปิดอยู่ — เปิดอีกครั้ง${day ? ` ${day}` : ' '}${hhmm(at)} น.`; cls = 'wait';
   } else if (off === 'late') {
-    call = '⏳ กำลังดึงข้อมูลกราฟล่าสุด…'; cls = 'wait';
+    call = 'กำลังดึงข้อมูลกราฟล่าสุด…'; cls = 'wait';
   } else if (offDir) {
-    call = `${offDir > 0 ? '🟢 Buy' : '🔴 Sell'} ✅ ควรเข้า — ระบบกำลังส่งสัญญาณ`; cls = offDir > 0 ? 'buy' : 'sell';
+    call = `${offDir > 0 ? '▲ Buy' : '▼ Sell'} ✓ ควรเข้า — ระบบกำลังส่งสัญญาณ`; cls = offDir > 0 ? 'buy' : 'sell';
   } else if (dec.news) {
     call = '⏸ ช่วงข่าวแรง — รอให้ข่าวผ่านไปก่อน'; cls = 'wait';
   } else if (CHARTSYS.dirOf(sys, dec)) {
-    call = `⚡ ใกล้เข้า — ถ้าแท่งปิด ${hhmm(next)} น. ยังได้ ${signedScore(dec.score)} ระบบจะส่งสัญญาณ`; cls = 'wait';
+    call = `ใกล้เข้า — ถ้าแท่งปิด ${hhmm(next)} น. ยังได้ ${signedScore(dec.score)} ระบบจะส่งสัญญาณ`; cls = 'wait';
   } else {
     call = `⏸ รอก่อน — Buy ${sides[0].pct}% · Sell ${sides[1].pct}%`; cls = 'wait';
   }
@@ -1396,8 +1396,8 @@ function renderIntra() {
 
   // Donuts: each side's readiness and verdict from the main system (same as the chart tab's Buy | Sell columns)
   sides.forEach((x) => {
-    const v = off === 'closed' ? { key: 'unknown', th: '🌙 ตลาดปิด' }
-      : off === 'late' ? { key: 'unknown', th: '⏳ รอข้อมูลกราฟ' }
+    const v = off === 'closed' ? { key: 'unknown', th: 'ตลาดปิด' }
+      : off === 'late' ? { key: 'unknown', th: 'รอข้อมูลกราฟ' }
       : dec && dec.news && x.tested ? { key: 'bad', th: '⏸ งดเข้า (ช่วงข่าว)' } : { key: x.key, th: x.verdict };
     updateDonut($(x.side > 0 ? 'dnBuy' : 'dnSell'), x.side, dec ? x : null, v, price);
   });
@@ -1446,7 +1446,7 @@ function whyDetail(dec, note) {
   const body = `<div class="why-grid">${cols.join('')}</div>
     <p class="why-sum">รวม 3 กรอบเวลา = <b class="mono">${signedScore(dec.score)}</b> จาก ±6 · ${gap > 0 ? `ยังขาดอีก <b>${gap}</b> คะแนนถึงจุดเข้าซื้อ +${rule.threshold}` : `<b>ถึงเกณฑ์เข้าซื้อ +${rule.threshold} แล้ว</b>`}</p>
     <p class="muted small why-how">วิธีคิด: ในแต่ละกรอบเวลา ตัวชี้วัดทุกตัวโหวต (ซื้อ +1 · กลาง 0 · ขาย −1) แล้วเฉลี่ย → ≥ +0.50 ขาขึ้นแรง (+2) · ≥ +0.15 ขาขึ้น (+1) · −0.15…+0.15 ไซด์เวย์ (0) · ≤ −0.15 ขาลง (−1) · ≤ −0.50 ขาลงแรง (−2) · รวม 3 กรอบเวลาเป็นคะแนน −6…+6${note ? ` · ${note}` : ''}</p>`;
-  return { sum: `🔍 ดูเหตุผลละเอียด — ตัวชี้วัด ${buys + sells + neutral} ตัวใน 3 กรอบเวลา: <b class="up">ซื้อ ${buys}</b> · <b class="down">ขาย ${sells}</b> · กลาง ${neutral}`, body };
+  return { sum: `ดูเหตุผลละเอียด — ตัวชี้วัด ${buys + sells + neutral} ตัวใน 3 กรอบเวลา: <b class="up">ซื้อ ${buys}</b> · <b class="down">ขาย ${sells}</b> · กลาง ${neutral}`, body };
 }
 // Only touch the DOM when the text changed, so an open panel keeps its place
 function renderWhy(prefix, dec, note) {
@@ -1547,7 +1547,7 @@ function s15Ohlc() {
   const dec = s15Chart.decAt.get(b.time + M15);
   $('s15Ohlc').innerHTML = `<b>${hhmm(b.time)}–${hhmm(b.time + M15)}</b>${forming ? ' <span class="lv-tag">กำลังวิ่ง</span>' : ''}
     <span>เปิด ${f2(b.open)}</span><span class="up">สูง ${f2(b.high)}</span><span class="down">ต่ำ ${f2(b.low)}</span><span>ปิด <b>${f2(b.close)}</b></span>
-    <span class="${cls}">${chg >= 0 ? '+' : ''}${f2(chg)} (${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%)</span><span>ช่วงแกว่ง ${f2(b.high - b.low)}</span>${dec ? `<span>คะแนนตอนปิด <b>${signedScore(dec.score)}</b>${dec.dir > 0 ? ' ✅ เข้าได้' : dec.stretched ? ' · ยืดเกิน BB' : ''}</span>` : ''}`;
+    <span class="${cls}">${chg >= 0 ? '+' : ''}${f2(chg)} (${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%)</span><span>ช่วงแกว่ง ${f2(b.high - b.low)}</span>${dec ? `<span>คะแนนตอนปิด <b>${signedScore(dec.score)}</b>${dec.dir > 0 ? ' ✓ เข้าได้' : dec.stretched ? ' · ยืดเกิน BB' : ''}</span>` : ''}`;
 }
 
 function drawS15Chart(s) {
@@ -1601,11 +1601,11 @@ function renderS15() {
   const price = nowPrice();
   let call, cls;
   if (open) {
-    call = `📌 ถือสถานะซื้ออยู่ — เข้า ${hhmm(open.createdAt)} น. ที่ ${f2(open.entry)}`; cls = 'hold';
+    call = `ถือสถานะซื้ออยู่ — เข้า ${hhmm(open.createdAt)} น. ที่ ${f2(open.entry)}`; cls = 'hold';
   } else if (!dec) {
     call = 'กำลังคำนวณ…'; cls = 'wait';
   } else if (dec.stale) {
-    call = '🌙 ตลาดปิด — ไม่เข้า'; cls = 'wait';
+    call = 'ตลาดปิด — ไม่เข้า'; cls = 'wait';
   } else if (dec.dir > 0) {
     call = '⏸ เพิ่งปิดรายการ — รอแท่งถัดไป'; cls = 'wait';
   } else if (dec.news) {
@@ -1623,15 +1623,15 @@ function renderS15() {
   const calib = state.bt15 && state.bt15.calibration;
   const side = (dir) => {
     const o = dec ? INTRA.odds(dec.score, calib, dir > 0 ? 'buy' : 'sell') : null;
-    if (dir < 0) return `<div class="no"><b>🔴 ฝั่งขาย: ไม่เข้า</b>สถิติย้อนหลังฝั่งขายแพ้มากกว่าชนะ${o ? ` (จบกำไร ${o.winRate}%)` : ''}</div>`;
+    if (dir < 0) return `<div class="no"><b>▼ ฝั่งขาย: ไม่เข้า</b>สถิติย้อนหลังฝั่งขายแพ้มากกว่าชนะ${o ? ` (จบกำไร ${o.winRate}%)` : ''}</div>`;
     const ok = dec && dec.dir > 0;
-    return `<div class="${ok ? 'ok' : 'no'}"><b>🟢 ฝั่งซื้อ: ${ok ? 'เข้าได้' : 'ยังไม่เข้า'}</b>${ok ? 'คะแนนถึง +5 แล้ว' : `เข้าเมื่อคะแนน +${INTRA.RULE15.threshold} (ตอนนี้ ${dec ? signedScore(dec.score) : '—'})`}${o ? ` · จบกำไร ${o.winRate}%` : ''}</div>`;
+    return `<div class="${ok ? 'ok' : 'no'}"><b>▲ ฝั่งซื้อ: ${ok ? 'เข้าได้' : 'ยังไม่เข้า'}</b>${ok ? 'คะแนนถึง +5 แล้ว' : `เข้าเมื่อคะแนน +${INTRA.RULE15.threshold} (ตอนนี้ ${dec ? signedScore(dec.score) : '—'})`}${o ? ` · จบกำไร ${o.winRate}%` : ''}</div>`;
   };
   if (open) {
     const hit = open.hit || 0;
     const pnl = price != null ? SIG.round((open.realized || 0) + ((open.tps.length - hit) / open.tps.length) * (price - open.entry)) : open.pnl;
     $('s15Trade').innerHTML = `<div class="sig-tps n3 mini">
-        <div class="n sl"><label>🛑 SL${hit ? ' → ทุน' : ''}</label><b class="mono">${f2(hit ? open.entry : open.sl)}</b></div>
+        <div class="n sl"><label>SL${hit ? ' → ทุน' : ''}</label><b class="mono">${f2(hit ? open.entry : open.sl)}</b></div>
         ${open.tps.map((tp, k) => `<div class="n tp${hit > k ? ' done' : ''}"><label>TP${k + 1}${hit > k ? ' ✓' : ''}</label><b class="mono">${f2(tp)}</b></div>`).join('')}
       </div>
       <p class="sig-pnl ${pnl >= 0 ? 'up' : 'down'}">กำไร/ขาดทุนตอนนี้ ${money(pnl)} ต่อ 1 ออนซ์ · ปิดเองไม่เกิน ${hhmm(open.expiresAt)} น.</p>${lotHtml(INTRA.RULE.slUsd)}`;
@@ -1649,7 +1649,7 @@ function renderS15() {
   const bt = state.bt15;
   if (bt) {
     const b = SIG.summary(bt.trades, userSpread());
-    $('s15Stats').innerHTML = `📊 ทดสอบย้อนหลัง 1 ปี (กติกาเดียวกัน): ${b.traded} รายการ (~${bt.perDay}/วัน) · ชนะ ${b.winRate}% · <b>${money(b.pnl)}</b>/ออนซ์ หลังหักสเปรด $${b.spread}/รายการ — ไม่มีระบบไหนแม่นทุกครั้ง ตั้ง SL ทุกรายการ`;
+    $('s15Stats').innerHTML = `ทดสอบย้อนหลัง 1 ปี (กติกาเดียวกัน): ${b.traded} รายการ (~${bt.perDay}/วัน) · ชนะ ${b.winRate}% · <b>${money(b.pnl)}</b>/ออนซ์ หลังหักสเปรด $${b.spread}/รายการ — ไม่มีระบบไหนแม่นทุกครั้ง ตั้ง SL ทุกรายการ`;
   }
 }
 
@@ -1690,8 +1690,8 @@ window.lotFor = function lotFor(sl, s = window.UI && UI.settings ? UI.settings()
 
 function lotHtml(sl) {
   const l = window.lotFor(sl);
-  return l ? `<p class="lot">📏 <b>${l.text}</b></p>`
-    : `<p class="lot">📏 0.01 lot เสี่ยง ~$${f2(sl)} · <a href="#account">ใส่ทุนของคุณ</a> แล้วระบบจะคำนวณขนาดการซื้อขายให้</p>`;
+  return l ? `<p class="lot"><b>${l.text}</b></p>`
+    : `<p class="lot">0.01 lot เสี่ยง ~$${f2(sl)} · <a href="#account">ใส่ทุนของคุณ</a> แล้วระบบจะคำนวณขนาดการซื้อขายให้</p>`;
 }
 
 async function refreshThb() {
@@ -1749,7 +1749,7 @@ function newsTimelineHtml(now) {
   const w = INTRA.RULE.newsMin * 60e3;
   const close = INTRA.nextClose(now);
   const list = (state.news || []).filter((n) => n.time >= now - 3 * 3600e3 && n.time <= close);
-  const head = `<h4>📰 ข่าวแรงสหรัฐ <span class="muted small">(งดเปิดรายการใหม่ ±${INTRA.RULE.newsMin} นาทีรอบข่าว)</span></h4>`;
+  const head = `<h4>ข่าวแรงสหรัฐ <span class="muted small">(งดเปิดรายการใหม่ ±${INTRA.RULE.newsMin} นาทีรอบข่าว)</span></h4>`;
   if (!list.length) return `${head}<p class="muted small">ไม่มีข่าวแรงจนถึงตลาดปิด ${SIG.mt(now, '03:00')} น.</p>`;
   return `${head}<ul class="tl">${list.map((n) => {
     const cls = Math.abs(n.time - now) <= w ? 'now' : n.time < now ? 'past' : '';

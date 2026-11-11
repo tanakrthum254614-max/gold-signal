@@ -129,7 +129,7 @@
         <span>คาด <b class="mono">${val(o.forecast, o)}</b></span><span>ก่อนหน้า <b class="mono">${val(o.previous, o)}</b></span>
         ${withActual ? `<span class="ns-chip ${a.cls}">${a.th}</span>` : ''}</div></summary>
       <div class="ns-about">
-        ${ab ? `<p>📖 <b>คืออะไร:</b> ${ab.what}</p><p>🪙 <b>ผลกับทอง:</b> ${ab.gold}</p>` : ''}
+        ${ab ? `<p><b>คืออะไร:</b> ${ab.what}</p><p><b>ผลกับทอง:</b> ${ab.gold}</p>` : ''}
         ${desc ? `<p class="ns-en">${desc.length > 600 ? `${desc.slice(0, 600)}…` : desc}</p>` : ''}
         <p class="ns-src">${e.source ? `แหล่งข้อมูล: ${e.source} · ` : ''}${e.page_link ? `<a href="https://www.investing.com${e.page_link}" target="_blank" rel="noopener noreferrer">อ่านต่อ / ดูประวัติที่ investing.com ↗</a>` : ''}</p>
       </div>
@@ -168,7 +168,7 @@
     const avgs = g.items.map((o) => by.get(keyOf(o))).filter((s) => s && s.n).map((s) => s.sum / s.n);
     if (!avgs.length) return null;
     const v = Math.max(...avgs);
-    return v >= 15 ? { cls: 'hi', th: '🔥 แรง', v } : v >= 8 ? { cls: 'mid', th: '⚡ ปานกลาง', v } : { cls: 'lo', th: 'เบา', v };
+    return v >= 15 ? { cls: 'hi', th: 'แรง', v } : v >= 8 ? { cls: 'mid', th: 'ปานกลาง', v } : { cls: 'lo', th: 'เบา', v };
   }
   const impHtml = (im) => (im ? `<span class="nc-imp ${im.cls}">${im.th} · ทองมักขยับ ~$${Math.round(im.v)}</span>` : '<span class="nc-imp none">ยังไม่มีสถิติ</span>');
   const dayLabel = (t, now) => {
@@ -188,10 +188,10 @@
     if (n) {
       const im = impactOf(n, by), rule = goldRule(n);
       const names = n.items.map((o) => thName(o.ev.short_name || o.ev.long_name || '') || o.ev.event_translated || o.ev.short_name);
-      $('nsNext').innerHTML = `<div class="nc-hero-top"><span class="nc-eyebrow">⏰ ข่าวแรงถัดไป</span>${impHtml(im)}</div>
+      $('nsNext').innerHTML = `<div class="nc-hero-top"><span class="nc-eyebrow">ข่าวแรงถัดไป</span>${impHtml(im)}</div>
         <div class="nc-hero-main"><b class="nc-hero-name">${[...new Set(names)].slice(0, 2).join(' + ')}${names.length > 2 ? ` และอีก ${names.length - 2} ข่าว` : ''}</b>
           <div class="ns-count"><b class="mono" id="nsLeft" data-t="${n.t}">${leftText(n.t)}</b><small>${dayTime(n.t)} น.</small></div></div>
-        ${rule ? `<p class="nc-rule">🪙 ${rule}</p>` : ''}
+        ${rule ? `<p class="nc-rule">${rule}</p>` : ''}
         <div class="ns-next-items">${n.items.map((o) => itemLine(o, false)).join('')}</div>
         <p class="ns-warn">⚠️ ราคาทองอาจวิ่งแรงในไม่กี่นาที · สัญญาณกรอบ ${window.CHARTSYS ? Object.entries(CHARTSYS.SYS).filter(([, s]) => s.news).map(([k]) => TF_LABEL[k]).join(' และ ') : '5 นาที และ 1 ชม.'} งดเปิดรายการใหม่ ±30 นาทีรอบข่าวนี้</p>`;
     } else $('nsNext').innerHTML = ns.at ? '<p class="muted">ไม่มีข่าวแรงของสหรัฐใน 8 วันข้างหน้า</p>' : '<p class="muted">กำลังโหลดปฏิทินข่าว…</p>';
@@ -229,10 +229,10 @@
     const avg = moved.length ? moved.reduce((a, g) => a + Math.abs(g.move.m60), 0) / moved.length : null;
     const big = moved.reduce((m, g) => (!m || (g.move.range || 0) > (m.move.range || 0) ? g : m), null);
     $('nsKpis').innerHTML = [
-      ['📅 ข่าวแรงสัปดาห์นี้', String(ns.next.filter((g) => g.t - now < 7 * 864e5).length), 'ครั้ง (นับตามเวลาออกข่าว)'],
-      ['📰 ออกแล้ว 60 วัน', String(ns.past.length), 'ครั้ง · ข่าวสำคัญของสหรัฐ'],
-      ['📏 ทองขยับเฉลี่ยหลังข่าว', avg != null ? `$${f2(avg)}` : '…', 'ภายใน 1 ชม. (ไม่ดูทิศ)'],
-      ['🌪️ แกว่งแรงสุด', big ? `$${f2(big.move.range)}` : '…', big ? `${thName(big.items[0].ev.short_name || '') || big.items[0].ev.event_translated} · ${new Date(big.t).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' })}` : ''],
+      ['ข่าวแรงสัปดาห์นี้', String(ns.next.filter((g) => g.t - now < 7 * 864e5).length), 'ครั้ง (นับตามเวลาออกข่าว)'],
+      ['ออกแล้ว 60 วัน', String(ns.past.length), 'ครั้ง · ข่าวสำคัญของสหรัฐ'],
+      ['ทองขยับเฉลี่ยหลังข่าว', avg != null ? `$${f2(avg)}` : '…', 'ภายใน 1 ชม. (ไม่ดูทิศ)'],
+      ['แกว่งแรงสุด', big ? `$${f2(big.move.range)}` : '…', big ? `${thName(big.items[0].ev.short_name || '') || big.items[0].ev.event_translated} · ${new Date(big.t).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' })}` : ''],
     ].map(([l, b, s]) => `<div class="st-kpi"><span class="st-kpi-l">${l}</span><b class="mono">${b}</b><small>${s}</small></div>`).join('');
   }
 
@@ -380,7 +380,7 @@
     if (g === soon && !just) {
       const s = Math.max(0, Math.round((g.t - now) / 1000));
       el.className = 'news-live soon';
-      el.innerHTML = `<span class="nl-tag">⏰ ข่าวแรงกำลังมา</span><b class="mono">${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}</b><span class="nl-name">${names}</span>`
+      el.innerHTML = `<span class="nl-tag">ข่าวแรงกำลังมา</span><b class="mono">${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}</b><span class="nl-name">${names}</span>`
         + `<span class="nl-nums">${g.items.slice(0, 3).map((o) => `คาด ${val(o.forecast, o)}`).join(' · ')}</span><a href="#stats">ดูข่าว ›</a>`;
       return;
     }
@@ -390,7 +390,7 @@
     if (p0 === undefined) releaseOpen(g.t).then(strip);
     const mv = p0 != null && px != null ? SIG.round(px - p0) : null;
     el.className = `news-live out ${a.cls}`;
-    el.innerHTML = `<span class="nl-tag">🔴 ข่าวออกแล้ว ${hhmm(g.t)} น.</span><span class="nl-name">${names}</span>`
+    el.innerHTML = `<span class="nl-tag">● ข่าวออกแล้ว ${hhmm(g.t)} น.</span><span class="nl-name">${names}</span>`
       + (out.length ? `<span class="nl-nums">${out.slice(0, 3).map((o) => `จริง <b class="mono">${val(o.actual, o)}</b> / คาด ${val(o.forecast, o)}`).join(' · ')}</span><span class="ns-chip ${a.cls}">${a.th}</span>`
         : '<span class="nl-nums">รอตัวเลขจริง… (เช็กทุก 15 วินาที)</span>')
       + `<span class="nl-gold">ทองตั้งแต่ข่าวออก <b class="mono ${mv == null ? '' : mv >= 0 ? 'up' : 'down'}">${mv == null ? '…' : signed(mv)}</b></span><a href="#stats">ดูข่าว ›</a>`;

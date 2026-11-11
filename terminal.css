@@ -446,3 +446,21 @@ html.dark .sec-title { border-left-color: transparent; border-image: linear-grad
 @keyframes stPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.78); } }
 @keyframes nlPulse { 0%, 100% { opacity: 1; } 50% { opacity: .72; } }
 @keyframes pentryPulse { 0%, 100% { opacity: 1; } 50% { opacity: .6; } }
+
+/* ── Pro look on every tab (11 Nov 2026, user: "ปรับทุกแทบเลย" after choosing the broker-app control panel for settings):
+   same language as the settings panel — no emoji in headings (removed in the markup / scripts), no gold bars, gradients or
+   glows; flat panels, hairline dividers, one flat gold for actions. Dark (default) theme; layout and content unchanged. */
+html.dark .sec-title { display: flex; align-items: center; gap: 10px; border: 0 !important; border-image: none !important; padding-left: 2px;
+  margin: 22px 2px 10px; font-size: 13px; font-weight: 600; letter-spacing: .2px; color: var(--muted); }
+html.dark .sec-title::before { content: none !important; }
+html.dark .sec-title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+html.dark .sec-title .lv-tag, html.dark .sec-title .tag { order: 2; }
+html.dark .card, html.dark .nf, html.dark .st-hero { box-shadow: none !important; border-radius: 8px; }
+html.dark .btn.gold, html.dark a.btn.gold { background: var(--gold) !important; border-color: var(--gold) !important; color: #0b0e11 !important; box-shadow: none !important; }
+html.dark .btn.gold:hover { filter: brightness(1.08); }
+html.dark .st-hero, html.dark .ns-hero { background: var(--panel) !important; border: 1px solid var(--line); }
+html.dark .st-hero::before, html.dark .st-hero::after { display: none !important; }
+html.dark .nc-hero { background: var(--panel-2) !important; border: 1px solid var(--line) !important; border-left: 2px solid var(--gold) !important; border-radius: 6px; }
+html.dark .st-kpi { background: var(--panel-2) !important; border: 1px solid var(--line) !important; border-radius: 6px; box-shadow: none !important; }
+html.dark .easy-sum { box-shadow: none !important; }
+html.dark .cc-head b { font-size: 14px; }

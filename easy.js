@@ -22,7 +22,7 @@
     let icon, title, lines = [], cls = 'wait';
     if (e.open) {
       const o = e.open, d = o.side === 'SELL' ? -1 : 1, pl = e.price != null ? d * (e.price - o.entry) : null;
-      icon = '📌'; cls = d > 0 ? 'buy' : 'sell';
+      icon = '●'; cls = d > 0 ? 'buy' : 'sell';
       title = `ระบบถือสถานะ${d > 0 ? 'ซื้อ (Buy)' : 'ขาย (Sell)'} อยู่ — ถือต่อตามแผน ไม่ต้องเปิดรายการใหม่`;
       lines.push(`เข้าที่ <b>${f2(o.entry)}</b> · <span data-term="SL">ตัดขาดทุน</span> <b>${f2(o.hit ? o.entry : o.sl)}</b>${o.hit ? ' (ย้ายมาที่ทุนแล้ว)' : ''} · <span data-term="TP">เป้ากำไร</span> <b>${f2(o.tps[Math.min(o.hit || 0, o.tps.length - 1)])}</b>`);
       if (pl != null) lines.push(`ตอนนี้ <b class="${pl >= 0 ? 'up' : 'down'}">${usd(pl)}</b> ต่อทอง 1 ออนซ์`);
@@ -30,13 +30,13 @@
       icon = '⛔'; title = 'ระบบพักชั่วคราว — ไม่แนะนำเปิดรายการใหม่';
       lines.push(`เหตุผล: ${e.pause.reason} · ระบบยังติดตามต่อ แล้วจะกลับมาให้สัญญาณเอง`);
     } else if (e.closed) {
-      icon = '🌙'; title = 'ตลาดทองปิดอยู่ — ยังไม่มีอะไรต้องทำ';
+      icon = '◌'; title = 'ตลาดทองปิดอยู่ — ยังไม่มีอะไรต้องทำ';
       lines.push(`ตลาดเปิดอีกครั้ง ${new Date(e.nextOpen).toLocaleDateString('th-TH', { weekday: 'long', timeZone: 'Asia/Bangkok' })} ${hhmm(e.nextOpen)} น.`);
     } else if (e.late) {
-      icon = '⏳'; title = 'กำลังอ่านกราฟล่าสุด…';
+      icon = '…'; title = 'กำลังอ่านกราฟล่าสุด…';
     } else if (e.go) {
       const d = e.go, c = d > 0 ? e.sys.buy : e.sys.sell, L = CHARTSYS.levelsFor(c, e.price, d);
-      icon = '✅'; cls = d > 0 ? 'buy' : 'sell';
+      icon = '✓'; cls = d > 0 ? 'buy' : 'sell';
       title = L.dip ? `${d > 0 ? 'ซื้อ (Buy)' : 'ขาย (Sell)'} — รอราคา${d > 0 ? 'ย่อลง' : 'เด้งขึ้น'}มาที่ <b>${f2(L.entry)}</b> (ภายใน ${L.dipH < 1 ? `${Math.round(L.dipH * 60)} นาที` : `${L.dipH} ชม.`})` : `${d > 0 ? 'ซื้อ (Buy)' : 'ขาย (Sell)'} ได้ตอนนี้ ที่ราว <b>${f2(e.price)}</b>`;
       lines.push(`<span data-term="SL">ตัดขาดทุน</span> <b>${f2(L.sl)}</b> · <span data-term="TP">เป้ากำไร</span> <b>${L.tps.map(f2).join(' / ')}</b>`);
       lines.push('เสี่ยงไม่เกิน 1–2% ของทุนต่อรายการ <a href="#chart">→ คำนวณขนาดการซื้อขาย (lot) ที่หน้ากราฟ</a>');
