@@ -981,13 +981,30 @@ function renderLive() {
     $('lvH1').className = `mono ${d >= 0 ? 'up' : 'down'}`;
   }
 
-  // Sparkline of the last hour
-  const pts = bars.slice(-60).map((b) => b.close);
-  const lo = Math.min(...pts), hi = Math.max(...pts), span = hi - lo || 1;
-  const xy = pts.map((v, i) => [(i / (pts.length - 1)) * 240, 74 - ((v - lo) / span) * 68]);
+  // Last hour, readable (11 Nov 2026): high / low of the hour at the edge, dashed line = the price an hour ago, times below,
+  // green when the hour is up and red when it is down
+  const last = bars.slice(-60), pts = last.map((b) => b.close);
+  pts[pts.length - 1] = price; // the line ends on the live price
+  const lo = Math.min(...pts), hi = Math.max(...pts), pad = (hi - lo) * 0.08 || 0.5, top = hi + pad, bot = lo - pad;
+  const Y = (v) => 76 - ((v - bot) / (top - bot)) * 72;
+  const xy = pts.map((v, i) => [(i / (pts.length - 1)) * 240, Y(v)]);
   const line = xy.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
+  const up = price >= pts[0];
+  $('lvChart').classList.toggle('dn', !up);
   $('lvLine').setAttribute('d', line);
   $('lvArea').setAttribute('d', `${line} L240 80 L0 80 Z`);
+  $('lvArea').setAttribute('fill', up ? 'url(#lvFillUp)' : 'url(#lvFillDn)');
+  const ry = Y(pts[0]).toFixed(1);
+  $('lvRef').setAttribute('y1', ry); $('lvRef').setAttribute('y2', ry);
+  $('lvRefTag').textContent = `เมื่อ 1 ชม. ก่อน ${f2(pts[0])}`;
+  $('lvRefTag').style.top = `${(ry / 80) * 100}%`;
+  $('lvYHi').textContent = f2(hi); $('lvYLo').textContent = f2(lo);
+  $('lvYHi').style.top = `${(Y(hi) / 80) * 100}%`; $('lvYLo').style.top = `${(Y(lo) / 80) * 100}%`;
+  const d = price - pts[0];
+  $('lvSpanChg').textContent = `${d >= 0 ? '▲' : '▼'} ${money(d)}`;
+  $('lvSpanChg').className = `lv-cap-d mono ${d >= 0 ? 'up' : 'down'}`;
+  const hm = (t) => new Date(t * 1000).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
+  $('lvX0').textContent = hm(last[0].time); $('lvX1').textContent = hm(last[Math.floor(last.length / 2)].time); $('lvX2').textContent = 'ตอนนี้';
   const [lx, ly] = xy[xy.length - 1];
   $('lvDot').setAttribute('cx', lx);
   $('lvDot').setAttribute('cy', ly);

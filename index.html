@@ -49,7 +49,7 @@
   <link rel="stylesheet" href="live.css?v=202610210130">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
-  <link rel="stylesheet" href="terminal.css?v=202611111930">
+  <link rel="stylesheet" href="terminal.css?v=202611112000">
   <link rel="stylesheet" href="splash.css?v=202610171000">
   <script>/* refresh = stay where you were, no loading screen (user, 16 Oct 2026: "กดรีเฟรชแล้วอยู่ที่เดิม ไม่ต้องไปเริ่มที่หน้าตอนโหลดใหม่ทุกครั้ง"): the splash plays once per tab; a reload or a later visit in the same tab skips it */ try { var gsNav = performance.getEntriesByType("navigation")[0]; if ((gsNav && gsNav.type === "reload") || sessionStorage.getItem("gs-splash-seen") === "1") document.documentElement.classList.add("no-splash"); } catch (e) {}</script>
   <script>/* apply the saved theme before the first paint */ var gsT = "dark"; try { gsT = localStorage.getItem("gs-theme") === "light" ? "light" : "dark"; } catch (e) {} /* dark trading terminal = default since 14 Oct 2026 */ if (gsT === "dark") { document.getElementById("themeLight").disabled = true; document.documentElement.classList.add("dark"); document.querySelector("meta[name=theme-color]").content = "#0b0e11"; }</script>
@@ -161,12 +161,23 @@
               <div class="lv-price mono" id="lvPrice">—</div>
               <div class="lv-chg mono" id="lvChg"></div>
             </div>
-            <svg class="lv-spark" id="lvSpark" viewBox="0 0 240 80" preserveAspectRatio="none" aria-hidden="true">
-              <defs><linearGradient id="lvFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0b429" stop-opacity=".35"/><stop offset="1" stop-color="#f0b429" stop-opacity="0"/></linearGradient></defs>
-              <path id="lvArea" fill="url(#lvFill)"/>
-              <path id="lvLine" class="lv-line"/>
-              <circle id="lvDot" class="lv-dot" r="3.5" cx="-10" cy="-10"/>
-            </svg>
+            <!-- last hour, readable (11 Nov 2026, user: "อันนี้อะไรอะ" → "ปรับใหม่" → title, hour high/low, the price an hour ago, times) -->
+            <figure class="lv-chart" id="lvChart">
+              <figcaption class="lv-cap"><span>ราคา 60 นาทีล่าสุด</span><span class="lv-cap-d mono" id="lvSpanChg"></span></figcaption>
+              <div class="lv-plot">
+                <span class="lv-y lv-y-hi mono" id="lvYHi"></span><span class="lv-y lv-y-lo mono" id="lvYLo"></span>
+                <svg class="lv-spark" id="lvSpark" viewBox="0 0 240 80" preserveAspectRatio="none" aria-hidden="true">
+                  <defs><linearGradient id="lvFillUp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0ecb81" stop-opacity=".28"/><stop offset="1" stop-color="#0ecb81" stop-opacity="0"/></linearGradient>
+                    <linearGradient id="lvFillDn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6465d" stop-opacity=".26"/><stop offset="1" stop-color="#f6465d" stop-opacity="0"/></linearGradient></defs>
+                  <line id="lvRef" class="lv-ref" x1="0" x2="240" y1="-10" y2="-10"/>
+                  <path id="lvArea" fill="url(#lvFillUp)"/>
+                  <path id="lvLine" class="lv-line"/>
+                  <circle id="lvDot" class="lv-dot" r="3.5" cx="-10" cy="-10"/>
+                </svg>
+                <span class="lv-ref-tag mono" id="lvRefTag"></span>
+              </div>
+              <div class="lv-x mono"><span id="lvX0"></span><span id="lvX1"></span><span id="lvX2"></span></div>
+            </figure>
           </div>
           <div class="lv-stats">
             <div><label>สูงสุดวันนี้</label><b class="mono" id="lvHigh">—</b></div>
@@ -538,7 +549,7 @@
   <script src="ui.js?v=202611111700"></script>
   <script src="tabpanel.js?v=202611111930"></script>
   <script src="chartsys.js?v=202610281200"></script>
-  <script src="main.js?v=202611111840"></script>
+  <script src="main.js?v=202611111945"></script>
   <script src="tradeplan.js?v=202611111830"></script>
   <script src="chartzones.js?v=202611111840"></script>
   <script src="newsstats.js?v=202611111840"></script>
