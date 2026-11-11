@@ -488,3 +488,6 @@ html.light .gu-live li { background: #fff; border-color: #ece6d8; }
 .gh-who { display: inline-flex; align-items: center; gap: 8px; } .gh-who .gu-av { width: 30px; height: 30px; font-size: 11px; }
 .gh-who .gu-av.mark i { font-size: 4.6px; letter-spacing: 0; }
 .gh .gu-live { margin-bottom: 10px; }
+
+/* inside the Gold Signal site panel (11 Nov 2026): the site menu lists the sets + pages (tabpanel.js), so ours are hidden */
+html.zf-hosted .zn, html.zf-hosted #pick { display: none !important; }

@@ -124,6 +124,7 @@ function showZone(id) {
   try { localStorage.setItem('zf-zone', JSON.stringify({ ...zoneMem(), [current]: id })); } catch {}
   // charts drawn while hidden measure 0 px: let them re-measure now that the page is visible
   requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+  tellHost();
 }
 $('#app').addEventListener('click', e => {
   const b = e.target.closest('.zn button'); if (!b) return;
@@ -133,5 +134,19 @@ $('#app').addEventListener('click', e => {
 });
 $('#pick').addEventListener('change', e => { current = e.target.value; params.set('d', current); params.delete('z'); history.replaceState(null, '', '?' + params); load(); });
 $('#ver').textContent = 'Gold Signal';
+// Inside the Gold Signal site (11 Nov 2026): the site's panel menu (tabpanel.js) lists the sets and pages of this dashboard.
+// We report them ({zf:'zones'}) and follow its clicks ({zf:'zone'} / {zf:'pick'}); once it says {zf:'hostnav'} our own
+// page buttons and set picker are hidden (html.zf-hosted) so there is one menu only.
+function tellHost() {
+  if (parent === window || !dash?.zones) return;
+  const sets = [...$('#pick').options].map(o => ({ id: o.value, label: o.textContent }));
+  parent.postMessage({ zf: 'zones', set: current, sets, on: document.querySelector('#app .zn button.on')?.dataset.zone, zones: dash.zones.map(z => ({ id: z.id, label: z.short || z.title })) }, location.origin);
+}
+addEventListener('message', e => {
+  if (e.origin !== location.origin || !e.data) return;
+  if (e.data.zf === 'hostnav') { document.documentElement.classList.add('zf-hosted'); tellHost(); }
+  else if (e.data.zf === 'zone') { showZone(e.data.id); scrollTo(0, 0); }
+  else if (e.data.zf === 'pick' && e.data.d !== current) { const p = $('#pick'); p.value = e.data.d; p.dispatchEvent(new Event('change')); }
+});
 loadList().then(load);
 setInterval(tick, 1000);

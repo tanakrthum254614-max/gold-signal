@@ -207,7 +207,7 @@ node scripts/backtest.js 365 && node scripts/backtest-30m.js 365
 
 ```bash
 gh workflow run morning-plan.yml -R tanakrthum254614-max/gold-signal -f record=false   # ทดสอบเฉย ๆ (record=true = บันทึก)
-gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal                   # เช็ก + บันทึกครั้งเดียว (LOOP_MINUTES=0)
+gh workflow run price-alerts.yml -R tanakrthum254614-max/gold-signal -f chain=true     # วันทำการ: ต้องใส่ chain=true ไม่งั้นสายรอบ 5 นาทีขาด (ไม่ใส่ = เช็กครั้งเดียว)
 gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal                 # สรุปสัปดาห์ (ไม่บันทึกซ้ำ ไม่ส่งอะไร)
 ```
 - ไม่มี input `send` แล้ว (11 พ.ย. 2569) — ไม่มีงานไหนส่ง LINE / push
@@ -318,6 +318,10 @@ gh workflow run weekly-summary.yml -R tanakrthum254614-max/gold-signal          
 ---
 
 # 📜 บันทึกการเปลี่ยนแปลง (ใหม่สุดอยู่บน)
+
+## 11 พ.ย. 2569 (เย็น) — 🗂️ ทุกแท็บเป็นแผงแบบหน้าตั้งค่า
+- ผู้ใช้ส่งภาพเมนูซ้าย "ทุกแทบที่หมายถึงตรงนี้นะ" → เลือก "ทุกหน้าเป็นแผงแบบหน้าตั้งค่า" · `tabpanel.js` (โหลดหลัง ui.js) ห่อเนื้อหาแต่ละแท็บ (home/stats/chart/zframes) ด้วย `.sp.tp` + เมนูหัวข้อซ้าย (TABS ในไฟล์: label/icon/selector — ส่วนที่ซ่อนอยู่ไม่ขึ้นเมนู, เช็กทุก 2 วิ, ไฮไลต์ตามที่เลื่อน, คลิกแล้วล็อกไฮไลต์ 1.2 วิ) · กราฟ: ปุ่มแบบง่าย/ละเอียดในเมนู (กด #chartMode เดิม ซึ่งซ่อนไว้) · หุ้นสหรัฐ: zframes/app.js `tellHost()` ส่ง {zf:'zones'} ชุด+หน้า ให้เมนู, รับ {zf:'zone'|'pick'|'hostnav'}; html.zf-hosted ซ่อน .zn + #pick ในหน้า zframes · CSS ท้าย terminal.css "Every tab as a panel" (การ์ดในแผงแบนราบ เส้นคั่นบาง) · ตัวเลือก `.tab .sp…` ใช้ร่วมกับหน้าตั้งค่า — **ไอคอน svg ต้องจำกัดที่ `.sp-nav svg`** (เคยไปย่อเส้นราคาสด) · **โยงโครง: CSS ที่ใช้ `.tab > x` ไม่โดนเนื้อหาในแผงแล้ว** · ทดสอบผ่าน `npx wrangler versions upload --preview-alias panels` (ไม่ต้องรันเครื่อง) — ปฏิทิน investing ใช้ไม่ได้บนโดเมน preview (CORS) ปกติ · Cloudflare 08a2a132
+- ⚠️ ระหว่างงานพบตัวบันทึกหยุด 07:50–09:13 UTC: การกดรันเองเมื่อบ่าย (ไม่มี chain=true) ไปแทนที่รอบ chain ที่รอคิว แล้ว cron สำรองไม่ยิง → สั่ง `gh workflow run price-alerts.yml -f chain=true` ต่อสายแล้ว · **บทเรียน: กดรันเองให้ใส่ `-f chain=true` เสมอในวันทำการ**
 
 ## 11 พ.ย. 2569 (บ่าย 3) — 🧱 ทุกแท็บโทนมืออาชีพเดียวกับแผงตั้งค่า
 - ผู้ใช้: "ปรับทุกแทบเลย" → ไม่เปลี่ยนผัง/เนื้อหา: ลบอีโมจิในหัวข้อ (index.html, chartchat.js) · สถานะในสคริปต์ (main/chartzones/easy/newsstats/tradeplan/chartchat): 🟢/🔴 หน้า Buy/Sell → ▲/▼, อื่น ๆ → ●, ✅ → ✓, ❌ → ✕, 🚫 → ✕, อีโมจิตกแต่ง (📌📥⏳🔥⚡🌙📅📰📊🧮🎯💰🛑🚨⏰ ฯลฯ) ลบ · **คงไว้: ⚠ ⛔ 🟩 🟥** (มีความหมาย) · CSS ท้าย terminal.css "Pro look on every tab" (html.dark): .sec-title = ตัวเล็กเทา + เส้นบางต่อท้าย (ไม่มีแถบทอง), การ์ด/ข่าวไม่มีเงา, .btn.gold ทองเรียบ, .st-hero/.ns-hero/.nc-hero/.st-kpi พื้นเรียบไม่ไล่สี (nc-hero ขอบซ้ายทอง 2px) · **ห้ามเพิ่มอีโมจิในหัวข้อ/สถานะใหม่** · Cloudflare ec81076e

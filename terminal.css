@@ -88,52 +88,52 @@ html.dark .seg button.on { background: var(--gold) !important; color: #0b0e11 !i
 
 /* ⚙️ Settings = broker-app control panel (11 Nov 2026, user: "ไม่ใช่แบบเด็กออกแบบ" → "แผงควบคุมแบบแอปโบรก"):
    one panel, category menu left (sticky), plain setting rows right, thin dividers, gold line icons. Both themes (vars). */
-#tab-account .sp { display: grid; grid-template-columns: 232px minmax(0, 1fr); background: linear-gradient(90deg, var(--panel-2) 232px, var(--line) 232px, var(--line) 233px, var(--panel) 233px); border: 1px solid var(--line); border-radius: var(--radius, 8px); overflow: clip; }
-#tab-account .sp svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-#tab-account .sp-nav { padding: 14px 10px; display: flex; flex-direction: column; gap: 2px; position: sticky; top: 64px; align-self: start; }
-#tab-account .sp-brand { display: flex; align-items: center; gap: 12px; padding: 6px 10px 16px; margin-bottom: 8px; border-bottom: 1px solid var(--line); color: var(--gold); }
-#tab-account .sp-brand svg { width: 28px; height: 28px; }
-#tab-account .sp-brand b { display: block; color: var(--text); font-size: 17px; line-height: 1.2; }
-#tab-account .sp-brand small { color: var(--muted); font-size: 12px; }
-#tab-account .sp-nav button { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; font: inherit; font-size: 14px; color: var(--muted); background: transparent; border: 0; border-left: 2px solid transparent; border-radius: 0 6px 6px 0; padding: 10px 12px; cursor: pointer; transition: color .15s, background .15s; }
-#tab-account .sp-nav button:hover { color: var(--text); background: var(--gold-soft); }
-#tab-account .sp-nav button.on { color: var(--text); font-weight: 600; background: var(--gold-soft); border-left-color: var(--gold); }
-#tab-account .sp-nav button.on svg { color: var(--gold); }
-#tab-account .sp-body { min-width: 0; }
-#tab-account .sp-sec { padding: 20px 28px 8px; border-bottom: 1px solid var(--line); scroll-margin-top: 70px; }
-#tab-account .sp-sec:last-child { border-bottom: 0; padding-bottom: 14px; }
-#tab-account .sp-sec > header { margin-bottom: 4px; }
-#tab-account .sp-sec > header h3 { margin: 0; font-size: 16px; color: var(--text); letter-spacing: 0; }
-#tab-account .sp-sec > header h3::before { content: none; }
-#tab-account .sp-sec > header p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
-#tab-account .sp-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 400px); align-items: center; gap: 24px; padding: 14px 0; border-top: 1px solid var(--line); }
-#tab-account .sp-sec > header + .sp-row { border-top: 0; }
-#tab-account .sp-lbl b { display: block; font-size: 14px; font-weight: 600; color: var(--text); }
-#tab-account .sp-lbl span { display: block; margin-top: 2px; font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
-#tab-account .sp-ctl { display: flex; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; }
-#tab-account .sp-ctl > input, #tab-account .sp-ctl > select { width: 100%; }
-#tab-account .sp-pair { display: grid; grid-template-columns: minmax(0, 1fr) 96px; }
-#tab-account .sp-ctl input, #tab-account .sp-ctl select { font: inherit; font-size: 14px; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 12px; min-height: 40px; margin: 0; }
-#tab-account .sp-ctl input:focus, #tab-account .sp-ctl select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
-#tab-account .sp-ctl .seg { margin: 0; }
-#tab-account .sp-ctl .btn { margin: 0; min-width: 112px; justify-content: center; }
-#tab-account .sp .btn.gold { background: var(--gold) !important; border-color: var(--gold) !important; color: #0b0e11 !important; box-shadow: none !important; filter: none; }
-#tab-account .sp .btn.gold:hover { filter: brightness(1.08); }
-#tab-account .sp-result { background: linear-gradient(90deg, transparent, var(--gold-soft)); margin: 0 -28px; padding-left: 28px; padding-right: 28px; }
-#tab-account .sp-result .set-preview { font-size: 15px; font-weight: 700; color: var(--gold); white-space: nowrap; margin-right: auto; min-height: 0; }
-#tab-account .sp-url { color: var(--text) !important; }
-#tab-account .sp-ver { color: var(--muted); font-size: 13px; }
+.tab .sp { display: grid; grid-template-columns: 232px minmax(0, 1fr); background: linear-gradient(90deg, var(--panel-2) 232px, var(--line) 232px, var(--line) 233px, var(--panel) 233px); border: 1px solid var(--line); border-radius: var(--radius, 8px); overflow: clip; }
+.tab .sp-nav svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.tab .sp-nav { padding: 14px 10px; display: flex; flex-direction: column; gap: 2px; position: sticky; top: 64px; align-self: start; }
+.tab .sp-brand { display: flex; align-items: center; gap: 12px; padding: 6px 10px 16px; margin-bottom: 8px; border-bottom: 1px solid var(--line); color: var(--gold); }
+.tab .sp-brand svg { width: 28px; height: 28px; }
+.tab .sp-brand b { display: block; color: var(--text); font-size: 17px; line-height: 1.2; }
+.tab .sp-brand small { color: var(--muted); font-size: 12px; }
+.tab .sp-nav button { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; font: inherit; font-size: 14px; color: var(--muted); background: transparent; border: 0; border-left: 2px solid transparent; border-radius: 0 6px 6px 0; padding: 10px 12px; cursor: pointer; transition: color .15s, background .15s; }
+.tab .sp-nav button:hover { color: var(--text); background: var(--gold-soft); }
+.tab .sp-nav button.on { color: var(--text); font-weight: 600; background: var(--gold-soft); border-left-color: var(--gold); }
+.tab .sp-nav button.on svg { color: var(--gold); }
+.tab .sp-body { min-width: 0; }
+.tab .sp-sec { padding: 20px 28px 8px; border-bottom: 1px solid var(--line); scroll-margin-top: 70px; }
+.tab .sp-sec:last-child { border-bottom: 0; padding-bottom: 14px; }
+.tab .sp-sec > header { margin-bottom: 4px; }
+.tab .sp-sec > header h3 { margin: 0; font-size: 16px; color: var(--text); letter-spacing: 0; }
+.tab .sp-sec > header h3::before { content: none; }
+.tab .sp-sec > header p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+.tab .sp-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 400px); align-items: center; gap: 24px; padding: 14px 0; border-top: 1px solid var(--line); }
+.tab .sp-sec > header + .sp-row { border-top: 0; }
+.tab .sp-lbl b { display: block; font-size: 14px; font-weight: 600; color: var(--text); }
+.tab .sp-lbl span { display: block; margin-top: 2px; font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.tab .sp-ctl { display: flex; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; }
+.tab .sp-ctl > input, .tab .sp-ctl > select { width: 100%; }
+.tab .sp-pair { display: grid; grid-template-columns: minmax(0, 1fr) 96px; }
+.tab .sp-ctl input, .tab .sp-ctl select { font: inherit; font-size: 14px; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 12px; min-height: 40px; margin: 0; }
+.tab .sp-ctl input:focus, .tab .sp-ctl select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
+.tab .sp-ctl .seg { margin: 0; }
+.tab .sp-ctl .btn { margin: 0; min-width: 112px; justify-content: center; }
+.tab .sp .btn.gold { background: var(--gold) !important; border-color: var(--gold) !important; color: #0b0e11 !important; box-shadow: none !important; filter: none; }
+.tab .sp .btn.gold:hover { filter: brightness(1.08); }
+.tab .sp-result { background: linear-gradient(90deg, transparent, var(--gold-soft)); margin: 0 -28px; padding-left: 28px; padding-right: 28px; }
+.tab .sp-result .set-preview { font-size: 15px; font-weight: 700; color: var(--gold); white-space: nowrap; margin-right: auto; min-height: 0; }
+.tab .sp-url { color: var(--text) !important; }
+.tab .sp-ver { color: var(--muted); font-size: 13px; }
 #tab-account .pwa-how { margin: 0 0 14px; border: 1px solid var(--line); border-radius: 6px; }
 @media (max-width: 900px) {
-  #tab-account .sp { grid-template-columns: 1fr; background: var(--panel); }
-  #tab-account .sp-nav { position: static; flex-direction: row; overflow-x: auto; background: var(--panel-2); border-bottom: 1px solid var(--line); padding: 8px; }
-  #tab-account .sp-brand { display: none; }
-  #tab-account .sp-nav button { width: auto; white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; border-radius: 6px 6px 0 0; }
-  #tab-account .sp-nav button.on { border-bottom-color: var(--gold); }
-  #tab-account .sp-sec { padding: 16px 16px 6px; }
-  #tab-account .sp-row { grid-template-columns: 1fr; gap: 10px; }
-  #tab-account .sp-ctl { justify-content: flex-start; }
-  #tab-account .sp-result { margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+  .tab .sp { grid-template-columns: 1fr; background: var(--panel); }
+  .tab .sp-nav { position: static; flex-direction: row; overflow-x: auto; background: var(--panel-2); border-bottom: 1px solid var(--line); padding: 8px; }
+  .tab .sp-brand { display: none; }
+  .tab .sp-nav button { width: auto; white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; border-radius: 6px 6px 0 0; }
+  .tab .sp-nav button.on { border-bottom-color: var(--gold); }
+  .tab .sp-sec { padding: 16px 16px 6px; }
+  .tab .sp-row { grid-template-columns: 1fr; gap: 10px; }
+  .tab .sp-ctl { justify-content: flex-start; }
+  .tab .sp-result { margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
 }
 
 /* ---------- Phones (14 Oct, user: "เปิดในโทรศัพท์ดูใหญ่ไป") — both themes. Text ~12% smaller, tighter cards, big
@@ -464,3 +464,37 @@ html.dark .nc-hero { background: var(--panel-2) !important; border: 1px solid va
 html.dark .st-kpi { background: var(--panel-2) !important; border: 1px solid var(--line) !important; border-radius: 6px; box-shadow: none !important; }
 html.dark .easy-sum { box-shadow: none !important; }
 html.dark .cc-head b { font-size: 14px; }
+
+/* ── Every tab as a panel (11 Nov 2026, user chose "ทุกหน้าเป็นแผงแบบหน้าตั้งค่า"; tabpanel.js builds .sp.tp) ──
+   Same panel/menu as settings; the tab's own cards become flat parts of the panel divided by hairlines. */
+.tab .sp.tp { grid-template-columns: 216px minmax(0, 1fr); background: linear-gradient(90deg, var(--panel-2) 216px, var(--line) 216px, var(--line) 217px, var(--panel) 217px); }
+.tab .tp .sp-body { padding: 4px 0 8px; min-width: 0; }
+.tab .tp .sp-body > * { margin: 0 !important; animation: none !important; }
+.tab .tp .sp-body > .card, .tab .tp .sp-body > section, .tab .tp .sp-body > details.card, .tab .tp .sp-body > div.card {
+  background: transparent !important; border: 0 !important; border-bottom: 1px solid var(--line) !important; border-radius: 0 !important; box-shadow: none !important; padding: 20px 24px !important; }
+.tab .tp .sp-body > .easy-sum { border-left: 3px solid var(--muted) !important; }
+.tab .tp .sp-body > .easy-sum.buy { border-left-color: var(--up) !important; } .tab .tp .sp-body > .easy-sum.sell { border-left-color: var(--down) !important; }
+.tab .tp .sp-body > .sec-title { padding: 18px 24px 0 !important; margin: 0 !important; }
+.tab .tp .sp-body > .sec-title + .card, .tab .tp .sp-body > .sec-title + div { padding-top: 10px !important; }
+.tab .tp .sp-body > div:not(.card):not([hidden]):not(.home-off), .tab .tp .sp-body > p { padding-left: 24px !important; padding-right: 24px !important; }
+.tab .tp .sp-body > p.updated { padding: 14px 24px !important; }
+.tab .tp .sp-body > :last-child { border-bottom: 0 !important; }
+.tab .tp .tp-group { font-size: 11.5px; letter-spacing: .3px; color: var(--muted); padding: 10px 12px 4px; }
+.tab .tp .tp-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 2px 4px 6px; }
+.tab .tp .tp-modes button { justify-content: center; border-left: 0 !important; border-radius: 6px !important; padding: 8px 6px !important; border: 1px solid var(--line) !important; }
+.tab .tp .tp-modes button.on { background: var(--gold) !important; color: #0b0e11 !important; border-color: var(--gold) !important; }
+.tab .tp .sp-nav button[hidden] { display: none; }
+#tab-chart .tp #chartMode { display: none; }
+#tab-chart .tp .sp-body > #chartSimple, #tab-chart .tp .sp-body > #chartPro { padding: 16px 20px !important; }
+#tab-zframes .tp .sp-body { padding: 0; }
+#tab-zframes .tp .sp-body > iframe { display: block; padding: 0 !important; border-radius: 0; }
+.content.zframes-view #tab-zframes .sp.tp { border-radius: 0; border-left: 0; border-right: 0; }
+@media (max-width: 1200px) {
+  .tab .sp.tp { grid-template-columns: 1fr; background: var(--panel); }
+  .tab .tp .sp-nav { position: static; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; background: var(--panel-2); border-bottom: 1px solid var(--line); padding: 8px; }
+  .tab .tp .sp-brand, .tab .tp .tp-group { display: none; }
+  .tab .tp .sp-nav button { width: auto; white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; border-radius: 6px 6px 0 0; }
+  .tab .tp .sp-nav button.on { border-bottom-color: var(--gold); }
+  .tab .tp .tp-modes, .tab .tp .tp-sets, .tab .tp .tp-zones { display: flex; gap: 4px; padding: 0; }
+  .tab .tp .sp-body > .card, .tab .tp .sp-body > section, .tab .tp .sp-body > details.card { padding: 16px !important; }
+}
