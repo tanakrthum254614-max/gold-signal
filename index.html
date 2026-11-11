@@ -49,7 +49,7 @@
   <link rel="stylesheet" href="live.css?v=202610210130">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
-  <link rel="stylesheet" href="terminal.css?v=202611111600">
+  <link rel="stylesheet" href="terminal.css?v=202611111700">
   <link rel="stylesheet" href="splash.css?v=202610171000">
   <script>/* refresh = stay where you were, no loading screen (user, 16 Oct 2026: "กดรีเฟรชแล้วอยู่ที่เดิม ไม่ต้องไปเริ่มที่หน้าตอนโหลดใหม่ทุกครั้ง"): the splash plays once per tab; a reload or a later visit in the same tab skips it */ try { var gsNav = performance.getEntriesByType("navigation")[0]; if ((gsNav && gsNav.type === "reload") || sessionStorage.getItem("gs-splash-seen") === "1") document.documentElement.classList.add("no-splash"); } catch (e) {}</script>
   <script>/* apply the saved theme before the first paint */ var gsT = "dark"; try { gsT = localStorage.getItem("gs-theme") === "light" ? "light" : "dark"; } catch (e) {} /* dark trading terminal = default since 14 Oct 2026 */ if (gsT === "dark") { document.getElementById("themeLight").disabled = true; document.documentElement.classList.add("dark"); document.querySelector("meta[name=theme-color]").content = "#0b0e11"; }</script>
@@ -462,63 +462,63 @@
 
       <!-- 📖 How to use -->
 
-      <!-- ⚙️ Settings (was the account tab — no accounts since 11 Nov 2026) -->
+      <!-- ⚙️ Settings — broker-app control panel (11 Nov 2026, user: "อยากให้เป็นกราฟฟิกที่ไม่ใช่แบบเด็กออกแบบ" → chose
+           "แผงควบคุมแบบแอปโบรก"): category menu left (ui.js scrolls / highlights), plain rows right, line icons, no emoji -->
       <section id="tab-account" class="tab" hidden>
-        <div class="set-hero">
-          <span class="sh-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span>
-          <div><h2>ตั้งค่า</h2><p class="muted small">ปรับหน้าจอ ติดตั้งแอป และค่าที่ใช้คำนวณขนาดการซื้อขาย — บันทึกไว้ในเครื่องนี้ ไม่ต้องสมัครสมาชิก</p></div>
-          <div class="sh-chips"><span>🔓 ใช้ฟรี ไม่ต้องล็อกอิน</span><span>💾 บันทึกในเครื่อง</span></div>
+        <div class="sp">
+          <nav class="sp-nav" id="spNav" aria-label="หมวดการตั้งค่า">
+            <div class="sp-brand"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><div><b>ตั้งค่า</b><small>บันทึกในเครื่องนี้</small></div></div>
+            <button type="button" data-sp="spTrade" class="on"><svg viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>การซื้อขาย</button>
+            <button type="button" data-sp="spDisplay"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>หน้าจอ</button>
+            <button type="button" data-sp="pwaCard"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>แอปบนมือถือ</button>
+            <button type="button" data-sp="spShare"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>แชร์</button>
+            <button type="button" data-sp="spAbout"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>เกี่ยวกับ</button>
+          </nav>
+
+          <div class="sp-body">
+            <section class="sp-sec" id="spTrade">
+              <header><h3>การซื้อขาย</h3><p>ใช้คำนวณขนาดการซื้อขาย (lot) ในทุกสัญญาณ และหักสเปรดในผลทดสอบ</p></header>
+              <div class="sp-row"><div class="sp-lbl"><b>ทุนในบัญชีซื้อขาย</b><span>ยอดเงินในบัญชีโบรกที่ใช้เทรดทองคำ</span></div>
+                <div class="sp-ctl sp-pair"><input id="setCap" type="number" min="0" step="100" placeholder="เช่น 1000" aria-label="ทุนในบัญชีซื้อขาย"><select id="setCur" aria-label="สกุลเงิน"><option value="USD">USD</option><option value="THB">THB</option></select></div></div>
+              <div class="sp-row"><div class="sp-lbl"><b>ความเสี่ยงต่อรายการ</b><span>สัดส่วนของทุนที่ยอมเสียถ้าโดนตัดขาดทุน</span></div>
+                <div class="sp-ctl"><select id="setRisk" aria-label="ความเสี่ยงต่อรายการ"><option value="0.5">0.5%</option><option value="1">1% (แนะนำ)</option><option value="1.5">1.5%</option><option value="2">2%</option></select></div></div>
+              <div class="sp-row"><div class="sp-lbl"><b>สเปรด XAUUSD</b><span>ส่วนต่างราคาซื้อ–ขายของโบรก (ดอลลาร์)</span></div>
+                <div class="sp-ctl"><input id="setSpread" type="number" min="0" step="0.05" placeholder="0.40" aria-label="สเปรด XAUUSD"></div></div>
+              <div class="sp-row sp-result"><div class="sp-lbl"><b>ขนาดการซื้อขายตัวอย่าง</b><span>คำนวณจากค่าด้านบน</span></div>
+                <div class="sp-ctl"><span class="set-preview mono" id="setPreview"></span><button class="btn gold" id="setSave" type="button">บันทึก</button></div></div>
+            </section>
+
+            <section class="sp-sec" id="spDisplay">
+              <header><h3>หน้าจอ</h3><p>จำไว้ในเครื่องนี้</p></header>
+              <div class="sp-row"><div class="sp-lbl"><b>ธีม</b><span>โหมดมืดแบบจอเทรด หรือโหมดสว่างโทนครีม</span></div>
+                <div class="sp-ctl"><div class="seg" id="themeSeg"><button type="button" data-theme="light">สว่าง</button><button type="button" data-theme="dark">มืด</button></div></div></div>
+            </section>
+
+            <section class="sp-sec pwa" id="pwaCard">
+              <header><h3>แอปบนมือถือ</h3><p>เปิดเร็ว เต็มจอ ไม่ต้องโหลดจาก Store</p></header>
+              <div class="sp-row"><div class="sp-lbl"><b>ติดตั้งเป็นแอป</b><span id="pwaInstallTx"></span></div>
+                <div class="sp-ctl"><button class="btn gold" id="pwaInstall" type="button">ติดตั้ง</button></div></div>
+              <div class="pwa-how" id="pwaHow" hidden>
+                <ol id="pwaHowIos"><li>เปิดเว็บนี้ใน <b>Safari</b></li><li>กดปุ่ม <b>แชร์</b> <span class="mono">⬆︎</span> ด้านล่าง</li><li>เลือก <b>เพิ่มไปยังหน้าจอโฮม</b> แล้วกด <b>เพิ่ม</b></li><li>เปิด Gold Signal จากหน้าจอโฮมได้เลย</li></ol>
+                <ol id="pwaHowOther"><li>กดเมนู <b>⋮</b> ของเบราว์เซอร์ (Chrome / Edge)</li><li>เลือก <b>ติดตั้งแอป</b> หรือ <b>เพิ่มลงในหน้าจอหลัก</b></li><li>เปิด Gold Signal จากไอคอนบนหน้าจอได้เลย</li></ol>
+              </div>
+            </section>
+
+            <section class="sp-sec" id="spShare">
+              <header><h3>แชร์</h3><p>ส่งลิงก์ให้เพื่อน เปิดดูได้ทันที ไม่ต้องสมัคร</p></header>
+              <div class="sp-row"><div class="sp-lbl"><b>ลิงก์เว็บไซต์</b><span class="mono sp-url" id="spUrl">gold-signal.gold-signal.workers.dev</span></div>
+                <div class="sp-ctl share"><button class="btn gold" id="shareCopy" type="button">คัดลอกลิงก์</button><button class="btn" id="shareNative" type="button" hidden>แชร์…</button></div></div>
+            </section>
+
+            <section class="sp-sec" id="spAbout">
+              <header><h3>เกี่ยวกับ</h3><p>Gold Signal · สัญญาณซื้อขายทองคำ XAU/USD</p></header>
+              <div class="sp-row"><div class="sp-lbl"><b>ทัวร์แนะนำ</b><span>ดูวิธีใช้หน้าสัญญาณอีกครั้ง</span></div>
+                <div class="sp-ctl"><button class="btn" type="button" onclick="window.gsTour && gsTour()">เริ่มทัวร์</button></div></div>
+              <div class="sp-row"><div class="sp-lbl"><b>เวอร์ชัน</b><span><a href="compare.html">เทียบแบบเก่า vs แบบใหม่</a></span></div>
+                <div class="sp-ctl"><span class="mono sp-ver">202611111700</span></div></div>
+            </section>
+          </div>
         </div>
-        <section class="card">
-          <h3>หน้าจอ 🎨</h3>
-          <p class="muted small">เลือกโทนสีที่อ่านสบายตา — จำไว้ในเครื่องนี้</p>
-          <div class="seg" id="themeSeg">
-            <button type="button" data-theme="light">☀️ สว่าง</button>
-            <button type="button" data-theme="dark">🌙 มืด</button>
-          </div>
-        </section>
-
-        <section class="card pwa" id="pwaCard">
-          <h3>แอปบนมือถือ 📲</h3>
-          <div class="pwa-row">
-            <div><b>ติดตั้งเป็นแอป</b><p class="muted small" id="pwaInstallTx"></p></div>
-            <button class="btn gold" id="pwaInstall" type="button">📲 ติดตั้ง</button>
-          </div>
-          <div class="pwa-how" id="pwaHow" hidden>
-            <ol id="pwaHowIos"><li>เปิดเว็บนี้ใน <b>Safari</b></li><li>กดปุ่ม <b>แชร์</b> <span class="mono">⬆︎</span> ด้านล่าง</li><li>เลือก <b>เพิ่มไปยังหน้าจอโฮม</b> แล้วกด <b>เพิ่ม</b></li><li>เปิด Gold Signal จากหน้าจอโฮมได้เลย</li></ol>
-            <ol id="pwaHowOther"><li>กดเมนู <b>⋮</b> ของเบราว์เซอร์ (Chrome / Edge)</li><li>เลือก <b>ติดตั้งแอป</b> หรือ <b>เพิ่มลงในหน้าจอหลัก</b></li><li>เปิด Gold Signal จากไอคอนบนหน้าจอได้เลย</li></ol>
-          </div>
-        </section>
-
-        <section class="card">
-          <h3>ตั้งค่าการซื้อขายของฉัน ⚙️</h3>
-          <p class="muted small">ใช้คำนวณขนาดการซื้อขาย (lot) ในทุกสัญญาณ และหักสเปรดในผลทดสอบ — บันทึกไว้ในเครื่องนี้</p>
-          <div class="settings">
-            <label>ทุนในบัญชีซื้อขาย
-              <span class="row"><input id="setCap" type="number" min="0" step="100" placeholder="เช่น 1000"><select id="setCur"><option value="USD">ดอลลาร์ (USD)</option><option value="THB">บาท (THB)</option></select></span>
-            </label>
-            <label>ยอมเสียต่อรายการ (% ของทุน)
-              <select id="setRisk"><option value="0.5">0.5%</option><option value="1">1% (แนะนำ)</option><option value="1.5">1.5%</option><option value="2">2%</option></select>
-            </label>
-            <label>สเปรด XAUUSD ของโบรก (ดอลลาร์)
-              <input id="setSpread" type="number" min="0" step="0.05" placeholder="0.40">
-            </label>
-          </div>
-          <p class="set-preview" id="setPreview"></p>
-          <button class="btn" id="setSave">บันทึก</button>
-        </section>
-
-        <section class="card">
-          <h3>ชวนเพื่อนมาใช้ 🤝</h3>
-          <p class="muted">ส่งลิงก์ให้เพื่อน เปิดดูได้ทันที ไม่ต้องสมัคร</p>
-          <div class="share">
-            <button class="btn" id="shareCopy">คัดลอกลิงก์</button>
-            <button class="btn" id="shareNative" hidden>แชร์…</button>
-          </div>
-        </section>
-
-        <p class="muted small center"><button class="btn" type="button" onclick="window.gsTour && gsTour()">ดูทัวร์แนะนำอีกครั้ง</button></p>
-        <p class="muted small center">เวอร์ชัน 202611111600 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
@@ -534,8 +534,8 @@
   <script src="dailyplan.js?v=202610121500"></script>
   <script src="signals.js?v=202610201430"></script>
   <script src="intraday.js?v=202610281200"></script>
-  <script src="pwa.js?v=202611111200"></script>
-  <script src="ui.js?v=202611111200"></script>
+  <script src="pwa.js?v=202611111700"></script>
+  <script src="ui.js?v=202611111700"></script>
   <script src="chartsys.js?v=202610281200"></script>
   <script src="main.js?v=202611111200"></script>
   <script src="tradeplan.js?v=202610180200"></script>

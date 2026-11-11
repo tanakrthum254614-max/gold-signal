@@ -86,46 +86,55 @@ html.dark .btn.danger:hover { background: rgba(246, 70, 93, .2); }
 html.dark #setSave, html.dark #pwaPush, html.dark #shareCopy { background: var(--gold); border-color: var(--gold); color: #0b0e11; font-weight: 700; }
 html.dark .seg button.on { background: var(--gold) !important; color: #0b0e11 !important; box-shadow: none !important; }
 
-/* account: sections with a coloured top edge + tinted heading chip; readable width on very wide screens */
-html.dark #tab-account { --acc: var(--gold); } /* full width like the other tabs (user 14 Oct: "ทำไม่ชิดขอบ ช่องเว้นเยอะมาก") */
-/* Settings tab (11 Nov 2026, user screenshot "ดัดแปลงให้ทำให้ดูดี" — the old 6-card account grid left holes with 4 cards):
-   header bar across the top, then left = หน้าจอ · แอป · ชวนเพื่อน, right = ตั้งค่าการซื้อขาย over the same height */
-@media (min-width: 1100px) {
-  html.dark #tab-account:not([hidden]) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 12px; align-items: stretch; }
-  html.dark #tab-account > * { margin: 0 !important; }
-  html.dark #tab-account > .set-hero, html.dark #tab-account > .wide, html.dark #tab-account > p { grid-column: 1 / -1; }
-  html.dark #tab-account > section.card:nth-of-type(1) { grid-column: 1; grid-row: 2; }
-  html.dark #tab-account > section.card:nth-of-type(2) { grid-column: 1; grid-row: 3; }
-  html.dark #tab-account > section.card:nth-of-type(3) { grid-column: 2; grid-row: 2 / span 3; }
-  html.dark #tab-account > section.card:nth-of-type(4) { grid-column: 1; grid-row: 4; }
-  html.dark #tab-account > p { grid-row: auto; }
+/* ⚙️ Settings = broker-app control panel (11 Nov 2026, user: "ไม่ใช่แบบเด็กออกแบบ" → "แผงควบคุมแบบแอปโบรก"):
+   one panel, category menu left (sticky), plain setting rows right, thin dividers, gold line icons. Both themes (vars). */
+#tab-account .sp { display: grid; grid-template-columns: 232px minmax(0, 1fr); background: linear-gradient(90deg, var(--panel-2) 232px, var(--line) 232px, var(--line) 233px, var(--panel) 233px); border: 1px solid var(--line); border-radius: var(--radius, 8px); overflow: clip; }
+#tab-account .sp svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+#tab-account .sp-nav { padding: 14px 10px; display: flex; flex-direction: column; gap: 2px; position: sticky; top: 64px; align-self: start; }
+#tab-account .sp-brand { display: flex; align-items: center; gap: 12px; padding: 6px 10px 16px; margin-bottom: 8px; border-bottom: 1px solid var(--line); color: var(--gold); }
+#tab-account .sp-brand svg { width: 28px; height: 28px; }
+#tab-account .sp-brand b { display: block; color: var(--text); font-size: 17px; line-height: 1.2; }
+#tab-account .sp-brand small { color: var(--muted); font-size: 12px; }
+#tab-account .sp-nav button { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; font: inherit; font-size: 14px; color: var(--muted); background: transparent; border: 0; border-left: 2px solid transparent; border-radius: 0 6px 6px 0; padding: 10px 12px; cursor: pointer; transition: color .15s, background .15s; }
+#tab-account .sp-nav button:hover { color: var(--text); background: var(--gold-soft); }
+#tab-account .sp-nav button.on { color: var(--text); font-weight: 600; background: var(--gold-soft); border-left-color: var(--gold); }
+#tab-account .sp-nav button.on svg { color: var(--gold); }
+#tab-account .sp-body { min-width: 0; }
+#tab-account .sp-sec { padding: 20px 28px 8px; border-bottom: 1px solid var(--line); scroll-margin-top: 70px; }
+#tab-account .sp-sec:last-child { border-bottom: 0; padding-bottom: 14px; }
+#tab-account .sp-sec > header { margin-bottom: 4px; }
+#tab-account .sp-sec > header h3 { margin: 0; font-size: 16px; color: var(--text); letter-spacing: 0; }
+#tab-account .sp-sec > header h3::before { content: none; }
+#tab-account .sp-sec > header p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+#tab-account .sp-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 400px); align-items: center; gap: 24px; padding: 14px 0; border-top: 1px solid var(--line); }
+#tab-account .sp-sec > header + .sp-row { border-top: 0; }
+#tab-account .sp-lbl b { display: block; font-size: 14px; font-weight: 600; color: var(--text); }
+#tab-account .sp-lbl span { display: block; margin-top: 2px; font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+#tab-account .sp-ctl { display: flex; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; }
+#tab-account .sp-ctl > input, #tab-account .sp-ctl > select { width: 100%; }
+#tab-account .sp-pair { display: grid; grid-template-columns: minmax(0, 1fr) 96px; }
+#tab-account .sp-ctl input, #tab-account .sp-ctl select { font: inherit; font-size: 14px; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 12px; min-height: 40px; margin: 0; }
+#tab-account .sp-ctl input:focus, #tab-account .sp-ctl select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
+#tab-account .sp-ctl .seg { margin: 0; }
+#tab-account .sp-ctl .btn { margin: 0; min-width: 112px; justify-content: center; }
+#tab-account .sp .btn.gold { background: var(--gold) !important; border-color: var(--gold) !important; color: #0b0e11 !important; box-shadow: none !important; filter: none; }
+#tab-account .sp .btn.gold:hover { filter: brightness(1.08); }
+#tab-account .sp-result { background: linear-gradient(90deg, transparent, var(--gold-soft)); margin: 0 -28px; padding-left: 28px; padding-right: 28px; }
+#tab-account .sp-result .set-preview { font-size: 15px; font-weight: 700; color: var(--gold); white-space: nowrap; margin-right: auto; min-height: 0; }
+#tab-account .sp-url { color: var(--text) !important; }
+#tab-account .sp-ver { color: var(--muted); font-size: 13px; }
+#tab-account .pwa-how { margin: 0 0 14px; border: 1px solid var(--line); border-radius: 6px; }
+@media (max-width: 900px) {
+  #tab-account .sp { grid-template-columns: 1fr; background: var(--panel); }
+  #tab-account .sp-nav { position: static; flex-direction: row; overflow-x: auto; background: var(--panel-2); border-bottom: 1px solid var(--line); padding: 8px; }
+  #tab-account .sp-brand { display: none; }
+  #tab-account .sp-nav button { width: auto; white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; border-radius: 6px 6px 0 0; }
+  #tab-account .sp-nav button.on { border-bottom-color: var(--gold); }
+  #tab-account .sp-sec { padding: 16px 16px 6px; }
+  #tab-account .sp-row { grid-template-columns: 1fr; gap: 10px; }
+  #tab-account .sp-ctl { justify-content: flex-start; }
+  #tab-account .sp-result { margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
 }
-html.dark #tab-account > section.card { border-top: 3px solid var(--acc); }
-html.dark #tab-account > section.card:nth-of-type(2) { --acc: #a78bfa; }
-html.dark #tab-account > section.card:nth-of-type(3) { --acc: #38bdf8; }
-html.dark #tab-account > section.card:nth-of-type(4) { --acc: #f472b6; }
-/* header bar */
-#tab-account > .set-hero { display: flex; align-items: center; gap: 16px; padding: 18px 20px; margin-bottom: 12px; border-radius: 8px; border: 1px solid rgba(240, 185, 11, .35);
-  background: linear-gradient(110deg, rgba(240, 185, 11, .22), rgba(240, 185, 11, .05) 45%, var(--panel, #fff) 80%); }
-#tab-account > .set-hero .sh-ico { flex: 0 0 auto; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 12px; background: rgba(240, 185, 11, .16); color: var(--gold, #b9800c); box-shadow: inset 0 0 0 1px rgba(240, 185, 11, .4); }
-#tab-account > .set-hero .sh-ico svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-#tab-account > .set-hero h2 { margin: 0; font-size: 20px; }
-#tab-account > .set-hero p { margin: 2px 0 0; }
-#tab-account > .set-hero .sh-chips { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
-#tab-account > .set-hero .sh-chips span { font-size: 12px; padding: 4px 10px; border-radius: 99px; border: 1px solid rgba(240, 185, 11, .35); color: var(--gold, #b9800c); white-space: nowrap; }
-@media (max-width: 700px) { #tab-account > .set-hero .sh-chips { display: none; } }
-/* app card: button sits next to its text, the how-to steps fill the card */
-html.dark #tab-account .pwa-row { align-items: center; }
-/* trading settings card: inputs and save button laid out with even spacing */
-html.dark #tab-account > section.card:nth-of-type(3) { display: flex; flex-direction: column; }
-html.dark #tab-account > section.card:nth-of-type(3) .settings { gap: 14px; }
-html.dark #tab-account > section.card:nth-of-type(3) #setSave { align-self: flex-start; min-width: 140px; margin-top: auto; }
-html.dark #tab-account > p.center { margin-top: 6px !important; }
-html.dark #tab-account > section.card > h3 { display: inline-flex; align-items: center; gap: 8px; color: var(--acc); }
-html.dark #tab-account > section.card > h3::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--acc); box-shadow: 0 0 10px var(--acc); }
-html.dark #tab-account > .profile { border-top: 0; background: linear-gradient(110deg, rgba(240, 185, 11, .22), rgba(240, 185, 11, .04) 45%, var(--panel) 75%); border-color: rgba(240, 185, 11, .35); }
-html.dark #tab-account .avatar.big { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--gold); }
-html.dark #tab-account .settings input:focus, html.dark #tab-account .settings select:focus { outline: 2px solid var(--gold); }
 
 /* ---------- Phones (14 Oct, user: "เปิดในโทรศัพท์ดูใหญ่ไป") — both themes. Text ~12% smaller, tighter cards, big
    numbers scaled down. Inputs stay 16px so iPhone doesn't zoom in when typing. ---------- */

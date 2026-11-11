@@ -55,6 +55,20 @@
     $('shareNative').addEventListener('click', () => navigator.share({ title: 'Gold Signal', text: shareText, url: shareUrl }).catch(() => {}));
   }
 
+  // ---------- Settings panel menu (11 Nov 2026): click = scroll to that section (the #hash stays #account), the section
+  // on screen is highlighted while scrolling
+  const spNav = $('spNav');
+  if (spNav) {
+    const btns = [...spNav.querySelectorAll('button[data-sp]')];
+    const mark = (id) => btns.forEach((b) => b.classList.toggle('on', b.dataset.sp === id));
+    spNav.addEventListener('click', (e) => { const b = e.target.closest('button[data-sp]'); if (!b) return; mark(b.dataset.sp); $(b.dataset.sp).scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((list) => { const v = list.filter((x) => x.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]; if (v) mark(v.target.id); }, { rootMargin: '-80px 0px -55% 0px' });
+      btns.forEach((b) => $(b.dataset.sp) && io.observe($(b.dataset.sp)));
+    }
+    if ($('spUrl')) $('spUrl').textContent = location.host || $('spUrl').textContent;
+  }
+
   // ---------- Trading settings (capital / risk / spread) — saved in this browser ----------
   const DEFAULTS = { capital: 0, currency: 'USD', risk: 1, spread: 0.4 };
   function settings() {

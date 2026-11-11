@@ -45,7 +45,7 @@
       : installEvent ? 'กดติดตั้ง แล้วเปิดจากหน้าจอหลักได้เหมือนแอปทั่วไป — ไม่ต้องโหลดจาก Store'
       : ios ? 'iPhone/iPad: ติดตั้งผ่าน Safari (กดดูวิธี)' : 'เพิ่มไปยังหน้าจอหลักจากเมนูของเบราว์เซอร์ (กดดูวิธี)';
     $('pwaInstall').hidden = installed;
-    $('pwaInstall').textContent = installEvent ? '📲 ติดตั้ง' : 'ดูวิธีติดตั้ง';
+    $('pwaInstall').textContent = installEvent ? 'ติดตั้ง' : 'ดูวิธีติดตั้ง';
     $('pwaHowIos').hidden = !ios; $('pwaHowOther').hidden = ios;
 
     const bar = $('installBar');
