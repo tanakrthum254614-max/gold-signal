@@ -88,24 +88,39 @@ html.dark .seg button.on { background: var(--gold) !important; color: #0b0e11 !i
 
 /* account: sections with a coloured top edge + tinted heading chip; readable width on very wide screens */
 html.dark #tab-account { --acc: var(--gold); } /* full width like the other tabs (user 14 Oct: "ทำไม่ชิดขอบ ช่องเว้นเยอะมาก") */
-/* two balanced columns, cards stretched so nothing is left empty (user 14 Oct: "ทำไมแบบนี้", then a screenshot of the
-   short right column). Left: หน้าจอ + ตั้งค่า · right: แอป + LINE + ชวนเพื่อน (source order 2..6) */
+/* Settings tab (11 Nov 2026, user screenshot "ดัดแปลงให้ทำให้ดูดี" — the old 6-card account grid left holes with 4 cards):
+   header bar across the top, then left = หน้าจอ · แอป · ชวนเพื่อน, right = ตั้งค่าการซื้อขาย over the same height */
 @media (min-width: 1100px) {
-  html.dark #tab-account:not([hidden]) { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: stretch; }
+  html.dark #tab-account:not([hidden]) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 12px; align-items: stretch; }
   html.dark #tab-account > * { margin: 0 !important; }
-  html.dark #tab-account > .profile, html.dark #tab-account > .wide, html.dark #tab-account > p { grid-column: 1 / -1; }
-  html.dark #tab-account > section.card:nth-of-type(2) { grid-column: 1; grid-row: 2; }
-  html.dark #tab-account > section.card:nth-of-type(3) { grid-column: 2; grid-row: 2; }
-  html.dark #tab-account > section.card:nth-of-type(4) { grid-column: 1; grid-row: 3 / span 2; }
-  html.dark #tab-account > section.card:nth-of-type(5) { grid-column: 2; grid-row: 3; }
-  html.dark #tab-account > section.card:nth-of-type(6) { grid-column: 2; grid-row: 4; }
+  html.dark #tab-account > .set-hero, html.dark #tab-account > .wide, html.dark #tab-account > p { grid-column: 1 / -1; }
+  html.dark #tab-account > section.card:nth-of-type(1) { grid-column: 1; grid-row: 2; }
+  html.dark #tab-account > section.card:nth-of-type(2) { grid-column: 1; grid-row: 3; }
+  html.dark #tab-account > section.card:nth-of-type(3) { grid-column: 2; grid-row: 2 / span 3; }
+  html.dark #tab-account > section.card:nth-of-type(4) { grid-column: 1; grid-row: 4; }
+  html.dark #tab-account > p { grid-row: auto; }
 }
 html.dark #tab-account > section.card { border-top: 3px solid var(--acc); }
 html.dark #tab-account > section.card:nth-of-type(2) { --acc: #a78bfa; }
 html.dark #tab-account > section.card:nth-of-type(3) { --acc: #38bdf8; }
-html.dark #tab-account > section.card:nth-of-type(4) { --acc: var(--gold); }
-html.dark #tab-account > section.card:nth-of-type(5) { --acc: #06c755; }
-html.dark #tab-account > section.card:nth-of-type(6) { --acc: #f472b6; }
+html.dark #tab-account > section.card:nth-of-type(4) { --acc: #f472b6; }
+/* header bar */
+#tab-account > .set-hero { display: flex; align-items: center; gap: 16px; padding: 18px 20px; margin-bottom: 12px; border-radius: 8px; border: 1px solid rgba(240, 185, 11, .35);
+  background: linear-gradient(110deg, rgba(240, 185, 11, .22), rgba(240, 185, 11, .05) 45%, var(--panel, #fff) 80%); }
+#tab-account > .set-hero .sh-ico { flex: 0 0 auto; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 12px; background: rgba(240, 185, 11, .16); color: var(--gold, #b9800c); box-shadow: inset 0 0 0 1px rgba(240, 185, 11, .4); }
+#tab-account > .set-hero .sh-ico svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+#tab-account > .set-hero h2 { margin: 0; font-size: 20px; }
+#tab-account > .set-hero p { margin: 2px 0 0; }
+#tab-account > .set-hero .sh-chips { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+#tab-account > .set-hero .sh-chips span { font-size: 12px; padding: 4px 10px; border-radius: 99px; border: 1px solid rgba(240, 185, 11, .35); color: var(--gold, #b9800c); white-space: nowrap; }
+@media (max-width: 700px) { #tab-account > .set-hero .sh-chips { display: none; } }
+/* app card: button sits next to its text, the how-to steps fill the card */
+html.dark #tab-account .pwa-row { align-items: center; }
+/* trading settings card: inputs and save button laid out with even spacing */
+html.dark #tab-account > section.card:nth-of-type(3) { display: flex; flex-direction: column; }
+html.dark #tab-account > section.card:nth-of-type(3) .settings { gap: 14px; }
+html.dark #tab-account > section.card:nth-of-type(3) #setSave { align-self: flex-start; min-width: 140px; margin-top: auto; }
+html.dark #tab-account > p.center { margin-top: 6px !important; }
 html.dark #tab-account > section.card > h3 { display: inline-flex; align-items: center; gap: 8px; color: var(--acc); }
 html.dark #tab-account > section.card > h3::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--acc); box-shadow: 0 0 10px var(--acc); }
 html.dark #tab-account > .profile { border-top: 0; background: linear-gradient(110deg, rgba(240, 185, 11, .22), rgba(240, 185, 11, .04) 45%, var(--panel) 75%); border-color: rgba(240, 185, 11, .35); }

@@ -49,7 +49,7 @@
   <link rel="stylesheet" href="live.css?v=202610210130">
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
-  <link rel="stylesheet" href="terminal.css?v=202610180100">
+  <link rel="stylesheet" href="terminal.css?v=202611111600">
   <link rel="stylesheet" href="splash.css?v=202610171000">
   <script>/* refresh = stay where you were, no loading screen (user, 16 Oct 2026: "กดรีเฟรชแล้วอยู่ที่เดิม ไม่ต้องไปเริ่มที่หน้าตอนโหลดใหม่ทุกครั้ง"): the splash plays once per tab; a reload or a later visit in the same tab skips it */ try { var gsNav = performance.getEntriesByType("navigation")[0]; if ((gsNav && gsNav.type === "reload") || sessionStorage.getItem("gs-splash-seen") === "1") document.documentElement.classList.add("no-splash"); } catch (e) {}</script>
   <script>/* apply the saved theme before the first paint */ var gsT = "dark"; try { gsT = localStorage.getItem("gs-theme") === "light" ? "light" : "dark"; } catch (e) {} /* dark trading terminal = default since 14 Oct 2026 */ if (gsT === "dark") { document.getElementById("themeLight").disabled = true; document.documentElement.classList.add("dark"); document.querySelector("meta[name=theme-color]").content = "#0b0e11"; }</script>
@@ -464,6 +464,11 @@
 
       <!-- ⚙️ Settings (was the account tab — no accounts since 11 Nov 2026) -->
       <section id="tab-account" class="tab" hidden>
+        <div class="set-hero">
+          <span class="sh-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span>
+          <div><h2>ตั้งค่า</h2><p class="muted small">ปรับหน้าจอ ติดตั้งแอป และค่าที่ใช้คำนวณขนาดการซื้อขาย — บันทึกไว้ในเครื่องนี้ ไม่ต้องสมัครสมาชิก</p></div>
+          <div class="sh-chips"><span>🔓 ใช้ฟรี ไม่ต้องล็อกอิน</span><span>💾 บันทึกในเครื่อง</span></div>
+        </div>
         <section class="card">
           <h3>หน้าจอ 🎨</h3>
           <p class="muted small">เลือกโทนสีที่อ่านสบายตา — จำไว้ในเครื่องนี้</p>
@@ -513,7 +518,7 @@
         </section>
 
         <p class="muted small center"><button class="btn" type="button" onclick="window.gsTour && gsTour()">ดูทัวร์แนะนำอีกครั้ง</button></p>
-        <p class="muted small center">เวอร์ชัน 202611111200 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202611111600 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
