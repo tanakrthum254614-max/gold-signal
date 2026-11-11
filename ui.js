@@ -1,7 +1,7 @@
-// App shell: tabs, account page, sharing
+// App shell: tabs, settings page, sharing
 (function () {
   const $ = (id) => document.getElementById(id);
-  const TABS = ['home', 'stats', 'chart', 'zframes', 'journal', 'account']; // 📓 journal added 14 Oct (journal.js) // วิธีใช้ tab removed (user, 12 Oct: "เอาวิธีใช้ออก")
+  const TABS = ['home', 'stats', 'chart', 'zframes', 'account']; // 'account' = settings · journal removed 11 Nov 2026 (no accounts) // วิธีใช้ tab removed (user, 12 Oct: "เอาวิธีใช้ออก")
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage unavailable */ } },
@@ -42,25 +42,10 @@
   }
   $('chartMode').addEventListener('click', (e) => e.target.dataset.mode && setChartMode(e.target.dataset.mode));
 
-  // ---------- Account + sharing ----------
-  function fillAccount() {
-    const u = window.AUTH && AUTH.user;
-    const name = u ? (u.fullName || u.email || 'สมาชิก') : 'ผู้ใช้งาน';
-    const email = u ? (u.email || '') : '';
-    const img = u && u.imageUrl;
-    $('accName').textContent = name || email;
-    $('accEmail').textContent = email;
-    [$('accAvatar'), $('hdrAvatar')].forEach((el) => {
-      if (img) el.src = img; else el.hidden = true;
-    });
-    $('signOut').hidden = !u;
-    $('accSignIn').hidden = true;
-    if ($('adminLink')) $('adminLink').hidden = !(u && u.admin);
-  }
+  // ---------- Sharing ----------
 
   const shareUrl = location.origin + location.pathname;
-  const shareText = 'ลองใช้ Gold Signal — สัญญาณซื้อขายทองคำ Buy/Sell ทุกกรอบเวลา พร้อมจุดเข้า SL TP ที่ทดสอบย้อนหลังแล้ว และสถิติข่าวเศรษฐกิจสหรัฐที่ทำให้ทองวิ่ง (สมัครสมาชิกฟรี)';
-  $('shareLine').href = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+  const shareText = 'ลองใช้ Gold Signal — สัญญาณซื้อขายทองคำ Buy/Sell ทุกกรอบเวลา พร้อมจุดเข้า SL TP ที่ทดสอบย้อนหลังแล้ว และสถิติข่าวเศรษฐกิจสหรัฐที่ทำให้ทองวิ่ง (เปิดดูได้ทันที ไม่ต้องสมัคร)';
   $('shareCopy').addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(shareUrl); toast('คัดลอกลิงก์แล้ว ส่งให้เพื่อนได้เลย'); }
     catch (e) { toast(shareUrl); }
@@ -69,18 +54,13 @@
     $('shareNative').hidden = false;
     $('shareNative').addEventListener('click', () => navigator.share({ title: 'Gold Signal', text: shareText, url: shareUrl }).catch(() => {}));
   }
-  const lineUrl = window.GOLD_CONFIG && GOLD_CONFIG.lineAddFriendUrl;
-  if (lineUrl) { $('lineAdd').href = lineUrl; $('lineAdd').hidden = false; $('lineSoon').hidden = true; }
-  $('signOut').addEventListener('click', () => { location.href = '/api/logout'; });
 
   // ---------- Trading settings (capital / risk / spread) — saved in this browser ----------
   const DEFAULTS = { capital: 0, currency: 'USD', risk: 1, spread: 0.4 };
   function settings() {
-    const u = window.AUTH && AUTH.user;
-    const fromAccount = u && u.unsafeMetadata && u.unsafeMetadata.goldSettings;
     let local = null;
     try { local = JSON.parse(store.get('gs-settings') || 'null'); } catch (e) { /* ignore */ }
-    return { ...DEFAULTS, ...(local || {}), ...(fromAccount || {}) };
+    return { ...DEFAULTS, ...(local || {}) };
   }
   function fillSettings() {
     const s = settings();
@@ -102,13 +82,9 @@
     $('setPreview').textContent = lot ? `ตัวอย่าง: SL $15 → ${lot.text}` : 'ใส่ทุนเพื่อให้ระบบคำนวณขนาดการซื้อขายให้';
   }
   ['setCap', 'setCur', 'setRisk', 'setSpread'].forEach((id) => $(id).addEventListener('input', previewSettings));
-  $('setSave').addEventListener('click', async () => {
+  $('setSave').addEventListener('click', () => {
     const s = readForm();
     store.set('gs-settings', JSON.stringify(s));
-    const u = window.AUTH && AUTH.user;
-    if (u && u.update) {
-      try { await u.update({ unsafeMetadata: { ...(u.unsafeMetadata || {}), goldSettings: s } }); } catch (e) { /* kept locally */ }
-    }
     toast('บันทึกการตั้งค่าแล้ว');
     emit('settings');
   });
@@ -139,7 +115,7 @@
     toast.timer = setTimeout(() => { t.hidden = true; }, 3000);
   }
 
-  // Called by main.js once the user is signed in and the first data has loaded
+  // Called by main.js once the first data has loaded
   // Refresh = same place (user, 16 Oct 2026: "กดรีเฟรชแล้วอยู่ที่เดิม"): the tab comes from the #hash; the scroll position is
   // saved when the page is left and put back once the content has drawn (a few tries, stops if the user scrolls first)
   try { history.scrollRestoration = 'manual'; } catch (e) { /* old browser */ }
@@ -154,7 +130,6 @@
     [0, 400, 1200, 2500, 4000, 6000].forEach((ms) => setTimeout(() => { if (!moved && Math.abs(window.scrollY - s.y) > 4) window.scrollTo(0, s.y); }, ms));
   }
   function start() {
-    fillAccount();
     fillSettings();
     setChartMode(store.get('gs-chart') || 'simple');
     showTab(currentTab());

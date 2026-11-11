@@ -5,9 +5,5 @@
   "private": true,
   "scripts": {
     "start": "node dev-server.js"
-  },
-  "dependencies": {
-    "@vercel/blob": "^2.8.1",
-    "web-push": "^3.6.7"
   }
 }

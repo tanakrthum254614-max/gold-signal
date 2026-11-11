@@ -1,5 +1,4 @@
-// Service worker: makes the site installable as an app, shows push notifications sent by the
-// GitHub Actions jobs (scripts/push.js), and opens the app when one is tapped.
+// Service worker: makes the site installable as an app (push notifications removed 11 Nov 2026).
 // Pages and data are always fetched fresh (prices are live) — only a small offline page is cached.
 const OFFLINE = 'gs-offline-v1';
 const OFFLINE_HTML = `<!doctype html><html lang="th"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -17,28 +16,4 @@ self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', (e) => {
   if (e.request.mode !== 'navigate') return;
   e.respondWith(fetch(e.request).catch(() => new Response(OFFLINE_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } })));
-});
-
-// payload: { title, body, tag?, url? }
-self.addEventListener('push', (e) => {
-  let d = {};
-  try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data && e.data.text() }; }
-  e.waitUntil(self.registration.showNotification(d.title || 'Gold Signal', {
-    body: d.body || '',
-    icon: '/icons/icon-192.png',
-    badge: '/icons/badge-96.png',
-    tag: d.tag || undefined,
-    renotify: !!d.tag,
-    data: { url: d.url || '/' },
-  }));
-});
-
-self.addEventListener('notificationclick', (e) => {
-  e.notification.close();
-  const url = new URL(e.notification.data && e.notification.data.url || '/', self.location.origin).href;
-  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
-    const open = list.find((c) => c.url.startsWith(self.location.origin));
-    if (open) return open.focus(); // the app is already open and live — just bring it forward
-    return self.clients.openWindow(url);
-  }));
 });

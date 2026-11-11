@@ -422,10 +422,10 @@ const thaiDay = (id) => new Date(`${id}T12:00:00+07:00`).toLocaleDateString('th-
 
 async function refreshSignals() {
   try {
-    const [sig, bt, intra, bt30, quota, bt15, chartSig, testStats] = await Promise.all([
+    const [sig, bt, intra, bt30, , bt15, chartSig, testStats] = await Promise.all([
       getJson('signals.json'), state.backtest ? null : getJson('backtest.json').catch(() => null),
       getJson('intraday.json').catch(() => null), state.bt30 ? null : getJson('backtest-30m.json').catch(() => null),
-      getJson('quota.json').catch(() => null), state.bt15 ? null : getJson('backtest-15m.json').catch(() => null),
+      null, state.bt15 ? null : getJson('backtest-15m.json').catch(() => null),
       getJson('chart-signals.json').catch(() => null),
       state.testStats ? null : getJson('test-stats.json').catch(() => null),
     ]);
@@ -433,7 +433,6 @@ async function refreshSignals() {
     if (testStats) { state.testStats = testStats; CHARTSYS.applyStats(testStats); }
     if (bt15) state.bt15 = bt15;
     if (chartSig) state.chartSig = chartSig;
-    renderQuota(quota);
     state.signals = sig.signals || [];
     if (bt) state.backtest = bt;
     if (intra) state.intra = intra;
@@ -469,7 +468,7 @@ function renderToday(price) {
       r = `<i class="dot on"></i> <b class="mono ${pl == null ? '' : pl >= 0 ? 'up' : 'down'}">${pl == null ? '—' : money(pl)}</b>${t.hit ? ` <small class="muted">TP${t.hit} แล้ว</small>` : ''}`; }
     else { sum += t.pnl || 0; any = true; r = `${t.pnl > 0 ? '✅' : '❌'} <b class="mono ${t.pnl >= 0 ? 'up' : 'down'}">${money(t.pnl || 0)}</b>`; }
     return `<li><span class="mono muted">${hhmm(t.createdAt)}</span><span>${TF_LABEL[t.tf] || t.tf}</span>
-      <span><b class="${d > 0 ? 'up' : 'down'}">${d > 0 ? 'Buy' : 'Sell'}</b> <b class="mono">${f2(t.entry)}</b>${t.risky ? ' ⚠️' : ''}${t.paused ? ' <small class="muted">(พัก · ไม่ส่ง LINE)</small>' : ''}<br>
+      <span><b class="${d > 0 ? 'up' : 'down'}">${d > 0 ? 'Buy' : 'Sell'}</b> <b class="mono">${f2(t.entry)}</b>${t.risky ? ' ⚠️' : ''}${t.paused ? ' <small class="muted">(พัก)</small>' : ''}<br>
       <small class="muted mono">SL ${f2(t.hit ? t.entry : t.sl)} · ${(t.tps || []).map((v, k) => `TP${k + 1} ${f2(v)}`).join(' · ')}</small></span><span class="r">${r}</span></li>`; });
   const head = from === t0 ? '' : `<p class="muted small">วันนี้ยังไม่มีสัญญาณ — แสดงวันทำการล่าสุด ${new Date(from + 12 * 3600e3).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' })}</p>`;
   box.innerHTML = `${head}${rows.length ? `<ul class="today-list">${rows.join('')}</ul>` : '<p class="muted">วันนี้ยังไม่มีสัญญาณ — ระบบเช็กทุก 5 นาที</p>'}
@@ -540,15 +539,6 @@ function beatInfo(marketOpen) {
 }
 
 
-// LINE messages used this month (checked every morning by scripts/line-quota.js)
-function renderQuota(q) {
-  if (!q || q.used == null) return;
-  const pct = q.limit ? Math.round((q.used / q.limit) * 100) : null;
-  $('lineQuota').textContent = q.limit
-    ? `📊 โควตา LINE เดือนนี้ใช้ไป ${q.used} / ${q.limit} ข้อความ (${pct}%)${pct >= 80 ? ' — ใกล้หมด' : ''}${q.projected != null ? ` · คาดสิ้นเดือน ~${q.projected}${q.projected > q.limit ? ' ⚠️ เกินโควตา' : ''}` : ''} · เช็กล่าสุด ${thaiTime(q.at)}`
-    : `📊 LINE เดือนนี้ส่งไป ${q.used} ข้อความ (แพ็กเกจไม่จำกัด)`;
-  $('lineQuota').style.color = pct >= 80 || q.projected > q.limit ? 'var(--down)' : '';
-}
 
 // 15-minute candles to follow today's signal live
 async function refreshM15() {
@@ -597,7 +587,6 @@ function renderSignalHome() {
     $('sigCard').className = 'card sig skip';
     $('sgAdv').hidden = true;
     $('sgHowBox').hidden = false;
-    $('sgAlertNote').hidden = false;
     $('sgStars').textContent = '';
     $('sgSide').innerHTML = '⏸ วันนี้ไม่มีสัญญาณ';
     $('sgStatus').textContent = `ตลาดยังไม่ชัดพอ — ไม่ซื้อขายดีกว่า · สัญญาณถัดไป ${thaiTime(nextSignalTime())}`;
@@ -610,7 +599,6 @@ function renderSignalHome() {
   const advisory = !!s.advisory;
   $('sgAdv').hidden = !advisory;
   $('sgHowBox').hidden = advisory;
-  $('sgAlertNote').hidden = advisory;
   $('sgStars').textContent = '★'.repeat(s.stars) + '☆'.repeat(5 - s.stars);
   $('sigCard').className = `card sig ${buy ? 'buy' : 'sell'} st-${s.status}${advisory ? ' advisory' : ''}`;
   $('sgSide').innerHTML = advisory

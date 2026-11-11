@@ -1,13 +1,12 @@
 // 🕯️ Candlesticks for any stock on the US stocks tab (user, 15 Oct 2026: "ขอทุกหุ้นให้มีกราฟแท่งเทียน"). Yahoo's chart
-// API (the browser can't call it — no CORS). Members only. GET ?s=NVDA&iv=5m|1h|1d|1wk → { ok, s, iv, rows: [{ t, o, h, l, c, v }] }
+// API (the browser can't call it — no CORS). Public. GET ?s=NVDA&iv=5m|1h|1d|1wk → { ok, s, iv, rows: [{ t, o, h, l, c, v }] }
 // Kept in memory for 60 s per symbol + interval (one warm function serves everyone looking at the same stock).
-import { member, json, fail } from '../lib/gs.mjs';
+import { json, fail } from '../lib/gs.mjs';
 
 const IV = { '5m': ['5m', '5d'], '1h': ['60m', '3mo'], '1d': ['1d', '1y'], '1wk': ['1wk', '5y'] };
 const TTL = 60e3, cache = new Map();
 
 export async function GET(request) {
-  if (!(await member(request))) return fail('ต้องเข้าสู่ระบบก่อน', 401);
   const u = new URL(request.url), s = (u.searchParams.get('s') || '').toUpperCase(), iv = u.searchParams.get('iv') || '1d';
   if (!/^\^?[A-Z0-9.\-]{1,12}$/.test(s) || !IV[iv]) return fail('สัญลักษณ์หรือกรอบเวลาไม่ถูกต้อง');
   const key = `${s}:${iv}`, hit = cache.get(key);

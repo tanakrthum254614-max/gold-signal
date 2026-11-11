@@ -36,20 +36,14 @@
     return { value: v + rest, ch: base ? (v - base) / g.total : null, live, n: g.top.length };
   }
 
-  // ⭐ followed gurus (user, 16 Oct 2026): saved on the server per member (/api/gurus/follow — guru alerts go only to
-  // them), with this browser's copy as a fallback. Followed ones come first.
+  // ⭐ followed gurus (user, 16 Oct 2026): saved in this browser (11 Nov 2026: no accounts / alerts any more). Followed ones come first.
   let FOL = new Set();
   try { FOL = new Set(JSON.parse(localStorage.getItem('gs-guru-follow') || '[]')); } catch (err) { /* storage blocked */ }
   const saveFollows = () => {
     const ciks = [...FOL];
     try { localStorage.setItem('gs-guru-follow', JSON.stringify(ciks)); } catch (err) { /* ok */ }
-    fetch('/api/gurus/follow', { method: 'POST', headers: { 'x-follow': btoa(JSON.stringify({ ciks })) } }).catch(() => {});
   };
-  fetch('/api/gurus/follow', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((j) => {
-    if (j && Array.isArray(j.ciks) && (j.ciks.length || !FOL.size)) { FOL = new Set(j.ciks.map(Number)); paint(); paintLive(); }
-    else if (j && FOL.size) saveFollows(); // a follow list saved only in this browser → the server
-  }).catch(() => {});
-  const star = (g) => `<span class="gu-star${FOL.has(g.cik) ? ' on' : ''}" data-follow="${g.cik}" role="button" aria-label="${FOL.has(g.cik) ? 'เลิกติดตาม' : 'ติดตาม'} ${e(g.th)}" title="${FOL.has(g.cik) ? 'เลิกติดตาม' : 'ติดตาม — แจ้งเตือนเมื่อคนนี้ซื้อขาย'}">${FOL.has(g.cik) ? '★' : '☆'}</span>`;
+  const star = (g) => `<span class="gu-star${FOL.has(g.cik) ? ' on' : ''}" data-follow="${g.cik}" role="button" aria-label="${FOL.has(g.cik) ? 'เลิกติดตาม' : 'ติดตาม'} ${e(g.th)}" title="${FOL.has(g.cik) ? 'เลิกติดตาม' : 'ติดตาม — ขึ้นก่อนในรายการ'}">${FOL.has(g.cik) ? '★' : '☆'}</span>`;
 
   function guruCards() {
     const sort = document.querySelector('[data-gsort].on')?.dataset.gsort || 'value';
@@ -181,8 +175,7 @@
   setInterval(() => { if (!document.hidden && !window.zfPaused) loadLive(); }, 120e3);
   setInterval(() => { if (!document.hidden && document.getElementById('gurus')?.hidden === false) paintLive(); }, 30e3); // "x นาทีที่แล้ว" + live price
   FRAMES.guruLive = () => `<div class="chips"><button type="button" data-glive="all" class="on">ทั้งหมด</button><button type="button" data-glive="fol">⭐ เฉพาะที่ติดตาม</button></div>
-    <div id="guLive"><p class="muted">กำลังโหลด…</p></div><p class="gu-credit" id="guLiveAt"></p>
-    <p class="gu-credit">🔔 แจ้งเตือนบนเครื่องเมื่อกูรูซื้อขาย (ฟอร์ม 4 · ARK รายวัน): เปิด "แจ้งเตือน" ที่แท็บบัญชี · ถ้ากด ☆ ติดตามไว้ จะแจ้งเฉพาะคนที่ติดตาม</p>`;
+    <div id="guLive"><p class="muted">กำลังโหลด…</p></div><p class="gu-credit" id="guLiveAt"></p>`;
 
   // 🧑‍💼 which gurus hold a stock — a card on every stock page (frames3.js openStock / openDiv, 17 Oct 2026). From each guru's
   // top 40 holdings in the latest 13F, plus their SEC filings on that stock in the last 45 days.

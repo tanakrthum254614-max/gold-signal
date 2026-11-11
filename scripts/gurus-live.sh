@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # Every 10 minutes (.github/workflows/gurus-live.yml): the gurus' new SEC filings + ARK's daily trades →
 # zframes/dashboards/gurus-live.json; a new quarterly 13F → rebuild zframes/dashboards/gurus.json too. Saved to the data
-# branch only when something changed; new trades → web push (scripts/gurus-notify.js) after the save, so a failed save
-# doesn't send the same alert twice.
+# branch only when something changed. (11 Nov 2026: no web push for new trades any more.)
 set -u
 source scripts/data-branch.sh
 git config user.name "tanakrthum254614-max"
@@ -23,4 +22,3 @@ fi
 after=$(cat zframes/dashboards/gurus-live.json zframes/dashboards/gurus-ark.json 2>/dev/null | md5sum)
 if [ "$before" = "$after" ] && ! echo "$msg" | grep -q "new 13F"; then echo "no change"; exit 0; fi
 data_save "$msg" || exit 1
-node scripts/gurus-notify.js "$GURUS_NEW"
