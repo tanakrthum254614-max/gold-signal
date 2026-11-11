@@ -1,4 +1,4 @@
-// Loading screen + who is signed in (members — Clerk on /login.html, checked by middleware.js). Exposes SPLASH and AUTH.
+// Loading screen. Exposes SPLASH, and AUTH.ready (kept for main.js — 11 Nov 2026: public site, nobody signs in).
 (function () {
   const $ = (id) => document.getElementById(id);
   const skipSplash = (() => {
@@ -72,35 +72,6 @@
   $('splashFill').style.strokeDashoffset = RING;
   SPLASH.step('กำลังเริ่มต้น…', 5);
 
-  // Signing in happens on /login.html (Clerk); the server only serves this page to a signed-in member.
-  // AUTH.user = { fullName, email } from the site's session (/api/me).
-  let resolveReady;
-  window.AUTH = { ready: new Promise((r) => { resolveReady = r; }), user: null };
-  function showApp() {
-    $('login').hidden = true;
-    $('app').hidden = false;
-    if (skipSplash) $('splash').classList.add('gone');
-  }
-  async function start() {
-    SPLASH.step('กำลังตรวจสอบการเข้าสู่ระบบ…', 15);
-    const r = await fetch('/api/me', { cache: 'no-store', credentials: 'same-origin' });
-    if (r.status === 401) { location.replace('/login.html'); return; }
-    // Opened as a plain file / dev server without the middleware: carry on unsigned
-    const me = r.ok && (r.headers.get('content-type') || '').includes('json') ? await r.json() : null;
-    window.AUTH.user = me ? { fullName: me.name, email: me.email, admin: !!me.admin } : null;
-    showApp();
-    resolveReady(window.AUTH.user);
-    // Access log (back office): the first visit of the day from this device
-    if (me) {
-      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
-      let last = null;
-      try { last = localStorage.getItem('gs-visit'); } catch (e) { /* storage blocked */ }
-      if (last !== today) fetch('/api/visit', { method: 'POST' }).then(() => { try { localStorage.setItem('gs-visit', today); } catch (e) { /* ok */ } }).catch(() => {});
-    }
-  }
-  start().catch((e) => {
-    console.error(e);
-    showApp();
-    resolveReady(null);
-  });
+  window.AUTH = { ready: Promise.resolve(null), user: null };
+  $('app').hidden = false;
 })();

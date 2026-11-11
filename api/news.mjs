@@ -3,7 +3,7 @@
 // headline, picture, time and link only — the page shows them with the source and links to the full article there.
 // Members only (same cookie as the rest of the site). GET → { ok, at, items: [{ id, cat, title, link, img, t }] }
 // The browser can't read these feeds itself (no CORS); a plain server fetch works (no Cloudflare check on /rss/).
-import { member, json, fail } from '../lib/gs.mjs';
+import { json, fail } from '../lib/gs.mjs';
 
 const FEEDS = [
   ['gold', 'ทองคำ · สินค้าโภคภัณฑ์', 'https://th.investing.com/rss/news_11.rss'],
@@ -40,7 +40,6 @@ export async function collect() {
 }
 
 export async function GET(request) {
-  if (!(await member(request))) return fail('ต้องเข้าสู่ระบบก่อน', 401);
   if (!cache.items || Date.now() - cache.at > TTL) {
     const uniq = await collect();
     if (uniq.length) cache = { at: Date.now(), items: uniq };

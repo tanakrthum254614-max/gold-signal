@@ -132,6 +132,6 @@ $('#app').addEventListener('click', e => {
   if (nav && nav.getBoundingClientRect().top < 0) nav.scrollIntoView({ block: 'start' });
 });
 $('#pick').addEventListener('change', e => { current = e.target.value; params.set('d', current); params.delete('z'); history.replaceState(null, '', '?' + params); load(); });
-$('#ver').textContent = 'เว็บสมาชิก';
+$('#ver').textContent = 'Gold Signal';
 loadList().then(load);
 setInterval(tick, 1000);

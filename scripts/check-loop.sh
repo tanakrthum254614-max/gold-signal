@@ -3,7 +3,7 @@
 # (10–20 minutes apart instead of 5), so each run stays up for LOOP_MINUTES and checks at every
 # 5-minute mark itself. A new run is queued every 15 minutes, so the next one takes over as soon as
 # this one ends. LOOP_MINUTES=0 runs a single check (manual runs).
-# Env: LOOP_MINUTES, plus everything the scripts need (LINE token, SEND, RECORD, STATE_DIR, OUTBOX…)
+# Env: LOOP_MINUTES, RECORD, STATE_DIR. 11 Nov 2026: LINE / web push removed — this only records signals now.
 set -u
 END=$(( $(date +%s) + ${LOOP_MINUTES:-0} * 60 ))
 runs=0; fails=0; savefails=0; worstsave=0
@@ -22,13 +22,7 @@ check() {
   if node -e 'const S = require("./signals.js"), n = Date.now(), o = Date.parse(S.thaiDate(n) + "T07:00:00+07:00") + S.marketShift(n); process.exit(n >= o && n < o + 30 * 60e3 ? 1 : 0)'; then
     node scripts/alerts.js data.json || rc=1
   fi
-  node scripts/news-warn.js data.json || rc=1   # ⚠️ news warning ~30 min ahead (old 30-minute system retired 17 Oct 2026)
   node scripts/chart-run.js data.json || rc=1   # every chart-timeframe signal → chart-signals.json
-  node scripts/price-alerts-user.js data.json   # members' own price alerts → web push (never fails the check)
-  node scripts/pro-expiry.js                     # ⏰ membership ends in ≤ 3 days → web push to that member (never fails the check)
-  node scripts/backup-blob.js                    # 🗄️ once a day: copy private Blob data to backup/<date>/ (30 days kept, never fails the check)
-  node scripts/market-send.js                    # 📣 one approved marketing post → LINE (quota-guarded, off until the .com; never fails the check)
-  node scripts/flush.js   # everything from this check as one LINE request
   # Save results onto the data branch (no website deployment)
   if data_save "Signal update $(TZ=Asia/Bangkok date '+%F %H:%M')"; then savefails=0; else
     rc=1; savefails=$((savefails + 1)); [ "$savefails" -gt "$worstsave" ] && worstsave=$savefails
@@ -46,6 +40,5 @@ while :; do
   sleep $(( next - $(date +%s) + 20 ))          # +20 s: let the 15-minute candle settle
 done
 echo "done: $runs checks, $fails failed"
-# Fail the run (→ LINE notice) only when every check in it failed
-# …or when saving failed 3 checks in a row (records would be lost) — the watchdog (scripts/watchdog.js) tells the admins
+# Fail the run only when every check in it failed, or when saving failed 3 checks in a row (records would be lost)
 [ "$fails" -lt "$runs" ] && [ "$worstsave" -lt 3 ]

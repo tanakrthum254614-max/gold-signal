@@ -1,4 +1,4 @@
-name: Price alerts + 30-minute signals
+name: Signal recorder (every 5 minutes)
 
 on:
   # Mon–Fri (UTC) = Mon 07:00 – Sat 06:59 Thai time. GitHub starts scheduled runs late and irregularly
@@ -9,10 +9,6 @@ on:
     - cron: "*/15 * * * 1-5"
   workflow_dispatch:
     inputs:
-      send:
-        description: "Send alerts to LINE"
-        type: boolean
-        default: false
       chain:
         description: "Chained run (queued by the previous run): full 28-minute loop"
         type: boolean
@@ -33,16 +29,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      SEND: ${{ github.event_name == 'schedule' || inputs.send || inputs.chain }}
       RECORD: "true"
       STATE_DIR: state
       SPREAD_USD: ${{ vars.SPREAD_USD || '0.4' }}
-      LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
-      # Web push to the app (scripts/push.js) — skipped while these are empty
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-      VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
-      VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
       SITE_URL: https://gold-signal.gold-signal.workers.dev
     steps:
       - uses: actions/checkout@v4
@@ -54,9 +43,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          [ "$(date -u +%u)" -le 5 ] && gh workflow run price-alerts.yml --ref "${{ github.ref_name }}" -f send=true -f chain=true || echo "weekend: chain stops"
-      # What was already announced (✅ updates, news warnings, failure notices) — restored first so
-      # the failure notice can throttle itself even when an early step fails
+          [ "$(date -u +%u)" -le 5 ] && gh workflow run price-alerts.yml --ref "${{ github.ref_name }}" -f chain=true || echo "weekend: chain stops"
+      # State kept between runs (STATE_DIR)
       - name: Restore notify state
         uses: actions/cache/restore@v4
         with:
@@ -70,23 +58,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Install web-push
-        run: npm install --omit=dev --no-audit --no-fund --no-package-lock
       - run: pip install -r requirements.txt
-      - name: Check every 5 minutes (alerts, 30-minute signals, ✅ updates, news warnings)
-        # Each check queues its LINE messages in OUTBOX and sends them as ONE request (flush.js),
-        # then commits signals.json / intraday.json
+      - name: Check every 5 minutes and record the signals (11 Nov 2026: no LINE / push any more)
         env:
-          OUTBOX: outbox.json
           LOOP_MINUTES: ${{ (github.event_name == 'schedule' || inputs.chain) && '28' || '0' }}
           GH_TOKEN: ${{ github.token }}
         run: bash scripts/check-loop.sh
-      - name: Tell the owner if this failed
-        if: failure()
-        run: node scripts/notify-failure.js "เช็กราคา / สัญญาณ 30 นาที (ทุก 5 นาที)"
-        env:
-          SEND: "true"
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       - name: Save notify state
         if: always() && hashFiles('state/*.json') != ''
         uses: actions/cache/save@v4

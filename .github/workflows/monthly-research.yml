@@ -1,8 +1,8 @@
 name: Monthly indicator study
 
 # 2nd of every month, 03:00 Thai time (20:00 UTC on the 1st): downloads fresh prices (Binance PAXG), re-runs the 28-indicator study on every
-# chart timeframe (research/indicators), commits research/indicators/monthly/<YYYY-MM>.txt and tells the admins whether
-# the confirmation indicators in use still help. A report only — the signal rules change only when the owner approves.
+# chart timeframe (research/indicators), commits research/indicators/monthly/<YYYY-MM>.txt. 11 Nov 2026: no admin message any more.
+# A report only — the signal rules change only when the owner approves.
 # Takes ~1 hour (the 5-minute timeframe is the slow one). Free for a public repository.
 on:
   schedule:
@@ -22,20 +22,12 @@ jobs:
     timeout-minutes: 150
     env:
       DATA_DIR: /tmp/indicators
-      SEND: "true"
       SITE_URL: https://gold-signal.gold-signal.workers.dev
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-      VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
-      VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
-      LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
-      LINE_OWNER_ID: ${{ secrets.LINE_OWNER_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: npm install --omit=dev --no-audit --no-fund --no-package-lock
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -56,5 +48,3 @@ jobs:
           git add research/indicators/monthly test-stats.json
           git commit -m "Monthly indicator study $(date -u +%Y-%m)" || exit 0
           for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
-      - name: Tell the admins
-        run: node scripts/admin-notify.js "$DATA_DIR/short.txt"

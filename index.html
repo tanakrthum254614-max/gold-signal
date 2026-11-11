@@ -112,24 +112,6 @@
     <ul class="sp-chips" id="splashChips" aria-hidden="true"><li data-at="60">ราคาสด</li><li data-at="80">ข้อมูลกราฟ</li><li data-at="100">สัญญาณ</li></ul>
   </div>
 
-  <!-- Sign-in page -->
-  <section id="login" class="login" hidden>
-    <div class="login-intro">
-      <div class="brand big"><img class="logo" src="logo.svg" alt=""><h1>Gold Signal</h1></div>
-      <h2>อยากซื้อขายทองคำ<br>แต่ยังไม่มั่นใจ?</h2>
-      <p class="login-lead">ราคาทองสดทุกวินาที · สัญญาณ Buy/Sell ทุกกรอบเวลาที่ทดสอบย้อนหลังแล้ว · สถิติข่าวเศรษฐกิจสหรัฐ</p>
-      <ul>
-        <li><span>🎯</span>บอกชัด: จุดเข้า · ตัดขาดทุน · เป้าหมาย</li>
-        <li><span>📊</span>บันทึกผลทุกสัญญาณ ชนะ–แพ้ ไม่ปิดบัง</li>
-        <li><span>🔔</span>แจ้งเตือน LINE เมื่อมีจุดเข้า (พร้อม SL / TP) · เตือนก่อนข่าวแรงสหรัฐ</li>
-      </ul>
-    </div>
-    <div class="login-card">
-      <div id="signIn"></div>
-      <p class="muted small center">ใช้งานฟรี · กดปุ่ม Google ด้านบนเพื่อเข้าใช้</p>
-    </div>
-  </section>
-
   <!-- App -->
   <div id="app" hidden>
     <header class="appbar">
@@ -139,27 +121,24 @@
         <button class="mode-btn" id="modeBtn" type="button" aria-pressed="true">โหมดง่าย</button>
         <button class="theme-btn" id="themeBtn" type="button" title="สลับโหมดสว่าง/มืด" aria-label="สลับโหมดสว่าง/มืด">🌙</button>
         <span class="conn" id="conn"><span class="dot"></span><span id="connText">กำลังเชื่อมต่อ…</span></span>
-        <a href="#account" class="avatar-link" title="บัญชีของฉัน"><img id="hdrAvatar" class="avatar" alt=""></a>
       </div>
     </header>
 
     <!-- line icons instead of emoji (user 14 Oct: emoji menu looked "ทำเล่น", not professional) -->
-    <nav class="tabbar six" id="tabbar">
+    <nav class="tabbar six" id="tabbar" style="--tabs:5">
       <a href="#home" data-tab="home"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>สัญญาณ</a>
       <a href="#stats" data-tab="stats"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span>ข่าวสหรัฐ</a>
       <a href="#chart" data-tab="chart"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M9 5v4"/><rect x="7" y="9" width="4" height="6" rx="1"/><path d="M9 15v2"/><path d="M17 3v2"/><rect x="15" y="5" width="4" height="8" rx="1"/><path d="M17 13v3"/></svg></span>กราฟ</a>
       <a href="#zframes" data-tab="zframes"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span>หุ้นสหรัฐ</a>
-      <a href="#journal" data-tab="journal"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>บันทึกการซื้อขาย</a>
-      <a href="#account" data-tab="account"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.66V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.66"/></svg></span>บัญชี</a>
+      <a href="#account" data-tab="account"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span>ตั้งค่า</a>
     </nav>
 
     <div class="install-bar" id="installBar" hidden>
       <img src="logo.svg" alt="" width="34" height="34">
-      <div><b>ติดตั้ง Gold Signal เป็นแอป</b><small>เปิดเร็ว เต็มจอ · รับแจ้งเตือนได้</small></div>
+      <div><b>ติดตั้ง Gold Signal เป็นแอป</b><small>เปิดเร็ว เต็มจอ</small></div>
       <button class="btn gold" id="installBarBtn" type="button">ติดตั้ง</button>
       <button class="install-x" id="installBarClose" type="button" aria-label="ปิด">✕</button>
     </div>
-    <div class="demo-bar" id="demoBar" hidden>👀 <b>โหมดดูตัวอย่าง</b> — ราคาและสัญญาณเป็นข้อมูลสดจริงทั้งหมด · <a href="./">ล็อกอินด้วย Google</a> เพื่อบันทึกการตั้งค่าไว้กับบัญชี</div>
 
     <main class="content">
       <!-- 🎯 Signal -->
@@ -279,7 +258,6 @@
               <summary>วิธีใช้สัญญาณนี้ (3 ขั้น)</summary>
               <ol class="steps" id="sgHow"></ol>
             </details>
-            <p class="hint alert-note" id="sgAlertNote">🔔 เพิ่มเพื่อน LINE ที่แท็บ <a href="#account">บัญชี</a> แล้วระบบจะแจ้งเตือนทันทีเมื่อราคาถึงจุดเข้า / TP / SL</p>
             <details class="fold">
               <summary>ทำไมถึงให้สัญญาณนี้</summary>
               <ul class="why" id="sgWhy"></ul>
@@ -317,12 +295,6 @@
                next release in plain words, upcoming news by day with impact badges, released news as cards, stats folded -->
           <div class="ns-next nc-hero" id="nsNext"><p class="muted">กำลังโหลดปฏิทินข่าว…</p></div>
           <div class="st-kpis ns-kpis nc-kpis" id="nsKpis"></div>
-        </section>
-
-        <!-- 📝 Articles written in the back office (journal.js ← api/articles.mjs) — live without a deploy -->
-        <section class="card" id="artCard" hidden>
-          <h3>📝 บทวิเคราะห์จากทีม Gold Signal</h3>
-          <div class="art-list" id="artList"></div>
         </section>
 
         <section class="card">
@@ -485,55 +457,13 @@
       </section>
 
       <section id="tab-zframes" class="tab" hidden>
-        <iframe id="zframesFrame" class="zframes-shell" title="หุ้นสหรัฐ — Nasdaq 100 · S&amp;P 500 · หุ้นปันผล" data-src="/zframes/index.html?d=ndx&amp;embed=1&amp;v=202610180200"></iframe>
-      </section>
-
-      <!-- 📓 Private trade journal (journal.js ← api/journal.mjs) — only the owner can read it -->
-      <section id="tab-journal" class="tab" hidden>
-        <section class="card jr-head">
-          <div class="jr-title"><h3>📓 บันทึกการซื้อขายของฉัน</h3><button class="btn gold" type="button" id="jrCoach">🤖 ให้โค้ช AI ดูบันทึกของฉัน</button></div>
-          <p class="hint">เห็นได้คนเดียว (แอดมินก็ไม่เห็น) · ใช้ให้โค้ช AI ดูนิสัยการซื้อขายของคุณ · ดาวน์โหลดหรือลบทั้งหมดได้ทุกเมื่อ</p>
-          <div id="jrSum"></div>
-        </section>
-        <section class="card">
-          <div class="jr-title"><h3>✍️ บันทึกรายการ</h3><button class="btn" type="button" id="jrFromSig">🎯 เติมจากสัญญาณตอนนี้</button></div>
-          <form class="jr-form" id="jrForm" autocomplete="off">
-            <label>เวลาเข้า<input name="at" type="datetime-local"></label>
-            <label>ฝั่ง<select name="side"><option value="BUY">Buy</option><option value="SELL">Sell</option></select></label>
-            <label>กรอบเวลา<select name="tf"><option value="5m">5 นาที</option><option value="15m">15 นาที</option><option value="30m" selected>30 นาที</option><option value="1h">1 ชม.</option><option value="5h">5 ชม.</option><option value="1d">1 วัน</option><option value="1w">1 สัปดาห์</option><option value="other">อื่น ๆ</option></select></label>
-            <label>ราคาเข้า *<input name="entry" type="number" step="0.01" min="0" required placeholder="4150.00"></label>
-            <label>SL<input name="sl" type="number" step="0.01" min="0"></label>
-            <label>TP<input name="tp" type="number" step="0.01" min="0"></label>
-            <label>ราคาออก <small>(ว่าง = ยังถือ)</small><input name="exit" type="number" step="0.01" min="0"></label>
-            <label>ขนาดการซื้อขาย (lot)<input name="lots" type="number" step="0.01" min="0.01" max="100" placeholder="0.01"></label>
-            <label>ผลจริง USD <small>(ว่าง = คิดให้)</small><input name="result" type="number" step="0.01"></label>
-            <label>อารมณ์ตอนเข้า<select name="mood"><option value="">—</option><option value="calm">😌 สงบ</option><option value="fear">😨 กลัว</option><option value="greed">🤑 โลภ</option><option value="revenge">😤 อยากเอาคืน</option><option value="tired">😵 เหนื่อย</option><option value="fomo">🏃 กลัวตกรถ</option></select></label>
-            <label class="jr-check"><input name="system" type="checkbox"> เข้าตามสัญญาณ Gold Signal</label>
-            <label class="jr-wide">โน้ต<textarea name="note" rows="2" maxlength="1000" placeholder="ทำไมถึงเข้า เห็นอะไรบนกราฟ"></textarea></label>
-            <label class="jr-wide">บทเรียน<textarea name="lesson" rows="2" maxlength="500" placeholder="ครั้งหน้าจะทำอะไรต่างไป"></textarea></label>
-            <div class="jr-wide jr-btns"><button class="btn gold" type="submit" id="jrSave">บันทึกรายการนี้</button><button class="btn" type="button" id="jrCancel" hidden>ยกเลิกแก้ไข</button></div>
-          </form>
-        </section>
-        <section class="card">
-          <div class="jr-title"><h3>📋 รายการของฉัน</h3><span class="jr-tools"><a class="btn act" href="/api/journal?format=csv" download>⬇️ CSV</a><button class="btn act danger" type="button" id="jrWipe">ลบทั้งหมด</button></span></div>
-          <ul class="jr-list" id="jrList"><li class="muted center">กำลังโหลด…</li></ul>
-        </section>
+        <iframe id="zframesFrame" class="zframes-shell" title="หุ้นสหรัฐ — Nasdaq 100 · S&amp;P 500 · หุ้นปันผล" data-src="/zframes/index.html?d=ndx&amp;embed=1&amp;v=202611111200"></iframe>
       </section>
 
       <!-- 📖 How to use -->
 
-      <!-- 👤 Account -->
+      <!-- ⚙️ Settings (was the account tab — no accounts since 11 Nov 2026) -->
       <section id="tab-account" class="tab" hidden>
-        <section class="card profile">
-          <img id="accAvatar" class="avatar big" alt="">
-          <div><b id="accName">—</b><p class="muted small" id="accEmail"></p>
-            <a class="btn" id="accSignIn" href="./" hidden>เข้าสู่ระบบด้วย Google</a></div>
-        </section>
-
-        <section class="card pro-card" id="proCard" hidden></section>
-        <!-- 🤝 referral link (journal.js loadRef ← api/ref.mjs, hidden until marketing is live) -->
-        <div class="card ref-card" id="refCard" hidden></div>
-
         <section class="card">
           <h3>หน้าจอ 🎨</h3>
           <p class="muted small">เลือกโทนสีที่อ่านสบายตา — จำไว้ในเครื่องนี้</p>
@@ -544,38 +474,20 @@
         </section>
 
         <section class="card pwa" id="pwaCard">
-          <h3>แอปบนมือถือ + แจ้งเตือน 📲</h3>
+          <h3>แอปบนมือถือ 📲</h3>
           <div class="pwa-row">
             <div><b>ติดตั้งเป็นแอป</b><p class="muted small" id="pwaInstallTx"></p></div>
             <button class="btn gold" id="pwaInstall" type="button">📲 ติดตั้ง</button>
           </div>
           <div class="pwa-how" id="pwaHow" hidden>
-            <ol id="pwaHowIos"><li>เปิดเว็บนี้ใน <b>Safari</b></li><li>กดปุ่ม <b>แชร์</b> <span class="mono">⬆︎</span> ด้านล่าง</li><li>เลือก <b>เพิ่มไปยังหน้าจอโฮม</b> แล้วกด <b>เพิ่ม</b></li><li>เปิด Gold Signal จากหน้าจอโฮม แล้วกลับมาเปิดแจ้งเตือนที่นี่</li></ol>
+            <ol id="pwaHowIos"><li>เปิดเว็บนี้ใน <b>Safari</b></li><li>กดปุ่ม <b>แชร์</b> <span class="mono">⬆︎</span> ด้านล่าง</li><li>เลือก <b>เพิ่มไปยังหน้าจอโฮม</b> แล้วกด <b>เพิ่ม</b></li><li>เปิด Gold Signal จากหน้าจอโฮมได้เลย</li></ol>
             <ol id="pwaHowOther"><li>กดเมนู <b>⋮</b> ของเบราว์เซอร์ (Chrome / Edge)</li><li>เลือก <b>ติดตั้งแอป</b> หรือ <b>เพิ่มลงในหน้าจอหลัก</b></li><li>เปิด Gold Signal จากไอคอนบนหน้าจอได้เลย</li></ol>
           </div>
-          <div class="pwa-row">
-            <div><b>แจ้งเตือนบนเครื่องนี้</b><p class="muted small" id="pwaPushTx">กำลังตรวจสอบ…</p></div>
-            <button class="btn" id="pwaPush" type="button" hidden>🔔 เปิดแจ้งเตือน</button>
-          </div>
-          <button class="btn" id="pwaTest" type="button" hidden>🧪 ส่งแจ้งเตือนทดสอบ</button>
-        </section>
-
-        <!-- 🔔 price alerts the member sets (17 Oct 2026) — pricealerts.js; checked every 5 minutes (scripts/price-alerts-user.js) -->
-        <section class="card pa" id="paCard">
-          <h3>แจ้งเตือนราคาทอง 🔔</h3>
-          <p class="muted small">ตั้งราคาไว้ — เมื่อทอง (XAU/USD) ขึ้นหรือลงถึง ระบบเด้งแจ้งเตือนบนเครื่องที่เปิดแจ้งเตือนไว้ (เช็กทุก 5 นาที · ฟรี ไม่ใช้โควตา LINE) · ตั้งได้ 10 รายการ</p>
-          <div class="pa-form">
-            <input id="paPrice" type="number" inputmode="decimal" step="0.5" placeholder="เช่น 4200" aria-label="ราคาที่ต้องการให้เตือน">
-            <button class="btn gold" id="paAdd" type="button">ตั้งเตือน</button>
-          </div>
-          <div class="pa-quick" id="paQuick"></div>
-          <p class="small" id="paMsg" role="status"></p>
-          <ul class="pa-list" id="paList"></ul>
         </section>
 
         <section class="card">
           <h3>ตั้งค่าการซื้อขายของฉัน ⚙️</h3>
-          <p class="muted small">ใช้คำนวณขนาดการซื้อขาย (lot) ในทุกสัญญาณ และหักสเปรดในผลทดสอบ — บันทึกไว้กับบัญชีของคุณ</p>
+          <p class="muted small">ใช้คำนวณขนาดการซื้อขาย (lot) ในทุกสัญญาณ และหักสเปรดในผลทดสอบ — บันทึกไว้ในเครื่องนี้</p>
           <div class="settings">
             <label>ทุนในบัญชีซื้อขาย
               <span class="row"><input id="setCap" type="number" min="0" step="100" placeholder="เช่น 1000"><select id="setCur"><option value="USD">ดอลลาร์ (USD)</option><option value="THB">บาท (THB)</option></select></span>
@@ -592,36 +504,24 @@
         </section>
 
         <section class="card">
-          <h3>รับสัญญาณทาง LINE 📩</h3>
-          <p class="muted">ส่ง <b>สัญญาณ 1 ชม. (ระบบหลัก)</b> และสัญญาณกราฟ 5 นาที · 30 นาที (ติดป้ายเสี่ยง) · 5 ชม. · 1 วัน ทุกครั้งที่มีจุดเข้า (พร้อม SL / TP) · ภาพรวมทองคำทุกเช้า 07:05 น. (วันทำการ) · สรุปผลรายสัปดาห์ทุกเสาร์ 07:30 น. · เตือนก่อนข่าวแรง 30 นาที — ไม่ส่งผลปิดรายการ · ถ้าโควตา LINE เดือนนั้นใกล้หมด ภาพรวมเช้าและเตือนข่าวจะมาเป็น<b>แจ้งเตือนบนเครื่อง</b>แทน (LINE เก็บไว้ส่งสัญญาณเปิดรายการ) — กด "เปิดแจ้งเตือน" ด้านบนไว้</p>
-          <p class="muted small" id="lineQuota"></p>
-          <a class="btn line" id="lineAdd" target="_blank" rel="noopener" hidden>เพิ่มเพื่อน LINE เพื่อรับสัญญาณ</a>
-          <p class="muted small" id="lineSoon">กำลังเตรียมบัญชี LINE — เร็ว ๆ นี้</p>
-        </section>
-
-        <section class="card">
           <h3>ชวนเพื่อนมาใช้ 🤝</h3>
-          <p class="muted">ส่งลิงก์ให้เพื่อน เพื่อนสมัครด้วยอีเมลหรือ Google แล้วเลือกแพ็กเกจ (149 บาท/เดือน · 1,290 บาท/ปี)</p>
+          <p class="muted">ส่งลิงก์ให้เพื่อน เปิดดูได้ทันที ไม่ต้องสมัคร</p>
           <div class="share">
-            <a class="btn line" id="shareLine" target="_blank" rel="noopener">แชร์ทาง LINE</a>
             <button class="btn" id="shareCopy">คัดลอกลิงก์</button>
             <button class="btn" id="shareNative" hidden>แชร์…</button>
           </div>
         </section>
 
-        <a class="btn gold wide admin-link" id="adminLink" href="/admin.html" hidden>🛠️ หลังบ้าน — สมาชิกและการเข้าใช้งาน</a>
-        <button class="btn danger wide" id="signOut">ออกจากระบบ</button>
         <p class="muted small center"><button class="btn" type="button" onclick="window.gsTour && gsTour()">ดูทัวร์แนะนำอีกครั้ง</button></p>
-        <p class="muted small center">เวอร์ชัน 202610211100 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
+        <p class="muted small center">เวอร์ชัน 202611111200 · <a href="compare.html">🕰️ เทียบแบบเก่า vs ✨ แบบใหม่</a></p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="config.js?v=202610121500"></script>
-  <script src="pro.js?v=202610191400"></script>
-  <script src="auth.js?v=202610180100"></script>
+  <script src="config.js?v=202611111200"></script>
+  <script src="auth.js?v=202611111200"></script>
   <script src="splashfx.js?v=202610152000"></script>
   <script src="indicators.js?v=202610121500"></script>
   <script src="investing.js?v=202610121500"></script>
@@ -629,17 +529,15 @@
   <script src="dailyplan.js?v=202610121500"></script>
   <script src="signals.js?v=202610201430"></script>
   <script src="intraday.js?v=202610281200"></script>
-  <script src="pwa.js?v=202610180200"></script>
-  <script src="ui.js?v=202610180200"></script>
+  <script src="pwa.js?v=202611111200"></script>
+  <script src="ui.js?v=202611111200"></script>
   <script src="chartsys.js?v=202610281200"></script>
-  <script src="main.js?v=202610281200"></script>
+  <script src="main.js?v=202611111200"></script>
   <script src="tradeplan.js?v=202610180200"></script>
   <script src="chartzones.js?v=202610281200"></script>
   <script src="newsstats.js?v=202610180200"></script>
-  <script src="chartchat.js?v=202610281200"></script>
-  <script src="easy.js?v=202610210900"></script>
-  <script src="journal.js?v=202610180200"></script>
-  <script src="pricealerts.js?v=202610170100"></script>
+  <script src="chartchat.js?v=202611111200"></script>
+  <script src="easy.js?v=202611111200"></script>
   <script src="motion.js?v=202610180100"></script>
 </body>
 </html>
