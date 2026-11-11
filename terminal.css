@@ -465,9 +465,10 @@ html.dark .st-kpi { background: var(--panel-2) !important; border: 1px solid var
 html.dark .easy-sum { box-shadow: none !important; }
 html.dark .cc-head b { font-size: 14px; }
 
-/* ── Every tab as a panel (11 Nov 2026, user chose "ทุกหน้าเป็นแผงแบบหน้าตั้งค่า"; tabpanel.js builds .sp.tp) ──
-   Same panel/menu as settings; the tab's own cards become flat parts of the panel divided by hairlines. */
-.tab .sp.tp { grid-template-columns: 216px minmax(0, 1fr); background: linear-gradient(90deg, var(--panel-2) 216px, var(--line) 216px, var(--line) 217px, var(--panel) 217px); }
+/* ── One menu (11 Nov 2026, user: two menus "ดูยากมาก" → "รวมเป็นเมนูเดียว"; tabpanel.js) ──
+   Each tab = one flat panel without its own menu; the open tab's topics unfold under it in the main left menu (#tabbar). */
+.tab .sp.tp, #tab-account .sp { grid-template-columns: 1fr !important; background: var(--panel) !important; }
+#tab-account #spNav { display: none !important; }
 .tab .tp .sp-body { padding: 4px 0 8px; min-width: 0; }
 .tab .tp .sp-body > * { margin: 0 !important; animation: none !important; }
 .tab .tp .sp-body > .card, .tab .tp .sp-body > section, .tab .tp .sp-body > details.card, .tab .tp .sp-body > div.card {
@@ -479,22 +480,23 @@ html.dark .cc-head b { font-size: 14px; }
 .tab .tp .sp-body > div:not(.card):not([hidden]):not(.home-off), .tab .tp .sp-body > p { padding-left: 24px !important; padding-right: 24px !important; }
 .tab .tp .sp-body > p.updated { padding: 14px 24px !important; }
 .tab .tp .sp-body > :last-child { border-bottom: 0 !important; }
-.tab .tp .tp-group { font-size: 11.5px; letter-spacing: .3px; color: var(--muted); padding: 10px 12px 4px; }
-.tab .tp .tp-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 2px 4px 6px; }
-.tab .tp .tp-modes button { justify-content: center; border-left: 0 !important; border-radius: 6px !important; padding: 8px 6px !important; border: 1px solid var(--line) !important; }
-.tab .tp .tp-modes button.on { background: var(--gold) !important; color: #0b0e11 !important; border-color: var(--gold) !important; }
-.tab .tp .sp-nav button[hidden] { display: none; }
 #tab-chart .tp #chartMode { display: none; }
 #tab-chart .tp .sp-body > #chartSimple, #tab-chart .tp .sp-body > #chartPro { padding: 16px 20px !important; }
 #tab-zframes .tp .sp-body { padding: 0; }
 #tab-zframes .tp .sp-body > iframe { display: block; padding: 0 !important; border-radius: 0; }
 .content.zframes-view #tab-zframes .sp.tp { border-radius: 0; border-left: 0; border-right: 0; }
-@media (max-width: 1200px) {
-  .tab .sp.tp { grid-template-columns: 1fr; background: var(--panel); }
-  .tab .tp .sp-nav { position: static; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; background: var(--panel-2); border-bottom: 1px solid var(--line); padding: 8px; }
-  .tab .tp .sp-brand, .tab .tp .tp-group { display: none; }
-  .tab .tp .sp-nav button { width: auto; white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; border-radius: 6px 6px 0 0; }
-  .tab .tp .sp-nav button.on { border-bottom-color: var(--gold); }
-  .tab .tp .tp-modes, .tab .tp .tp-sets, .tab .tp .tp-zones { display: flex; gap: 4px; padding: 0; }
-  .tab .tp .sp-body > .card, .tab .tp .sp-body > section, .tab .tp .sp-body > details.card { padding: 16px !important; }
+/* topics under the open tab in the left menu */
+.tb-sub { display: none; }
+@media (min-width: 900px) {
+  #tabbar .tb-sub.on { display: flex; flex-direction: column; gap: 1px; margin: 2px 0 8px 22px; padding-left: 12px; border-left: 1px solid var(--line); }
+  #tabbar .tb-sub button { font: inherit; font-size: 13.5px; text-align: left; color: var(--muted); background: none; border: 0; border-radius: 6px; padding: 7px 10px; cursor: pointer; }
+  #tabbar .tb-sub button:hover { color: var(--text); background: rgba(255, 255, 255, .04); }
+  #tabbar .tb-sub button.on { color: var(--gold); font-weight: 600; background: var(--gold-soft); }
+  #tabbar .tb-sub button[hidden] { display: none; }
+  #tabbar .tb-sub .tb-g { font-size: 11.5px; color: var(--muted); opacity: .8; padding: 8px 10px 2px; }
+  #tabbar .tb-sub .tb-sets, #tabbar .tb-sub .tb-zones { display: flex; flex-direction: column; gap: 1px; }
+  #tabbar .tb-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px 0 6px; }
+  #tabbar .tb-modes button { text-align: center !important; border: 1px solid var(--line) !important; padding: 6px 4px !important; font-size: 12.5px !important; }
+  #tabbar .tb-modes button.on { background: var(--gold) !important; color: #0b0e11 !important; border-color: var(--gold) !important; }
 }
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1100px) { #tabbar .tb-sub { display: none !important; } }
