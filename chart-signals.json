@@ -10977,11 +10977,33 @@
    "closedBy": "be",
    "exitPrice": 3876.14,
    "exitAt": 1794500100000
+  },
+  {
+   "id": "5m-1794510300000",
+   "createdAt": 1794510300000,
+   "expiresAt": 1794516300000,
+   "status": "pending",
+   "entryAt": 1794510300000,
+   "side": "SELL",
+   "entry": 3881.49,
+   "sl": 3896.49,
+   "tps": [
+    3877.74,
+    3866.49,
+    3851.49
+   ],
+   "tp": 3877.74,
+   "score": -5,
+   "priceAtSignal": 3876.49,
+   "fillBy": 1794512100000,
+   "limit": true,
+   "tf": "5m",
+   "risky": true
   }
  ],
  "brakes": {},
- "updatedAt": 1794500421753,
+ "updatedAt": 1794510321671,
  "resetAt": 1792460907843,
  "lineQueue": [],
- "lineAt": 1794499549535
+ "lineAt": 1794510321671
 }
