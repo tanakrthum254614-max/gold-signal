@@ -7,6 +7,7 @@ const fs = require('fs');
 const FILE = process.argv[2] || 'calendar.json';
 const SITE = process.env.SITE_URL || 'https://gold-signal.gold-signal.workers.dev';
 const KEEP_DAYS = 120;
+const FF = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
 
 (async () => {
   let live;
@@ -20,6 +21,17 @@ const KEEP_DAYS = 120;
   }
   let old = { events: [], occurrences: [] };
   try { old = JSON.parse(fs.readFileSync(FILE, 'utf8')); } catch (e) { /* first run */ }
+  // a copy of ForexFactory's weekly export for /api/calendar when ForexFactory refuses the Cloudflare data centre;
+  // refreshed at most every 30 minutes (ForexFactory asks for gentle polling)
+  let ff = old.ff || null;
+  if (!ff || Date.now() - ff.at > 30 * 60e3) {
+    try {
+      const r = await fetch(FF, { headers: { 'user-agent': 'Mozilla/5.0 (compatible; GoldSignal/1.0)' }, signal: AbortSignal.timeout(15000) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const list = (await r.json()).filter((e) => e.country === 'USD' && e.impact === 'High');
+      ff = { at: Date.now(), list };
+    } catch (e) { console.log(`calendar: ForexFactory copy not refreshed (${e.message})`); }
+  }
 
   const now = Date.now(), from = now - KEEP_DAYS * 864e5;
   const ev = new Map(old.events.map((e) => [e.event_id, e]));
@@ -36,6 +48,6 @@ const KEEP_DAYS = 120;
   const occurrences = [...oc.values()].filter((o) => Date.parse(o.occurrence_time) >= from)
     .sort((a, b) => Date.parse(a.occurrence_time) - Date.parse(b.occurrence_time));
   const events = occurrences.map((o) => ev.get(o.event_id)).filter(Boolean);
-  fs.writeFileSync(FILE, JSON.stringify({ source: live.source, at: now, events, occurrences }));
-  console.log(`calendar: ${occurrences.length} released items (+${added}), ${occurrences.filter((o) => o.actual != null).length} with actuals`);
+  fs.writeFileSync(FILE, JSON.stringify({ source: live.source, at: now, events, occurrences, ff }));
+  console.log(`calendar: ${occurrences.length} released items (+${added}), ${occurrences.filter((o) => o.actual != null).length} with actuals · site sources ${JSON.stringify(live.ok || {})} · ForexFactory copy ${ff ? new Date(ff.at).toISOString() : 'none'}`);
 })();

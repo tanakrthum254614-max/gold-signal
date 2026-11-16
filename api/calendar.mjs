@@ -79,8 +79,21 @@ function myfxbook(text) {
   }).filter((e) => e && Number.isFinite(e.t));
 }
 
+// ForexFactory refuses some Cloudflare data centres (429): the recorder (GitHub, every 5 min) saves its own copy of the
+// weekly export in calendar.json → `ff` on the data branch; used when the direct fetch fails.
+const RAW = 'https://raw.githubusercontent.com/tanakrthum254614-max/gold-signal/data/calendar.json';
+async function ffBackup() {
+  const r = await fetch(`${RAW}?t=${Math.floor(Date.now() / 60e3)}`, { signal: AbortSignal.timeout(8000) });
+  if (!r.ok) throw new Error(`backup ${r.status}`);
+  const j = await r.json();
+  if (!j.ff || !Array.isArray(j.ff.list) || Date.now() - j.ff.at > 7 * 864e5) throw new Error('backup empty');
+  return forexFactory(JSON.stringify(j.ff.list));
+}
+
 export async function collect() {
-  const [ff, mx] = await Promise.allSettled([get(FF).then(forexFactory), get(MFX).then(myfxbook)]);
+  const [ff0, mx] = await Promise.allSettled([get(FF).then(forexFactory), get(MFX).then(myfxbook)]);
+  let ff = ff0, ffFrom = 'forexfactory';
+  if (ff.status === 'rejected') { ff = await ffBackup().then((value) => ({ status: 'fulfilled', value }), (reason) => ({ status: 'rejected', reason })); ffFrom = 'backup'; }
   if (ff.status === 'rejected' && mx.status === 'rejected') throw new Error(`${ff.reason.message} · ${mx.reason.message}`);
   const list = ff.status === 'fulfilled' ? ff.value : [];
   const today = mx.status === 'fulfilled' ? mx.value : [];
@@ -107,7 +120,7 @@ export async function collect() {
       previous: p ? p.v : null, unit: any ? any.unit : '', precision: Math.max(a ? a.dec : 0, f ? f.dec : 0, p ? p.dec : 0),
       actual_to_forecast: judge(e.name, a, f) });
   }
-  return { source: 'forexfactory+myfxbook', at: Date.now(), events, occurrences };
+  return { source: 'forexfactory+myfxbook', at: Date.now(), ok: { ff: ff.status === 'fulfilled' ? ffFrom : false, mfx: mx.status === 'fulfilled' }, events, occurrences };
 }
 
 export async function GET() {
