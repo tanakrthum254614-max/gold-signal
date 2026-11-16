@@ -50,12 +50,14 @@
   <link rel="stylesheet" href="theme.css?v=202610141700" id="themeLight">
   <link rel="stylesheet" href="design.css?v=202610141800">
   <link rel="stylesheet" href="terminal.css?v=202611112000">
+  <link rel="stylesheet" href="workspace.css?v=202611161040">
   <link rel="stylesheet" href="splash.css?v=202610171000">
   <script>/* refresh = stay where you were, no loading screen (user, 16 Oct 2026: "กดรีเฟรชแล้วอยู่ที่เดิม ไม่ต้องไปเริ่มที่หน้าตอนโหลดใหม่ทุกครั้ง"): the splash plays once per tab; a reload or a later visit in the same tab skips it */ try { var gsNav = performance.getEntriesByType("navigation")[0]; if ((gsNav && gsNav.type === "reload") || sessionStorage.getItem("gs-splash-seen") === "1") document.documentElement.classList.add("no-splash"); } catch (e) {}</script>
   <script>/* apply the saved theme before the first paint */ var gsT = "dark"; try { gsT = localStorage.getItem("gs-theme") === "light" ? "light" : "dark"; } catch (e) {} /* dark trading terminal = default since 14 Oct 2026 */ if (gsT === "dark") { document.getElementById("themeLight").disabled = true; document.documentElement.classList.add("dark"); document.querySelector("meta[name=theme-color]").content = "#0b0e11"; }</script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
-<body>
+<body class="gs-workspace">
+  <a class="ws-skip" href="#mainContent">ข้ามไปเนื้อหา</a>
   <!-- Loading screen -->
   <div id="splash" class="splash">
     <div class="sp-glow"></div>
@@ -116,6 +118,7 @@
   <div id="app" hidden>
     <header class="appbar">
       <a class="brand" href="#home"><img class="logo" src="logo.svg" alt=""><b>Gold Signal</b></a>
+      <div class="ws-context" aria-label="ตำแหน่งปัจจุบัน"><span>พื้นที่วิเคราะห์</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg><b id="wsCurrent">ภาพรวมตลาด</b></div>
       <div class="appbar-right">
         <span class="hdr-price mono" id="hdrPrice">—</span>
         <button class="mode-btn" id="modeBtn" type="button" aria-pressed="true">โหมดง่าย</button>
@@ -125,12 +128,15 @@
     </header>
 
     <!-- line icons instead of emoji (user 14 Oct: emoji menu looked "ทำเล่น", not professional) -->
-    <nav class="tabbar six" id="tabbar" style="--tabs:5">
+    <nav class="tabbar six" id="tabbar" style="--tabs:5" aria-label="เมนูหลัก">
+      <div class="ws-sidebar-brand"><img src="logo.svg" alt="" width="35" height="35"><div><b>Gold Signal</b><small>MARKET WORKSPACE</small></div></div>
+      <span class="ws-nav-label">พื้นที่ทำงาน</span>
       <a href="#home" data-tab="home"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>สัญญาณ</a>
       <a href="#stats" data-tab="stats"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span>ข่าวสหรัฐ</a>
       <a href="#chart" data-tab="chart"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M9 5v4"/><rect x="7" y="9" width="4" height="6" rx="1"/><path d="M9 15v2"/><path d="M17 3v2"/><rect x="15" y="5" width="4" height="8" rx="1"/><path d="M17 13v3"/></svg></span>กราฟ</a>
       <a href="#zframes" data-tab="zframes"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span>หุ้นสหรัฐ</a>
       <a href="#account" data-tab="account"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span>ตั้งค่า</a>
+      <div class="ws-side-note"><b>XAU / USD</b><p>ราคาสด · สัญญาณ · ผลย้อนหลัง<br>Gold Signal workspace</p></div>
     </nav>
 
     <div class="install-bar" id="installBar" hidden>
@@ -140,24 +146,27 @@
       <button class="install-x" id="installBarClose" type="button" aria-label="ปิด">✕</button>
     </div>
 
-    <main class="content">
+    <main class="content" id="mainContent" tabindex="-1">
+      <div class="ws-heading">
+        <div><p class="ws-eyebrow" id="wsEyebrow">MARKET OVERVIEW</p><h1 id="wsTitle">ภาพรวมตลาดทองคำ</h1><p class="ws-description" id="wsDescription">ติดตามราคาสด แนวโน้ม และสัญญาณซื้อขายในที่เดียว</p></div>
+        <div class="ws-heading-actions"><time class="ws-date" id="wsDate"></time><a class="ws-chart-link" id="wsChartLink" href="#chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v16h16M8 14l4-5 4 3 4-7"/></svg>เปิดกราฟ</a></div>
+      </div>
       <!-- 🎯 Signal -->
       <!-- Live US-news strip on every tab (newsstats.js): countdown 15 min before a high-impact release, then actual vs forecast + gold since -->
       <div class="news-live" id="newsLive" hidden></div>
       <section id="tab-home" class="tab">
 
-        <!-- 💡 one-line answer on top (easy.js, 17 Oct 2026: "อยากปรับให้มันดูเข้าใจง่ายมากขึ้น") -->
-        <div class="card easy-sum" id="easySum" hidden></div>
-
+        <div class="ws-overview-grid">
         <!-- Live price -->
         <div class="card lv" id="liveHero">
+          <div class="ws-instrument"><span class="ws-instrument-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8 5 8 0 3 6H5l3-6ZM5 13h6l3 6H2l3-6ZM14 13h5l3 6h-6"/></svg></span><div><b>XAU/USD</b><small>ทองคำ · ดอลลาร์สหรัฐ / ออนซ์</small></div></div>
           <div class="lv-top">
             <span class="lv-pill" id="lvMarket"><i></i><span id="lvMarketText">กำลังเชื่อมต่อ</span></span>
             <span class="mono muted small" id="lvClock">--:--:--</span>
           </div>
           <div class="lv-main">
             <div class="lv-px">
-              <div class="muted small">ทองคำ XAU/USD · ดอลลาร์/ออนซ์</div>
+              <div class="muted small">ราคาทองคำล่าสุด</div>
               <div class="lv-price mono" id="lvPrice">—</div>
               <div class="lv-chg mono" id="lvChg"></div>
             </div>
@@ -187,6 +196,8 @@
           <p class="lv-foot muted small" id="lvAgo">กำลังดึงราคาสด…</p>
         </div>
 
+        <div class="ws-analysis-stack">
+        <div class="card easy-sum" id="easySum" hidden></div>
         <!-- Live trend gauge -->
         <div class="card intra" id="intraCard">
           <div class="sig-top"><span class="muted"><i class="sm-dot" id="smDot"></i>แนวโน้มสด · ระบบหลัก 1 ชม.</span><span class="muted small" id="inNext"></span></div>
@@ -212,6 +223,9 @@
           <details class="why-box adv" id="inDetail"><summary id="inDetailSum">ดูเหตุผลละเอียด</summary><div class="why-body" id="inDetailBody"></div></details>
         </div>
 
+        </div><!-- /ws-analysis-stack -->
+        </div><!-- /ws-overview-grid -->
+
         <div id="inTrade"></div>
 
         <!-- Odds for each side, as donuts -->
@@ -223,11 +237,11 @@
         <p class="muted small dn-note adv" id="dnNote"></p>
 
         <!-- 📋 Every entry of the day on every timeframe, live (main.js renderToday, 19 Oct 2026) -->
-        <h3 class="sec-title">สัญญาณวันนี้ · ทุกกรอบ <span class="lv-tag">สด</span></h3>
+        <div class="ws-section-head"><div><h3 class="sec-title">สัญญาณวันนี้ <span class="lv-tag">ทุกกรอบเวลา</span></h3><p>ติดตามจุดเข้าและสถานะของสัญญาณที่เกิดขึ้นวันนี้</p></div><span class="ws-section-index" aria-hidden="true">01 / SIGNALS</span></div>
         <div class="card today-card" id="todayCard"><p class="muted">กำลังโหลด…</p></div>
 
         <!-- 📒 Real results of every trade on the timeframes with entries (main.js renderRecord, 16 Oct 2026) -->
-        <h3 class="sec-title">ผลจริงทุกรายการ · กรอบที่ทดสอบผ่านทุกช่วง</h3>
+        <div class="ws-section-head"><div><h3 class="sec-title">ผลการติดตามสัญญาณ</h3><p>ทุกรายการของกรอบที่ทดสอบผ่านทุกช่วง ทั้งกำไรและขาดทุน</p></div><span class="ws-section-index" aria-hidden="true">02 / RECORDS</span></div>
         <div class="card rec" id="recCard"><p class="muted">กำลังโหลดผลจริง…</p></div>
 
         <!-- US news + today's trades card hidden (user, 16 Oct 2026, screenshot: "เอาออก"); main.js still fills it, news pause still applies -->
@@ -526,11 +540,12 @@
               <div class="sp-row"><div class="sp-lbl"><b>ทัวร์แนะนำ</b><span>ดูวิธีใช้หน้าสัญญาณอีกครั้ง</span></div>
                 <div class="sp-ctl"><button class="btn" type="button" onclick="window.gsTour && gsTour()">เริ่มทัวร์</button></div></div>
               <div class="sp-row"><div class="sp-lbl"><b>เวอร์ชัน</b><span><a href="compare.html">เทียบแบบเก่า vs แบบใหม่</a></span></div>
-                <div class="sp-ctl"><span class="mono sp-ver">202611111800</span></div></div>
+                <div class="sp-ctl"><span class="mono sp-ver">202611161040</span></div></div>
             </section>
           </div>
         </div>
       </section>
+      <footer class="ws-page-foot"><span>Gold Signal · พื้นที่วิเคราะห์ตลาดทองคำ</span><a href="compare.html">ดูการปรับปรุงเว็บไซต์ ↗</a></footer>
     </main>
   </div>
 
@@ -555,6 +570,7 @@
   <script src="newsstats.js?v=202611161100"></script>
   <script src="chartchat.js?v=202611111830"></script>
   <script src="easy.js?v=202611111800"></script>
-  <script src="motion.js?v=202610180100"></script>
+  <script src="motion.js?v=202611161040"></script>
+  <script src="workspace.js?v=202611161040"></script>
 </body>
 </html>

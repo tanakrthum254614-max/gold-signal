@@ -29,7 +29,7 @@
       t: Math.random() * Math.PI * 2, tw: 0.6 + Math.random() * 1.6,
     };
   }
-  const dark = () => document.documentElement.classList.contains('dark'); // terminal look: no dust, no tilt
+  const dark = () => document.documentElement.classList.contains('dark') || document.body.classList.contains('gs-workspace'); // workspace: no dust or tilt in either theme
   function frame(now) {
     if (dark()) { raf = 0; ctx.clearRect(0, 0, W, H); return; } // dark look: stop the loop (it used to spin 60×/s doing nothing)
     raf = requestAnimationFrame(frame);
