@@ -133,5 +133,6 @@ connectLive = function(id) {
 let siteLastId=null,zfTabOn=true;
 function sitePause(){if(window.zfPaused)return;window.zfPaused=true;siteRun++;siteTimers.forEach(clearInterval);siteTimers=[];siteSockets.forEach(s=>{try{s.close()}catch{}});siteSockets=[];}
 function siteResume(){if(!window.zfPaused||!zfTabOn||document.hidden)return;window.zfPaused=false;if(siteLastId)connectLive(siteLastId);for(const el of document.querySelectorAll('.card[data-type="candles"]'))el._load?.();}
-addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||!e.data.zf)return;zfTabOn=e.data.zf==='resume';zfTabOn?siteResume():sitePause();});
+// only 'pause'/'resume' switch the feed — the host menu also sends {zf:'hostnav'|'zone'|'pick'} (16 Nov 2026: those used to pause the prices, so every number stayed "—")
+addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||(e.data.zf!=='pause'&&e.data.zf!=='resume'))return;zfTabOn=e.data.zf==='resume';zfTabOn?siteResume():sitePause();});
 document.addEventListener('visibilitychange',()=>{document.hidden?sitePause():siteResume();});
