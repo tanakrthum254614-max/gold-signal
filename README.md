@@ -49,11 +49,11 @@ flowchart LR
   end
   subgraph V["Cloudflare Worker"]
     MW["middleware.js<br/>data files + quotes"]
-    API["api/*.mjs<br/>news / candles"]
+    API["api/*.mjs<br/>news / candles / calendar"]
   end
   subgraph G["GitHub Actions"]
     LOOP["check-loop.sh every 5 min<br/>chart-run / alerts"]
-    DATA[("branch data<br/>chart-signals.json")]
+    DATA[("branch data<br/>chart-signals.json<br/>calendar.json")]
   end
   INV --> UI
   INV --> LOOP
@@ -68,7 +68,7 @@ flowchart LR
 - **Frontend** — HTML, CSS, JavaScript (ไม่ใช้ framework) · TradingView Lightweight Charts
 - **Backend** — Cloudflare Workers (static assets, middleware, API)
 - **Automation** — GitHub Actions (ตรวจสอบสัญญาณทุก 5 นาทีต่อเนื่อง โดยแต่ละรอบจัดคิวรอบถัดไปเพื่อไม่ให้มีช่วงว่าง, งานรายวัน / รายสัปดาห์ / รายเดือน)
-- **Data Sources** — investing.com, Binance (PAXG), Yahoo Finance, SEC EDGAR
+- **Data Sources** — investing.com, Binance (PAXG), Yahoo Finance, SEC EDGAR, ForexFactory and Myfxbook (US economic calendar)
 - **Research** — Node.js และ Python สำหรับการทดสอบย้อนหลัง (`research/`)
 
 ## Project Structure
