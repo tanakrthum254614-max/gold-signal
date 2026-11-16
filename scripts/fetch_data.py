@@ -10,8 +10,10 @@ Usage: python scripts/fetch_data.py data.json [--m15-only]
 """
 import calendar
 import json
+import os
 import sys
 import time
+from datetime import datetime
 
 from curl_cffi import requests
 
@@ -91,22 +93,31 @@ def m15_binance(session):
     return {"source": "binance", "m15": shift(m15), "m30": shift(m30), "h1": shift(h1[-200:]), "h5": shift(h5[-160:])}
 
 
-CALENDAR = ("https://endpoints.investing.com/pd-instruments/v1/calendars/economic/events/occurrences"
-            "?domain_id=1&limit=60&country_ids=5&importance=high")  # importance (singular): importances= is ignored and returned medium/low too
+# 16 Nov 2026: investing.com's calendar API answers 403 to every outside caller (news=0 → no news blackout). The site's
+# /api/calendar merges ForexFactory's weekly export + Myfxbook's RSS (api/calendar.mjs); ForexFactory direct as backup.
+CALENDAR = os.environ.get("SITE_URL", "https://gold-signal.gold-signal.workers.dev") + "/api/calendar"
+FF_WEEK = "https://nfs.faireconomy.media/ff_calendar_thisweek.json"
 
 
 def news(session):
-    """Upcoming high-impact US releases from investing.com's economic calendar, one entry per time."""
+    """Upcoming high-impact US releases, one entry per time."""
+    by_time = {}
     try:
         cal = get_json(session, CALENDAR)
+        names = {e["event_id"]: e.get("short_name") or e.get("long_name") for e in cal.get("events", [])}
+        for o in cal.get("occurrences", []):
+            t = calendar.timegm(time.strptime(o["occurrence_time"][:19], "%Y-%m-%dT%H:%M:%S")) * 1000
+            by_time.setdefault(t, []).append(names.get(o["event_id"], "US data"))
     except Exception as e:  # noqa: BLE001 - news is optional
-        print(f"calendar unavailable ({e})", file=sys.stderr)
-        return []
-    names = {e["event_id"]: e.get("short_name") or e.get("long_name") for e in cal.get("events", [])}
-    by_time = {}
-    for o in cal.get("occurrences", []):
-        t = calendar.timegm(time.strptime(o["occurrence_time"][:19], "%Y-%m-%dT%H:%M:%S")) * 1000
-        by_time.setdefault(t, []).append(names.get(o["event_id"], "US data"))
+        print(f"site calendar unavailable ({e}); trying ForexFactory", file=sys.stderr)
+        try:
+            for e in get_json(session, FF_WEEK):
+                if e.get("country") == "USD" and e.get("impact") == "High":
+                    t = int(datetime.fromisoformat(e["date"]).timestamp() * 1000)
+                    by_time.setdefault(t, []).append(e.get("title") or "US data")
+        except Exception as e2:  # noqa: BLE001
+            print(f"calendar unavailable ({e2})", file=sys.stderr)
+            return []
     return [{"time": t, "title": " · ".join(dict.fromkeys(ts))[:120]} for t, ts in sorted(by_time.items())]
 
 

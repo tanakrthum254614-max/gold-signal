@@ -1718,10 +1718,10 @@ async function refreshThb() {
   } catch (e) { /* only needed for capital in baht */ }
 }
 
-// High-impact US news from investing.com's economic calendar (grouped by release time)
+// High-impact US news (grouped by release time) — /api/calendar since 16 Nov 2026 (investing.com's calendar answers 403)
 async function refreshNews() {
   try {
-    const j = await getJson('https://endpoints.investing.com/pd-instruments/v1/calendars/economic/events/occurrences?domain_id=1&limit=60&country_ids=5&importance=high');
+    const j = await getJson('/api/calendar');
     const names = Object.fromEntries((j.events || []).map((e) => [e.event_id, e.short_name || e.long_name]));
     const byTime = new Map();
     (j.occurrences || []).forEach((o) => {

@@ -23,6 +23,7 @@ check() {
     node scripts/alerts.js data.json || rc=1
   fi
   node scripts/chart-run.js data.json || rc=1   # every chart-timeframe signal → chart-signals.json
+  node scripts/calendar-save.js calendar.json   # released US news history for the news-stats tab (optional, never fails)
   # Save results onto the data branch (no website deployment)
   if data_save "Signal update $(TZ=Asia/Bangkok date '+%F %H:%M')"; then savefails=0; else
     rc=1; savefails=$((savefails + 1)); [ "$savefails" -gt "$worstsave" ] && worstsave=$savefails

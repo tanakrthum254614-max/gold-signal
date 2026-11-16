@@ -16,7 +16,7 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), { status
 // Signal records live on the repo's `data` branch (scripts/data-branch.sh), not main, so the 5-minute recorder doesn't
 // redeploy the site. Served fresh from that branch; the copies deployed with the site are only a fallback if GitHub can't
 // be reached. The query string busts GitHub's 5-minute CDN cache at most once per 10 s per file.
-const DATA = /^\/(signals|intraday|chart-signals|backtest|backtest-30m|backtest-15m|zframes\/dashboards\/(?:gold|ndx|spx|div|gurus|gurus-live))\.json$/;
+const DATA = /^\/(signals|intraday|chart-signals|calendar|backtest|backtest-30m|backtest-15m|zframes\/dashboards\/(?:gold|ndx|spx|div|gurus|gurus-live))\.json$/;
 const RAW = 'https://raw.githubusercontent.com/tanakrthum254614-max/gold-signal/data';
 const dataCache = new Map();
 async function dataFile(path) {

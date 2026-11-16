@@ -34,7 +34,7 @@
   FRAMES['gs-news'] = (f) => {
     const now = Date.now(), list = (f.items || []).filter((n) => n.time > now - NEWS_WIN && n.time < now + 8 * 864e5).slice(0, f.span === 3 ? 6 : 5);
     if (!f.items) return '<div class="empty">กำลังโหลดปฏิทินข่าว…</div>';
-    if (!list.length) return '<div class="empty">ไม่มีข่าวแรงสหรัฐใน 8 วันข้างหน้า</div>';
+    if (!list.length) return '<div class="empty">ไม่มีข่าวแรงสหรัฐที่เหลือในสัปดาห์นี้</div>';
     return `<ul class="gs-news${f.span === 3 ? ' wide' : ''}">${list.map((n) => {
       const d = n.time - now, live = Math.abs(d) <= NEWS_WIN;
       return `<li class="${live ? 'live' : d < 6 * 3600e3 ? 'soon' : ''}"><span class="t">${dayTh(n.time)} ${hhmm(n.time)}</span><b>${e(n.title)}</b><span class="c">${live ? '⚠️ ช่วงข่าวออก — ราคากระชากได้' : d > 0 ? until(d) : ''}</span></li>`;
@@ -77,7 +77,7 @@
       if (!live) return;
       const add = [];
       if (dash.kind === 'gold' && hook('GS_SIGNALS')) add.push({ type: 'gs-signals', span: 2, title: 'สัญญาณ Gold Signal ตอนนี้', source: 'ระบบเดียวกับหน้ากราฟ · สด' });
-      add.push({ type: 'gs-news', span: dash.kind === 'gold' ? 1 : 3, title: 'ข่าวแรงสหรัฐที่จะออก', source: 'ปฏิทิน investing.com · เวลาไทย' });
+      add.push({ type: 'gs-news', span: dash.kind === 'gold' ? 1 : 3, title: 'ข่าวแรงสหรัฐที่จะออก', source: 'ปฏิทิน ForexFactory · Myfxbook · เวลาไทย' });
       live.frames = [...add, ...live.frames.filter((f) => !String(f.type).startsWith('gs-'))];
       if (dash.kind === 'gold' && hook('GS_RECORD')) dash.zones.forEach((z) => z.frames.forEach((f) => {
         if (f.type === 'record') { f.source = 'บันทึกจริง · อัปเดตสด'; const rows = recordRows(); if (rows) f.rows = rows; }

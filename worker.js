@@ -4,8 +4,9 @@
 import middleware from './middleware.js';
 import * as candles from './api/candles.mjs';
 import * as news from './api/news.mjs';
+import * as calendar from './api/calendar.mjs';
 
-const API = { '/api/candles': candles, '/api/news': news };
+const API = { '/api/candles': candles, '/api/news': news, '/api/calendar': calendar };
 // vercel.json "headers": never cache the app shell, the service worker or the fallback data files
 const NO_STORE = new Set(['/', '/index.html', '/zframes/index.html', '/signals.json', '/backtest.json', '/intraday.json', '/backtest-30m.json', '/quota.json', '/backtest-15m.json', '/sw.js']);
 

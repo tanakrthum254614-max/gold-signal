@@ -1,12 +1,14 @@
 // Stats tab = US economic news and how gold moved after it (user, 9 Oct: "เว็บนี้ทำมาเพื่อดูสัญญาณในการเทรดแค่นั้น และ
 // สถิติข่าวต่างๆ ของสหรัฐ" — the live-trade record left the page). Sources, both fetched by the browser:
-// • investing.com's economic calendar (high-impact US releases: actual / forecast / previous, and whether the actual
+// • the economic calendar (/api/calendar since 16 Nov 2026; was investing.com) (high-impact US releases: actual / forecast / previous, and whether the actual
 //   beat the forecast — "positive" = good for the US dollar, which usually pushes gold down)
 // • Binance PAXG 5-minute candles around each release time: how many $ gold moved 15 and 60 minutes after
 // Needs main.js (state, $, f2, money, thaiTime, hhmm). Loaded once when the tab is first opened, refreshed every 10 min.
 (function () {
-  // importance (singular) — importances=high is ignored by the API (it returned medium / low releases too, 300 at most)
-  const CAL = 'https://endpoints.investing.com/pd-instruments/v1/calendars/economic/events/occurrences?domain_id=1&country_ids=5&importance=high&limit=300';
+  // 16 Nov 2026: investing.com's calendar API answers 403 to every outside caller → the site's own /api/calendar
+  // (ForexFactory this week + Myfxbook today's actuals, api/calendar.mjs) and the released-news history the recorder keeps
+  // in calendar.json (scripts/calendar-save.js — it starts on 16 Nov 2026 and grows every 5 minutes)
+  const CAL = '/api/calendar', HIST = '/calendar.json';
   const KL = 'https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT&interval=5m';
   const DAYS_BACK = 60;
   const ns = { at: 0, past: [], next: [], loading: false, moves: new Map(), showPast: 10, showTable: 10, openItems: new Set() };
@@ -65,13 +67,24 @@
   const dayTime = (ms) => new Date(ms).toLocaleString('th-TH', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
   const signed = (v) => (v == null ? '—' : `${v >= 0 ? '▲ +' : '▼ −'}$${f2(Math.abs(v))}`);
 
+  const getJ = (url) => fetch(url, { cache: 'no-store' }).then((r) => (r.ok ? r.json() : Promise.reject(new Error(`calendar ${r.status}`))));
+  const hist = { at: 0, j: null };
+  const history = async () => {
+    if (!hist.j || Date.now() - hist.at > 10 * 60e3) { try { hist.j = await getJ(HIST); hist.at = Date.now(); } catch (e) { /* none saved yet */ } }
+    return hist.j;
+  };
   async function calendar(from, to) {
-    const r = await fetch(`${CAL}&start_date=${new Date(from).toISOString()}&end_date=${new Date(to).toISOString()}`);
-    if (!r.ok) throw new Error(`calendar ${r.status}`);
-    const j = await r.json();
-    const ev = new Map((j.events || []).map((e) => [e.event_id, e]));
-    return (j.occurrences || []).map((o) => ({ ...o, ev: ev.get(o.event_id) || {}, t: Date.parse(o.occurrence_time) }))
-      .filter((o) => (o.ev.importance || 'high') === 'high');
+    const [live, past] = await Promise.all([getJ(CAL).catch((e) => e), from < Date.now() - 864e5 ? history() : null]);
+    if (live instanceof Error && !past) throw live;
+    const ev = new Map(), oc = new Map();
+    // history first; this week's live list on top (but never an empty actual over a saved one)
+    [past, live instanceof Error ? null : live].forEach((j) => {
+      if (!j) return;
+      (j.events || []).forEach((e) => ev.set(e.event_id, e));
+      (j.occurrences || []).forEach((o) => { const had = oc.get(o.event_id); if (!(had && had.actual != null && o.actual == null)) oc.set(o.event_id, o); });
+    });
+    return [...oc.values()].map((o) => ({ ...o, ev: ev.get(o.event_id) || {}, t: Date.parse(o.occurrence_time) }))
+      .filter((o) => o.t >= from && o.t <= to && (o.ev.importance || 'high') === 'high');
   }
   // Gold around a release: price at the release, and the change 15 / 60 minutes later (5-minute PAXG candles)
   async function move(t) {
@@ -194,7 +207,7 @@
         ${rule ? `<p class="nc-rule">${rule}</p>` : ''}
         <div class="ns-next-items">${n.items.map((o) => itemLine(o, false)).join('')}</div>
         <p class="ns-warn">⚠️ ราคาทองอาจวิ่งแรงในไม่กี่นาที · สัญญาณกรอบ ${window.CHARTSYS ? Object.entries(CHARTSYS.SYS).filter(([, s]) => s.news).map(([k]) => TF_LABEL[k]).join(' และ ') : '5 นาที และ 1 ชม.'} งดเปิดรายการใหม่ ±30 นาทีรอบข่าวนี้</p>`;
-    } else $('nsNext').innerHTML = ns.at ? '<p class="muted">ไม่มีข่าวแรงของสหรัฐใน 8 วันข้างหน้า</p>' : '<p class="muted">กำลังโหลดปฏิทินข่าว…</p>';
+    } else $('nsNext').innerHTML = ns.at ? '<p class="muted">ไม่มีข่าวแรงของสหรัฐที่เหลือในสัปดาห์นี้</p>' : '<p class="muted">กำลังโหลดปฏิทินข่าว…</p>';
     // 2) the coming days: one card per release time, grouped by day
     const days = new Map();
     ns.next.forEach((g) => { const k = dayLabel(g.t, now); days.set(k, [...(days.get(k) || []), g]); });
