@@ -11948,8 +11948,8 @@
    ],
    "stop": 3857.15,
    "realized": 1.25,
-   "pnl": 6.32,
-   "last": 3849.55
+   "pnl": 7.47,
+   "last": 3847.82
   },
   {
    "id": "30m-1794879000000",
@@ -11971,11 +11971,12 @@
    "fillBy": 1794882600000,
    "limit": true,
    "tf": "30m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1794879022202,
+ "updatedAt": 1794879052979,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1794879022202
