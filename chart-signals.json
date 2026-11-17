@@ -12126,17 +12126,19 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "hit": 0,
-   "hitAt": [],
-   "stop": 3855.71,
-   "realized": 0,
-   "pnl": 2.47,
-   "last": 3873.1800000000003
+   "hit": 1,
+   "hitAt": [
+    1794905400000
+   ],
+   "stop": 3870.71,
+   "realized": 1.25,
+   "pnl": 3.38,
+   "last": 3873.9
   }
  ],
  "brakes": {},
- "updatedAt": 1794905422363,
+ "updatedAt": 1794905722125,
  "resetAt": 1792460907843,
  "lineQueue": [],
- "lineAt": 1794902747003
+ "lineAt": 1794905722125
 }
