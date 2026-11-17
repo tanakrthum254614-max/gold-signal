@@ -12132,12 +12132,12 @@
    ],
    "stop": 3870.71,
    "realized": 1.25,
-   "pnl": 3.38,
-   "last": 3873.9
+   "pnl": 1.74,
+   "last": 3871.44
   }
  ],
  "brakes": {},
- "updatedAt": 1794905722125,
+ "updatedAt": 1794906021511,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1794905722125
