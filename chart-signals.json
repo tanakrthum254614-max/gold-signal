@@ -12540,7 +12540,7 @@
    "id": "5m-1794969300000",
    "createdAt": 1794969300000,
    "expiresAt": 1795034700000,
-   "status": "pending",
+   "status": "expired",
    "entryAt": 1794969300000,
    "side": "SELL",
    "entry": 3807.89,
@@ -12579,12 +12579,19 @@
    "fillBy": 1794974400000,
    "limit": true,
    "tf": "30m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {},
- "updatedAt": 1794970821506,
+ "updatedAt": 1794971121778,
  "resetAt": 1792460907843,
- "lineQueue": [],
+ "lineQueue": [
+  {
+   "at": 1794971121778,
+   "tf": "5m",
+   "text": "❌ ยกเลิก 5 นาที 🔴 Sell รอเข้าที่ 3,807.89 — ราคาไม่ถึงภายในเวลา\n→ ลบคำสั่ง Limit ที่ตั้งไว้ได้เลย"
+  }
+ ],
  "lineAt": 1794970821506
 }
