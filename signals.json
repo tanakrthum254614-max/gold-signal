@@ -1333,9 +1333,39 @@
    ],
    "stop": 3873.64,
    "pnl": 21.67
+  },
+  {
+   "id": "2026-11-18",
+   "createdAt": 1794985742763,
+   "expiresAt": 1795034700000,
+   "rule": "market-trend",
+   "trendScore": -5,
+   "priceAtSignal": 3780.5,
+   "advisory": true,
+   "why": [
+    "แนวโน้ม ระยะสั้น ขาลงแรง · ระยะกลาง ขาลง · ระยะยาว ขาลงแรง",
+    "ทองแกว่งเฉลี่ยวันละ ~$79.02"
+   ],
+   "source": "binance",
+   "alerts": {
+    "entry": 1794985742763
+   },
+   "market": true,
+   "side": "SELL",
+   "entry": 3780.5,
+   "sl": 3795.5,
+   "tps": [
+    3765.5,
+    3760.5,
+    3750.5
+   ],
+   "tp": 3765.5,
+   "stars": 5,
+   "status": "active",
+   "entryAt": 1794985742763
   }
  ],
- "updatedAt": 1794923121666,
+ "updatedAt": 1794985742763,
  "summary": {
   "total": 32,
   "traded": 32,
