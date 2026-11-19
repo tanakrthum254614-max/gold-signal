@@ -13218,8 +13218,8 @@
    "hitAt": [],
    "stop": 3744.7,
    "realized": 0,
-   "pnl": -11.1,
-   "last": 3740.8
+   "pnl": -7.46,
+   "last": 3737.16
   }
  ],
  "brakes": {
@@ -13228,7 +13228,7 @@
    "until": null
   }
  },
- "updatedAt": 1795066557289,
+ "updatedAt": 1795066821671,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1795061121770
