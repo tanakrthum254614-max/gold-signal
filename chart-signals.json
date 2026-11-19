@@ -13165,7 +13165,7 @@
    "id": "15m-1795060800000",
    "createdAt": 1795060800000,
    "expiresAt": 1795121100000,
-   "status": "active",
+   "status": "loss",
    "entryAt": 1795060800000,
    "side": "SELL",
    "entry": 3722.51,
@@ -13186,8 +13186,11 @@
    "hitAt": [],
    "stop": 3737.51,
    "realized": 0,
-   "pnl": -13.46,
-   "last": 3735.97
+   "pnl": -15,
+   "last": 3735.97,
+   "closedBy": "sl",
+   "exitPrice": 3737.51,
+   "exitAt": 1795066500000
   },
   {
    "id": "5m-1795064700000",
@@ -13215,8 +13218,8 @@
    "hitAt": [],
    "stop": 3744.7,
    "realized": 0,
-   "pnl": -6.27,
-   "last": 3735.97
+   "pnl": -11.1,
+   "last": 3740.8
   }
  ],
  "brakes": {
@@ -13225,7 +13228,7 @@
    "until": null
   }
  },
- "updatedAt": 1795066521448,
+ "updatedAt": 1795066557289,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1795061121770
