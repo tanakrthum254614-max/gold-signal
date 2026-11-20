@@ -13862,7 +13862,7 @@
    "id": "5m-1795158600000",
    "createdAt": 1795158600000,
    "expiresAt": 1795207500000,
-   "status": "active",
+   "status": "win",
    "entryAt": 1795158600000,
    "side": "SELL",
    "entry": 3556.06,
@@ -13887,21 +13887,20 @@
    ],
    "stop": 3556.06,
    "realized": 6.25,
-   "pnl": 7.45,
-   "last": 3552.45
+   "pnl": 6.25,
+   "last": 3552.45,
+   "closedBy": "be",
+   "exitPrice": 3556.06,
+   "exitAt": 1795160700000
   }
  ],
  "brakes": {
-  "5m": {
-   "why": "ชนะ 70% ใน 20 รายการล่าสุด (ทดสอบ 87%)",
-   "until": null
-  },
   "30m": {
    "why": "ชนะ 75% ใน 20 รายการล่าสุด (ทดสอบ 89%)",
    "until": null
   }
  },
- "updatedAt": 1795160721905,
+ "updatedAt": 1795161021509,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1795153521689
