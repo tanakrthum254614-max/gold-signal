@@ -14855,7 +14855,7 @@
    "id": "30m-1795509000000",
    "createdAt": 1795509000000,
    "expiresAt": 1795553100000,
-   "status": "active",
+   "status": "loss",
    "entryAt": 1795509000000,
    "side": "SELL",
    "entry": 3614.88,
@@ -14877,17 +14877,20 @@
    "hitAt": [],
    "stop": 3629.88,
    "realized": 0,
-   "pnl": -14.03,
-   "last": 3628.91
+   "pnl": -15,
+   "last": 3628.91,
+   "closedBy": "sl",
+   "exitPrice": 3629.88,
+   "exitAt": 1795509900000
   }
  ],
  "brakes": {
   "30m": {
-   "why": "ชนะ 70% ใน 20 รายการล่าสุด (ทดสอบ 89%)",
+   "why": "ชนะ 65% ใน 20 รายการล่าสุด (ทดสอบ 89%)",
    "until": null
   }
  },
- "updatedAt": 1795509947605,
+ "updatedAt": 1795510222151,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1795488322243
