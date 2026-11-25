@@ -15466,14 +15466,14 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": 4.52,
+   "pnl": 6.23,
    "hit": 1,
    "hitAt": [
     1795587300000
    ],
    "stop": 3528.89,
    "realized": 1.25,
-   "last": 3523.9900000000002
+   "last": 3521.42
   }
  ],
  "brakes": {
@@ -15482,7 +15482,7 @@
    "until": null
   }
  },
- "updatedAt": 1795589440734,
+ "updatedAt": 1795589721530,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1795588821326
