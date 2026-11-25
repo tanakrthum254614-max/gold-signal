@@ -1558,7 +1558,11 @@
    ],
    "source": "investing.com",
    "alerts": {
-    "entry": 1795594481041
+    "entry": 1795594481041,
+    "tp1": 1795608321666,
+    "tp2": 1795608321666,
+    "tp3": 1795608321666,
+    "exit": 1795608321666
    },
    "market": true,
    "side": "SELL",
@@ -1571,64 +1575,36 @@
    ],
    "tp": 3510.04,
    "stars": 5,
-   "status": "active",
-   "entryAt": 1795594481041
+   "status": "win",
+   "entryAt": 1795594481041,
+   "closedBy": "tp",
+   "exitPrice": 3495.04,
+   "exitAt": 1795607100000,
+   "hit": 3,
+   "hitAt": [
+    1795606200000,
+    1795607100000,
+    1795607100000
+   ],
+   "stop": 3525.04,
+   "pnl": 21.67
   }
  ],
- "updatedAt": 1795594481041,
+ "updatedAt": 1795608321666,
  "summary": {
-  "total": 37,
-  "traded": 37,
-  "wins": 20,
+  "total": 38,
+  "traded": 38,
+  "wins": 21,
   "losses": 17,
   "expired": 0,
-  "winRate": 54,
-  "pnl": 39.56,
-  "gross": 54.36,
+  "winRate": 55,
+  "pnl": 60.83,
+  "gross": 76.03,
   "spread": 0.4,
-  "avg": 1.07,
+  "avg": 1.6,
   "bestWin": 21.67,
   "worstLoss": -15,
   "last": [
-   {
-    "id": "2026-11-11",
-    "createdAt": 1794376574950,
-    "expiresAt": 1794429900000,
-    "rule": "market-trend",
-    "trendScore": 1,
-    "priceAtSignal": 4057.66,
-    "advisory": true,
-    "why": [
-     "investing.com วิเคราะห์ 8 ช่วงเวลา: บอก “ลง” 2 · “ขึ้น” 4",
-     "แนวโน้ม ระยะสั้น ขาขึ้นแรง · ระยะกลาง ไซด์เวย์ · ระยะยาว ขาลง",
-     "ทองแกว่งเฉลี่ยวันละ ~$85.47"
-    ],
-    "source": "investing.com",
-    "alerts": {
-     "entry": 1794376574950,
-     "exit": 1794400547022
-    },
-    "market": true,
-    "side": "BUY",
-    "entry": 4057.66,
-    "sl": 4042.66,
-    "tps": [
-     4072.66,
-     4077.66,
-     4087.66
-    ],
-    "tp": 4072.66,
-    "stars": 2,
-    "status": "loss",
-    "entryAt": 1794376574950,
-    "closedBy": "sl",
-    "exitPrice": 4042.66,
-    "exitAt": 1794400200000,
-    "hit": 0,
-    "hitAt": [],
-    "stop": 4042.66,
-    "pnl": -15
-   },
    {
     "id": "2026-11-12",
     "createdAt": 1794466748214,
@@ -2010,10 +1986,56 @@
     "hitAt": [],
     "stop": 3638.61,
     "pnl": -15
+   },
+   {
+    "id": "2026-11-25",
+    "createdAt": 1795594481041,
+    "expiresAt": 1795639500000,
+    "rule": "market-trend",
+    "trendScore": -6,
+    "priceAtSignal": 3525.04,
+    "advisory": true,
+    "why": [
+     "investing.com วิเคราะห์ 8 ช่วงเวลา: บอก “ลง” 8 · “ขึ้น” 0",
+     "แนวโน้ม ระยะสั้น ขาลงแรง · ระยะกลาง ขาลงแรง · ระยะยาว ขาลงแรง",
+     "ทองแกว่งเฉลี่ยวันละ ~$100.02"
+    ],
+    "source": "investing.com",
+    "alerts": {
+     "entry": 1795594481041,
+     "tp1": 1795608321666,
+     "tp2": 1795608321666,
+     "tp3": 1795608321666,
+     "exit": 1795608321666
+    },
+    "market": true,
+    "side": "SELL",
+    "entry": 3525.04,
+    "sl": 3540.04,
+    "tps": [
+     3510.04,
+     3505.04,
+     3495.04
+    ],
+    "tp": 3510.04,
+    "stars": 5,
+    "status": "win",
+    "entryAt": 1795594481041,
+    "closedBy": "tp",
+    "exitPrice": 3495.04,
+    "exitAt": 1795607100000,
+    "hit": 3,
+    "hitAt": [
+     1795606200000,
+     1795607100000,
+     1795607100000
+    ],
+    "stop": 3525.04,
+    "pnl": 21.67
    }
   ],
-  "tp1": 19,
-  "tp2": 16,
-  "tp3": 9
+  "tp1": 20,
+  "tp2": 17,
+  "tp3": 10
  }
 }
