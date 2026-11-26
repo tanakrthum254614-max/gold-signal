@@ -15753,7 +15753,7 @@
    "id": "5m-1795654800000",
    "createdAt": 1795654800000,
    "expiresAt": 1795725900000,
-   "status": "pending",
+   "status": "active",
    "entryAt": 1795654800000,
    "side": "BUY",
    "entry": 3557.7,
@@ -15769,7 +15769,15 @@
    "fillBy": 1795658400000,
    "limit": true,
    "tf": "5m",
-   "risky": true
+   "risky": true,
+   "hit": 1,
+   "hitAt": [
+    1795655100000
+   ],
+   "stop": 3557.7,
+   "realized": 1.25,
+   "pnl": 8.16,
+   "last": 3568.07
   }
  ],
  "brakes": {
@@ -15778,8 +15786,14 @@
    "until": null
   }
  },
- "updatedAt": 1795654821106,
+ "updatedAt": 1795655121777,
  "resetAt": 1792460907843,
- "lineQueue": [],
+ "lineQueue": [
+  {
+   "at": 1795655121777,
+   "tf": "5m",
+   "text": "✅ 5 นาที 🟢 Buy (เข้า 3,557.70) ถึง TP1 3,561.45 แล้ว\n→ เลื่อน SL ไปที่ทุน 3,557.70 · ที่เหลือถือต่อไป TP2 3,572.70"
+  }
+ ],
  "lineAt": 1795654821106
 }
