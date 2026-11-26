@@ -16041,12 +16041,12 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": -9.84,
+   "pnl": -8.4,
    "hit": 0,
    "hitAt": [],
    "stop": 3576.04,
    "realized": 0,
-   "last": 3570.8799999999997
+   "last": 3569.4399999999996
   },
   {
    "id": "30m-1795690800000",
@@ -16070,12 +16070,12 @@
    "tf": "30m",
    "paused": true,
    "risky": true,
-   "pnl": -6.23,
+   "pnl": -4.79,
    "hit": 0,
    "hitAt": [],
    "stop": 3579.65,
    "realized": 0,
-   "last": 3570.8799999999997
+   "last": 3569.4399999999996
   },
   {
    "id": "5m-1795694700000",
@@ -16130,7 +16130,8 @@
    "fillBy": 1795703700000,
    "limit": true,
    "tf": "5m",
-   "risky": true
+   "risky": true,
+   "pnl": 0
   }
  ],
  "brakes": {
@@ -16139,7 +16140,7 @@
    "until": null
   }
  },
- "updatedAt": 1795700122139,
+ "updatedAt": 1795700422096,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1795700122139
