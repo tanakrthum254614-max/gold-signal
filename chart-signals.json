@@ -16041,12 +16041,12 @@
    "limit": true,
    "tf": "5m",
    "risky": true,
-   "pnl": -1.51,
+   "pnl": -2.51,
    "hit": 0,
    "hitAt": [],
    "stop": 3576.04,
    "realized": 0,
-   "last": 3562.55
+   "last": 3563.55
   },
   {
    "id": "30m-1795690800000",
@@ -16079,7 +16079,7 @@
    "until": null
   }
  },
- "updatedAt": 1795691421990,
+ "updatedAt": 1795691443788,
  "resetAt": 1792460907843,
  "lineQueue": [],
  "lineAt": 1795690821999
